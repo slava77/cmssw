@@ -64,6 +64,13 @@ process.cscTriggerPrimitiveDigis.CSCComparatorDigiProducer = "muonCSCDigis:MuonC
 process.cscTriggerPrimitiveDigis.CSCWireDigiProducer = "muonCSCDigis:MuonCSCWireDigi"
 process.cscTriggerPrimitiveDigis.debugParameters = True
 process.cscTriggerPrimitiveDigis.commonParam.gangedME1a = False
+## Adding GEM information to L1 CSC trigger emulator
+process.cscTriggerPrimitiveDigis.gemPadProducer = cms.untracked.InputTag("simMuonGEMCSCPadDigis","")
+process.cscTriggerPrimitiveDigis.tmbSLHC.gemMatchDeltaEta = cms.untracked.double(0.08)
+process.cscTriggerPrimitiveDigis.tmbSLHC.gemMatchDeltaBX = cms.untracked.int32(1)
+process.cscTriggerPrimitiveDigis.tmbSLHC.gemClearNomatchLCTs = cms.untracked.bool(False)
+process.cscTriggerPrimitiveDigis.tmbSLHC.gemMatchDeltaPhiOdd = cms.untracked.double(2.)
+process.cscTriggerPrimitiveDigis.tmbSLHC.gemMatchDeltaPhiEven = cms.untracked.double(2.)
 
 
 # CSC Trigger Primitives reader
