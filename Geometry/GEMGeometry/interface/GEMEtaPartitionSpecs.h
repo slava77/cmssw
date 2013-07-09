@@ -35,6 +35,8 @@ public:
   const StripTopology& specificPadTopology() const;
 
   const std::string& detName() const;
+  
+  const GEMSpecs& parameters() const;
 
 private:
   
