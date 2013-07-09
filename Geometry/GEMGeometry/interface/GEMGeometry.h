@@ -11,6 +11,7 @@
 #include "DataFormats/DetId/interface/DetId.h"
 #include "Geometry/CommonDetUnit/interface/TrackingGeometry.h"
 #include "Geometry/GEMGeometry/interface/GEMEtaPartition.h"
+#include "Geometry/GEMGeometry/interface/GEMSuperChamber.h"
 #include "Geometry/GEMGeometry/interface/GEMChamber.h"
 #include <vector>
 #include <map>
@@ -51,11 +52,17 @@ class GEMGeometry : public TrackingGeometry {
 
   //---- Extension of the interface
 
+  /// Return a vector of all GEM super chambers
+  const std::vector<GEMSuperChamber*>& superChambers() const;
+
   /// Return a vector of all GEM chambers
   const std::vector<GEMChamber*>& chambers() const;
 
   /// Return a vector of all GEM eta partitions
   const std::vector<GEMEtaPartition*>& etaPartitions() const;
+
+  // Return a GEMSuperChamber given its id
+  const GEMSuperChamber* superChamber(GEMDetId id) const;
 
   // Return a GEMChamber given its id
   const GEMChamber* chamber(GEMDetId id) const;
@@ -63,11 +70,14 @@ class GEMGeometry : public TrackingGeometry {
   /// Return a etaPartition given its id
   const GEMEtaPartition* etaPartition(GEMDetId id) const;
 
-  /// Add a GEM etaPartition  to the Geometry
-  void add(GEMEtaPartition* etaPartition);
+  /// Add a GEM SuperChamber to the Geometry
+  void add(GEMSuperChamber* sch);
 
   /// Add a GEM Chamber to the Geometry
   void add(GEMChamber* ch);
+
+  /// Add a GEM etaPartition  to the Geometry
+  void add(GEMEtaPartition* etaPartition);
 
  private:
   DetUnitContainer theEtaPartitions;
@@ -81,7 +91,7 @@ class GEMGeometry : public TrackingGeometry {
 
   std::vector<GEMEtaPartition*> allEtaPartitions; // Are not owned by this class; are owned by their chamber.
   std::vector<GEMChamber*> allChambers; // Are owned by this class.
-
+  std::vector<GEMSuperChamber*> allSuperChambers; // Are owned by this class.
 };
 
 #endif
