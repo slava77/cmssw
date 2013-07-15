@@ -65,7 +65,8 @@ class GEMDetId :public DetId {
     return int((id_>>StationStartBit_) & StationMask_) + minStationId;
   }
 
-  /// Layer id: each station have two layers of chambers: layer 1 is the inner chamber and layer 2 is the outer chamber (when present)  
+  /// Layer id: each station have two layers of chambers: layer 1 is the inner chamber and layer 2 is the outer chamber (when present)
+  /// layer 0 is used to define GEM super chambers  
   int layer() const{
     return int((id_>>LayerStartBit_) & LayerMask_) + minLayerId;
   }
@@ -77,6 +78,7 @@ class GEMDetId :public DetId {
 
  /// Roll id  (also known as eta partition): each chamber is divided along the strip direction in  
  /// several parts  (rolls) GEM up to 10
+  /// roll 0 is used to define GEM chambers  
   int roll() const{
     return int((id_>>RollStartBit_) & RollMask_); // value 0 is used as wild card
   }
@@ -99,7 +101,7 @@ class GEMDetId :public DetId {
   static const int minChamberId=     0;
   static const int maxChamberId=     36;
 
-  static const int minLayerId=     1;
+  static const int minLayerId=     0;
   static const int maxLayerId=     2;
 
   static const int minRollId=	  0;
@@ -123,9 +125,9 @@ class GEMDetId :public DetId {
   static const int ChamberStartBit_ =  StationStartBit_+StationNumBits_;  
   static const unsigned int ChamberMask_     =  0X3F;
 
-  static const int LayerNumBits_  =  1;
+  static const int LayerNumBits_  =  2;
   static const int LayerStartBit_ =  ChamberStartBit_+ChamberNumBits_;  
-  static const unsigned int LayerMask_     =  0X1;
+  static const unsigned int LayerMask_     =  0X3;
 
   static const int RollNumBits_  =  5;
   static const int RollStartBit_ =  LayerStartBit_+LayerNumBits_;  
