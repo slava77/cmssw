@@ -19,7 +19,9 @@
 namespace reco {
   class SuperCluster : public CaloCluster {
   public:
-
+    typedef std::vector<std::pair<CaloClusterPtr::key_type,CaloClusterPtr> > EEtoPSAssociation;
+    // cluster index to range in PS cluster vector
+    typedef std::vector<std::pair<CaloClusterPtr::key_type,std::vector<size_t> > > EEtoPSAssociationInternal;
     typedef math::XYZPoint Point;
 
     /// default constructor
@@ -67,6 +69,12 @@ namespace reco {
     /// seed BasicCluster
     const CaloClusterPtr & seed() const { return seed_; }
 
+    /// const access to the cluster list itself
+    const CaloClusterPtrVector& clusters() const { return clusters_; }
+
+    /// const access to the preshower cluster list itself
+    const CaloClusterPtrVector& preshowerClusters() const { return preshowerClusters_; }
+
     /// fist iterator over BasicCluster constituents
     CaloCluster_iterator clustersBegin() const { return clusters_.begin(); }
 
@@ -79,8 +87,14 @@ namespace reco {
     /// last iterator over PreshowerCluster constituents
     CaloCluster_iterator preshowerClustersEnd() const { return preshowerClusters_.end(); }
 
+    /// vector of PreshowerCluster indices for a given EE cluster
+    const std::vector<size_t>& preshowerClustersAssociated(const CaloClusterPtr& i) const;
+
     /// number of BasicCluster constituents
     size_t clustersSize() const { return clusters_.size(); }
+
+    /// number of BasicCluster PreShower constituents
+    size_t preshowerClustersSize() const { return preshowerClusters_.size(); }
 
     /// list of used xtals by DetId // now inherited by CaloCluster
     //std::vector<DetId> getHitsByDetId() const { return usedHits_; }
@@ -92,10 +106,13 @@ namespace reco {
     void addCluster( const CaloClusterPtr & r ) { 
       clusters_.push_back( r ); 
       computeRawEnergy();
-    }
+    }    
 
     /// add reference to constituent BasicCluster
     void addPreshowerCluster( const CaloClusterPtr & r ) { preshowerClusters_.push_back( r ); }
+    // add ES cluster that is associated to an EE cluster
+    void addPreshowerCluster( const CaloClusterPtr & ee,
+			      const CaloClusterPtr & ps );
 
     /** Set preshower planes status :
         0 : both planes working
@@ -142,6 +159,8 @@ namespace reco {
 
     double preshowerEnergy1_;
     double preshowerEnergy2_;
+
+    EEtoPSAssociationInternal ee2ps;    
   };
 
 }
