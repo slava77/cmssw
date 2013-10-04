@@ -100,11 +100,11 @@ class PFECALSuperClusterAlgo {
 
   void setCrackCorrections( bool applyCrackCorrections) { applyCrackCorrections_ = applyCrackCorrections;}
 
-  std::auto_ptr<reco::SuperClusterCollection>
+  std::auto_ptr<reco::SuperClusterCollection>&
     getEBOutputSCCollection() { return superClustersEB_; }
-  std::auto_ptr<reco::SuperClusterCollection>
+  std::auto_ptr<reco::SuperClusterCollection>&
     getEEOutputSCCollection() { return superClustersEE_; } 
-  std::auto_ptr<reco::SuperCluster::EEtoPSAssociation>
+  std::auto_ptr<reco::SuperCluster::EEtoPSAssociation>&
     getEEtoPSAssociation() { return EEtoPS_; } 
 
   void loadAndSortPFClusters(const edm::View<reco::PFCluster>& ecalclusters,
