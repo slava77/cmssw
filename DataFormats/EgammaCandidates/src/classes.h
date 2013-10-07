@@ -35,6 +35,7 @@
 #include "DataFormats/Common/interface/AssociationMap.h"
 #include "DataFormats/Common/interface/Ptr.h"
 #include "DataFormats/Common/interface/PtrVector.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 #include "Rtypes.h"
 #include "Math/Cartesian3D.h"
 #include "Math/Polar3D.h"
@@ -107,6 +108,8 @@ namespace {
     edm::Ref<reco::GsfElectronCoreCollection> gecc_r;
     edm::RefProd<reco::GsfElectronCoreCollection> gecc_rp;
     edm::Wrapper<edm::RefVector<reco::GsfElectronCoreCollection> > gecc_rv;
+    edm::Wrapper<edm::ValueMap<edm::Ref<std::vector<reco::GsfElectron>,reco::GsfElectron,edm::refhelper::FindUsingAdvance<std::vector<reco::GsfElectron>,reco::GsfElectron> > > > gecc_wvm;
+    edm::ValueMap<edm::Ref<std::vector<reco::GsfElectron>,reco::GsfElectron,edm::refhelper::FindUsingAdvance<std::vector<reco::GsfElectron>,reco::GsfElectron> > > gecc_vm;
 
     reco::GsfElectron::TrackClusterMatching getcm ;
     reco::GsfElectron::TrackExtrapolations gete ;
