@@ -43,12 +43,13 @@
 #include <vector>
 #include <utility>
 
-ElectronSeedGenerator::ElectronSeedGenerator(const edm::ParameterSet &pset)
+ElectronSeedGenerator::ElectronSeedGenerator(const edm::ParameterSet &pset,
+				      const ElectronSeedGenerator::Tokens& ts)
  : dynamicphiroad_(pset.getParameter<bool>("dynamicPhiRoad")),
    fromTrackerSeeds_(pset.getParameter<bool>("fromTrackerSeeds")),
    useRecoVertex_(false),
-   verticesTag_("offlinePrimaryVerticesWithBS"),
-   beamSpotTag_("offlineBeamSpot"),
+   verticesTag_(ts.token_vtx),
+   beamSpotTag_(ts.token_bs),
    lowPtThreshold_(pset.getParameter<double>("LowPtThreshold")),
    highPtThreshold_(pset.getParameter<double>("HighPtThreshold")),
    nSigmasDeltaZ1_(pset.getParameter<double>("nSigmasDeltaZ1")),
@@ -77,14 +78,18 @@ ElectronSeedGenerator::ElectronSeedGenerator(const edm::ParameterSet &pset)
   // use of reco vertex
   if (pset.exists("useRecoVertex"))
    { useRecoVertex_ = pset.getParameter<bool>("useRecoVertex") ; }
+  /*
   if (pset.exists("vertices"))
    { verticesTag_ = pset.getParameter<edm::InputTag>("vertices") ; }
+  */
   if (pset.exists("deltaZ1WithVertex"))
    { deltaZ1WithVertex_ = pset.getParameter<double>("deltaZ1WithVertex") ; }
 
   // new beamSpot tag
+  /*
   if (pset.exists("beamSpot"))
    { beamSpotTag_ = pset.getParameter<edm::InputTag>("beamSpot") ; }
+  */
 
   // new B/F configurables
   if (pset.exists("DeltaPhi2"))
@@ -257,14 +262,14 @@ void  ElectronSeedGenerator::run
   NavigationSetter theSetter(*theNavigationSchool);
 
   // get initial TrajectorySeeds if necessary
-  //  if (fromTrackerSeeds_) e.getByLabel(initialSeeds_, theInitialSeedColl);
+  //  if (fromTrackerSeeds_) e.getByToken(initialSeeds_, theInitialSeedColl);
 
   // get the beamspot from the Event:
   //e.getByType(theBeamSpot);
-  e.getByLabel(beamSpotTag_,theBeamSpot);
+  e.getByToken(beamSpotTag_,theBeamSpot);
 
   // if required get the vertices
-  if (useRecoVertex_) e.getByLabel(verticesTag_,theVertices);
+  if (useRecoVertex_) e.getByToken(verticesTag_,theVertices);
 
   if (!fromTrackerSeeds_)
    { theMeasurementTracker->update(e) ; }
