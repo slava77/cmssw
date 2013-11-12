@@ -23,7 +23,7 @@ defaultOptions.geometry = 'SimDB'
 defaultOptions.geometryExtendedOptions = ['ExtendedGFlash','Extended','NoCastor']
 defaultOptions.magField = '38T'
 defaultOptions.conditions = None
-defaultOptions.scenarioOptions=['pp','cosmics','nocoll','HeavyIons']
+defaultOptions.scenarioOptions=['pp','ppPostLS1RECO','cosmics','nocoll','HeavyIons']
 defaultOptions.harvesting= 'AtRunEnd'
 defaultOptions.gflash = False
 defaultOptions.himix = False
@@ -920,9 +920,13 @@ class ConfigBuilder(object):
             self.RECODefaultSeq='reconstructionCosmics'
             self.DQMDefaultSeq='DQMOfflineCosmics'
 
-        if self._options.himix:
-                print "From the presence of the himix option, we have determined that this is heavy ions and will use '--scenario HeavyIons'."
-                self._options.scenario='HeavyIons'
+	if self._options.scenario=='ppPostLS1RECO':
+	    self.RECODefaultCFF="Configuration/StandardSequences/Reconstruction_PostLS1_cff"
+
+	  
+	if self._options.himix:
+            print "From the presence of the himix option, we have determined that this is heavy ions and will use '--scenario HeavyIons'."
+            self._options.scenario='HeavyIons'
 
         if self._options.scenario=='HeavyIons':
 	    if not self._options.beamspot:
