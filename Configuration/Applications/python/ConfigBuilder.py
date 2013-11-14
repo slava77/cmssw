@@ -740,7 +740,13 @@ class ConfigBuilder(object):
     def addCustomise(self):
         """Include the customise code """
 
+	if self._options.customisation_file !='':
+		self._options.customisation_file+=","
+	self._options.customisation_file+="RecoEgamma/Configuration/customizePFforEGammaGED.customizePFforEGammaGED"
         custOpt=self._options.customisation_file.split(",")
+	print "Final custOpt is "
+	for opt in custOpt:
+		print opt
 	custMap={}
 	for opt in custOpt:
 		if opt=='': continue
