@@ -1397,16 +1397,16 @@ void GsfElectronAlgo::createElectron()
     }
   
   // momentum
+  // Keep the default correction running first. The track momentum error is computed in there
+  if (ele->core()->ecalDrivenSeed())
+    {
+      ElectronMomentumCorrector theMomCorrector;
+      theMomCorrector.correct(*ele,electronData_->vtxTSOS);
+    }
   if(generalData_->strategyCfg.useCombinationRegression)  // new 
     {
       generalData_->regHelper->applyCombinationRegression(*ele);
     }
-  else if (ele->core()->ecalDrivenSeed())       //original computation
-   {
-    ElectronMomentumCorrector theMomCorrector;
-    theMomCorrector.correct(*ele,electronData_->vtxTSOS);
-   }
-
 
   //====================================================
   // now isolation variables
