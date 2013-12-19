@@ -742,7 +742,7 @@ class ConfigBuilder(object):
 
 	if self._options.customisation_file !='':
 		self._options.customisation_file+=","
-	self._options.customisation_file+="RecoEgamma/Configuration/customizePFforEGammaGED.customizePFforEGammaGED"
+	self._options.customisation_file+="RecoTracker/Configuration/customiseForRunI.customiseForRunI"
         custOpt=self._options.customisation_file.split(",")
 	print "Final custOpt is "
 	for opt in custOpt:
