@@ -519,18 +519,21 @@ namespace {
     }
     return cluster_list;
   }
-  inline void addPFClusterToROSafe(const ClusterElement* cl,
-				   PFEGammaAlgo::ProtoEGObject& RO) {
+  bool addPFClusterToROSafe(const ClusterElement* cl,
+			    PFEGammaAlgo::ProtoEGObject& RO) {
     if( !RO.ecalclusters.size() ) {
       RO.ecalclusters.push_back(std::make_pair(cl,true));      
+      return true;
     } else {
       const PFLayer::Layer clayer = cl->clusterRef()->layer();
       const PFLayer::Layer blayer = 
 	RO.ecalclusters.back().first->clusterRef()->layer();
       if( clayer == blayer ) {
 	RO.ecalclusters.push_back(std::make_pair(cl,true));      
+	return true;
       }
     }
+    return false;
   }
   
   // sets the cluster best associated to the GSF track
@@ -1584,11 +1587,12 @@ linkRefinableObjectPrimaryGSFTrackToECAL(ProtoEGObject& RO) {
 	<< "Found a cluster not already in RO by GSF extrapolation"
 	<< " at ECAL surface!" << std::endl
 	<< *elemascluster << std::endl;
-      addPFClusterToROSafe(elemascluster,RO);              
-      attachPSClusters(elemascluster,RO.ecal2ps[elemascluster]);      
-      RO.localMap.push_back(ElementMap::value_type(primgsf.first,elemascluster));
-      RO.localMap.push_back(ElementMap::value_type(elemascluster,primgsf.first));
-      ecal->second = false;    
+      if( addPFClusterToROSafe(elemascluster,RO) ) {
+	attachPSClusters(elemascluster,RO.ecal2ps[elemascluster]);      
+	RO.localMap.push_back(ElementMap::value_type(primgsf.first,elemascluster));
+	RO.localMap.push_back(ElementMap::value_type(elemascluster,primgsf.first));
+	ecal->second = false;    
+      }
     }    
   }
 }
@@ -1667,18 +1671,19 @@ PFEGammaAlgo::linkKFTrackToECAL(const KFFlaggedElement& kfflagged,
   for( auto ecalitr = ECALbegin; ecalitr != notmatched_blk; ++ecalitr ) {
     const PFClusterElement* elemascluster = 
       docast(const PFClusterElement*,ecalitr->first);
-    addPFClusterToROSafe(elemascluster,RO);
-    attachPSClusters(elemascluster,RO.ecal2ps[elemascluster]);	  
-    ecalitr->second = false;
-    
-    LOGDRESSED("PFEGammaAlgo::linkKFTracktoECAL()") 
+    if( addPFClusterToROSafe(elemascluster,RO) ) {
+      attachPSClusters(elemascluster,RO.ecal2ps[elemascluster]);	  
+      ecalitr->second = false;
+      
+      LOGDRESSED("PFEGammaAlgo::linkKFTracktoECAL()") 
 	<< "Found a cluster not in RO by KF extrapolation"
 	<< " at ECAL surface!" << std::endl
 	<< *elemascluster << std::endl;
-    RO.localMap.push_back(ElementMap::value_type(elemascluster,
-						 kfflagged.first));
-    RO.localMap.push_back( ElementMap::value_type(kfflagged.first,
-						  elemascluster));
+      RO.localMap.push_back(ElementMap::value_type(elemascluster,
+						   kfflagged.first));
+      RO.localMap.push_back( ElementMap::value_type(kfflagged.first,
+						    elemascluster));
+    }
   }  
 }
 
@@ -1737,15 +1742,16 @@ linkRefinableObjectBremTangentsToECAL(ProtoEGObject& RO) {
 	}	
 	const PFClusterElement* elemasclus =
 	  docast(const PFClusterElement*,ecal->first);    
-	addPFClusterToROSafe(elemasclus,RO);
-	attachPSClusters(elemasclus,RO.ecal2ps[elemasclus]);
-	
-	RO.localMap.push_back( ElementMap::value_type(ecal->first,bremflagged.first) );
-	RO.localMap.push_back( ElementMap::value_type(bremflagged.first,ecal->first) );
-	ecal->second = false;
-	LOGDRESSED("PFEGammaAlgo::linkBremToECAL()") 
-	  << "Found a cluster not already associated by brem extrapolation"
-	  << " at ECAL surface!" << std::endl;
+	if( addPFClusterToROSafe(elemasclus,RO) ) {
+	  attachPSClusters(elemasclus,RO.ecal2ps[elemasclus]);
+	  
+	  RO.localMap.push_back( ElementMap::value_type(ecal->first,bremflagged.first) );
+	  RO.localMap.push_back( ElementMap::value_type(bremflagged.first,ecal->first) );
+	  ecal->second = false;
+	  LOGDRESSED("PFEGammaAlgo::linkBremToECAL()") 
+	    << "Found a cluster not already associated by brem extrapolation"
+	    << " at ECAL surface!" << std::endl;
+	}
 	
       }
     }
@@ -1833,11 +1839,12 @@ linkRefinableObjectSecondaryKFsToECAL(ProtoEGObject& RO) {
     for( auto ecal = ECALbegin; ecal != notmatched; ++ecal ) {
       const reco::PFBlockElementCluster* elemascluster =
 	docast(const reco::PFBlockElementCluster*,ecal->first);      
-      addPFClusterToROSafe(elemascluster,RO);
-      attachPSClusters(elemascluster,RO.ecal2ps[elemascluster]);
-      RO.localMap.push_back(ElementMap::value_type(skf.first,elemascluster));
-      RO.localMap.push_back(ElementMap::value_type(elemascluster,skf.first));
-      ecal->second = false;      
+      if( addPFClusterToROSafe(elemascluster,RO) ) {
+	attachPSClusters(elemascluster,RO.ecal2ps[elemascluster]);
+	RO.localMap.push_back(ElementMap::value_type(skf.first,elemascluster));
+	RO.localMap.push_back(ElementMap::value_type(elemascluster,skf.first));
+	ecal->second = false;      
+      }
     }
   }
 }
@@ -1877,7 +1884,7 @@ fillPFCandidates(const std::list<PFEGammaAlgo::ProtoEGObject>& ROs,
       cand.addElementInBlock(_currentblock,RO.primaryGSFs[0].first->index());
     }
     if( RO.parentSC ) {
-      xtra.setSuperClusterBoxRef(RO.parentSC->superClusterRef());      
+      xtra.setSuperClusterPFECALRef(RO.parentSC->superClusterRef());      
       // we'll set to the refined supercluster back up in the producer
       cand.setSuperClusterRef(RO.parentSC->superClusterRef());
       xtra.setSuperClusterRef(RO.parentSC->superClusterRef());      
@@ -2272,13 +2279,7 @@ unlinkRefinableObjectKFandECALWithBadEoverP(ProtoEGObject& RO) {
     RO.primaryGSFs.front().first->positionAtECALEntrance().Eta();
   double tot_ecal= 0.0;  
   std::vector<double> min_brem_dists;
-  std::vector<double> closest_brem_eta;
-  std::vector<PFKFFlaggedElement> kfs_to_remove;
-  std::vector<PFClusterFlaggedElement> ecals_to_remove;
-  auto seckfs_begin = RO.secondaryKFs.begin();
-  auto seckfs_end   = RO.secondaryKFs.end();
-  auto ecal_begin = RO.ecalclusters.begin();
-  auto ecal_end   = RO.ecalclusters.end();
+  std::vector<double> closest_brem_eta;    
   // first get the total ecal energy (we should replace this with a cache)
   for( const auto& ecal : RO.ecalclusters ) {
     tot_ecal += ecal.first->clusterRef()->correctedEnergy();
@@ -2302,17 +2303,21 @@ unlinkRefinableObjectKFandECALWithBadEoverP(ProtoEGObject& RO) {
   
   // loop through the ECAL clusters and remove ECAL clusters matched to
   // secondary track either in *or* out of the SC if the E/pin is bad
-  for( auto secd_kf = seckfs_begin; secd_kf != seckfs_end; ++secd_kf ) {
+  for( auto secd_kf = RO.secondaryKFs.begin(); 
+       secd_kf != RO.secondaryKFs.end(); ++secd_kf ) {
     reco::TrackRef trkRef =   secd_kf->first->trackRef();   
-    const float secpin = secd_kf->first->trackRef()->p();       
-    for( auto ecal = ecal_begin; ecal != ecal_end; ++ecal ) {
-      const float minbremdist = min_brem_dists[std::distance(ecal_begin,ecal)];
+    const float secpin = secd_kf->first->trackRef()->p();  
+    bool remove_this_kf = false;
+    for( auto ecal = RO.ecalclusters.begin(); 
+	 ecal != RO.ecalclusters.end(); ++ecal ) {
+      size_t bremidx = std::distance(RO.ecalclusters.begin(),ecal);
+      const float minbremdist = min_brem_dists[bremidx];
       const double ecalenergy = ecal->first->clusterRef()->correctedEnergy();
       const double Epin = ecalenergy/secpin;
       const double detaGsf = 
 	std::abs(gsfOuterEta - ecal->first->clusterRef()->positionREP().Eta());
       const double detaBrem = 
-	std::abs(closest_brem_eta[std::distance(ecal_begin,ecal)] - 
+	std::abs(closest_brem_eta[bremidx] - 
 		 ecal->first->clusterRef()->positionREP().Eta());
       
       ElementMap::value_type check_match(ecal->first,secd_kf->first);
@@ -2340,34 +2345,32 @@ unlinkRefinableObjectKFandECALWithBadEoverP(ProtoEGObject& RO) {
 	      << " cluster to secondary " <<  ecalenergy
 	      << " res_with " <<  res_with
 	      << " res_without " << res_without << std::endl;
-	    tot_ecal -= ecalenergy;
-	    ecals_to_remove.push_back(*ecal);
-	    kfs_to_remove.push_back(*secd_kf);
+	    tot_ecal -= ecalenergy;	    
+	    remove_this_kf = true;   
+	    ecal = RO.ecalclusters.erase(ecal);
+	    if( ecal == RO.ecalclusters.end() ) break;	    
 	}
       }
     }
+    if( remove_this_kf ) {
+      secd_kf = RO.secondaryKFs.erase(secd_kf);
+      if( secd_kf == RO.secondaryKFs.end() ) break;
+    }
   }  
-  for( auto& to_remove : ecals_to_remove ) {
-    std::remove(RO.ecalclusters.begin(),RO.ecalclusters.end(),to_remove);
-  }  
-  for( auto& to_remove : kfs_to_remove ) {
-    std::remove(RO.secondaryKFs.begin(),RO.secondaryKFs.end(),to_remove);
-  }
 }
 
 void PFEGammaAlgo::
 unlinkRefinableObjectKFandECALMatchedToHCAL(ProtoEGObject& RO,
 					    bool removeFreeECAL,
 					    bool removeSCEcal) {
-  std::vector<bool> cluster_in_sc;
-  std::vector<PFKFFlaggedElement> kfs_to_remove;
-  auto seckfs_begin = RO.secondaryKFs.begin();
-  auto seckfs_end   = RO.secondaryKFs.end();
+  std::vector<bool> cluster_in_sc;    
   auto ecal_begin = RO.ecalclusters.begin();
   auto ecal_end   = RO.ecalclusters.end();
   auto hcal_begin = _splayedblock[reco::PFBlockElement::HCAL].begin();
   auto hcal_end   = _splayedblock[reco::PFBlockElement::HCAL].end();
-  for( auto secd_kf = seckfs_begin; secd_kf != seckfs_end; ++secd_kf ) {
+  for( auto secd_kf = RO.secondaryKFs.begin(); 
+       secd_kf != RO.secondaryKFs.end(); ++secd_kf ) {
+    bool remove_this_kf = false;
     NotCloserToOther<reco::PFBlockElement::TRACK,reco::PFBlockElement::HCAL>
       tracksToHCALs(_currentblock,_currentlinks,secd_kf->first);
     reco::TrackRef trkRef =   secd_kf->first->trackRef();
@@ -2420,7 +2423,7 @@ unlinkRefinableObjectKFandECALMatchedToHCAL(ProtoEGObject& RO,
 		<< " ECAL ENE " << ecalenergy
 		<< " secPIN " << secpin 
 		<< " Algo Track " << Algo << std::endl;
-	      kfs_to_remove.push_back(*secd_kf);
+	      remove_this_kf = true;
 	    }
 	  } else {
 	    if(isHoHE){
@@ -2433,16 +2436,17 @@ unlinkRefinableObjectKFandECALMatchedToHCAL(ProtoEGObject& RO,
 		<< " ECAL ENE " << ecalenergy
 		<< " secPIN " << secpin 
 		<< " Algo Track " << Algo << std::endl;
-	      kfs_to_remove.push_back(*secd_kf);
+	      remove_this_kf = true;
 	    }
 	  }  
 	}
       }
     }
-  }
-  for( auto& to_remove : kfs_to_remove ) {    
-    std::remove(RO.secondaryKFs.begin(),RO.secondaryKFs.end(),to_remove);
-  }
+    if( remove_this_kf ) {
+      secd_kf = RO.secondaryKFs.erase(secd_kf);
+      if( secd_kf == RO.secondaryKFs.end() ) break;
+    }
+  }  
 }
 
 
