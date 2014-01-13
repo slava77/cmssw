@@ -60,30 +60,6 @@ namespace reco {
 
 
     /// constructor from values  
-    LeafCandidate( Charge q, const PtEtaPhiMass & p4, const Point & vtx = Point( 0, 0, 0 ),
-		   int pdgId = 0, int status = 0, bool integerCharge = true ) :
-      qx3_(integerCharge ? 3*q : q ), pt_( p4.pt() ), eta_( p4.eta() ), phi_( p4.phi() ), mass_( p4.mass() ),
-      vertex_( vtx ), pdgId_( pdgId ), status_( status ),
-      cachePolarFixed_( false ), cacheCartesianFixed_( false ) {}
-   
-    /// constructor from values  
-    LeafCandidate( Charge q, const LorentzVector & p4, const Point & vtx = Point( 0, 0, 0 ),
-		   int pdgId = 0, int status = 0, bool integerCharge = true ) :
-      qx3_( q ), pt_( p4.pt() ), eta_( p4.eta() ), phi_( p4.phi() ), mass_( p4.mass() ),
-      vertex_( vtx ), pdgId_( pdgId ), status_( status ), p4Cartesian_(p4),
-      cachePolarFixed_( false ), cacheCartesianFixed_( true ) {
-      if ( integerCharge ) qx3_ *= 3;
-    }
-    /// constructor from values                                                           
-    LeafCandidate( Charge q, const PolarLorentzVector & p4, const Point & vtx = Point( 0, 0, 0 ),
-		   int pdgId = 0, int status = 0, bool integerCharge = true ) :
-      qx3_( q ), pt_( p4.pt() ), eta_( p4.eta() ), phi_( p4.phi() ), mass_( p4.mass() ),
-      vertex_( vtx ), pdgId_( pdgId ), status_( status ), p4Polar_(p4),
-      cachePolarFixed_( true ), cacheCartesianFixed_( false ){
-      if ( integerCharge ) qx3_ *= 3;
-    }
-    
-    /// constructor from values  
     LeafCandidate( Charge q, const GlobalVector & p3, float iEnergy, bool massless, const Point & vtx = Point( 0, 0, 0 ),
 		   int pdgId = 0, int status = 0, bool integerCharge = true ) :
       qx3_( q ), pt_( p3.perp() ), eta_( p3.eta() ), phi_( p3.phi() ), mass_(massless ? 0. :  dmass(p3,iEnergy) ),
