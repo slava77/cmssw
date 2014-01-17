@@ -16,20 +16,18 @@ import FWCore.ParameterSet.Config as cms
 
 # Collection PFCandidates from a DR=0.8 cone about the jet axis and make new
 # faux jets with this collection
-recoTauAK5PFJets08Region = cms.EDProducer(
-    "RecoTauJetRegionProducer",
-    deltaR = cms.double(0.8),
-    src = cms.InputTag("ak5PFJets"),
-    pfSrc = cms.InputTag("particleFlow"),
-)
-
+from RecoTauTag.RecoTau.RecoTauJetRegionProducer_cfi import \
+             recoTauAK5PFJets08Region
+recoTauAK5PFJets08Region.src = cms.InputTag("ak5PFJets")
 
 
 # Reconstruct the pi zeros in our pre-selected jets.
 from RecoTauTag.RecoTau.RecoTauPiZeroProducer_cfi import \
          ak5PFJetsLegacyHPSPiZeros
 ak5PFJetsLegacyHPSPiZeros.jetSrc = cms.InputTag("ak5PFJets")
-
+# import charged hadrons
+from RecoTauTag.RecoTau.PFRecoTauChargedHadronProducer_cfi import \
+          ak5PFJetsRecoTauChargedHadrons
 
 #-------------------------------------------------------------------------------
 #------------------ Produce combinatoric base taus------------------------------
@@ -91,6 +89,7 @@ recoTauCommonSequence = cms.Sequence(
 # Produce only classic HPS taus
 recoTauClassicHPSSequence = cms.Sequence(
     ak5PFJetsLegacyHPSPiZeros *
+    ak5PFJetsRecoTauChargedHadrons *
     combinatoricRecoTaus *
     produceAndDiscriminateHPSPFTaus
 )
