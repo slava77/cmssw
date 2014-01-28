@@ -5,9 +5,9 @@ patJetPartonsLegacy = cms.EDProducer("PartonSelector",
     src = cms.InputTag("genParticles")
 )
 
-patJetPartonAssociationLegacy = cms.EDProducer("JetPartonMatcher",
-    jets    = cms.InputTag("ak5PFJetsCHS"),
-    partons = cms.InputTag("patJetPartonsLegacy"),
+patJetPartonAssociation = cms.EDProducer("JetPartonMatcher",
+    jets    = cms.InputTag("ak4PFJetsCHS"),
+    partons = cms.InputTag("patJetPartons"),
     coneSizeToAssociate = cms.double(0.3),
 )
 
