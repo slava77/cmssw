@@ -16,7 +16,7 @@ singleTopDQM = cms.EDAnalyzer("SingleTopTChannelLeptonDQM",
     ## [mandatory]
     sources = cms.PSet(
       muons = cms.InputTag("muons"),
-      elecs = cms.InputTag("gedGsfElectrons"),
+      elecs = cms.InputTag("particleFlow"),
       jets  = cms.InputTag("ak4PFJetsCHS"),
       mets  = cms.VInputTag("met", "tcMet", "pfMet"),
       pvs   = cms.InputTag("offlinePrimaryVertices")
@@ -101,12 +101,12 @@ singleTopDQM = cms.EDAnalyzer("SingleTopTChannelLeptonDQM",
 #      select = cms.vstring(['HLT_Mu11', 'HLT_Ele15_LW_L1R', 'HLT_QuadJet30'])
 #    ),
     ## [optional] : when omitted no preselection is applied
-    vertex = cms.PSet(
-      src    = cms.InputTag("offlinePrimaryVertices"),
-      select = cms.string('abs(x)<1. & abs(y)<1. & abs(z)<20. & tracksSize>3 & !isFake')
-    )
-  ),
-  ## ------------------------------------------------------
+#    vertex = cms.PSet(
+#      src    = cms.InputTag("offlinePrimaryVertices"),
+#      select = cms.string('abs(x)<1. & abs(y)<1. & abs(z)<20. & tracksSize>3 & !isFake')
+#    )                                        
+  ),  
+  ## ------------------------------------------------------    
   ## SELECTION
   ##
   ## monitor histrograms are filled after each selection
@@ -257,8 +257,7 @@ singleTopMuonMediumDQM = cms.EDAnalyzer("SingleTopTChannelLeptonDQM",
    cms.PSet(
       label  = cms.string("presel"),
       src    = cms.InputTag("offlinePrimaryVertices"),
-#      select = cms.string('!isFake && ndof >= 4 && abs(z)<24. && position.Rho <= 2.0 '),
-
+      select = cms.string('!isFake && ndof >= 4 && abs(z)<24. && position.Rho <= 2.0 '),
    ),
    cms.PSet(
       label  = cms.string("muons/pf:step0"),

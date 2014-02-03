@@ -273,15 +273,16 @@ double EMFraction(Tau tau) {
   double result = gammaP4.pt()/tau.pt();
 
   if (result > 0.99) {
-    LogDebug("TauDiscFunctions") << "EM fraction = " << result
-      << tau ;
-      LogDebug("TauDiscFunctions") << "charged" ;
+    std::cout << "EM fraction = " << result
+      << tau << std::endl;
+    tau.dump(std::cout);
+    std::cout << "charged" << std::endl;
     BOOST_FOREACH(const reco::PFCandidatePtr cand, tau.signalPFChargedHadrCands()) {
-      LogDebug("TauDiscFunctions") << " pt: " << cand->pt() << " type: " << cand->particleId() <<  " key: " << cand.key() ;
+      std::cout << " pt: " << cand->pt() << " type: " << cand->particleId() <<  " key: " << cand.key() << std::endl;
     }
-    LogDebug("TauDiscFunctions") << "gammas" ;
+    std::cout << "gammas" << std::endl;
     BOOST_FOREACH(const reco::PFCandidatePtr cand, tau.signalPFGammaCands()) {
-      LogDebug("TauDiscFunctions") << " pt: " << cand->pt() << " type: " << cand->particleId() <<  " key: " << cand.key() ;
+      std::cout << " pt: " << cand->pt() << " type: " << cand->particleId() <<  " key: " << cand.key() << std::endl;
     }
   }
   return result;

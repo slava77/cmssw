@@ -171,7 +171,6 @@ int cond::TestGTLoad::execute(){
 
   ConnectionPool connPool;
   if( hasDebug() ) connPool.setMessageVerbosity( coral::Debug );
-  connPool.configure();
   Session session = connPool.createSession( connect );
   session.transaction().start();
   

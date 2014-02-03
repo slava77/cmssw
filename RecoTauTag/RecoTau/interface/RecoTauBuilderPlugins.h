@@ -106,6 +106,7 @@ class RecoTauModifierPlugin : public RecoTauEventHolderPlugin
   virtual ~RecoTauModifierPlugin() {}
   // Modify an existing PFTau (i.e. add electron rejection, etc)
   virtual void operator()(PFTau&) const = 0;
+  virtual void beginJob(edm::EDProducer*) {}
   virtual void beginEvent() {}
   virtual void endEvent() {}
 };

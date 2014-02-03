@@ -88,7 +88,7 @@ class PFRecoTauDiscriminationAgainstMuonMVA : public PFTauDiscriminationProducer
   ~PFRecoTauDiscriminationAgainstMuonMVA()
   {
     delete mvaReader_;
-    delete[] mvaInput_;
+    delete mvaInput_;
     for ( std::vector<TFile*>::iterator it = inputFilesToDelete_.begin();
 	  it != inputFilesToDelete_.end(); ++it ) {
       delete (*it);
@@ -154,9 +154,9 @@ namespace
 double PFRecoTauDiscriminationAgainstMuonMVA::discriminate(const PFTauRef& tau)
 {
   if ( verbosity_ ) {
-    edm::LogPrint("PFTauAgainstMuonMVA") << "<PFRecoTauDiscriminationAgainstMuonMVA::discriminate>:" ;
-    edm::LogPrint("PFTauAgainstMuonMVA") << " moduleLabel = " << moduleLabel_ ;
-    edm::LogPrint("PFTauAgainstMuonMVA") << " mvaMin = " << mvaMin_ ;
+    std::cout << "<PFRecoTauDiscriminationAgainstMuonMVA::discriminate>:" << std::endl;
+    std::cout << " moduleLabel = " << moduleLabel_ << std::endl;
+    std::cout << " mvaMin = " << mvaMin_ << std::endl;
   }
   
   // CV: define dummy category index in order to use RecoTauDiscriminantCutMultiplexer module to appy WP cuts
@@ -217,21 +217,21 @@ double PFRecoTauDiscriminationAgainstMuonMVA::discriminate(const PFTauRef& tau)
 
   double mvaValue = mvaReader_->GetClassifier(mvaInput_);
   if ( verbosity_ ) {
-    edm::LogPrint("PFTauAgainstMuonMVA") << "mvaValue = " << mvaValue ;
+    std::cout << "mvaValue = " << mvaValue << std::endl;
   }
 
   double retVal = -1.;
   if ( returnMVA_ ) {
     retVal = mvaValue;
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauAgainstMuonMVA") << "--> retVal = " << retVal ;
+      std::cout << "--> retVal = " << retVal << std::endl;
     }
   } else {
     retVal = ( mvaValue > mvaMin_ ) ? 1. : 0.;
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauAgainstMuonMVA") << "--> retVal = " << retVal << ": discriminator = ";
-      if ( retVal > 0.5 ) edm::LogPrint("PFTauAgainstMuonMVA") << "PASSED." ;
-      else edm::LogPrint("PFTauAgainstMuonMVA") << "FAILED." ;
+      std::cout << "--> retVal = " << retVal << ": discriminator = ";
+      if ( retVal > 0.5 ) std::cout << "PASSED." << std::endl;
+      else std::cout << "FAILED." << std::endl;
     }
   }
   return retVal;

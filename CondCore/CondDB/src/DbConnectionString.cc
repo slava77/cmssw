@@ -26,22 +26,16 @@ namespace cond {
       return count;
     }
 
-    std::pair<std::string,std::string> getConnectionParams( const std::string& connectionString, 
-							    const std::string& transactionId ){
-      if( connectionString.empty() ) throwException( "The connection string is empty.","getConnectionParams"); 
-      std::string protocol = getConnectionProtocol( connectionString );
-      std::string finalConn = connectionString;
-      std::string refreshConn("");
-      if( protocol == "frontier" ){
-	std::string protocol("frontier://");
-	std::string::size_type fpos=connectionString.find(protocol);
-	unsigned int nslash=countslash(connectionString.substr(protocol.size(),connectionString.size()-fpos));
-	if(nslash==1){
-	  edm::Service<edm::SiteLocalConfig> localconfservice;
-	  if( !localconfservice.isAvailable() ){
-	    throwException("edm::SiteLocalConfigService is not available","getConnectionParams");       
-	  }
-	  finalConn=localconfservice->lookupCalibConnect(connectionString);
+    std::pair<std::string,std::string> makeFrontierConnectionString( const std::string& initialConnection, 
+					      const std::string& transactionId ){
+      std::string realConn = initialConnection;
+      std::string proto("frontier://");
+      std::string::size_type fpos=initialConnection.find(proto);
+      unsigned int nslash=countslash(initialConnection.substr(proto.size(),initialConnection.size()-fpos));
+      if(nslash==1){
+	edm::Service<edm::SiteLocalConfig> localconfservice;
+	if( !localconfservice.isAvailable() ){
+	  throwException("SiteLocalConfigService is not available","cond::makeRealConnectString");       
 	}
 	if (!transactionId.empty()) {
 	  size_t l = finalConn.rfind('/');
@@ -67,7 +61,18 @@ namespace cond {
 	cond::FipProtocolParser parser;
 	finalConn = parser.getRealConnect( connectionString ); 
       }
-      return std::make_pair( finalConn, refreshConn ); 
+      return std::make_pair(realConn,refreshConnect);
+    }
+    
+    std::pair<std::string,std::string> getRealConnectionString( const std::string& initialConnection ){
+      return getRealConnectionString( initialConnection, "" );
+    }
+    
+    std::pair<std::string,std::string> getRealConnectionString( const std::string& initialConnection, 
+								const std::string& transId ){
+      auto connData = parseConnectionString( initialConnection );
+      if( std::get<0>(connData) == "frontier" ) return makeFrontierConnectionString(  initialConnection, transId );    
+      return std::make_pair(initialConnection,"");
     }
 
   }

@@ -110,20 +110,21 @@ namespace cond {
 
     void SessionImpl::startTransaction( bool readOnly ){
       if( !transaction.get() ){ 
-	if ( theBackendType == ORA_DB ) {
-	  cond::DbSession oraSession;
-	  oraSession.open( coralSession, connectionString ); 
-	  oraSession.transaction().start( readOnly );
-	  iovSchemaHandle.reset( new OraIOVSchema( oraSession ) );
-	  gtSchemaHandle.reset( new OraGTSchema( oraSession ) );  		       
-	  transaction.reset( new OraTransaction( oraSession ) );
-	} else if ( theBackendType == COND_DB ){
-	  coralSession->transaction().start( readOnly );
-	  iovSchemaHandle.reset( new IOVSchema( coralSession->nominalSchema() ) );
-	  gtSchemaHandle.reset( new GTSchema( coralSession->nominalSchema() ) );
-	  transaction.reset( new CondDBTransaction( coralSession ) );
-	} else {
-	  throwException( "No valid database found.", "SessionImpl::startTransaction" );
+	cond::DbConnection oraConnection;
+	cond::DbSession oraSession =  oraConnection.createSession();
+	oraSession.open( coralSession, connectionString ); 
+	transaction.reset( new OraTransaction( oraSession ) );
+	oraSession.transaction().start( readOnly );
+	iovSchemaHandle.reset( new OraIOVSchema( oraSession ) );
+	gtSchemaHandle.reset( new OraGTSchema( oraSession ) );  		       
+	if( !iovSchemaHandle->exists() && !gtSchemaHandle->exists() ){
+	  std::unique_ptr<IIOVSchema> iovSchema( new IOVSchema( coralSession->nominalSchema() ) );
+	  std::unique_ptr<IGTSchema> gtSchema( new GTSchema( coralSession->nominalSchema() ) );
+	  if( iovSchema->exists() ){
+	    iovSchemaHandle = std::move(iovSchema);
+	    gtSchemaHandle = std::move(gtSchema);
+	    transaction.reset( new CondDBTransaction( coralSession ) );
+	  }
 	}
       } else {
 	if(!readOnly ) throwException( "An update transaction is already active.",
