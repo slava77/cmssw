@@ -53,7 +53,6 @@ protected:
   double trimPtFracMin_;      /// for trimming: constituent minimum pt fraction of full jet
   double zCut_;               /// for pruning: constituent minimum pt fraction of parent cluster
   double RcutFactor_;         /// for pruning: constituent dR * pt/2m < rcut_factor
-
   double subjetPtMin_;        /// for CMSBoostedTauSeedingAlgorithm : subjet pt min
   double muMin_;              /// for CMSBoostedTauSeedingAlgorithm : min mass-drop
   double muMax_;              /// for CMSBoostedTauSeedingAlgorithm : max mass-drop
@@ -62,10 +61,6 @@ protected:
   double dRMin_;              /// for CMSBoostedTauSeedingAlgorithm : min dR
   double dRMax_;              /// for CMSBoostedTauSeedingAlgorithm : max dR
   int    maxDepth_;           /// for CMSBoostedTauSeedingAlgorithm : max depth for descending into clustering sequence
-
-
-  // tokens for the data access
-  edm::EDGetTokenT<edm::View<reco::RecoChargedRefCandidate> > input_chrefcand_token_;
     
 };
 

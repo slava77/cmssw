@@ -242,8 +242,10 @@ void PFTau3ProngReco::produce(edm::Event& iEvent,const edm::EventSetup& iSetup){
 	  }
 	  for(unsigned int i=0; i<PFTau3ProngSummary::nsolutions;i++){
 	    TauA1NuConstrainedFitter TauA1NU(i,a1,pv,pvcov);
+	    TauA1NU.setMaxDelta(0.01);
+	    TauA1NU.setNIterMax(1000);
 	    bool isFitOK=TauA1NU.fit();
-	    if(isFitOK){
+	    if(TauA1NU.isConverged()){
 	      LorentzVectorParticle theTau=TauA1NU.getMother();
 	      std::vector<LorentzVectorParticle> daughter=TauA1NU.getRefitDaughters();
 	      std::vector<TLorentzVector> daughter_p4;
@@ -253,7 +255,7 @@ void PFTau3ProngReco::produce(edm::Event& iEvent,const edm::EventSetup& iSetup){
 		daughter_charge.push_back((int)daughter[d].charge());
 		daughter_PDGID.push_back(daughter[d].pdgId());
 	      }
-	      PFTau3PS.AddSolution(i,theTau.p4(),daughter_p4,daughter_charge,daughter_PDGID,(isFitOK),0.0,-999);
+	      PFTau3PS.AddSolution(i,theTau.p4(),daughter_p4,daughter_charge,daughter_PDGID,(isFitOK&&TauA1NU.isConverged()),TauA1NU.chiSquare(),-999);
 	    }
 	  }
 	}

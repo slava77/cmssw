@@ -81,9 +81,7 @@ RecoTauBuilderConePlugin::RecoTauBuilderConePlugin(
     signalConeNeutralHadrons_(
         pset.getParameter<std::string>("signalConeNeutralHadrons")),
     isoConeNeutralHadrons_(
-        pset.getParameter<std::string>("isoConeNeutralHadrons")), 
-    maxSignalConeChargedHadrons_(
-        pset.getParameter<int>("maxSignalConeChargedHadrons")) 				 
+        pset.getParameter<std::string>("isoConeNeutralHadrons")) 
 {}
 
 namespace xclean 
@@ -279,28 +277,12 @@ RecoTauBuilderConePlugin::return_type RecoTauBuilderConePlugin::operator()(
 
   // Cross clean pi zero content using signal cone charged hadron constituents.
   xclean::CrossCleanPiZeros<PFCandPtrDRFilterIter> piZeroXCleaner(
-      signalPFCHCands_begin, signalPFCHCands_end);
+      signalPFCHs_begin, signalPFCHs_end);
   std::vector<reco::RecoTauPiZero> cleanPiZeros = piZeroXCleaner(piZeros);
 
   // For the rest of the constituents, we need to filter any constituents that
   // are already contained in the pizeros (i.e. electrons)
   xclean::CrossCleanPtrs<PiZeroList::const_iterator> pfCandXCleaner(cleanPiZeros.begin(), cleanPiZeros.end());
-
-  auto isolationPFCHCands_begin(
-      boost::make_filter_iterator(
-        xclean::makePredicateAND(isoConePFCHFilter, pfCandXCleaner),
-	pfchs.begin(), pfchs.end()));
-  auto isolationPFCHCands_end(
-      boost::make_filter_iterator(
-	xclean::makePredicateAND(isoConePFCHFilter, pfCandXCleaner),
-	pfchs.end(), pfchs.end()));
-  for ( auto iter = isolationPFCHCands_begin; iter != isolationPFCHCands_end; ++iter ) {
-    //std::cout << "adding isolationPFCH #" << numIsolationPFCHs << ": Pt = " << (*iter)->pt() << ", eta = " << (*iter)->eta() << ", phi = " << (*iter)->phi() << std::endl;
-    isolationPFCHs.push_back(*iter);
-    ++numIsolationPFCHs;
-  }
-  PFCandPtrs::const_iterator isolationPFCHs_begin = isolationPFCHs.begin();
-  PFCandPtrs::const_iterator isolationPFCHs_end = isolationPFCHs.end();
 
   // Build signal charged hadrons
   tau.addPFCands(RecoTauConstructor::kSignal,

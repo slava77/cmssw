@@ -119,15 +119,15 @@ double
 PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau) 
 {
   if ( verbosity_ ) {
-    edm::LogPrint("PFTauByHPSSelect") << "<PFRecoTauDiscriminationByHPSSelection::discriminate>:" ;
-    edm::LogPrint("PFTauByHPSSelect") << " nCharged = " << tau->signalTauChargedHadronCandidates().size() ;
-    edm::LogPrint("PFTauByHPSSelect") << " nPiZeros = " << tau->signalPiZeroCandidates().size() ;
+    std::cout << "<PFRecoTauDiscriminationByHPSSelection::discriminate>:" << std::endl;
+    std::cout << " nCharged = " << tau->signalTauChargedHadronCandidates().size() << std::endl;
+    std::cout << " nPiZeros = " << tau->signalPiZeroCandidates().size() << std::endl;
   }
 
   // Check if we pass the min pt
   if ( tau->pt() < minPt_ ) {
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << " fails minPt cut." ;
+      std::cout << " fails minPt cut." << std::endl;
     }
     return 0.0;
   }
@@ -139,7 +139,7 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
   // Check if decay mode is supported
   if ( massWindowIter == decayModeCuts_.end() ) {
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << " fails mass-window definition requirement." ;
+      std::cout << " fails mass-window definition requirement." << std::endl;
     }
     return 0.0;
   }
@@ -155,11 +155,11 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
       }
     }
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << "nTracks = " << nTracks << " (min = " << massWindow.nTracksMin_ << ")" ;
+      std::cout << "nTracks = " << nTracks << " (min = " << massWindow.nTracksMin_ << ")" << std::endl;
     }
     if ( nTracks < massWindow.nTracksMin_ ) {
       if ( verbosity_ ) {
-	edm::LogPrint("PFTauByHPSSelect") << " fails nTracks requirement for mass-window." ;
+	std::cout << " fails nTracks requirement for mass-window." << std::endl;
       }
       return 0.0;
     }
@@ -174,11 +174,11 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
       }
     }
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << "nChargedPFCands = " << nChargedPFCands << " (min = " << massWindow.nChargedPFCandsMin_ << ")" ;
+      std::cout << "nChargedPFCands = " << nChargedPFCands << " (min = " << massWindow.nChargedPFCandsMin_ << ")" << std::endl;
     }
     if ( nChargedPFCands < massWindow.nChargedPFCandsMin_ ) {
       if ( verbosity_ ) {
-	edm::LogPrint("PFTauByHPSSelect") << " fails nChargedPFCands requirement for mass-window." ;
+	std::cout << " fails nChargedPFCands requirement for mass-window." << std::endl;
       }
       return 0.0;
     }
@@ -186,7 +186,7 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
 
   math::XYZTLorentzVector tauP4 = tau->p4();
   if ( verbosity_ ) {
-    edm::LogPrint("PFTauByHPSSelect") << "tau: Pt = " << tauP4.pt() << ", eta = " << tauP4.eta() << ", phi = " << tauP4.phi() << ", mass = " << tauP4.mass() ;
+    std::cout << "tau: Pt = " << tauP4.pt() << ", eta = " << tauP4.eta() << ", phi = " << tauP4.phi() << ", mass = " << tauP4.mass() << std::endl;
   }
   // Find the total pizero p4
   reco::Candidate::LorentzVector stripsP4;
@@ -209,14 +209,14 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
     }
   }
   if ( verbosity_ ) {
-    edm::LogPrint("PFTauByHPSSelect") << "strips: Pt = " << stripsP4.pt() << ", eta = " << stripsP4.eta() << ", phi = " << stripsP4.phi() << ", mass = " << stripsP4.mass() ;
+    std::cout << "strips: Pt = " << stripsP4.pt() << ", eta = " << stripsP4.eta() << ", phi = " << stripsP4.phi() << ", mass = " << stripsP4.mass() << std::endl;
   }
 
   // Check if tau fails mass cut
   double maxMass_value = (*massWindow.maxMass_)(*tau);
   if ( tauP4.M() > maxMass_value || tauP4.M() < massWindow.minMass_ ) {
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << " fails tau mass-window cut." ;
+      std::cout << " fails tau mass-window cut." << std::endl;
     }
     return 0.0;
   }
@@ -225,16 +225,16 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
   if ( stripsP4.M() > massWindow.maxPi0Mass_ ||
        stripsP4.M() < massWindow.minPi0Mass_ ) {
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << " fails strip mass-window cut." ;
+      std::cout << " fails strip mass-window cut." << std::endl;
     }
     return 0.0;
   }
 
   // Check if tau passes matching cone cut
-  //edm::LogPrint("PFTauByHPSSelect") << "dR(tau, jet) = " << deltaR(tauP4, tau->jetRef()->p4()) ;
+  //std::cout << "dR(tau, jet) = " << deltaR(tauP4, tau->jetRef()->p4()) << std::endl;
   if ( deltaR(tauP4, tau->jetRef()->p4()) > matchingCone_ ) {
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << " fails matching-cone cut." ;
+      std::cout << " fails matching-cone cut." << std::endl;
     }
     return 0.0;
   }
@@ -244,11 +244,11 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
   // Check if any charged objects fail the signal cone cut
   BOOST_FOREACH(const reco::PFRecoTauChargedHadron& cand, tau->signalTauChargedHadronCandidates()) {
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << "dR(tau, signalPFChargedHadr) = " << deltaR(cand.p4(), tauP4) ;
+      std::cout << "dR(tau, signalPFChargedHadr) = " << deltaR(cand.p4(), tauP4) << std::endl;
     }
     if ( deltaR(cand.p4(), tauP4) > cone_size ) {
       if ( verbosity_ ) {
-	edm::LogPrint("PFTauByHPSSelect") << " fails signal-cone cut for charged hadron(s)." ;
+	std::cout << " fails signal-cone cut for charged hadron(s)." << std::endl;
       }
       return 0.0;
     }
@@ -256,11 +256,11 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
   // Now check the pizeros
   BOOST_FOREACH(const reco::RecoTauPiZero& cand, tau->signalPiZeroCandidates()) {
     if ( verbosity_ ) {
-      edm::LogPrint("PFTauByHPSSelect") << "dR(tau, signalPiZero) = " << deltaR(cand.p4(), tauP4) ;
+      std::cout << "dR(tau, signalPiZero) = " << deltaR(cand.p4(), tauP4) << std::endl;
     }
     if ( deltaR(cand.p4(), tauP4) > cone_size ) {
       if ( verbosity_ ) {
-	edm::LogPrint("PFTauByHPSSelect") << " fails signal-cone cut for strip(s)." ;
+	std::cout << " fails signal-cone cut for strip(s)." << std::endl;
       }
       return 0.0;
     }
@@ -274,11 +274,11 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
 	else if ( cand.algo() == reco::PFRecoTauChargedHadron::kTrack              ) algo_string = "Track";
 	else if ( cand.algo() == reco::PFRecoTauChargedHadron::kPFNeutralHadron    ) algo_string = "PFNeutralHadron";
 	else                                                                         algo_string = "Undefined";
-	edm::LogPrint("PFTauByHPSSelect") << "algo(signalPFChargedHadr) = " << algo_string ;
+	std::cout << "algo(signalPFChargedHadr) = " << algo_string << std::endl;
       }
       if ( !(cand.algo() == reco::PFRecoTauChargedHadron::kChargedPFCandidate) ) {
 	if ( verbosity_ ) {
-	  edm::LogPrint("PFTauByHPSSelect") << " fails cut on PFRecoTauChargedHadron algo." ;
+	  std::cout << " fails cut on PFRecoTauChargedHadron algo." << std::endl;
 	}
 	return 0.0;
       }
@@ -287,7 +287,7 @@ PFRecoTauDiscriminationByHPSSelection::discriminate(const reco::PFTauRef& tau)
 
   // Otherwise, we pass!
   if ( verbosity_ ) {
-    edm::LogPrint("PFTauByHPSSelect") << " passes all cuts." ;
+    std::cout << " passes all cuts." << std::endl;
   }
   return 1.0;
 }

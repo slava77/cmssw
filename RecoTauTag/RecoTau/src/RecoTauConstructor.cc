@@ -48,12 +48,13 @@ RecoTauConstructor::RecoTauConstructor(const PFJetRef& jet, const edm::Handle<PF
 }
 
 void RecoTauConstructor::addPFCand(Region region, ParticleType type, const PFCandidateRef& ref, bool skipAddToP4) {
-  LogDebug("TauConstructorAddPFCand") << " region = " << region << ", type = " << type << ": Pt = " << ref->pt() << ", eta = " << ref->eta() << ", phi = " << ref->phi();
+  //std::cout << "<RecoTauConstructor::addPFCand>:" << std::endl;
+  //std::cout << " region = " << region << ", type = " << type << ": Pt = " << ref->pt() << ", eta = " << ref->eta() << ", phi = " << ref->phi() << std::endl;
   if ( region == kSignal ) {
     // Keep track of the four vector of the signal vector products added so far.
     // If a photon add it if we are not using PiZeros to build the gammas
     if ( ((type != kGamma) || !copyGammas_) && !skipAddToP4 ) {
-      LogDebug("TauConstructorAddPFCand") << "--> adding PFCand to tauP4." ;
+      //std::cout << "--> adding PFCand to tauP4." << std::endl;
       p4_ += ref->p4();
     }
   }
@@ -63,12 +64,13 @@ void RecoTauConstructor::addPFCand(Region region, ParticleType type, const PFCan
 }
 
 void RecoTauConstructor::addPFCand(Region region, ParticleType type, const PFCandidatePtr& ptr, bool skipAddToP4) {
-  LogDebug("TauConstructorAddPFCand") << " region = " << region << ", type = " << type << ": Pt = " << ptr->pt() << ", eta = " << ptr->eta() << ", phi = " << ptr->phi();
+  //std::cout << "<RecoTauConstructor::addPFCand>:" << std::endl;
+  //std::cout << " region = " << region << ", type = " << type << ": Pt = " << ptr->pt() << ", eta = " << ptr->eta() << ", phi = " << ptr->phi() << std::endl;
   if ( region == kSignal ) {
     // Keep track of the four vector of the signal vector products added so far.
     // If a photon add it if we are not using PiZeros to build the gammas
     if ( ((type != kGamma) || !copyGammas_) && !skipAddToP4 ) {
-      LogDebug("TauConstructorAddPFCand") << "--> adding PFCand to tauP4." ;
+      //std::cout << "--> adding PFCand to tauP4." << std::endl;
       p4_ += ptr->p4();
     }
   }
@@ -102,23 +104,25 @@ namespace
 {
   void checkOverlap(const PFCandidatePtr& neutral, const std::vector<PFCandidatePtr>& pfGammas, bool& isUnique)
   {
-    LogDebug("TauConstructorCheckOverlap") << " pfGammas: #entries = " << pfGammas.size();
+    //std::cout << "checkOverlap (PFGamma)>:" << std::endl;
+    //std::cout << " pfGammas: #entries = " << pfGammas.size() << std::endl;
     for ( std::vector<PFCandidatePtr>::const_iterator pfGamma = pfGammas.begin();
 	  pfGamma != pfGammas.end(); ++pfGamma ) {
-      LogDebug("TauConstructorCheckOverlap") << "pfGamma = " << pfGamma->id() << ":" << pfGamma->key();
+      //std::cout << "pfGamma = " << pfGamma->id() << ":" << pfGamma->key() << std::endl;
       if ( (*pfGamma) == neutral ) isUnique = false;
     }
   }
 
   void checkOverlap(const PFCandidatePtr& neutral, const std::vector<reco::RecoTauPiZero>& piZeros, bool& isUnique)
   {
-    LogDebug("TauConstructorCheckOverlap") << " piZeros: #entries = " << piZeros.size();
+    //std::cout << "checkOverlap (RecoTauPiZero)>:" << std::endl;
+    //std::cout << " piZeros: #entries = " << piZeros.size() << std::endl;
     for ( std::vector<reco::RecoTauPiZero>::const_iterator piZero = piZeros.begin();
 	  piZero != piZeros.end(); ++piZero ) {
       size_t numPFGammas = piZero->numberOfDaughters();
       for ( size_t iPFGamma = 0; iPFGamma < numPFGammas; ++iPFGamma ) {
 	reco::CandidatePtr pfGamma = piZero->daughterPtr(iPFGamma);
-	LogDebug("TauConstructorCheckOverlap") << "pfGamma = " << pfGamma.id() << ":" << pfGamma.key();
+	//std::cout << "pfGamma = " << pfGamma.id() << ":" << pfGamma.key() << std::endl;
 	if ( pfGamma.id() == neutral.id() && pfGamma.key() == neutral.key() ) isUnique = false;
       }
     }
@@ -127,13 +131,14 @@ namespace
 
 void RecoTauConstructor::addTauChargedHadron(Region region, const PFRecoTauChargedHadron& chargedHadron) 
 {
-  LogDebug("TauConstructorAddChH") << " region = " << region << ": Pt = " << chargedHadron.pt() << ", eta = " << chargedHadron.eta() << ", phi = " << chargedHadron.phi();
+  //std::cout << "<RecoTauConstructor::addTauChargedHadron>:" << std::endl;
+  //std::cout << " region = " << region << ": Pt = " << chargedHadron.pt() << ", eta = " << chargedHadron.eta() << ", phi = " << chargedHadron.phi() << std::endl;
   // CV: need to make sure that PFGammas merged with ChargedHadrons are not part of PiZeros
   const std::vector<PFCandidatePtr>& neutrals = chargedHadron.getNeutralPFCandidates();
   std::vector<PFCandidatePtr> neutrals_cleaned;
   for ( std::vector<PFCandidatePtr>::const_iterator neutral = neutrals.begin();
 	neutral != neutrals.end(); ++neutral ) {
-    LogDebug("TauConstructorAddChH") << "neutral = " << neutral->id() << ":" << neutral->key();
+    //std::cout << "neutral = " << neutral->id() << ":" << neutral->key() << std::endl;
     bool isUnique = true;
     if ( copyGammas_ ) checkOverlap(*neutral, *getSortedCollection(kSignal, kGamma), isUnique);
     else checkOverlap(*neutral, tau_->signalPiZeroCandidates_, isUnique);
@@ -141,7 +146,7 @@ void RecoTauConstructor::addTauChargedHadron(Region region, const PFRecoTauCharg
       if ( copyGammas_ ) checkOverlap(*neutral, *getSortedCollection(kIsolation, kGamma), isUnique);
       else checkOverlap(*neutral, tau_->isolationPiZeroCandidates_, isUnique);      
     }
-    LogDebug("TauConstructorAddChH") << "--> isUnique = " << isUnique;
+    //std::cout << "--> isUnique = " << isUnique << std::endl;
     if ( isUnique ) neutrals_cleaned.push_back(*neutral);
   }
   PFRecoTauChargedHadron chargedHadron_cleaned = chargedHadron;
@@ -191,7 +196,8 @@ void RecoTauConstructor::reservePiZero(Region region, size_t size)
 
 void RecoTauConstructor::addPiZero(Region region, const RecoTauPiZero& piZero) 
 {
-  LogDebug("TauConstructorAddPi0") << " region = " << region << ": Pt = " << piZero.pt() << ", eta = " << piZero.eta() << ", phi = " << piZero.phi();
+  //std::cout << "<RecoTauConstructor::addPiZero>:" << std::endl;
+  //std::cout << " region = " << region << ": Pt = " << piZero.pt() << ", eta = " << piZero.eta() << ", phi = " << piZero.phi() << std::endl;
   if ( region == kSignal ) {
     tau_->signalPiZeroCandidates_.push_back(piZero);
     // Copy the daughter gammas into the gamma collection if desired
@@ -298,7 +304,7 @@ void RecoTauConstructor::sortAndCopyIntoTau() {
 
 std::auto_ptr<reco::PFTau> RecoTauConstructor::get(bool setupLeadingObjects) 
 {
-  LogDebug("TauConstructorGet") << "Start getting" ;
+  //std::cout << "<RecoTauConstructor::get>:" << std::endl;
 
   // Copy the sorted collections into the interal tau refvectors
   sortAndCopyIntoTau();
@@ -340,7 +346,7 @@ std::auto_ptr<reco::PFTau> RecoTauConstructor::get(bool setupLeadingObjects)
 //        getCollection(kSignal, kAll)->end()
 //        )
 //      );
-  LogDebug("TauConstructorGet") << "Pt = " << tau_->pt() << ", eta = " << tau_->eta() << ", phi = " << tau_->phi() << ", mass = " << tau_->mass() ;
+  //std::cout << "Pt = " << tau_->pt() << ", eta = " << tau_->eta() << ", phi = " << tau_->phi() << ", mass = " << tau_->mass() << std::endl;
 
   // Set charged isolation quantities
   tau_->setisolationPFChargedHadrCandsPtSum(

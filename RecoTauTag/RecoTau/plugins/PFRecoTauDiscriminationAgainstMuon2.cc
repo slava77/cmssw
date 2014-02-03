@@ -49,15 +49,7 @@ class PFRecoTauDiscriminationAgainstMuon2 : public PFTauDiscriminationProducerBa
       Muons_token = consumes<reco::MuonCollection>(srcMuons_);
       dRmuonMatch_ = cfg.getParameter<double>("dRmuonMatch");
       dRmuonMatchLimitedToJetArea_ = cfg.getParameter<bool>("dRmuonMatchLimitedToJetArea");
-      minPtMatchedMuon_ = cfg.getParameter<double>("minPtMatchedMuon");
     }
-    typedef std::vector<int> vint;
-    maskMatchesDT_  = cfg.getParameter<vint>("maskMatchesDT");
-    maskMatchesCSC_ = cfg.getParameter<vint>("maskMatchesCSC");
-    maskMatchesRPC_ = cfg.getParameter<vint>("maskMatchesRPC");
-    maskHitsDT_     = cfg.getParameter<vint>("maskHitsDT");
-    maskHitsCSC_    = cfg.getParameter<vint>("maskHitsCSC");
-    maskHitsRPC_    = cfg.getParameter<vint>("maskHitsRPC");
     numWarnings_ = 0;
     maxWarnings_ = 3;
     verbosity_ = cfg.exists("verbosity") ? cfg.getParameter<int>("verbosity") : 0;
@@ -80,13 +72,6 @@ class PFRecoTauDiscriminationAgainstMuon2 : public PFTauDiscriminationProducerBa
   edm::EDGetTokenT<reco::MuonCollection> Muons_token;
   double dRmuonMatch_;
   bool dRmuonMatchLimitedToJetArea_;
-  double minPtMatchedMuon_;
-  std::vector<int> maskMatchesDT_;
-  std::vector<int> maskMatchesCSC_;
-  std::vector<int> maskMatchesRPC_;
-  std::vector<int> maskHitsDT_;
-  std::vector<int> maskHitsCSC_;
-  std::vector<int> maskHitsRPC_;
   mutable int numWarnings_;
   int maxWarnings_;
   int verbosity_;
@@ -205,15 +190,15 @@ double PFRecoTauDiscriminationAgainstMuon2::discriminate(const reco::PFTauRef& p
 	} else {
 	  if ( numWarnings_ < maxWarnings_ ) {
 	    edm::LogWarning("PFRecoTauDiscriminationAgainstMuon2::discriminate") 
-	      << "Jet associated to Tau: Pt = " << pfTau->pt() << ", eta = " << pfTau->eta() << ", phi = " << pfTau->phi() << " has area = " << jetArea << " !!" ;
+	      << "Jet associated to Tau: Pt = " << pfTau->pt() << ", eta = " << pfTau->eta() << ", phi = " << pfTau->phi() << " has area = " << jetArea << " !!" << std::endl;
 	    ++numWarnings_;
 	  }
 	  dRmatch = 0.1;
 	}
       }
       if ( dR < dRmatch ) {
-	if ( verbosity_ ) edm::LogPrint("PFTauAgainstMuon2") << " overlaps with tau, dR = " << dR ;
-	countMatches(*muon, numMatchesDT, numMatchesCSC, numMatchesRPC);
+	if ( verbosity_ ) std::cout << " overlaps with tau, dR = " << dR << std::endl;
+	numMatches += muon->numberOfMatches(reco::Muon::NoArbitration);
 	countHits(*muon, numHitsDT, numHitsCSC, numHitsRPC);
       }
     }

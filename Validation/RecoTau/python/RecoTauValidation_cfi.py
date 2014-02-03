@@ -175,14 +175,7 @@ proc.RunHPSValidation.discriminators = cms.VPSet(
    cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByLooseMuonRejection"),selectionCut = cms.double(0.5),plotStep = cms.bool(True)),
    cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByMediumMuonRejection"),selectionCut = cms.double(0.5),plotStep = cms.bool(True)),
    cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByTightMuonRejection"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByLooseMuonRejection2"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByMediumMuonRejection2"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByTightMuonRejection2"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByLooseMuonRejection3"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByTightMuonRejection3"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByMVALooseMuonRejection"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByMVAMediumMuonRejection"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
-   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByMVATightMuonRejection"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)), 
+#   cms.PSet( discriminator = cms.string("hpsPFTauDiscriminationByMVAElectronRejection"),selectionCut = cms.double(0.5),plotStep = cms.bool(False)),
 )
 
 proc.TauValNumeratorAndDenominator = cms.Sequence(

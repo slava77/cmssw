@@ -148,3 +148,56 @@ void GEDPhotonCoreProducer::produce(edm::Event &theEvent, const edm::EventSetup&
 
   
 } 
+
+
+void GEDPhotonCoreProducer::createSingleLegConversions(reco::CaloClusterPtr sc,  const std::vector<reco::TrackRef>&  conv, const std::vector<float>& mva,  reco::ConversionCollection &oneLegConversions) {
+  // this method translates the single track into the Conversion Data Format
+
+  math::Error<3>::type error;
+  for (unsigned int itk=0; itk<conv.size(); itk++){
+    const reco::Vertex convVtx(conv[itk]->innerPosition(), error);
+    std::vector<reco::TrackRef> OneLegConvVector;
+    OneLegConvVector.push_back(conv[itk]);
+    std::vector< float > OneLegMvaVector;
+    OneLegMvaVector.push_back(mva[itk]);
+    std::vector<reco::CaloClusterPtr> dummymatchingBC;
+    reco::CaloClusterPtrVector scPtrVec;
+    scPtrVec.push_back(sc);
+
+
+    std::vector<math::XYZPointF>trackPositionAtEcalVec;
+    std::vector<math::XYZPointF>innPointVec;
+    std::vector<math::XYZVectorF>trackPinVec;
+    std::vector<math::XYZVectorF>trackPoutVec;
+    math::XYZPointF trackPositionAtEcal(conv[itk]->outerPosition().X(), conv[itk]->outerPosition().Y(), conv[itk]->outerPosition().Z());
+    trackPositionAtEcalVec.push_back(trackPositionAtEcal);
+
+    math::XYZPointF innPoint(conv[itk]->innerPosition().X(), conv[itk]->innerPosition().Y(), conv[itk]->innerPosition().Z());
+    innPointVec.push_back(innPoint);
+
+    math::XYZVectorF trackPin(conv[itk]->innerMomentum().X(), conv[itk]->innerMomentum().Y(), conv[itk]->innerMomentum().Z());
+    trackPinVec.push_back(trackPin);
+
+    math::XYZVectorF trackPout(conv[itk]->outerMomentum().X(), conv[itk]->outerMomentum().Y(), conv[itk]->outerMomentum().Z());
+    trackPoutVec.push_back( trackPout );
+
+    float DCA = conv[itk]->d0() ;
+    reco::Conversion singleLegConvCandidate(scPtrVec, 
+					OneLegConvVector,
+					trackPositionAtEcalVec,
+					convVtx,
+					dummymatchingBC,
+					DCA,
+					innPointVec,
+					trackPinVec,
+					trackPoutVec,
+					mva[itk],			  
+					reco::Conversion::pflow);
+    singleLegConvCandidate.setOneLegMVA(OneLegMvaVector); 
+    oneLegConversions.push_back(singleLegConvCandidate);
+
+  } 
+
+
+
+}

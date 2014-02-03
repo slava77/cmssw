@@ -28,6 +28,7 @@ const double protonMass = 0.938272;
 
 bool GenMuonRadiationAlgorithm::photos_isInitialized_ = false;
 bool GenMuonRadiationAlgorithm::pythia_isInitialized_ = false;
+CLHEP::HepRandomEngine* GenMuonRadiationAlgorithm::decayRandomEngine = nullptr;
 
 class myPythia6ServiceWithCallback : public gen::Pythia6Service 
 {
@@ -176,6 +177,7 @@ GenMuonRadiationAlgorithm::GenMuonRadiationAlgorithm(const edm::ParameterSet& cf
     photos_ =  (gen::PhotosInterfaceBase*)(PhotosFactory::get()->create("Photos2155", cfg.getParameter<edm::ParameterSet>("PhotosOptions")));
     //settings?
     //usesResource(edm::SharedResourceNames::kPhotos);
+    //you must call photos_->setRandomEngine(decayRandomEngine); every event to properly pass the random number with the multi-threading will add below by Rnd-gen
   }
 
   verbosity_ = ( cfg.exists("verbosity") ) ? 

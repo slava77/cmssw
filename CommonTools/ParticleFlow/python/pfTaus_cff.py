@@ -35,6 +35,7 @@ pfJetsLegacyHPSPiZeros.jetSrc = cms.InputTag("ak4PFJets")
 
 pfTauPFJets08Region = recoTauAK5PFJets08Region.clone()
 pfTauPFJets08Region.src = cms.InputTag("ak4PFJets")
+pfTauPFJetsRecoTauChargedHadrons = ak4PFJetsRecoTauChargedHadrons.clone()
 pfTauPFJets08Region.pfSrc = cms.InputTag("particleFlow")
 pfTauPFJetsRecoTauChargedHadrons.jetRegionSrc = 'pfTauPFJets08Region'
 
@@ -150,6 +151,7 @@ pfTauSequence = cms.Sequence(
     pfTausBaseSequence +
     pfTaus +
     pfTausPtrs
-    )
+ )
+
 
 
