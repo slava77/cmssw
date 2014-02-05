@@ -1,14 +1,12 @@
 #include "GeneratorInterface/ExternalDecays/interface/ExternalDecayDriver.h"
 
+#include "GeneratorInterface/Core/interface/FortranInstance.h"
 #include "GeneratorInterface/EvtGenInterface/interface/EvtGenFactory.h"
 #include "GeneratorInterface/EvtGenInterface/interface/EvtGenInterfaceBase.h"
 #include "GeneratorInterface/TauolaInterface/interface/TauolaFactory.h"
 #include "GeneratorInterface/TauolaInterface/interface/TauolaInterfaceBase.h"
 #include "GeneratorInterface/PhotosInterface/interface/PhotosFactory.h"
 #include "GeneratorInterface/PhotosInterface/interface/PhotosInterfaceBase.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
-#include "FWCore/Utilities/interface/Exception.h"
 #include "HepMC/GenEvent.h"
 #include "FWCore/Concurrency/interface/SharedResourceNames.h"
 
