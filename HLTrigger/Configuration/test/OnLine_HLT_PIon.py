@@ -1,11 +1,11 @@
-# /dev/CMSSW_7_0_0/PIon/V37 (CMSSW_7_0_0_pre12)
+# /dev/CMSSW_7_0_0/PIon/V36 (CMSSW_7_0_0_pre11_HLT4)
 
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "HLTPIon" )
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string('/dev/CMSSW_7_0_0/PIon/V37')
+  tableName = cms.string('/dev/CMSSW_7_0_0/PIon/V36')
 )
 
 process.HLTIter4PSetTrajectoryFilterIT = cms.PSet( 
@@ -3532,7 +3532,7 @@ process.PrescaleService = cms.Service( "PrescaleService",
         prescales = cms.vuint32( 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 1, 1, 1, 32, 1 )
       )
     ),
-    lvl1DefaultLabel = cms.string( "7e33" ),
+    lvl1DefaultLabel = cms.string( "3e33" ),
     lvl1Labels = cms.vstring( '9e33nopark',
       'HalfRate',
       '8e33nopark',
@@ -4359,7 +4359,6 @@ process.hltL2MuonSeeds = cms.EDProducer( "L2MuonSeedGenerator",
     L1MinPt = cms.double( 0.0 ),
     L1MinQuality = cms.uint32( 1 ),
     GMTReadoutCollection = cms.InputTag( "hltGtDigis" ),
-    UseUnassociatedL1 = cms.bool( True ),
     UseOfflineSeed = cms.untracked.bool( True ),
     Propagator = cms.string( "SteppingHelixPropagatorAny" )
 )
@@ -4448,8 +4447,7 @@ process.hltL2Muons = cms.EDProducer( "L2MuonProducer",
         BeamSpotPositionErrors = cms.vdouble( 0.1, 0.1, 5.3 )
       ),
       VertexConstraint = cms.bool( True )
-    ),
-    MuonTrajectoryBuilder = cms.string( "StandAloneMuonTrajectoryBuilder" )
+    )
 )
 process.hltL2MuonCandidates = cms.EDProducer( "L2MuonCandidateProducer",
     InputObjects = cms.InputTag( 'hltL2Muons','UpdatedAtVtx' )
@@ -10270,14 +10268,12 @@ process.hltParticleFlowBlock = cms.EDProducer( "PFBlockProducer",
     useNuclear = cms.bool( False ),
     useSuperClusters = cms.bool( False ),
     PFNuclear = cms.InputTag( "" ),
-    SCBarrel = cms.InputTag( "correctedHybridSuperClusters" ),
     PFV0 = cms.InputTag( "" ),
-    SuperClusterMatchByRef = cms.bool( False ),
     useHO = cms.bool( False ),
     PhotonSelectionCuts = cms.vdouble(  ),
     PFClustersHFEM = cms.InputTag( "hltParticleFlowClusterHFEM" ),
     debug = cms.untracked.bool( False ),
-    PFClusterAssociationEBEE = cms.InputTag( 'particleFlowSuperClusterECAL','PFClusterAssociationEBEE' ),
+    SCBarrel = cms.InputTag( "correctedHybridSuperClusters" ),
     pf_NHit_Cut = cms.vuint32( 3, 3, 3, 3, 3 )
 )
 process.hltParticleFlow = cms.EDProducer( "PFProducer",
@@ -17004,10 +17000,6 @@ if 'GlobalTag' in process.__dict__:
     process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
     for pset in process.GlobalTag.toGet.value():
         pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
-#   Fix for multi-run processing:
-    process.GlobalTag.RefreshEachRun = cms.untracked.bool( False )
-    process.GlobalTag.ReconnectEachRun = cms.untracked.bool( False )
-#
 
 if 'MessageLogger' in process.__dict__:
     process.MessageLogger.categories.append('TriggerSummaryProducerAOD')

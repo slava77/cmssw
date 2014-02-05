@@ -1,11 +1,11 @@
-# /dev/CMSSW_7_1_0/HLT/V53 (CMSSW_7_1_0_pre7_HLT2)
+# /online/collisions/2012/8e33/v2.3/HLT/V27 (CMSSW_7_0_0_pre11_HLT4)
 
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "HLTFULL" )
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string('/dev/CMSSW_7_1_0/HLT/V53')
+  tableName = cms.string('/online/collisions/2012/8e33/v2.3/HLT/V27')
 )
 
 process.HLTIter4PSetTrajectoryFilterIT = cms.PSet( 
@@ -7116,7 +7116,7 @@ process.PrescaleService = cms.Service( "PrescaleService",
         prescales = cms.vuint32( 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 100, 100, 0, 100 )
       )
 ) ),
-    lvl1DefaultLabel = cms.string( "7e33" ),
+    lvl1DefaultLabel = cms.string( "3e33" ),
     lvl1Labels = cms.vstring( '9e33nopark',
       'HalfRate',
       '8e33nopark',
@@ -8275,7 +8275,6 @@ process.hltL2MuonSeeds = cms.EDProducer( "L2MuonSeedGenerator",
     L1MinPt = cms.double( 0.0 ),
     L1MinQuality = cms.uint32( 1 ),
     GMTReadoutCollection = cms.InputTag( "hltGtDigis" ),
-    UseUnassociatedL1 = cms.bool( True ),
     UseOfflineSeed = cms.untracked.bool( True ),
     Propagator = cms.string( "SteppingHelixPropagatorAny" )
 )
@@ -8364,8 +8363,7 @@ process.hltL2Muons = cms.EDProducer( "L2MuonProducer",
         BeamSpotPositionErrors = cms.vdouble( 0.1, 0.1, 5.3 )
       ),
       VertexConstraint = cms.bool( True )
-    ),
-    MuonTrajectoryBuilder = cms.string( "StandAloneMuonTrajectoryBuilder" )
+    )
 )
 process.hltL2MuonCandidates = cms.EDProducer( "L2MuonCandidateProducer",
     InputObjects = cms.InputTag( 'hltL2Muons','UpdatedAtVtx' )
@@ -11294,59 +11292,39 @@ process.hltLightPFTracks = cms.EDProducer( "LightPFTrackProducer",
     TkColList = cms.VInputTag( 'hltPFMuonMerging' )
 )
 process.hltParticleFlowBlock = cms.EDProducer( "PFBlockProducer",
+    SCEndcap = cms.InputTag( "correctedMulti5x5SuperClustersWithPreshower" ),
+    PFClustersHCAL = cms.InputTag( "hltParticleFlowClusterHCAL" ),
+    RecMuons = cms.InputTag( "hltMuons" ),
+    PFClustersHFHAD = cms.InputTag( "hltParticleFlowClusterHFHAD" ),
+    PFConversions = cms.InputTag( "" ),
+    useConversions = cms.bool( False ),
+    nuclearInteractionsPurity = cms.uint32( 1 ),
+    PFClustersECAL = cms.InputTag( "hltParticleFlowClusterECAL" ),
+    verbose = cms.untracked.bool( False ),
+    PFClustersPS = cms.InputTag( "hltParticleFlowClusterPS" ),
+    usePFatHLT = cms.bool( True ),
+    PFClustersHO = cms.InputTag( "hltParticleFlowClusterHO" ),
+    useIterTracking = cms.bool( False ),
+    useConvBremPFRecTracks = cms.bool( False ),
+    useV0 = cms.bool( False ),
+    RecTracks = cms.InputTag( "hltLightPFTracks" ),
+    EGPhotons = cms.InputTag( "" ),
+    ConvBremGsfRecTracks = cms.InputTag( "" ),
+    useKDTreeTrackEcalLinker = cms.bool( True ),
+    useEGPhotons = cms.bool( False ),
+    useConvBremGsfTracks = cms.bool( False ),
+    pf_DPtoverPt_Cut = cms.vdouble( 0.5, 0.5, 0.5, 0.5, 0.5 ),
+    GsfRecTracks = cms.InputTag( "" ),
+    useNuclear = cms.bool( False ),
+    useSuperClusters = cms.bool( False ),
+    PFNuclear = cms.InputTag( "" ),
+    PFV0 = cms.InputTag( "" ),
+    useHO = cms.bool( False ),
+    PhotonSelectionCuts = cms.vdouble(  ),
+    PFClustersHFEM = cms.InputTag( "hltParticleFlowClusterHFEM" ),
     debug = cms.untracked.bool( False ),
-    linkDefinitions = cms.VPSet( 
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS1:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS2:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:ECAL" ),
-        linkerName = cms.string( "TrackAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:HCAL" ),
-        linkerName = cms.string( "TrackAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "ECAL:HCAL" ),
-        linkerName = cms.string( "ECALAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "HFEM:HFHAD" ),
-        linkerName = cms.string( "HFEMAndHFHADLinker" )
-      )
-    ),
-    elementImporters = cms.VPSet( 
-      cms.PSet(  importerName = cms.string( "GeneralTracksImporter" ),
-        useIterativeTracking = cms.bool( False ),
-        source = cms.InputTag( "hltLightPFTracks" ),
-        NHitCuts_byTrackAlgo = cms.vuint32( 3, 3, 3, 3, 3 ),
-        muonSrc = cms.InputTag( "hltMuons" ),
-        DPtOverPtCuts_byTrackAlgo = cms.vdouble( 0.5, 0.5, 0.5, 0.5, 0.5 )
-      ),
-      cms.PSet(  importerName = cms.string( "ECALClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterECAL" ),
-        BCtoPFCMap = cms.InputTag( "" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHCAL" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFEM" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFHAD" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterPS" )
-      )
-    ),
-    verbose = cms.untracked.bool( False )
+    SCBarrel = cms.InputTag( "correctedHybridSuperClusters" ),
+    pf_NHit_Cut = cms.vuint32( 3, 3, 3, 3, 3 )
 )
 process.hltParticleFlow = cms.EDProducer( "PFProducer",
     photon_SigmaiEtaiEta_endcap = cms.double( 0.034 ),
@@ -14498,59 +14476,39 @@ process.hltLightPFPromptTracks = cms.EDProducer( "LightPFTrackProducer",
     TkColList = cms.VInputTag( 'hltPFMuonMergingPromptTracks' )
 )
 process.hltParticleFlowBlockPromptTracks = cms.EDProducer( "PFBlockProducer",
+    SCEndcap = cms.InputTag( "correctedMulti5x5SuperClustersWithPreshower" ),
+    PFClustersHCAL = cms.InputTag( "hltParticleFlowClusterHCAL" ),
+    RecMuons = cms.InputTag( "hltMuons" ),
+    PFClustersHFHAD = cms.InputTag( "hltParticleFlowClusterHFHAD" ),
+    PFConversions = cms.InputTag( "" ),
+    useConversions = cms.bool( False ),
+    nuclearInteractionsPurity = cms.uint32( 1 ),
+    PFClustersECAL = cms.InputTag( "hltParticleFlowClusterECAL" ),
+    verbose = cms.untracked.bool( False ),
+    PFClustersPS = cms.InputTag( "hltParticleFlowClusterPS" ),
+    usePFatHLT = cms.bool( True ),
+    PFClustersHO = cms.InputTag( "hltParticleFlowClusterHO" ),
+    useIterTracking = cms.bool( False ),
+    useConvBremPFRecTracks = cms.bool( False ),
+    useV0 = cms.bool( False ),
+    RecTracks = cms.InputTag( "hltLightPFPromptTracks" ),
+    EGPhotons = cms.InputTag( "" ),
+    ConvBremGsfRecTracks = cms.InputTag( "" ),
+    useKDTreeTrackEcalLinker = cms.bool( True ),
+    useEGPhotons = cms.bool( False ),
+    useConvBremGsfTracks = cms.bool( False ),
+    pf_DPtoverPt_Cut = cms.vdouble( 0.5, 0.5, 0.5, 0.5, 0.5 ),
+    GsfRecTracks = cms.InputTag( "" ),
+    useNuclear = cms.bool( False ),
+    useSuperClusters = cms.bool( False ),
+    PFNuclear = cms.InputTag( "" ),
+    PFV0 = cms.InputTag( "" ),
+    useHO = cms.bool( False ),
+    PhotonSelectionCuts = cms.vdouble(  ),
+    PFClustersHFEM = cms.InputTag( "hltParticleFlowClusterHFEM" ),
     debug = cms.untracked.bool( False ),
-    linkDefinitions = cms.VPSet( 
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS1:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS2:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:ECAL" ),
-        linkerName = cms.string( "TrackAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:HCAL" ),
-        linkerName = cms.string( "TrackAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "ECAL:HCAL" ),
-        linkerName = cms.string( "ECALAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "HFEM:HFHAD" ),
-        linkerName = cms.string( "HFEMAndHFHADLinker" )
-      )
-    ),
-    elementImporters = cms.VPSet( 
-      cms.PSet(  importerName = cms.string( "GeneralTracksImporter" ),
-        useIterativeTracking = cms.bool( False ),
-        source = cms.InputTag( "hltLightPFPromptTracks" ),
-        NHitCuts_byTrackAlgo = cms.vuint32( 3, 3, 3, 3, 3 ),
-        muonSrc = cms.InputTag( "hltMuons" ),
-        DPtOverPtCuts_byTrackAlgo = cms.vdouble( 0.5, 0.5, 0.5, 0.5, 0.5 )
-      ),
-      cms.PSet(  importerName = cms.string( "ECALClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterECAL" ),
-        BCtoPFCMap = cms.InputTag( "" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHCAL" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFEM" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFHAD" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterPS" )
-      )
-    ),
-    verbose = cms.untracked.bool( False )
+    SCBarrel = cms.InputTag( "correctedHybridSuperClusters" ),
+    pf_NHit_Cut = cms.vuint32( 3, 3, 3, 3, 3 )
 )
 process.hltParticleFlowPromptTracks = cms.EDProducer( "PFProducer",
     photon_SigmaiEtaiEta_endcap = cms.double( 0.034 ),
@@ -30865,59 +30823,39 @@ process.hltFilterL2EtCutSingleIsoPFTau35Trk20 = cms.EDFilter( "HLT1CaloJet",
     triggerType = cms.int32( 84 )
 )
 process.hltParticleFlowBlockForTaus = cms.EDProducer( "PFBlockProducer",
+    SCEndcap = cms.InputTag( "correctedMulti5x5SuperClustersWithPreshower" ),
+    PFClustersHCAL = cms.InputTag( "hltParticleFlowClusterHCAL" ),
+    RecMuons = cms.InputTag( "hltMuons" ),
+    PFClustersHFHAD = cms.InputTag( "hltParticleFlowClusterHFHAD" ),
+    PFConversions = cms.InputTag( "" ),
+    useConversions = cms.bool( False ),
+    nuclearInteractionsPurity = cms.uint32( 1 ),
+    PFClustersECAL = cms.InputTag( "hltParticleFlowClusterECAL" ),
+    verbose = cms.untracked.bool( False ),
+    PFClustersPS = cms.InputTag( "hltParticleFlowClusterPS" ),
+    usePFatHLT = cms.bool( True ),
+    PFClustersHO = cms.InputTag( "hltParticleFlowClusterHO" ),
+    useIterTracking = cms.bool( False ),
+    useConvBremPFRecTracks = cms.bool( False ),
+    useV0 = cms.bool( False ),
+    RecTracks = cms.InputTag( "hltLightPFTracks" ),
+    EGPhotons = cms.InputTag( "" ),
+    ConvBremGsfRecTracks = cms.InputTag( "" ),
+    useKDTreeTrackEcalLinker = cms.bool( True ),
+    useEGPhotons = cms.bool( False ),
+    useConvBremGsfTracks = cms.bool( False ),
+    pf_DPtoverPt_Cut = cms.vdouble( -1.0, -1.0, -1.0, -1.0, -1.0 ),
+    GsfRecTracks = cms.InputTag( "" ),
+    useNuclear = cms.bool( False ),
+    useSuperClusters = cms.bool( False ),
+    PFNuclear = cms.InputTag( "" ),
+    PFV0 = cms.InputTag( "" ),
+    useHO = cms.bool( False ),
+    PhotonSelectionCuts = cms.vdouble(  ),
+    PFClustersHFEM = cms.InputTag( "hltParticleFlowClusterHFEM" ),
     debug = cms.untracked.bool( False ),
-    linkDefinitions = cms.VPSet( 
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS1:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS2:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:ECAL" ),
-        linkerName = cms.string( "TrackAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:HCAL" ),
-        linkerName = cms.string( "TrackAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "ECAL:HCAL" ),
-        linkerName = cms.string( "ECALAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "HFEM:HFHAD" ),
-        linkerName = cms.string( "HFEMAndHFHADLinker" )
-      )
-    ),
-    elementImporters = cms.VPSet( 
-      cms.PSet(  importerName = cms.string( "GeneralTracksImporter" ),
-        useIterativeTracking = cms.bool( False ),
-        source = cms.InputTag( "hltLightPFTracks" ),
-        NHitCuts_byTrackAlgo = cms.vuint32( 3, 3, 3, 3, 3 ),
-        muonSrc = cms.InputTag( "hltMuons" ),
-        DPtOverPtCuts_byTrackAlgo = cms.vdouble( -1.0, -1.0, -1.0, -1.0, -1.0 )
-      ),
-      cms.PSet(  importerName = cms.string( "ECALClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterECAL" ),
-        BCtoPFCMap = cms.InputTag( "" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHCAL" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFEM" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFHAD" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterPS" )
-      )
-    ),
-    verbose = cms.untracked.bool( False )
+    SCBarrel = cms.InputTag( "correctedHybridSuperClusters" ),
+    pf_NHit_Cut = cms.vuint32( 3, 3, 3, 3, 3 )
 )
 process.hltParticleFlowForTaus = cms.EDProducer( "PFProducer",
     photon_SigmaiEtaiEta_endcap = cms.double( 0.034 ),
@@ -34504,59 +34442,39 @@ process.hltLightPFTracksReg = cms.EDProducer( "LightPFTrackProducer",
     TkColList = cms.VInputTag( 'hltPFMuonMergingReg' )
 )
 process.hltParticleFlowBlockReg = cms.EDProducer( "PFBlockProducer",
+    SCEndcap = cms.InputTag( "correctedMulti5x5SuperClustersWithPreshower" ),
+    PFClustersHCAL = cms.InputTag( "hltParticleFlowClusterHCAL" ),
+    RecMuons = cms.InputTag( "hltMuonsReg" ),
+    PFClustersHFHAD = cms.InputTag( "hltParticleFlowClusterHFHAD" ),
+    PFConversions = cms.InputTag( "" ),
+    useConversions = cms.bool( False ),
+    nuclearInteractionsPurity = cms.uint32( 1 ),
+    PFClustersECAL = cms.InputTag( "hltParticleFlowClusterECAL" ),
+    verbose = cms.untracked.bool( False ),
+    PFClustersPS = cms.InputTag( "hltParticleFlowClusterPS" ),
+    usePFatHLT = cms.bool( True ),
+    PFClustersHO = cms.InputTag( "hltParticleFlowClusterHO" ),
+    useIterTracking = cms.bool( False ),
+    useConvBremPFRecTracks = cms.bool( False ),
+    useV0 = cms.bool( False ),
+    RecTracks = cms.InputTag( "hltLightPFTracksReg" ),
+    EGPhotons = cms.InputTag( "" ),
+    ConvBremGsfRecTracks = cms.InputTag( "" ),
+    useKDTreeTrackEcalLinker = cms.bool( True ),
+    useEGPhotons = cms.bool( False ),
+    useConvBremGsfTracks = cms.bool( False ),
+    pf_DPtoverPt_Cut = cms.vdouble( -1.0, -1.0, -1.0, -1.0, -1.0 ),
+    GsfRecTracks = cms.InputTag( "" ),
+    useNuclear = cms.bool( False ),
+    useSuperClusters = cms.bool( False ),
+    PFNuclear = cms.InputTag( "" ),
+    PFV0 = cms.InputTag( "" ),
+    useHO = cms.bool( False ),
+    PhotonSelectionCuts = cms.vdouble(  ),
+    PFClustersHFEM = cms.InputTag( "hltParticleFlowClusterHFEM" ),
     debug = cms.untracked.bool( False ),
-    linkDefinitions = cms.VPSet( 
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS1:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "PS2:ECAL" ),
-        linkerName = cms.string( "PreshowerAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:ECAL" ),
-        linkerName = cms.string( "TrackAndECALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( True ),
-        linkType = cms.string( "TRACK:HCAL" ),
-        linkerName = cms.string( "TrackAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "ECAL:HCAL" ),
-        linkerName = cms.string( "ECALAndHCALLinker" )
-      ),
-      cms.PSet(  useKDTree = cms.bool( False ),
-        linkType = cms.string( "HFEM:HFHAD" ),
-        linkerName = cms.string( "HFEMAndHFHADLinker" )
-      )
-    ),
-    elementImporters = cms.VPSet( 
-      cms.PSet(  importerName = cms.string( "GeneralTracksImporter" ),
-        useIterativeTracking = cms.bool( False ),
-        source = cms.InputTag( "hltLightPFTracksReg" ),
-        NHitCuts_byTrackAlgo = cms.vuint32( 3, 3, 3, 3, 3 ),
-        muonSrc = cms.InputTag( "hltMuonsReg" ),
-        DPtOverPtCuts_byTrackAlgo = cms.vdouble( -1.0, -1.0, -1.0, -1.0, -1.0 )
-      ),
-      cms.PSet(  importerName = cms.string( "ECALClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterECAL" ),
-        BCtoPFCMap = cms.InputTag( "" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHCAL" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFEM" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterHFHAD" )
-      ),
-      cms.PSet(  importerName = cms.string( "GenericClusterImporter" ),
-        source = cms.InputTag( "hltParticleFlowClusterPS" )
-      )
-    ),
-    verbose = cms.untracked.bool( False )
+    SCBarrel = cms.InputTag( "correctedHybridSuperClusters" ),
+    pf_NHit_Cut = cms.vuint32( 3, 3, 3, 3, 3 )
 )
 process.hltParticleFlowReg = cms.EDProducer( "PFProducer",
     photon_SigmaiEtaiEta_endcap = cms.double( 0.034 ),
@@ -67829,10 +67747,6 @@ if 'GlobalTag' in process.__dict__:
     process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
     for pset in process.GlobalTag.toGet.value():
         pset.connect = pset.connect.value().replace('frontier://FrontierProd/', 'frontier://FrontierProd/')
-#   Fix for multi-run processing:
-    process.GlobalTag.RefreshEachRun = cms.untracked.bool( False )
-    process.GlobalTag.ReconnectEachRun = cms.untracked.bool( False )
-#
 
 if 'MessageLogger' in process.__dict__:
     process.MessageLogger.categories.append('TriggerSummaryProducerAOD')
