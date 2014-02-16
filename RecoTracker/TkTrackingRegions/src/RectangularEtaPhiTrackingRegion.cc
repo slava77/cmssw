@@ -356,7 +356,7 @@ TrackingRegion::Hits RectangularEtaPhiTrackingRegion::hits(
     if (ptrHit->isValid())  result.push_back( std::move(ptrHit) );
     }
   
-    // LogDebug("RectangularEtaPhiTrackingRegion")<<" found "<< meas.size()<<" minus one measurements on layer: "<<detLayer->subDetector();
+    LogDebug("RectangularEtaPhiTrackingRegion")<<" found "<< meas.size()<<" minus one measurements on layer: "<<detLayer->subDetector();
     // std::cout << "RectangularEtaPhiTrackingRegion" <<" found "<< meas.size()<<" minus one measurements on layer: "<<detLayer->subDetector() << std::endl;
   
   } else {
