@@ -9,8 +9,6 @@ TTbar_Kinematics::TTbar_Kinematics(const edm::ParameterSet& iConfig) :
   hepmcCollection_(iConfig.getParameter<edm::InputTag>("hepmcCollection"))
   ,genEventInfoProductTag_(iConfig.getParameter<edm::InputTag>("genEventInfoProductTag"))
 {
-  dbe = 0;
-  dbe = edm::Service<DQMStore>().operator->();
 
   hepmcCollectionToken_=consumes<HepMCProduct>(hepmcCollection_);
   genEventInfoProductTagToken_=consumes<GenEventInfoProduct>(genEventInfoProductTag_);
