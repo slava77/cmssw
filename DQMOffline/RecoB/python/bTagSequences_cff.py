@@ -1,7 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
 #define you jet ID
-jetID = cms.InputTag("ak4PFJets")
+jetID = cms.InputTag("ak4PFJetsCHS")
+corr = 'ak4PFCHSL1FastL2L3'
+
 
 #JTA for your jets
 from RecoJets.JetAssociationProducers.j2tParametersVX_cfi import *
@@ -45,13 +47,18 @@ JetCut=cms.string("neutralHadronEnergyFraction < 0.99 && neutralEmEnergyFraction
 #JetCut=cms.string("chargedEmEnergyFraction < 99999")
 
 from JetMETCorrections.Configuration.DefaultJEC_cff import *
-ak4PFJetsJEC = ak4PFJetsL2L3.clone(
-        src = 'ak4PFJets',
-        correctors = ['ak4PFL2L3']
-        )
+from JetMETCorrections.Configuration.JetCorrectionServices_cff import *
+ak4PFCHSL1Fastjet.algorithm = 'AK4PFchs'
+ak4PFCHSL2Relative.algorithm = 'AK4PFchs'
+ak4PFCHSL3Absolute.algorithm = 'AK4PFchs'
+ak4PFCHSResidual.algorithm = 'AK4PFchs'
+
+ak4JetsJEC = ak4PFJetsL2L3.clone(
+        src = jetID,
+        correctors = [corr]        )
 
 PFJetsFilter = cms.EDFilter("PFJetSelector",
-                            src = cms.InputTag("ak4PFJetsJEC"),
+                            src = cms.InputTag("ak4JetsJEC"),
                             cut = JetCut,
                             filter = cms.bool(True)
                             )
