@@ -9,6 +9,7 @@
 #include "FWCore/Utilities/interface/EDGetToken.h"
 #include "DataFormats/Common/interface/ContainerMask.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHit.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 
 namespace edm { class Event; class EventSetup; class ConsumesCollector;}
 namespace ctfseeding { class SeedingLayer; }
