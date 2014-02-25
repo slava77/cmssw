@@ -399,6 +399,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   vector<unsigned int> Electron_SimTrackIds;
   vector<unsigned int> Pion_SimTrackIds;
+  vector<unsigned int> Muon_SimTrackIds;
   PSimHitContainer::const_iterator iterSimHits;
   PSimHitContainer::const_iterator iterSimHitsEC;
   
@@ -406,9 +407,11 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   unsigned int iprevious = -1;
   bool pion_stopHere = false;
   unsigned int pion_iprevious = -1;
+  bool muon_stopHere = false;
+  unsigned int muon_iprevious = -1;
 
 
-  if (MyProcess==11 || MyProcess==211) {
+  if (MyProcess==11 || MyProcess==211 || MyProcess==13) {
 
     // -----------------------------------------------------------------------------------------------------
     // loop over sim hits in the barrel
@@ -417,7 +420,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       int type = abs(iterSimHits->particleType());
 
       //electrons
-      if (type == 11 && (processType == 2 || processType == 13)) {
+      if (type == 11 && (processType == 2 || processType == 13)
+	  || (type ==13 && (processType == 2 || processType == 10 || processType == 12 || processType == 16)) ) {
 	if (!stopHere) {
 	  unsigned int trackId = iterSimHits->trackId();
 	  if (trackId != iprevious) Electron_SimTrackIds.push_back(trackId);
@@ -436,6 +440,15 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       }
       else pion_stopHere = true;
       
+      //muons
+      if ((type ==13 && (processType == 2 || processType == 10 || processType == 12 || processType == 16)) ) {
+	if (!muon_stopHere) {
+	  unsigned int trackId = iterSimHits->trackId();
+	  if (trackId != muon_iprevious) Muon_SimTrackIds.push_back(trackId);
+	  muon_iprevious = trackId;
+	}
+      }
+      else muon_stopHere = true;
     } //end loop over simhits
 
     
@@ -443,6 +456,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     iprevious = -1;
     pion_stopHere = false;
     pion_iprevious = -1;
+    muon_stopHere = false;
+    muon_iprevious = -1;
   
   
     // -----------------------------------------------------------------------------------------------------
@@ -470,6 +485,16 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	}
       }
       else pion_stopHere = true;
+
+      // muons
+      if ((type ==13 && (processType == 2 || processType == 10 || processType == 12 || processType == 16)) ) {
+	if (!muon_stopHere) {
+	  unsigned int trackId = iterSimHitsEC->trackId();
+	  if (trackId != muon_iprevious) Muon_SimTrackIds.push_back(trackId);
+	  muon_iprevious = trackId;
+	}
+      }
+      else muon_stopHere = true;
       
     } //end loop over simhits
     
@@ -478,6 +503,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   if (MyProcess==11 && Electron_SimTrackIds.size() == 0) return;
   if (MyProcess==211 && Pion_SimTrackIds.size() == 0) return;
+  if (MyProcess==13 && Muon_SimTrackIds.size() == 0) return;
   
 
 
@@ -509,6 +535,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     // for electrons & pions, consider primary tracks
     if (MyProcess==11 && Electron_SimTrackIds.at(0) != tmp_simtrk_id) continue;
     if (MyProcess==211 && Pion_SimTrackIds.at(0) != tmp_simtrk_id) continue;
+    if (MyProcess==13 && Muon_SimTrackIds.at(0) != tmp_simtrk_id) continue;
 
 
     float matchID_trk_pt    = -9999;
@@ -546,6 +573,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     // more accurate in this scenario is to instead use the z position of the generated vertex
     if (MyProcess==11 && Electron_SimTrackIds.at(0) != 1) tmp_simtrk_z0 = my_zpos;
     if (MyProcess==211 && Pion_SimTrackIds.at(0) != 1) tmp_simtrk_z0 = my_zpos; 
+    if (MyProcess==13 && Muon_SimTrackIds.at(0) != 1) tmp_simtrk_z0 = my_zpos; 
 
     if (fabs(tmp_simtrk_z0) > 30.0) continue;
 
@@ -609,6 +637,10 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       else if (MyProcess==211) {
 	matchedToPrimary = true;
 	if (std::find(Pion_SimTrackIds.begin(), Pion_SimTrackIds.end(), tmp_trk_simtrackid) == Pion_SimTrackIds.end()) matchedToPrimary = false;
+      }
+      else if (MyProcess==13) {
+	matchedToPrimary = true;
+	if (std::find(Muon_SimTrackIds.begin(), Muon_SimTrackIds.end(), tmp_trk_simtrackid) == Muon_SimTrackIds.end()) matchedToPrimary = false;
       }
       else {
 	if (tmp_simtrk_id == tmp_trk_simtrackid) matchedToPrimary = true;
