@@ -28,6 +28,11 @@ template <typename Digi, typename Geometry,PFLayer::Layer Layer,int Detector>
     }
 
     void importRecHits(std::auto_ptr<reco::PFRecHitCollection>&out,std::auto_ptr<reco::PFRecHitCollection>& cleaned ,const edm::Event& iEvent,const edm::EventSetup& iSetup) {
+
+      for (unsigned int i=0;i<qualityTests_.size();++i) {
+	qualityTests_.at(i)->beginEvent(iEvent,iSetup);
+      }
+
       edm::Handle<edm::SortedCollection<Digi> > recHitHandle;
 
       edm::ESHandle<CaloGeometry> geoHandle;
@@ -38,6 +43,9 @@ template <typename Digi, typename Geometry,PFLayer::Layer Layer,int Detector>
 	geoHandle->getSubdetectorGeometry(DetId::Hcal, Detector);
 
       const Geometry *hcalGeo =dynamic_cast< const Geometry* > (gTmp);
+
+
+
 
       iEvent.getByToken(recHitToken_,recHitHandle);
       for (unsigned int i=0;i<recHitHandle->size();++i) {
@@ -51,7 +59,7 @@ template <typename Digi, typename Geometry,PFLayer::Layer Layer,int Detector>
 
 
 	double energy = erh.energy();
-	//	double time = erh.time();
+	double time = erh.time();
 
 
 	math::XYZVector position;
@@ -79,6 +87,7 @@ template <typename Digi, typename Geometry,PFLayer::Layer Layer,int Detector>
 			   energy, 
 			   position.x(), position.y(), position.z(), 
 			   0,0,0);
+	rh.setTime(time); //Mike: This we will use later
 
 	const CaloCellGeometry::CornersVec& corners = thisCell->getCorners();
 	assert( corners.size() == 8 );
