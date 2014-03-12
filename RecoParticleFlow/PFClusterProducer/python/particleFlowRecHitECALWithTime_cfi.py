@@ -3,13 +3,22 @@ import FWCore.ParameterSet.Config as cms
 
 #until we are actually clustering across the EB/EE boundary
 #it is faster to cluster EB and EE as separate
-
-particleFlowRecHitECAL = cms.EDProducer("PFRecHitProducer",
+particleFlowRecHitECALWithTime = cms.EDProducer("PFRecHitProducer",
 
     navigator = cms.PSet(
-        name = cms.string("PFRecHitECALNavigator"),
-        barrel = cms.PSet( ),
-        endcap = cms.PSet( )
+        name = cms.string("PFRecHitECALNavigatorWithTime"),
+        barrel = cms.PSet(
+             noiseLevel = cms.double(0.042),   
+             noiseTerm  = cms.double(27.5),
+             constantTerm = cms.double(0.27),
+             sigmaCut = cms.double(1.0)
+        ),
+        endcap = cms.PSet(
+             noiseLevel = cms.double(0.14),   
+             noiseTerm  = cms.double(36.1),
+             constantTerm = cms.double(0.18),
+             sigmaCut = cms.double(1.0)
+        )
     ),
     producers = cms.VPSet(
            cms.PSet(
@@ -23,7 +32,7 @@ particleFlowRecHitECAL = cms.EDProducer("PFRecHitProducer",
                   cms.PSet(
                   name = cms.string("PFRecHitQTestECAL"),
                   cleaningThreshold = cms.double(2.0),
-                  timingCleaning = cms.bool(True),
+                  timingCleaning = cms.bool(False), 
                   topologicalCleaning = cms.bool(True),
                   skipTTRecoveredHits = cms.bool(True)
                   )
@@ -40,7 +49,7 @@ particleFlowRecHitECAL = cms.EDProducer("PFRecHitProducer",
                  cms.PSet(
                  name = cms.string("PFRecHitQTestECAL"),
                  cleaningThreshold = cms.double(2.0),
-                 timingCleaning = cms.bool(True),
+                 timingCleaning = cms.bool(False),
                  topologicalCleaning = cms.bool(True),
                  skipTTRecoveredHits = cms.bool(True)
                  )
