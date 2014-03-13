@@ -1,15 +1,19 @@
 #ifndef SeedForPhotonConversionFromQuadruplets_H
 #define SeedForPhotonConversionFromQuadruplets_H
 
+#include <memory>
 #include "RecoTracker/TkTrackingRegions/interface/GlobalTrackingRegion.h"
 #include "RecoTracker/TkSeedingLayers/interface/SeedingHitSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/ESWatcher.h"
 #include "DataFormats/TrajectorySeed/interface/TrajectorySeedCollection.h"
 #include "FWCore/Utilities/interface/GCC11Compatibility.h"
 
 #include "RecoTracker/ConversionSeedGenerators/interface/PrintRecoObjects.h"
 #include "RecoTracker/ConversionSeedGenerators/interface/Quad.h"
 class FreeTrajectoryState;
+class TrackingComponentsRecord;
+class Propagator;
 
 class SeedForPhotonConversionFromQuadruplets {
 public:
@@ -79,7 +83,7 @@ public:
 					   const FreeTrajectoryState & fts,
 					   const edm::EventSetup& es,
 					   bool apply_dzCut,
-					   const TrackingRegion &region) const;
+					   const TrackingRegion &region);
 
   bool buildSeedBool(
       TrajectorySeedCollection & seedCollection,
@@ -88,7 +92,7 @@ public:
       const edm::EventSetup& es,
       bool apply_dzCut,
       const TrackingRegion & region,
-      double dzcut) const;
+      double dzcut) ;
   
   TransientTrackingRecHit::RecHitPointer refitHit(
 							  const TransientTrackingRecHit::ConstRecHitPointer &hit, 
@@ -101,6 +105,8 @@ public:
 
 protected:
   std::string thePropagatorLabel;
+  edm::ESWatcher<TrackingComponentsRecord> thePropagatorWatcher;
+  std::unique_ptr<Propagator> thePropagator;
   double theBOFFMomentum;
   double  kPI_;
 

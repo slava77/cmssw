@@ -135,7 +135,7 @@ MonitorElement* theTrackDirectionJetDRHisto, MonitorElement* theTrackImpactPoint
   static double findPtFractionInCone(const reco::TrackRefVector& inConeTracks, const reco::TrackRefVector& outOfConeTracks);
   
   /// String constant for message logger category
-  static const char* messageLoggerCatregory;
+  static const char* const messageLoggerCatregory;
   
   // Config
   /// Path of directory used to store histograms in DQMStore

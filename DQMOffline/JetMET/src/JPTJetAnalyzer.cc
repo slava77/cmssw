@@ -30,6 +30,7 @@
 #include "CalibTracker/Records/interface/SiStripGainRcd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "RecoJets/JetProducers/interface/JetIDHelper.h"
+#include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include <cmath>
 #include <string>
 #include <memory>
@@ -46,7 +47,7 @@ namespace jptJetAnalysis {
     math::XYZPoint impactPoint(const reco::Track& track) const;
    private:
     const MagneticField* magneticField_;
-    const Propagator* propagator_;
+    std::unique_ptr<Propagator> propagator_;
     uint32_t magneticFieldCacheId_;
     uint32_t propagatorCacheId_;
   };
@@ -74,7 +75,7 @@ namespace jptJetAnalysis {
   
 }
 
-const char* JPTJetAnalyzer::messageLoggerCatregory = "JetPlusTrackDQM";
+char const* const JPTJetAnalyzer::messageLoggerCatregory = "JetPlusTrackDQM";
 
 JPTJetAnalyzer::JPTJetAnalyzer(const edm::ParameterSet& config, edm::ConsumesCollector&& iC)
   : histogramPath_(config.getParameter<std::string>("HistogramPath")),
@@ -726,7 +727,7 @@ namespace jptJetAnalysis {
   
   TrackPropagatorToCalo::TrackPropagatorToCalo()
     : magneticField_(NULL),
-      propagator_(NULL),
+      propagator_(),
       magneticFieldCacheId_(0),
       propagatorCacheId_(0)
     {}
@@ -745,10 +746,10 @@ namespace jptJetAnalysis {
     //update propagator if necessary
     const TrackingComponentsRecord& trackingComponentsRecord = eventSetup.get<TrackingComponentsRecord>();
     const uint32_t newPropagatorCacheId = trackingComponentsRecord.cacheIdentifier();
-    if ((propagatorCacheId_ != newPropagatorCacheId) || !propagator_) {
+    if ((propagatorCacheId_ != newPropagatorCacheId) || !propagator_.get()) {
       edm::ESHandle<Propagator> propagatorHandle;
       trackingComponentsRecord.get("SteppingHelixPropagatorAlong",propagatorHandle);
-      propagator_ = propagatorHandle.product();
+      propagator_.reset(propagatorHandle->clone());
       propagatorCacheId_ = newPropagatorCacheId;
     }
   }
