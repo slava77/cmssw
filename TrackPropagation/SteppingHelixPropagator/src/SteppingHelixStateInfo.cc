@@ -47,10 +47,10 @@ SteppingHelixStateInfo::SteppingHelixStateInfo(const FreeTrajectoryState& fts):
   }
   static const std::string metname = "SteppingHelixPropagator";
   if (fts.hasError()){ 
-    LogTrace(metname)<<"Created SHPStateInfo from FTS\n"<<fts;
-    //    LogTrace(metname)<<"and cartesian error of\n"<<fts.cartesianError().matrix();
+    edm::LogWarning(metname)<<"Created SHPStateInfo from FTS\n"<<fts;
+    //    edm::LogWarning(metname)<<"and cartesian error of\n"<<fts.cartesianError().matrix();
   }
-  else LogTrace(metname)<<"Created SHPStateInfo from FTS without errors";
+  else edm::LogWarning(metname)<<"Created SHPStateInfo from FTS without errors";
 
   isComplete = false;
   isValid_ = true;
@@ -58,8 +58,8 @@ SteppingHelixStateInfo::SteppingHelixStateInfo(const FreeTrajectoryState& fts):
 
 TrajectoryStateOnSurface SteppingHelixStateInfo::getStateOnSurface(const Surface& surf, bool returnTangentPlane) const {
   static const std::string metname = "SteppingHelixPropagator";
-  if (! isValid()) LogTrace(metname)<<"Return TSOS is invalid";
-  else LogTrace(metname)<<"Return TSOS is valid";
+  if (! isValid()) edm::LogWarning(metname)<<"Return TSOS is invalid";
+  else edm::LogWarning(metname)<<"Return TSOS is valid";
   if (! isValid()) return TrajectoryStateOnSurface();
   GlobalVector p3GV(p3.x(), p3.y(), p3.z());
   GlobalPoint r3GP(r3.x(), r3.y(), r3.z());

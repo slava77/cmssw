@@ -146,7 +146,7 @@ class SteppingHelixPropagator GCC11_FINAL : public Propagator {
 
   
   //! Switch debug printouts (to cout) .. very verbose
-  void setDebug(bool debug){ debug_ = debug;}
+  void setDebug(bool debug){ debug_ = debug; debug_ = true;}
 
   //! Switch for material effects mode: no material effects if true
   void setMaterialMode(bool noMaterial) { noMaterialMode_ = noMaterial;}
