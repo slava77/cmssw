@@ -6,22 +6,9 @@ import FWCore.ParameterSet.Config as cms
 from RecoLocalTracker.SiPixelRecHits.PixelCPEESProducers_cff import *
 from RecoTracker.TransientTrackingRecHit.TTRHBuilders_cff import *
 
-initialStepClusters = cms.EDProducer("TrackClusterRemover",
-                                     clusterLessSolution= cms.bool(True),
-                                     pixelClusters = cms.InputTag("siPixelClusters"),
-                                     stripClusters = cms.InputTag("siStripClusters"),
-                                     doStripChargeCheck = cms.bool(True),
-                                     stripRecHits = cms.string('siStripMatchedRecHits'),
-                                     Common = cms.PSet(
-                                       maxChi2 = cms.double(9.0),
-                                       minGoodStripCharge = cms.double(50.0)
-                                      )
-                                     )
 # SEEDING LAYERS
 import RecoTracker.TkSeedingLayers.PixelLayerTriplets_cfi
 initialStepSeedLayers = RecoTracker.TkSeedingLayers.PixelLayerTriplets_cfi.PixelLayerTriplets.clone()
-initialStepSeedLayers.BPix.skipClusters = cms.InputTag('initialStepClusters')
-initialStepSeedLayers.FPix.skipClusters = cms.InputTag('initialStepClusters')
 
 
 # seeding
@@ -52,11 +39,13 @@ initialStepTrajectoryFilter = TrackingTools.TrajectoryFiltering.TrajectoryFilter
     )
     )
 
-import TrackingTools.KalmanUpdators.Chi2MeasurementEstimatorESProducer_cfi
-initialStepChi2Est = TrackingTools.KalmanUpdators.Chi2MeasurementEstimatorESProducer_cfi.Chi2MeasurementEstimator.clone(
+import TrackingTools.KalmanUpdators.Chi2ChargeMeasurementEstimatorESProducer_cfi
+initialStepChi2Est = TrackingTools.KalmanUpdators.Chi2ChargeMeasurementEstimatorESProducer_cfi.Chi2ChargeMeasurementEstimator.clone(
     ComponentName = cms.string('initialStepChi2Est'),
     nSigma = cms.double(3.0),
-    MaxChi2 = cms.double(30.0)
+    MaxChi2 = cms.double(30.0),
+    minGoodStripCharge = cms.double(1724),
+    pTChargeCutThreshold = cms.double(15.)
 )
 
 import RecoTracker.CkfPattern.GroupedCkfTrajectoryBuilderESProducer_cfi
@@ -76,7 +65,6 @@ initialStepTrackCandidates = RecoTracker.CkfPattern.CkfTrackCandidates_cfi.ckfTr
     ### these two parameters are relevant only for the CachingSeedCleanerBySharedInput
     numHitsForSeedCleaner = cms.int32(50),
     onlyPixelHitsForSeedCleaner = cms.bool(True),
-
     TrajectoryBuilder = 'initialStepTrajectoryBuilder',
     doSeedingRegionRebuilding = True,
     useHitsSplitting = True
@@ -137,8 +125,7 @@ initialStep = RecoTracker.FinalTrackSelectors.trackListMerger_cfi.trackListMerge
     )
 
 # Final sequence
-InitialStep = cms.Sequence(initialStepClusters*
-                           initialStepSeedLayers*
+InitialStep = cms.Sequence(initialStepSeedLayers*
                            initialStepSeeds*
                            initialStepTrackCandidates*
                            initialStepTracks*
