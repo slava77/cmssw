@@ -1,0 +1,10 @@
+<library   file="*.cc" name="Phase2MuTriggerAnalysisGMT2TTIntegration_plugins">
+  <use   name="SLHCUpgradeSimulations/L1TrackTrigger"/>
+  <use   name="SimDataFormats/SLHC"/>
+  <use   name="SimDataFormats/GeneratorProducts"/>
+  <use   name="PhysicsTools/UtilAlgos"/>
+  <use   name="CommonTools/UtilAlgos"/>
+  <use   name="hepmc"/>
+  <use   name="root"/>
+  <flags   EDM_PLUGIN="1"/>
+</library>
