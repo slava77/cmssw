@@ -54,6 +54,8 @@ class GenMuonRadiationAlgorithm
   static bool pythia_isInitialized_;
 
   int verbosity_;
+
+  static CLHEP::HepRandomEngine* decayRandomEngine;
 };
 
 #endif

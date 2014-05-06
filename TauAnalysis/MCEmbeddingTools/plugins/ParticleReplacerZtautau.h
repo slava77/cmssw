@@ -133,6 +133,8 @@ class ParticleReplacerZtautau : public ParticleReplacerBase
 	
   int maxNumberOfAttempts_;
 
+  static CLHEP::HepRandomEngine* decayRandomEngine;
+
 };
 
 #endif

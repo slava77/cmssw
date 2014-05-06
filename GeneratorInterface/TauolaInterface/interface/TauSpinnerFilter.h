@@ -26,7 +26,6 @@ class TauSpinnerFilter : public edm::EDFilter {
   ~TauSpinnerFilter(){};
 
   virtual bool filter(edm::Event& e, edm::EventSetup const& es);
-  void setRandomEngine(CLHEP::HepRandomEngine* v) { fRandomEngine = v; }
 
  private:
   edm::InputTag src_;

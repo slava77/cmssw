@@ -29,7 +29,7 @@
 #include <string>
 #include <iostream>
 
-class RecoTauJetRegionProducer : public edm::stream::EDProducer<> 
+class RecoTauJetRegionProducer : public edm::EDProducer 
 {
  public:
   typedef edm::Association<reco::PFJetCollection> PFJetMatchMap;

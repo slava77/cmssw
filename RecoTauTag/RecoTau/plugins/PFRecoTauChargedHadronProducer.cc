@@ -11,7 +11,7 @@
  *
  */
 
-#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -49,7 +49,7 @@
 #include <functional>
 #include <math.h>
 
-class PFRecoTauChargedHadronProducer : public edm::stream::EDProducer<> 
+class PFRecoTauChargedHadronProducer : public edm::EDProducer 
 {
 public:
   typedef reco::tau::PFRecoTauChargedHadronBuilderPlugin Builder;
@@ -59,7 +59,7 @@ public:
   ~PFRecoTauChargedHadronProducer() {}
   void produce(edm::Event& evt, const edm::EventSetup& es);
   template <typename T>
-  void print(const T& chargedHadrons);
+  void print(const T& chargedHadrons, std::ostream& stream);
 
  private:
   typedef boost::ptr_vector<Builder> builderList;
@@ -133,8 +133,8 @@ PFRecoTauChargedHadronProducer::PFRecoTauChargedHadronProducer(const edm::Parame
 void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSetup& es) 
 {
   if ( verbosity_ ) {
-    edm::LogPrint("PFRecoTauChHProducer")<< "<PFRecoTauChargedHadronProducer::produce>:" ;
-    edm::LogPrint("PFRecoTauChHProducer")<< " moduleLabel = " << moduleLabel_ ;
+    std::cout << "<PFRecoTauChargedHadronProducer::produce>:" << std::endl;
+    std::cout << " moduleLabel = " << moduleLabel_ << std::endl;
   }
 
   // give each of our plugins a chance at doing something with the edm::Event
@@ -169,8 +169,8 @@ void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSe
       try {
         ChargedHadronVector result(builder(*pfJet));
 	if ( verbosity_ ) {
-	  edm::LogPrint("PFRecoTauChHProducer")<< "result of builder = " << builder.name() << ":" ;
-	  print(result);
+	  std::cout << "result of builder = " << builder.name() << ":" << std::endl;
+	  print(result, std::cout);
 	}
         uncleanedChargedHadrons.transfer(uncleanedChargedHadrons.end(), result);
       } catch ( cms::Exception& exception ) {
@@ -197,8 +197,8 @@ void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSe
       // get next best ChargedHadron candidate
       std::auto_ptr<reco::PFRecoTauChargedHadron> nextChargedHadron(uncleanedChargedHadrons.pop_front().release());
       if ( verbosity_ ) {
-	edm::LogPrint("PFRecoTauChHProducer")<< "processing nextChargedHadron:" ;
-	edm::LogPrint("PFRecoTauChHProducer")<< (*nextChargedHadron);
+	std::cout << "processing nextChargedHadron:" << std::endl;
+	std::cout << (*nextChargedHadron);
       }
 
       // discard candidates which fail final output selection
@@ -229,7 +229,7 @@ void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSe
 	}
       }
       if ( verbosity_ ) {
-	edm::LogPrint("PFRecoTauChHProducer")<< "isTrack_overlap = " << isTrack_overlap ;
+	std::cout << "isTrack_overlap = " << isTrack_overlap << std::endl;
       }
       if ( isTrack_overlap ) continue;
 
@@ -242,7 +242,7 @@ void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSe
 	}
       }
       if ( verbosity_ ) {
-	edm::LogPrint("PFRecoTauChHProducer")<< "isNeutralPFCand_overlap = " << isNeutralPFCand_overlap ;
+	std::cout << "isNeutralPFCand_overlap = " << isNeutralPFCand_overlap << std::endl;
       }
       if ( isNeutralPFCand_overlap ) continue;
       
@@ -258,7 +258,7 @@ void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSe
 	if ( track ) tracksInCleanCollection.push_back(std::make_pair(track->eta(), track->phi()));
 	neutralPFCandsInCleanCollection.insert(nextChargedHadron->getNeutralPFCandidates().begin(), nextChargedHadron->getNeutralPFCandidates().end());
 	if ( verbosity_ ) {
-	  edm::LogPrint("PFRecoTauChHProducer")<< "--> adding nextChargedHadron to output collection." ;
+	  std::cout << "--> adding nextChargedHadron to output collection." << std::endl;
 	}
 	cleanedChargedHadrons.push_back(*nextChargedHadron);
       } else { // remove overlapping neutral PFCandidates, reevaluate ranking criterion and process ChargedHadron candidate again
@@ -272,14 +272,14 @@ void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSe
 	// at position according to new rank
 	ChargedHadronList::iterator insertionPoint = std::lower_bound(uncleanedChargedHadrons.begin(), uncleanedChargedHadrons.end(), *nextChargedHadron, *predicate_);
 	if ( verbosity_ ) {
-	  edm::LogPrint("PFRecoTauChHProducer")<< "--> removing non-unique neutral PFCandidates and reinserting nextChargedHadron in uncleaned collection." ;
+	  std::cout << "--> removing non-unique neutral PFCandidates and reinserting nextChargedHadron in uncleaned collection." << std::endl;
 	}
         uncleanedChargedHadrons.insert(insertionPoint, nextChargedHadron);
       }
     }
 
     if ( verbosity_ ) {
-      print(cleanedChargedHadrons);
+      print(cleanedChargedHadrons, std::cout);
     }
 
     // add ChargedHadron-to-jet association
@@ -290,16 +290,16 @@ void PFRecoTauChargedHadronProducer::produce(edm::Event& evt, const edm::EventSe
 }
 
 template <typename T>
-void PFRecoTauChargedHadronProducer::print(const T& chargedHadrons) 
+void PFRecoTauChargedHadronProducer::print(const T& chargedHadrons, std::ostream& stream) 
 {
   for ( typename T::const_iterator chargedHadron = chargedHadrons.begin();
 	chargedHadron != chargedHadrons.end(); ++chargedHadron ) {
-    edm::LogPrint("PFRecoTauChHProducer") << (*chargedHadron);
-    edm::LogPrint("PFRecoTauChHProducer") << "Rankers:" ;
+    stream << (*chargedHadron);
+    stream << "Rankers:" << std::endl;
     for ( rankerList::const_iterator ranker = rankers_.begin();
 	  ranker != rankers_.end(); ++ranker) {
       const unsigned width = 25;
-      edm::LogPrint("PFRecoTauChHProducer") << " " << std::setiosflags(std::ios::left) << std::setw(width) << ranker->name()
+      stream << " " << std::setiosflags(std::ios::left) << std::setw(width) << ranker->name()
 	     << " " << std::resetiosflags(std::ios::left) << std::setprecision(3) << (*ranker)(*chargedHadron) << std::endl;
     }
   }

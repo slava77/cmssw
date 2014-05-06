@@ -21,7 +21,8 @@ ExternalDecayDriver::ExternalDecayDriver( const ParameterSet& pset )
      fEvtGenInterface(0),
      fPhotosInterface(0)
 {
-    std::vector<std::string> extGenNames =
+    
+  std::vector<std::string> extGenNames =
     pset.getParameter< std::vector<std::string> >("parameterSets");
   
   for (unsigned int ip=0; ip<extGenNames.size(); ++ip ){
@@ -30,7 +31,6 @@ ExternalDecayDriver::ExternalDecayDriver( const ParameterSet& pset )
       fEvtGenInterface = (EvtGenInterfaceBase*)(EvtGenFactory::get()->create("EvtGenLHC91", pset.getUntrackedParameter< ParameterSet >(curSet)));
       exSharedResources.emplace_back(edm::SharedResourceNames::kEvtGen);
       exSharedResources.emplace_back(edm::SharedResourceNames::kPythia6);
-      exSharedResources.emplace_back(gen::FortranInstance::kFortranInstance);
     }
     else if ( curSet == "Tauola" || curSet == "Tauolapp113a" ){
       // this is for old tauola27 (+pretauola)

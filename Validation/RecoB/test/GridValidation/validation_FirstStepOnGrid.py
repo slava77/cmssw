@@ -3,7 +3,7 @@
 
 import FWCore.ParameterSet.Config as cms
 
-whichJets  = "ak5PFCHS" # default value, allowed : "ak5PF", "ak5PFCHS", add "NoJEC" to run the code with no JEC applied
+whichJets  = "ak4PF"
 useTrigger = False
 runOnMC    = True
 tag =  'START70_V4::All'
@@ -38,24 +38,35 @@ process.load("DQMServices.Core.DQM_cfg")
 process.load("DQMOffline.RecoB.bTagSequences_cff")
 #bTagHLT.HLTPaths = ["HLT_PFJet80_v*"] #uncomment this line if you want to use different trigger
 
-newjetID=cms.InputTag("ak5PFJetsCHS")
-process.jetSequences = cms.Sequence(process.goodOfflinePrimaryVertices * process.btagSequence)
-if "NoJEC" in whichJets and not "CHS" in whichJets : newjetID=cms.InputTag("ak5PFJets")
-if not "NoJEC" in whichJets:
-    process.JECAlgo = cms.Sequence(process.ak5JetsJEC * process.PFJetsFilter)
-    process.jetSequences = cms.Sequence(process.goodOfflinePrimaryVertices * process.JECAlgo * process.btagSequence)
+if whichJets=="ak4PFnoPU":
+    process.out = cms.OutputModule("PoolOutputModule",
+                                   outputCommands = cms.untracked.vstring('drop *'),
+                                   fileName = cms.untracked.string('EmptyFile.root')
+                                   )
+    process.load("PhysicsTools.PatAlgos.patSequences_cff")
+    from PhysicsTools.PatAlgos.tools.pfTools import *
+    postfix="PF2PAT"
+    usePF2PAT(process,runPF2PAT=True, jetAlgo="AK5", runOnMC=runOnMC, postfix=postfix)
+    applyPostfix(process,"patJetCorrFactors",postfix).payload = cms.string('AK5PFchs')
+    process.pfPileUpPF2PAT.Vertices = cms.InputTag('goodOfflinePrimaryVertices')
+    process.pfPileUpPF2PAT.checkClosestZVertex = cms.bool(False)
+    from DQMOffline.RecoB.bTagSequences_cff import JetCut
+    process.selectedPatJetsPF2PAT.cut = JetCut
+    process.JECAlgo = cms.Sequence( getattr(process,"patPF2PATSequence"+postfix) )
+    newjetID=cms.InputTag("selectedPatJetsPF2PAT")
+elif whichJets=="ak4PFJEC":
+    process.JECAlgo = cms.Sequence(process.ak4PFJetsJEC * process.PFJetsFilter)
     newjetID=cms.InputTag("PFJetsFilter")
-    if whichJets=="ak5PF":
-        process.ak5JetsJEC.src = 'ak5PFJets'
-        process.ak5JetsJEC.correctors = ['ak5PFL1FastL2L3']
-process.myak5JetTracksAssociatorAtVertex.jets = newjetID
-process.softPFMuonsTagInfos.jets              = newjetID
-process.softPFElectronsTagInfos.jets          = newjetID
-process.AK5byRef.jets                         = newjetID
 
-###                                                                                                                                                                                                     
-print "inputTag : ", process.myak5JetTracksAssociatorAtVertex.jets
-###   
+if not whichJets=="ak4PF":
+    process.myak4JetTracksAssociatorAtVertex.jets = newjetID
+    process.softMuonTagInfos.jets                 = newjetID
+    process.softElectronTagInfos.jets             = newjetID
+    process.AK5byRef.jets                         = newjetID
+
+###
+print "inputTag : ", process.myak4JetTracksAssociatorAtVertex.jets
+###
 
 process.load("Validation.RecoB.bTagAnalysis_firststep_cfi")
 if runOnMC:
@@ -63,22 +74,7 @@ if runOnMC:
     process.bTagValidationFirstStep.allHistograms = True
     process.bTagValidationFirstStep.applyPtHatWeight = False
     process.bTagValidationFirstStep.flavPlots = "allbcl" #if contains "noall" plots for all jets not booked, if contains "dusg" all histograms booked, default : all, b, c, udsg, ni
-    #process.bTagValidation.ptRecJetMin = cms.double(20.)                                                                                          
-    process.bTagValidation.genJetsMatched = cms.InputTag("patJetGenJetMatch")
-    process.bTagValidation.doPUid = cms.bool(True)
-    process.ak5GenJetsForPUid = cms.EDFilter("GenJetSelector",
-                                             src = cms.InputTag("ak5GenJets"),
-                                             cut = cms.string('pt > 8.'),
-                                             filter = cms.bool(False)
-                                             )
-    process.load("PhysicsTools.PatAlgos.mcMatchLayer0.jetMatch_cfi")
-    process.patJetGenJetMatch.src = newjetID
-    process.patJetGenJetMatch.matched = cms.InputTag("ak5GenJetsForPUid")
-    process.patJetGenJetMatch.maxDeltaR = cms.double(0.25)
-    process.patJetGenJetMatch.resolveAmbiguities = cms.bool(True)
-else :
-    process.ak5JetsJEC.correctors[0] += 'Residual'
-                                  
+
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(100)
 )
@@ -94,18 +90,21 @@ process.EDM = cms.OutputModule("PoolOutputModule",
                                )
 process.load("DQMServices.Components.MEtoEDMConverter_cfi")
 
-process.jetSequences = cms.Sequence(process.goodOfflinePrimaryVertices * process.JECAlgo * process.btagSequence)
+if whichJets=="ak4PF":
+    process.jetSequences = cms.Sequence(process.goodOfflinePrimaryVertices * process.btagSequence)
+else:
+    process.jetSequences = cms.Sequence(process.goodOfflinePrimaryVertices * process.JECAlgo * process.btagSequence)
 
 if runOnMC:
     process.dqmSeq = cms.Sequence(process.ak5GenJetsForPUid * process.patJetGenJetMatch * process.flavourSeq * process.bTagValidationFirstStep * process.MEtoEDMConverter)
 else:
     process.dqmSeq = cms.Sequence(bTagValidationFirstStepData * process.MEtoEDMConverter)
-    
+
 if useTrigger:
     process.plots = cms.Path(process.bTagHLT * process.jetSequences * process.dqmSeq)
 else:
     process.plots = cms.Path(process.jetSequences * process.dqmSeq)
-                                              
+
 process.outpath = cms.EndPath(process.EDM)
 
 process.dqmEnv.subSystemFolder = 'BTAG'
@@ -113,7 +112,7 @@ process.dqmSaver.producer = 'DQM'
 process.dqmSaver.workflow = '/POG/BTAG/BJET'
 process.dqmSaver.convention = 'Offline'
 process.dqmSaver.saveByRun = cms.untracked.int32(-1)
-process.dqmSaver.saveAtJobEnd =cms.untracked.bool(True) 
+process.dqmSaver.saveAtJobEnd =cms.untracked.bool(True)
 process.dqmSaver.forceRunNumber = cms.untracked.int32(1)
 process.PoolSource.fileNames = [
 
