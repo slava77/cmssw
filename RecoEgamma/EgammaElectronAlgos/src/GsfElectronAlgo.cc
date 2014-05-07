@@ -1179,12 +1179,9 @@ void GsfElectronAlgo::setMVAOutputs(const std::map<reco::GsfTrackRef,reco::GsfEl
       el++ )
     {
 	if(generalData_->strategyCfg.gedElectronMode==true){
-		float mva_e_piValue=generalData_->sElectronMVAEstimator->mva( *(*el),*(eventData_->event));
-		float mvaValue =    generalData_->iElectronMVAEstimator->mva( *(*el), eventData_->vertices->size() );	
-		std::cout<<"mva_e_pi Value="<<mva_e_piValue<<" mvaValue="<<mvaValue<<std::endl;
 	        GsfElectron::MvaOutput mvaOutput ;
-	        mvaOutput.mva = mvaValue ;
-		mvaOutput.mva_e_pi = mva_e_piValue ;
+	        mvaOutput.mva = generalData_->iElectronMVAEstimator->mva( *(*el), eventData_->vertices->size() );
+		mvaOutput.mva_e_pi = generalData_->sElectronMVAEstimator->mva( *(*el),*(eventData_->event));
 	        (*el)->setMvaOutput(mvaOutput);
 	}
 	else{
