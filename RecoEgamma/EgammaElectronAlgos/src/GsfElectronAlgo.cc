@@ -70,7 +70,8 @@ struct GsfElectronAlgo::GeneralData
      const EcalRecHitsConfiguration &,
      EcalClusterFunctionBaseClass * superClusterErrorFunction,
      EcalClusterFunctionBaseClass * crackCorrectionFunction,
-     const SoftElectronMVAEstimator::Configuration & mvaCfg ,
+     const SoftElectronMVAEstimator::Configuration & mva_e_piCfg ,
+     const ElectronMVAEstimator::Configuration & mvaCfg ,
      const RegressionHelper::Configuration &) ;
   ~GeneralData() ;
 
@@ -87,6 +88,7 @@ struct GsfElectronAlgo::GeneralData
   EcalClusterFunctionBaseClass * superClusterErrorFunction ;
   EcalClusterFunctionBaseClass * crackCorrectionFunction ;
   SoftElectronMVAEstimator *sElectronMVAEstimator;
+  ElectronMVAEstimator *iElectronMVAEstimator;
   const RegressionHelper::Configuration regCfg;
   RegressionHelper * regHelper;
  } ;
@@ -102,7 +104,8 @@ struct GsfElectronAlgo::GeneralData
    const EcalRecHitsConfiguration & recHitsConfig,
    EcalClusterFunctionBaseClass * superClusterErrorFunc,
    EcalClusterFunctionBaseClass * crackCorrectionFunc,
-   const SoftElectronMVAEstimator::Configuration & mvaConfig,
+   const SoftElectronMVAEstimator::Configuration & mva_e_piConfig,
+   const ElectronMVAEstimator::Configuration & mvaConfig,
    const RegressionHelper::Configuration & regConfig
    )
  : inputCfg(inputConfig),
@@ -115,7 +118,8 @@ struct GsfElectronAlgo::GeneralData
    hcalHelperPflow(new ElectronHcalHelper(hcalConfigPflow)),
    superClusterErrorFunction(superClusterErrorFunc),
    crackCorrectionFunction(crackCorrectionFunc),
-   sElectronMVAEstimator(new SoftElectronMVAEstimator(mvaConfig)),
+   sElectronMVAEstimator(new SoftElectronMVAEstimator(mva_e_piConfig)),
+   iElectronMVAEstimator(new ElectronMVAEstimator(mvaConfig)),
    regCfg(regConfig),
    regHelper(new RegressionHelper(regConfig))
   {}
@@ -593,10 +597,11 @@ GsfElectronAlgo::GsfElectronAlgo
    const EcalRecHitsConfiguration & recHitsCfg,
    EcalClusterFunctionBaseClass * superClusterErrorFunction,
    EcalClusterFunctionBaseClass * crackCorrectionFunction,
-   const SoftElectronMVAEstimator::Configuration & mvaCfg,
+   const SoftElectronMVAEstimator::Configuration & mva_e_piCfg,
+   const ElectronMVAEstimator::Configuration & mvaCfg,
    const RegressionHelper::Configuration & regCfg
  )
-   : generalData_(new GeneralData(inputCfg,strategyCfg,cutsCfg,cutsCfgPflow,hcalCfg,hcalCfgPflow,isoCfg,recHitsCfg,superClusterErrorFunction,crackCorrectionFunction,mvaCfg,regCfg)),
+   : generalData_(new GeneralData(inputCfg,strategyCfg,cutsCfg,cutsCfgPflow,hcalCfg,hcalCfgPflow,isoCfg,recHitsCfg,superClusterErrorFunction,crackCorrectionFunction,mva_e_piCfg,mvaCfg,regCfg)),
    eventSetupData_(new EventSetupData),
    eventData_(0), electronData_(0)
  {}
@@ -1174,9 +1179,12 @@ void GsfElectronAlgo::setMVAOutputs(const std::map<reco::GsfTrackRef,reco::GsfEl
       el++ )
     {
 	if(generalData_->strategyCfg.gedElectronMode==true){
-		float mvaValue=generalData_->sElectronMVAEstimator->mva( *(*el),*(eventData_->event));
+		float mva_e_piValue=generalData_->sElectronMVAEstimator->mva( *(*el),*(eventData_->event));
+		float mvaValue =    generalData_->iElectronMVAEstimator->mva( *(*el), eventData_->vertices->size() );	
+		std::cout<<"mva_e_pi Value="<<mva_e_piValue<<" mvaValue="<<mvaValue<<std::endl;
 	        GsfElectron::MvaOutput mvaOutput ;
 	        mvaOutput.mva = mvaValue ;
+		mvaOutput.mva_e_pi = mva_e_piValue ;
 	        (*el)->setMvaOutput(mvaOutput);
 	}
 	else{
