@@ -11,15 +11,12 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 #include "FWCore/Utilities/interface/Exception.h"
-#include "FWCore/ServiceRegistry/interface/RandomEngineSentry.h"
 
 using namespace edm;
 using namespace TauSpinner;
 
 CLHEP::HepRandomEngine* TauSpinnerCMS::fRandomEngine= nullptr;
 bool                    TauSpinnerCMS::isTauSpinnerConfigure=false;
-
-bool TauSpinnerCMS::fInitialized=false;
 
 TauSpinnerCMS::TauSpinnerCMS( const ParameterSet& pset ) :
   EDProducer()
@@ -50,9 +47,18 @@ TauSpinnerCMS::TauSpinnerCMS( const ParameterSet& pset ) :
   else{
     hepmcCollectionToken_=consumes<HepMCProduct>(gensrc_);
   }
-}
 
-void TauSpinnerCMS::initialize(){
+
+  // random number generator needed for initalization
+  Service<RandomNumberGenerator> rng;
+  if(!rng.isAvailable()) {
+    throw cms::Exception("Configuration")
+      << "The RandomNumberProducer module requires the RandomNumberGeneratorService\n"
+      "which appears to be absent.  Please add that service to your configuration\n"
+      "or remove the modules that require it." << std::endl;
+  }
+  fRandomEngine = &rng->getEngine();
+
   // Now for Tauola and TauSpinner
   if(!isTauolaConfigured_){
     Tauolapp::Tauola::setRandomGenerator(TauSpinnerCMS::flat);
@@ -70,7 +76,8 @@ void TauSpinnerCMS::initialize(){
     //nonSMN
     TauSpinner::initialize_spinner(Ipp,Ipol_,nonSM2_,nonSMN_,CMSEnergy_);
   }
-  fInitialized=true;
+
+
 }
 
 void TauSpinnerCMS::endLuminosityBlockProduce(edm::LuminosityBlock& lumiSeg, const edm::EventSetup& iSetup){}
@@ -80,9 +87,14 @@ void TauSpinnerCMS::beginJob(){
 }
 
 void TauSpinnerCMS::produce( edm::Event& e, const edm::EventSetup& iSetup){
-  RandomEngineSentry<TauSpinnerCMS> randomEngineSentry(this, e.streamID());
-  if(!fInitialized) initialize();
-
+  Service<RandomNumberGenerator> rng;
+  if(!rng.isAvailable()) {
+    throw cms::Exception("Configuration")
+      << "The RandomNumberProducer module requires the RandomNumberGeneratorService\n"
+          "which appears to be absent.  Please add that service to your configuration\n"
+      "or remove the modules that require it." << std::endl;
+  }
+  fRandomEngine = &rng->getEngine(e.streamID());
   Tauolapp::Tauola::setRandomGenerator(TauSpinnerCMS::flat);  // rest tauola++ random number incase other modules use tauola++
 
   double WT=1.0;

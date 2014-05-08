@@ -7,5 +7,6 @@ pfMet = cms.EDProducer(
     alias = cms.string('PFMET'),
     globalThreshold = cms.double(0.0),
     calculateSignificance = cms.bool(False),
+    jets = cms.InputTag("ak4PFJets") # for significance calculation
     )
 ##____________________________________________________________________________||

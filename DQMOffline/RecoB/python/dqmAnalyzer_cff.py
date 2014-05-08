@@ -1,23 +1,56 @@
 import FWCore.ParameterSet.Config as cms
 
-#not useful anymore for b-tagging but used in some other sequences
-from JetMETCorrections.Configuration.JetCorrectionServices_cff import ak5PFL2L3,ak5PFL2Relative,ak5PFL3Absolute
+from DQMOffline.RecoB.bTagAnalysisData_cfi import *
+calobTagAnalysis = bTagAnalysis.clone()
+bTagPlots = cms.Sequence(calobTagAnalysis)
+calobTagAnalysis.finalizePlots = False
+calobTagAnalysis.finalizeOnly = False
+
+
+#Jet collection
+JetCut=cms.string("neutralHadronEnergyFraction < 0.99 && neutralEmEnergyFraction < 0.99 && nConstituents > 1 && chargedHadronEnergyFraction > 0.0 && chargedMultiplicity > 0.0 && chargedEmEnergyFraction < 0.99")
+
+from JetMETCorrections.Configuration.JetCorrectionServices_cff import ak4PFL2L3,ak4PFL2Relative,ak4PFL3Absolute
+newAk5PFL2L3 = ak4PFL2L3.clone()
+
+from JetMETCorrections.Configuration.DefaultJEC_cff import ak4PFJetsL2L3
+ak4PFJetsJEC = ak4PFJetsL2L3.clone(
+    correctors = ['newAk5PFL2L3']
+    )
+
+PFJetsFilter = cms.EDFilter("PFJetSelector",
+                            src = cms.InputTag("ak4PFJetsJEC"),
+                            cut = JetCut,
+                            filter = cms.bool(False)
+                            )
+
+jetID = cms.InputTag("PFJetsFilter")
+
+#JTA
+from RecoJets.JetAssociationProducers.ak4JTA_cff import *
+pfAk5JetTracksAssociatorAtVertex = ak4JetTracksAssociatorAtVertex.clone(jets = jetID)
+
+#btag sequence
+from RecoBTag.Configuration.RecoBTag_cff import *
+
+pfImpactParameterTagInfos = impactParameterTagInfos.clone(jetTracks = cms.InputTag("pfAk5JetTracksAssociatorAtVertex"))
+pfSecondaryVertexTagInfos = secondaryVertexTagInfos.clone(trackIPTagInfos = "pfImpactParameterTagInfos")
 
 #JEC for CHS
-from JetMETCorrections.Configuration.JetCorrectionServices_cff import ak5PFCHSL1Fastjet, ak5PFCHSL2Relative, ak5PFCHSL3Absolute, ak5PFCHSResidual, ak5PFCHSL1FastL2L3, ak5PFCHSL1FastL2L3Residual
-newak5PFCHSL1Fastjet = ak5PFCHSL1Fastjet.clone(algorithm = 'AK5PFchs')
-newak5PFCHSL2Relative = ak5PFCHSL2Relative.clone(algorithm = 'AK5PFchs')
-newak5PFCHSL3Absolute = ak5PFCHSL3Absolute.clone(algorithm = 'AK5PFchs')
-newak5PFCHSResidual = ak5PFCHSResidual.clone(algorithm = 'AK5PFchs')
+from JetMETCorrections.Configuration.JetCorrectionServices_cff import ak4PFCHSL1Fastjet, ak4PFCHSL2Relative, ak4PFCHSL3Absolute, ak4PFCHSResidual, ak4PFCHSL1FastL2L3, ak4PFCHSL1FastL2L3Residual
+newak4PFCHSL1Fastjet = ak4PFCHSL1Fastjet.clone(algorithm = 'AK5PFchs')
+newak4PFCHSL2Relative = ak4PFCHSL2Relative.clone(algorithm = 'AK5PFchs')
+newak4PFCHSL3Absolute = ak4PFCHSL3Absolute.clone(algorithm = 'AK5PFchs')
+newak4PFCHSResidual = ak4PFCHSResidual.clone(algorithm = 'AK5PFchs')
 
-newak5PFCHSL1FastL2L3 = ak5PFCHSL1FastL2L3.clone(correctors = cms.vstring('newak5PFCHSL1Fastjet','newak5PFCHSL2Relative','newak5PFCHSL3Absolute'))
-newak5PFCHSL1FastL2L3Residual = ak5PFCHSL1FastL2L3Residual.clone(correctors = cms.vstring('newak5PFCHSL1Fastjet','newak5PFCHSL2Relative','newak5PFCHSL3Absolute','newak5PFCHSResidual'))
+#preSeq
+prebTagSequence = cms.Sequence(ak4PFJetsJEC*PFJetsFilter*pfAk5JetTracksAssociatorAtVertex*pfbtagging)
 
 #Needed only for fastsim, why?
-ak5PFCHSL1Fastjet.algorithm = 'AK5PFchs'
-ak5PFCHSL2Relative.algorithm = 'AK5PFchs'
-ak5PFCHSL3Absolute.algorithm = 'AK5PFchs'
-ak5PFCHSResidual.algorithm = 'AK5PFchs'
+ak4PFCHSL1Fastjet.algorithm = 'AK5PFchs'
+ak4PFCHSL2Relative.algorithm = 'AK5PFchs'
+ak4PFCHSL3Absolute.algorithm = 'AK5PFchs'
+ak4PFCHSResidual.algorithm = 'AK5PFchs'
 
 ######### DATA ############
 from DQMOffline.RecoB.bTagAnalysisData_cfi import *

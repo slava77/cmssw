@@ -41,7 +41,7 @@
 
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
-class RecoTauProducer : public edm::stream::EDProducer<> 
+class RecoTauProducer : public edm::EDProducer 
 {
  public:
   typedef reco::tau::RecoTauBuilderPlugin Builder;
@@ -106,6 +106,7 @@ RecoTauProducer::RecoTauProducer(const edm::ParameterSet& pset)
     // Build the plugin
     reco::tau::RecoTauModifierPlugin* plugin = 0;
     plugin = RecoTauModifierPluginFactory::get()->create(pluginType, *modfierPSet, consumesCollector());
+    plugin->beginJob(this);
     modifiers_.push_back(plugin);
   }
 

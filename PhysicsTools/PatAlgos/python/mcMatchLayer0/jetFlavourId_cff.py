@@ -5,9 +5,9 @@ patJetPartonsLegacy = cms.EDProducer("PartonSelector",
     src = cms.InputTag("genParticles")
 )
 
-patJetPartonAssociationLegacy = cms.EDProducer("JetPartonMatcher",
-    jets    = cms.InputTag("ak5PFJetsCHS"),
-    partons = cms.InputTag("patJetPartonsLegacy"),
+patJetPartonAssociation = cms.EDProducer("JetPartonMatcher",
+    jets    = cms.InputTag("ak4PFJetsCHS"),
+    partons = cms.InputTag("patJetPartons"),
     coneSizeToAssociate = cms.double(0.3),
 )
 
@@ -28,7 +28,7 @@ patJetFlavourAssociation = cms.EDProducer("JetFlavourClustering",
     cHadrons = cms.InputTag("patJetPartons","cHadrons"),
     partons = cms.InputTag("patJetPartons","partons"),
     jetAlgorithm = cms.string("AntiKt"),
-    rParam = cms.double(0.5),
+    rParam = cms.double(0.4),
     ghostRescaling = cms.double(1e-18),
     hadronFlavourHasPriority = cms.bool(True)
 )

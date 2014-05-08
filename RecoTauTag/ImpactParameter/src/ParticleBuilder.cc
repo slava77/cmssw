@@ -12,7 +12,6 @@
 #include "TrackingTools/TrajectoryParametrization/interface/PerigeeTrajectoryError.h"
 #include "RecoTauTag/ImpactParameter/interface/TrackHelixVertexFitter.h"
 #include <TVector3.h>
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 using namespace tauImpactParameter;
 
@@ -81,12 +80,13 @@ TrackParticle ParticleBuilder::createTrackParticle(const reco::TransientTrack& t
     if(useTrackHelixPropagation){
       /////////////////////////////////////////////////////////////////
       // correct dxy dz neglecting material and radiative corrections
-      
-      LogDebug("RecoTauImpactParameterParticleBuilder") << "Offical CMS dxy - " << par(TrackParticle::dxy) << " dz " << par(TrackParticle::dz) 
-		<< " kappa " << par(reco::TrackBase::i_qoverp) ;
-      LogDebug("RecoTauImpactParameterParticleBuilder") << "Offical CMS dxy - SimpleFits Format" << SFpar(TrackParticle::dxy) << " dz " << SFpar(TrackParticle::dz) 
-		<< " kappa " << SFpar(reco::TrackBase::i_qoverp) ;
-      
+      /*
+      std::cout << "Offical CMS dxy - " << par(TrackParticle::dxy) << " dz " << par(TrackParticle::dz) 
+		<< " kappa " <<  track->qoverp() << " " << par(reco::TrackBase::i_qoverp) <<  std::endl;
+      std::cout << "Offical CMS dxy - SimpleFits Format" << SFpar(TrackParticle::dxy) << " dz " << SFpar(TrackParticle::dz) 
+		<< " kappa " <<  track->qoverp() << " " << SFpar(reco::TrackBase::i_qoverp) <<  std::endl;
+      std::cout << "x " << TrackIPOrigin.x() << " y " <<  TrackIPOrigin.y() << " z " <<  TrackIPOrigin.z() << std::endl;
+      */
       double x,y,z,dxy,dz,s,kappa,lambda,phi;
       TVectorT<double> freehelix(TrackHelixVertexFitter::NFreeTrackPar);
       freehelix(TrackHelixVertexFitter::x0)=TrackIPPos.x();
@@ -98,7 +98,7 @@ TrackParticle ParticleBuilder::createTrackParticle(const reco::TransientTrack& t
       TrackHelixVertexFitter::computedxydz(freehelix,0,kappa,lambda,phi,x,y,z,s,dxy,dz);
       SFpar(TrackParticle::dxy) = dxy;
       SFpar(TrackParticle::dz)  = dz;
-      LogDebug("RecoTauImpactParameterParticleBuilder") << "Found values dxy " << dxy << " dz " << dz; 
+      //std::cout << "Found values dxy " << dxy << " dz " << dz << std::endl; 
       //exit(0);
       ////////////////////////////////////////////////////////////////
     }

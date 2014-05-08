@@ -26,7 +26,7 @@ layerList = cms.vstring('TOB6+TOB5',
                         )
 
 regionalCosmicTrackerSeeds = cms.EDProducer( "SeedGeneratorFromRegionHitsEDProducer",
-   RegionFactoryPSet = cms.PSet(                                 
+   RegionFactoryPSet = cms.PSet(
       ComponentName = cms.string( "CosmicRegionalSeedGenerator" ),
       RegionPSet = cms.PSet(
         ptMin          = cms.double( 1.0 ),
@@ -51,13 +51,28 @@ regionalCosmicTrackerSeeds = cms.EDProducer( "SeedGeneratorFromRegionHitsEDProdu
         doJetsExclusionCheck   = cms.bool( True ),
         deltaRExclusionSize    = cms.double( 0.3 ),
         jetsPtMin              = cms.double( 5 ),
-        recoCaloJetsCollection = cms.InputTag("ak5CaloJets")
+        recoCaloJetsCollection = cms.InputTag("ak4CaloJets")
         )
     ),
     OrderedHitsFactoryPSet = cms.PSet(
         ComponentName = cms.string( "GenericPairGenerator"),
-        LayerSrc = cms.InputTag("regionalCosmicTrackerSeedingLayers")
-    ), 
+        LayerPSet = cms.PSet(
+           layerInfo,
+           layerList = cms.vstring('TOB6+TOB5',
+                                   'TOB6+TOB4',
+                                   'TOB6+TOB3',
+                                   'TOB5+TOB4',
+                                   'TOB5+TOB3',
+                                   'TOB4+TOB3',
+                                   'TEC1_neg+TOB6',
+                                   'TEC1_neg+TOB5',
+                                   'TEC1_neg+TOB4',
+                                   'TEC1_pos+TOB6',
+                                   'TEC1_pos+TOB5',
+                                   'TEC1_pos+TOB4'
+                                   )
+           ),
+    ),
 
     ClusterCheckPSet = cms.PSet (
       MaxNumberOfCosmicClusters = cms.uint32(10000),
@@ -77,6 +92,6 @@ regionalCosmicTrackerSeeds = cms.EDProducer( "SeedGeneratorFromRegionHitsEDProdu
       maxseeds = cms.int32(10000)
       )
 
-          
+
 )
 

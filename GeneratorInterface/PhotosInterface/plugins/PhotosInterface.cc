@@ -1,5 +1,5 @@
 #include <iostream>
-#include "PhotosInterface.h"
+#include "GeneratorInterface/PhotosInterface/interface/PhotosInterface.h"
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "GeneratorInterface/PhotosInterface/interface/PhotosFactory.h"
@@ -50,9 +50,6 @@ PhotosInterface::PhotosInterface( const edm::ParameterSet& )
    fSpecialSettings.push_back("QED-brem-off:all");
    fIsInitialized = false;
 }
-
-PhotosInterface::~PhotosInterface()
-{}
 
 void PhotosInterface::setRandomEngine(CLHEP::HepRandomEngine* decayRandomEngine){
   fRandomEngine=decayRandomEngine;

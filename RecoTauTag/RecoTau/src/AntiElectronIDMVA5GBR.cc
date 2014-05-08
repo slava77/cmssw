@@ -252,7 +252,8 @@ double AntiElectronIDMVA5GBR::MVAValue(Float_t TauEtaAtEcalEntrance,
 {
 
   if ( !isInitialized_ ) {
-    throw cms::Exception("ClassNotInitialized") << "Error: AntiElectronMVA not properly initialized.\n";
+    std::cout << "Error: AntiElectronMVA not properly initialized.\n";
+    return -99.;
   }
 
   Float_t TauEmFraction = TMath::Max(TauEmFract, float(0.));
