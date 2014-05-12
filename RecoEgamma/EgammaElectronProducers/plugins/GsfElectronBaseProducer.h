@@ -52,7 +52,8 @@ class GsfElectronBaseProducer : public edm::EDProducer
     GsfElectronAlgo::CutsConfiguration cutsCfgPflow_ ;
     ElectronHcalHelper::Configuration hcalCfg_ ;
     ElectronHcalHelper::Configuration hcalCfgPflow_ ;
-    SoftElectronMVAEstimator::Configuration mvaCfg_ ;
+    SoftElectronMVAEstimator::Configuration mva_e_piCfg_ ;
+    ElectronMVAEstimator::Configuration mvaCfg_ ;
   private :
 
     // check expected configuration of previous modules
