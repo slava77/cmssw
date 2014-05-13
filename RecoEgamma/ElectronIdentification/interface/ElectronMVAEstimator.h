@@ -7,8 +7,15 @@
 
 class ElectronMVAEstimator {
  public:
+  struct Configuration{
+        std::vector<std::string> vweightsfiles;
+  };
   ElectronMVAEstimator();
   ElectronMVAEstimator(std::string fileName);
+  ElectronMVAEstimator(const Configuration & );
+
+//  ElectronMVAEstimator();
+//  ElectronMVAEstimator(std::string fileName);
   ~ElectronMVAEstimator() {;}
   double mva(const reco::GsfElectron& myElectron, int nvertices=0);
 
@@ -17,6 +24,7 @@ class ElectronMVAEstimator {
   void init(std::string fileName);
 
  private:
+  const Configuration cfg_;
   TMVA::Reader    *tmvaReader_;
   
   Float_t       fbrem;
