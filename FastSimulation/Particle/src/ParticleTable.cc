@@ -1,10 +1,8 @@
 #include "FastSimulation/Particle/interface/ParticleTable.h"
 
-ParticleTable*
-ParticleTable::myself=0; 
+thread_local std::unique_ptr<const ParticleTable> 
+ParticleTable::myself((const ParticleTable*)NULL); 
 
-ParticleTable* 
-ParticleTable::instance(const HepPDT::ParticleDataTable* pdt) {
-  if (!myself) myself = new ParticleTable(pdt);
-  return myself;
+void ParticleTable::set(const HepPDT::ParticleDataTable* pdt) { 
+  myself.reset( new ParticleTable(pdt) );  
 }
