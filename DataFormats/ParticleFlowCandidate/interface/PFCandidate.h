@@ -287,6 +287,10 @@ namespace reco {
     ///   to 1 otherwise
     /// For neutral particles, it is set to the default value
 
+    void set_mva( float mva ){ mva_=mva;}
+
+    /// mva for isolated electrons
+    float mva() const { return mva_;}
 
     void set_mva_e_pi( float mva ){ mva_e_pi_=mva;}
     
@@ -453,6 +457,9 @@ namespace reco {
     float      deltaP_;
 
     PFVertexType vertexType_;
+
+    /// mva for isolated electrons
+    float       mva_;
 
     /// mva for electron-pion discrimination
     float       mva_e_pi_;
