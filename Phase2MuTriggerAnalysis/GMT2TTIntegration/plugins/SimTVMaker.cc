@@ -7,6 +7,8 @@
 #include "SimDataFormats/Track/interface/SimTrack.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
 
+#include "etaPhiPropagators.h"
+
 using namespace std;
 using namespace edm;
 
@@ -27,6 +29,7 @@ private:
   edm::InputTag simvInputTag_;
   std::string aliasprefix_;
   bool saveOnlyMuons_;
+  unique_ptr<etaPhiProp> propTFS2;
 };
 
 
@@ -39,6 +42,8 @@ SimTVMaker::SimTVMaker(const edm::ParameterSet& iConfig) {
   produces<vector<float> > (branchprefix+"pt" ).setBranchAlias(aliasprefix_+"_pt" );
   produces<vector<float> > (branchprefix+"eta" ).setBranchAlias(aliasprefix_+"_eta" );
   produces<vector<float> > (branchprefix+"phi" ).setBranchAlias(aliasprefix_+"_phi" );
+  produces<vector<float> > (branchprefix+"tfs2eta" ).setBranchAlias(aliasprefix_+"_tfs2_eta" );
+  produces<vector<float> > (branchprefix+"tfs2phi" ).setBranchAlias(aliasprefix_+"_tfs2_phi" );
   produces<vector<LorentzVector> > (branchprefix+"v4" ).setBranchAlias(aliasprefix_+"_v4" );
   produces<vector<int> > (branchprefix+"q" ).setBranchAlias(aliasprefix_+"_q" );
   produces<vector<int> > (branchprefix+"pdgid" ).setBranchAlias(aliasprefix_+"_pdgid" );
@@ -51,6 +56,8 @@ SimTVMaker::SimTVMaker(const edm::ParameterSet& iConfig) {
   simtInputTag_ = iConfig.getParameter<edm::InputTag>("simtInputTag");
   simvInputTag_ = iConfig.getParameter<edm::InputTag>("simvInputTag");
   saveOnlyMuons_ = iConfig.getParameter<bool>("saveOnlyMuons");
+
+  propTFS2 = std::unique_ptr<etaPhiProp>( new etaPhiToStation2Run1TF());
 }
 
 
@@ -58,6 +65,8 @@ void SimTVMaker::produce(edm::Event& ev, const edm::EventSetup& es){
   auto_ptr<vector<float> > sims_pt                        (new vector<float>  );
   auto_ptr<vector<float> > sims_eta                        (new vector<float>  );
   auto_ptr<vector<float> > sims_phi                        (new vector<float>  );
+  auto_ptr<vector<float> > sims_tfs2_eta                        (new vector<float>  );
+  auto_ptr<vector<float> > sims_tfs2_phi                        (new vector<float>  );
   auto_ptr<vector<LorentzVector> > sims_v4                        (new vector<LorentzVector>  );
   auto_ptr<vector<int> >           sims_q  (new vector<int>);
   auto_ptr<vector<int> >           sims_pdgid  (new vector<int>);
@@ -84,6 +93,10 @@ void SimTVMaker::produce(edm::Event& ev, const edm::EventSetup& es){
     a4d = simt.vertIndex() < 0 ? dummy : simvs[simt.vertIndex()].position();
     sims_v4->push_back(LorentzVector(a4d.x(), a4d.y(), a4d.z(), a4d.t()));
     sims_q->push_back(simt.charge());
+
+    auto etaPhi = propTFS2->propagate(sims_pt->back(), sims_eta->back(), sims_phi->back(), sims_q->back(), sims_v4->back().z());
+    sims_tfs2_eta->push_back(etaPhi.first);
+    sims_tfs2_phi->push_back(etaPhi.second);
     sims_pdgid->push_back(simt.type());
     sims_vtype->push_back(-1);// FIXME FOR 7X simt.vertIndex() < 0 ? 0 : simvs[simt.vertIndex()].processType());
     sims_idst->push_back(simt.trackId());
@@ -94,6 +107,8 @@ void SimTVMaker::produce(edm::Event& ev, const edm::EventSetup& es){
   ev.put(sims_pt, aliasprefix_+"pt");
   ev.put(sims_eta, aliasprefix_+"eta");
   ev.put(sims_phi, aliasprefix_+"phi");
+  ev.put(sims_tfs2_eta, aliasprefix_+"tfs2eta");
+  ev.put(sims_tfs2_phi, aliasprefix_+"tfs2phi");
   ev.put(sims_v4, aliasprefix_+"v4");
   ev.put(sims_q , aliasprefix_+"q");
   ev.put(sims_pdgid , aliasprefix_+"pdgid");
