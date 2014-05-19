@@ -35,3 +35,7 @@ process.outpath = cms.EndPath(process.out)
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
+
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True)
+    )
