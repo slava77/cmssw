@@ -16,6 +16,9 @@ namespace l1slhc
     float y ;
     float z ;
     float hovere ;
+
+    float ECALiso ;
+    float ECALetPUcorr;
     
   };
   
