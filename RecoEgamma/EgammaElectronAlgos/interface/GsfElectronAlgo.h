@@ -48,7 +48,7 @@ class EcalClusterFunctionBaseClass ;
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgoRcd.h"
 
 #include "RecoEgamma/ElectronIdentification/interface/SoftElectronMVAEstimator.h"
-
+#include "RecoEgamma/ElectronIdentification/interface/ElectronMVAEstimator.h"
 
 #include <list>
 #include <string>
@@ -204,7 +204,8 @@ class GsfElectronAlgo {
       const EcalRecHitsConfiguration &,
       EcalClusterFunctionBaseClass * superClusterErrorFunction,
       EcalClusterFunctionBaseClass * crackCorrectionFunction,
-      const SoftElectronMVAEstimator::Configuration & mvaCfg,	
+      const SoftElectronMVAEstimator::Configuration & mva_e_piCfg,	
+      const ElectronMVAEstimator::Configuration & mvaCfg,
       const RegressionHelper::Configuration & regCfg
       ) ;
 
