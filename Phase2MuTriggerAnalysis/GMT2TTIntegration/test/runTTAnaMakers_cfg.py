@@ -30,7 +30,7 @@ process.out.outputCommands = cms.untracked.vstring( 'drop *' )
 process.out.outputCommands.extend(cms.untracked.vstring('keep *_*Maker*_*_TTGMT*'))
 
 process.load("Phase2MuTriggerAnalysis.GMT2TTIntegration.ttgmtSequence_cff")
-process.p = cms.Path( process.ttgmtSequence )
+process.ttgmt_path = cms.Path( process.ttgmtSequence )
 process.outpath = cms.EndPath(process.out)
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
