@@ -43,7 +43,7 @@ namespace l1extra {
 		      const edm::Ptr< L1TkTrackType >& trkPtr,
 		      float tkisol = -999. );
     
-    L1TkMuonParticle(const reco::LeafCandidate& cand) : reco::LeafCandidate(cand), TrkIsol_(-999.) {}
+    L1TkMuonParticle(const reco::LeafCandidate& cand) : reco::LeafCandidate(cand), TrkIsol_(-999.), quality_(999) {}
 
     virtual ~L1TkMuonParticle() {}
     
