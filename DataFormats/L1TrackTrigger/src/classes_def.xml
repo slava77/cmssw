@@ -51,8 +51,9 @@
  <class name="edm::Wrapper<l1extra::L1TkHTMissParticle>"/>
   <class name="edm::Wrapper<std::vector<l1extra::L1TkHTMissParticle> >"/>
 
-  <class name="l1extra::L1TkMuonParticle" ClassVersion="13">
+  <class name="l1extra::L1TkMuonParticle" ClassVersion="14">
    <version ClassVersion="13" checksum="434850848"/>
+   <version ClassVersion="14" checksum="2680434028"/>
   </class>
   <class name="std::vector<l1extra::L1TkMuonParticle>"/>
   <class name="edm::Wrapper<std::vector<l1extra::L1TkMuonParticle> >"/>

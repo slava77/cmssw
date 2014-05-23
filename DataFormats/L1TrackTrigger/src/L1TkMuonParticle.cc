@@ -10,10 +10,6 @@
 using namespace l1extra ;
 
 
-L1TkMuonParticle::L1TkMuonParticle()
-{
-}
-
 L1TkMuonParticle::L1TkMuonParticle( const LorentzVector& p4,
          // const edm::Ref< XXXCollection >& muRef,  // PL
 	 const edm::Ref< L1MuonParticleCollection > &muRef,
@@ -22,7 +18,7 @@ L1TkMuonParticle::L1TkMuonParticle( const LorentzVector& p4,
    : LeafCandidate( ( char ) 0, p4 ),
      muRef_ ( muRef ) ,		// PL uncomment
      trkPtr_ ( trkPtr ) ,
-     TrkIsol_ ( tkisol )
+     TrkIsol_ ( tkisol ), quality_(999)
 
 {
 
@@ -35,31 +31,18 @@ L1TkMuonParticle::L1TkMuonParticle( const LorentzVector& p4,
 int L1TkMuonParticle::bx() const {
  int dummy = -999;
 	// PL.  In case Pierluigi's objects have a bx
-/*
- if ( muRef_.isNonnull() ) {
-        return (getMuRef() -> bx()) ;
- }
- else {
-        return dummy;
- 
- }
-*/
-        return dummy;
-}
-
-unsigned int L1TkMuonParticle::quality()  const {
-
- int dummy = 999;
 
  if ( muRef_.isNonnull() ) {
-        return (getMuRef() -> gmtMuonCand().quality() );
+   return (getMuRef() -> bx()) ;
  }
- else {
-        return dummy;
+ else if (muExtendedRef_.isNonnull()) {
+   return getMuExtendedRef()->bx();
  
  }
 
+        return dummy;
 }
+
 
 
 
