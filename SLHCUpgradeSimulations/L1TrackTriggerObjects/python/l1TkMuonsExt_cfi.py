@@ -11,7 +11,8 @@ l1TkMuonsExt = cms.EDProducer(
     PTMINTRA = cms.double( 2. ),    # in GeV
 #    DRmax = cms.double( 0.5 ),
     nStubsmin = cms.int32( 3 ),        # minimum number of stubs
-#    closest = cms.bool( True )
+#    closest = cms.bool( True ),
+    correctGMTPropForTkZ = cms.bool(True)
     
 )
 

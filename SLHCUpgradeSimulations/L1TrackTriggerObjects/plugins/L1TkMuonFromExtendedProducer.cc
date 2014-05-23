@@ -88,7 +88,7 @@ private:
   //  float DRmax_;
   int nStubsmin_ ;         // minimum number of stubs   
   //  bool closest_ ;
-  
+  bool correctGMTPropForTkZ_;
 
 } ;
 
@@ -111,6 +111,8 @@ L1TkMuonFromExtendedProducer::L1TkMuonFromExtendedProducer(const edm::ParameterS
    //   DRmax_ = (float)iConfig.getParameter<double>("DRmax");
    nStubsmin_ = iConfig.getParameter<int>("nStubsmin");
    //   closest_ = iConfig.getParameter<bool>("closest");
+
+   correctGMTPropForTkZ_ = iConfig.getParameter<bool>("correctGMTPropForTkZ");
 
    produces<L1TkMuonParticleCollection>();
 }
@@ -271,6 +273,7 @@ L1TkMuonFromExtendedProducer::PropState L1TkMuonFromExtendedProducer::propagateT
   float tk_phi = p3.phi();
   float tk_q = tk.getRInv()>0? 1.: -1.;
   float tk_z  = tk.getVertex().z();
+  if (!correctGMTPropForTkZ_) tk_z = 0;
 
   L1TkMuonFromExtendedProducer::PropState dest;
   if (tk_p<3.5 ) return dest;
