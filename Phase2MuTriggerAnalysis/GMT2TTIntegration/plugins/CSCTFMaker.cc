@@ -216,14 +216,17 @@ void CSCTFMaker::produce(edm::Event& ev, const edm::EventSetup& es){
 	    int aBend = -9;
 	    int aBX = -9;
 	    bool hadLCT = false;
+	    int countLCTs = 0;
 	    for (; aDigi != anLCT.second.second; ++aDigi){
 	      //do we really get many here?
+	      if (countLCTs>0) edm::LogWarning("ManyLCTs")<<"got a new LCT in st "<<aStation<<" r "<<aRing <<"  overriting previous: WG "<<aWG<< " HS "<<aHS;
 	      aWG = aDigi->getKeyWG();
 	      aHS = aDigi->getStrip();
 	      aCLCTPattern = aDigi->getCLCTPattern();
 	      aBend = aDigi->getBend();
 	      aBX = aDigi->getBX();
 	      hadLCT = true;
+	      countLCTs++;
 	    }
 	    if (hadLCT) nlcts++;
 	    if (aStation ==1){
