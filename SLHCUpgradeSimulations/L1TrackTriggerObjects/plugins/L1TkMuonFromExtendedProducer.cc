@@ -182,6 +182,8 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     PropState matchProp;
     int match_idx = -1;
     int il1tk = -1;
+
+    LogDebug("MDEBUG")<<"have a gmt, look for a match ";
     for (auto l1tk : l1tks ){
       il1tk++;
       float l1tk_pt = l1tk.getMomentum().perp();
@@ -216,6 +218,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       }
     }// over l1tks
     
+    LogDebug("MYDEBUG")<<"matching index is "<<match_idx;
     if (match_idx >= 0){
       const L1TkTrackType& matchTk = l1tks[match_idx];
       
@@ -225,6 +228,8 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       float dEta = std::abs(matchProp.eta - l1mu.eta());
       float dPhi = std::abs(deltaPhi(matchProp.phi, l1mu.phi()));
 
+      LogDebug("MYDEBUG")<<"match details: prop "<<matchProp.pt<<" "<<matchProp.eta<<" "<<matchProp.phi
+			 <<" mutk "<<l1mu.pt()<<" "<<l1mu.eta()<<" "<<l1mu.phi()<<" delta "<<dEta<<" "<<dPhi<<" cut "<<etaCut<<" "<<phiCut;
       if (dEta < etaCut && dPhi < phiCut){
 	Ptr< L1TkTrackType > l1tkPtr(l1tksH, match_idx);
 	auto p3 = matchTk.getMomentum();
