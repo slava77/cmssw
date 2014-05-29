@@ -7,8 +7,6 @@
 
 using namespace l1extra;
 
-L1TkMuonParticle::L1TkMuonParticle() {}
-
 	// Padova's TkMuons
 L1TkMuonParticle::L1TkMuonParticle( const LorentzVector& p4,
                                     const edm::Ptr< DTMatch > &muRef,
@@ -42,7 +40,7 @@ L1TkMuonParticle::L1TkMuonParticle( const LorentzVector& p4,
 	setTrkzVtx( z );
  }
  if (muRef_.isNonnull()) {
-   quality_ = muRef_->quality();
+   quality_ = muRef_->gmtMuonCand().quality();
  }
 }
 
