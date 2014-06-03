@@ -80,9 +80,9 @@ def miniAOD_customizeCommon(process):
     process.selectedPatJetsCA8.cut = cms.string("pt > 100")
     process.patJetGenJetMatchCA8.matched =  'slimmedGenJets'
     #
-    ## PU JetID
-    process.load("PhysicsTools.PatAlgos.slimming.pileupJetId_cfi")
-    process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
+    from PhysicsTools.PatAlgos.tools.trigTools import switchOnTriggerStandAlone
+    switchOnTriggerStandAlone( process, outputModule = '' )
+    process.patTrigger.packTriggerPathNames = cms.bool(True)
     #
     from PhysicsTools.PatAlgos.tools.trigTools import switchOnTriggerStandAlone
     switchOnTriggerStandAlone( process, outputModule = '' )
