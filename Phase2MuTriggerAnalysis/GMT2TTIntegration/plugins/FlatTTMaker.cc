@@ -4,8 +4,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "SimDataFormats/SLHC/interface/L1TkTrack.h"
 #include "SimDataFormats/SLHC/interface/StackedTrackerTypes.h"
+#include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
 
 #include "etaPhiPropagators.h"
 
@@ -15,8 +15,8 @@ using namespace edm;
 class FlatTTMaker : public edm::EDProducer {
 public:
   typedef math::XYZTLorentzVectorF LorentzVector;
-  typedef L1TkTrack_PixelDigi_ L1Track;
-  typedef L1TkTrack_PixelDigi_Collection L1TrackCollection;
+  typedef TTTrack< Ref_PixelDigi_ >                     L1Track;
+  typedef std::vector< L1Track >        L1TrackCollection;
   explicit FlatTTMaker (const edm::ParameterSet&);
   ~FlatTTMaker() {};
 
@@ -75,13 +75,13 @@ void FlatTTMaker::produce(edm::Event& ev, const edm::EventSetup& es){
     tts_eta->push_back(tmp4.eta());
     tts_phi->push_back(tmp4.phi());
     tts_q->push_back(tt.getRInv()>0? 1: -1);
-    tts_nstubs->push_back(tt.getStubPtrs().size());
+    tts_nstubs->push_back(tt.getStubRefs().size());
     tts_chi2->push_back(tt.getChi2());
-    tts_vz->push_back(tt.getVertex().z());
+    tts_vz->push_back(tt.getPOCA().z());
 
-    auto etaPhi = propTFS2->propagate(tts_pt->back(), tts_eta->back(), tts_phi->back(), tts_q->back(), tts_vz->back());
-    tts_tfs2_eta->push_back(etaPhi.first);
-    tts_tfs2_phi->push_back(etaPhi.second);
+    auto pState = propTFS2->propagate(tts_pt->back(), tts_eta->back(), tts_phi->back(), tts_q->back(), tts_vz->back());
+    tts_tfs2_eta->push_back(pState.eta);
+    tts_tfs2_phi->push_back(pState.phi);
   }
 
   ev.put(tts_pt, aliasprefix_+"pt");
