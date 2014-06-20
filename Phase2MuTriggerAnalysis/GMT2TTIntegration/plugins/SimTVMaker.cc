@@ -94,9 +94,9 @@ void SimTVMaker::produce(edm::Event& ev, const edm::EventSetup& es){
     sims_v4->push_back(LorentzVector(a4d.x(), a4d.y(), a4d.z(), a4d.t()));
     sims_q->push_back(simt.charge());
 
-    auto etaPhi = propTFS2->propagate(sims_pt->back(), sims_eta->back(), sims_phi->back(), sims_q->back(), sims_v4->back().z());
-    sims_tfs2_eta->push_back(etaPhi.first);
-    sims_tfs2_phi->push_back(etaPhi.second);
+    auto pState = propTFS2->propagate(sims_pt->back(), sims_eta->back(), sims_phi->back(), sims_q->back(), sims_v4->back().z());
+    sims_tfs2_eta->push_back(pState.eta);
+    sims_tfs2_phi->push_back(pState.phi);
     sims_pdgid->push_back(simt.type());
     sims_vtype->push_back(-1);// FIXME FOR 7X simt.vertIndex() < 0 ? 0 : simvs[simt.vertIndex()].processType());
     sims_idst->push_back(simt.trackId());
