@@ -497,10 +497,10 @@ CSCMotherboardME21GEM::run(const CSCWireDigiCollection* wiredc,
 
             ++nSuccesFulMatches;
             
-            //int mbx = bx_clct-bx_alct;
+            int mbx = std::abs(clct->bestCLCT[bx_alct].getBX()-bx_alct);
             int bx_gem = (coPads[0].second)->bx()+lct_central_bx;	    
             correlateLCTsGEM(clct->bestCLCT[bx_alct], clct->secondCLCT[bx_alct], *(coPads[0].second), GEMDetId(coPads[0].first).roll(),
-                             allLCTs[bx_gem][0][0], allLCTs[bx_gem][0][1]);
+                             allLCTs[bx_gem][mbx][0], allLCTs[bx_gem][mbx][1]);
             if (debug_gem_matching) {
               //	    if (infoV > 1) LogTrace("CSCMotherboard")
               std::cout << "Successful GEM-CLCT match in ME21: bx_alct = " << bx_alct <<std::endl;
@@ -511,7 +511,7 @@ CSCMotherboardME21GEM::run(const CSCWireDigiCollection* wiredc,
               std::cout << "+++ Second CLCT Details: ";
               clct->secondCLCT[bx_alct].print();
             }
-            if (allLCTs[bx_alct][0][0].isValid()) {
+            if (allLCTs[bx_gem][mbx][0].isValid()) {
               used_clct_mask[bx_alct] += 1;
               if (match_earliest_clct_me21_only) break;
             }

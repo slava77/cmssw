@@ -450,46 +450,45 @@ CSCMotherboardME3141RPC::run(const CSCWireDigiCollection* wiredc,
     else{
       auto digis(rpcDigis_[bx_alct]);
       if (runME3141ILT_ and digis.size() and buildLCTfromCLCTandRPC_) {
-        const int bx_clct_start(bx_alct - match_trig_window_size/2);
-        const int bx_clct_stop(bx_alct + match_trig_window_size/2);
+        //const int bx_clct_start(bx_alct - match_trig_window_size/2);
+        //const int bx_clct_stop(bx_alct + match_trig_window_size/2);
         // RPC-to-CLCT
         int nSuccesFulMatches = 0;
-        for (int bx_clct = bx_clct_start; bx_clct <= bx_clct_stop; bx_clct++)
-        {
-          if (bx_clct < 0 or bx_clct >= CSCCathodeLCTProcessor::MAX_CLCT_BINS) continue;
-          if (drop_used_clcts and used_clct_mask[bx_clct]) continue;
-          if (clct->bestCLCT[bx_clct].isValid())
+       // for (int bx_clct = bx_clct_start; bx_clct <= bx_clct_stop; bx_clct++)
+       // {
+        //  if (bx_clct < 0 or bx_clct >= CSCCathodeLCTProcessor::MAX_CLCT_BINS) continue;
+          if (drop_used_clcts and used_clct_mask[bx_alct]) continue;
+          if (clct->bestCLCT[bx_alct].isValid())
           {          
             if (debug_rpc_matching_){ 
               std::cout << "========================================================================" << std::endl;
-              std::cout << "RPC-CLCT matching in ME" << theStation << "/1 chamber: " << cscChamber->id() << " in bx range: [" << bx_clct_start << "," << bx_clct_stop << "]" << std::endl;
+              std::cout << "RPC-CLCT matching in ME" << theStation << "/1 chamber: " << cscChamber->id() << " in bx: "<<bx_alct<< std::endl;
               std::cout << "------------------------------------------------------------------------" << std::endl;
             }
-            const int quality(clct->bestCLCT[bx_clct].getQuality());
+            const int quality(clct->bestCLCT[bx_alct].getQuality());
             // we also use low-Q stubs for the time being
             if (quality < 4 and !buildLCTfromLowQstubandRPC_) continue;
             
             ++nSuccesFulMatches;
             
-            int mbx = bx_clct-bx_clct_start;            
-            correlateLCTsRPC(clct->bestCLCT[bx_clct], clct->secondCLCT[bx_clct], *(digis[0].second), RPCDetId(digis[0].first).roll(),
-                             allLCTs[bx_alct][mbx][0], allLCTs[bx_alct][mbx][1]);
+            int mbx = std::abs(clct->bestCLCT[bx_alct].getBX()-bx_alct);
+            int bx_rpc = lct_central_bx;	    
+            correlateLCTsRPC(clct->bestCLCT[bx_alct], clct->secondCLCT[bx_alct], *(digis[0].second), RPCDetId(digis[0].first).roll(),
+                             allLCTs[bx_rpc][mbx][0], allLCTs[bx_rpc][mbx][1]);
             if (debug_rpc_matching_) {
               //	    if (infoV > 1) LogTrace("CSCMotherboard")
               std::cout << "Successful RPC-CLCT match in ME"<<theStation<<"/1: bx_alct = " << bx_alct
-                        << "; match window: [" << bx_clct_start << "; " << bx_clct_stop
-                        << "]; bx_clct = " << bx_clct << std::endl;
+                        << std::endl;
               std::cout << "+++ Best CLCT Details: ";
-              clct->bestCLCT[bx_clct].print();
+              clct->bestCLCT[bx_alct].print();
               std::cout << "+++ Second CLCT Details: ";
-              clct->secondCLCT[bx_clct].print();
+              clct->secondCLCT[bx_alct].print();
             }
-            if (allLCTs[bx_alct][mbx][0].isValid()) {
-              used_clct_mask[bx_clct] += 1;
+            if (allLCTs[bx_rpc][mbx][0].isValid()) {
+              used_clct_mask[bx_alct] += 1;
               if (match_earliest_clct_me3141_only) break;
             }
           }
-        }
       }
     }
   }
