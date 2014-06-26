@@ -48,7 +48,8 @@ class CSCMotherboardME21GEM : public CSCMotherboard
   void setGEMGeometry(const GEMGeometry *g) { gem_g = g; }
 
   void buildCoincidencePads(const GEMCSCPadDigiCollection* out_pads, 
-                            GEMCSCPadDigiCollection& out_co_pads);
+                            GEMCSCPadDigiCollection& out_co_pads,
+			    CSCDetId csc_id);
 
   GEMPads retrieveGEMPads(const GEMCSCPadDigiCollection* pads, unsigned id, bool iscopad = false);
 
@@ -120,7 +121,8 @@ class CSCMotherboardME21GEM : public CSCMotherboard
 
   const CSCGeometry* csc_g;
   const GEMGeometry* gem_g;
-
+  
+  
   std::vector<CSCALCTDigi> alctV;
   std::vector<CSCCLCTDigi> clctV;
   std::vector<GEMCSCCoPadDigi> gemCoPadV;
@@ -172,6 +174,8 @@ class CSCMotherboardME21GEM : public CSCMotherboard
   //  deltas used to match to GEM pads
   int maxDeltaBXPad_;
   int maxDeltaPadPad_;
+  int maxDeltaPadPadEven_;
+  int maxDeltaPadPadOdd_;
   int maxDeltaWg_;
 
   //  deltas used to match to GEM coincidence pads

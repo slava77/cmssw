@@ -518,7 +518,7 @@ void CSCMotherboardME11GEM::run(const CSCWireDigiCollection* wiredc,
 
     // build coincidence pads
     std::auto_ptr<GEMCSCPadDigiCollection> pCoPads(new GEMCSCPadDigiCollection());
-    buildCoincidencePads(gemPads, *pCoPads);
+    buildCoincidencePads(gemPads, *pCoPads, me1bId);
     
     // retrieve pads and copads in a certain BX window for this CSC 
     pads_.clear();
@@ -1811,14 +1811,19 @@ void CSCMotherboardME11GEM::matchGEMPads(enum ME11Part ME)
 }
 
 
-void CSCMotherboardME11GEM::buildCoincidencePads(const GEMCSCPadDigiCollection* out_pads, GEMCSCPadDigiCollection& out_co_pads)
+void CSCMotherboardME11GEM::buildCoincidencePads(const GEMCSCPadDigiCollection* out_pads, 
+	                                         GEMCSCPadDigiCollection& out_co_pads,
+						 CSCDetId csc_id)
 {
   gemCoPadV.clear();
 
   // Build coincidences
   for (auto det_range = out_pads->begin(); det_range != out_pads->end(); ++det_range) {
     const GEMDetId& id = (*det_range).first;
-    
+   // same chamber
+    if (id.region() != csc_id.zendcap() or id.station() != csc_id.station() or 
+	id.ring() != csc_id.ring() or id.chamber() != csc_id.chamber()) continue;
+
     // all coincidences detIDs will have layer=1
     if (id.layer() != 1) continue;
     
