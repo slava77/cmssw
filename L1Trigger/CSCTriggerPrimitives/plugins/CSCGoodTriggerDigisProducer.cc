@@ -67,7 +67,7 @@ void CSCGoodTriggerDigisProducer::produce(edm::Event& ev, const edm::EventSetup&
       << " requested in configuration, but not found in the event..."
       << " Skipping production of CSC TP digis +++\n";
   }
-  
+  std::cout << "Studying the Strip failures" << std::endl;
   // Filter the CSC Comparator digis 
   for (CSCComparatorDigiCollection::DigiRangeIterator adetUnitIt = compDigis->begin(); adetUnitIt != compDigis->end(); adetUnitIt++){
     const CSCDetId& id = (*adetUnitIt).first;
@@ -75,10 +75,12 @@ void CSCGoodTriggerDigisProducer::produce(edm::Event& ev, const edm::EventSetup&
     auto range((*adetUnitIt).second);
     for (CSCComparatorDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; digiIt++) {
       auto digi(*digiIt);
+      std::cout << id << " " << digi << std::endl;
       (*oc_strip).insertDigi(id,digi);
     }
   }
   
+  std::cout << "Studying the Wire failures" << std::endl;
   // Filter the CSC Wire digis 
   for (CSCWireDigiCollection::DigiRangeIterator adetUnitIt = wireDigis->begin(); adetUnitIt != wireDigis->end(); adetUnitIt++){
     const CSCDetId& id = (*adetUnitIt).first;
@@ -86,6 +88,7 @@ void CSCGoodTriggerDigisProducer::produce(edm::Event& ev, const edm::EventSetup&
     auto range((*adetUnitIt).second);
     for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; digiIt++) {
       auto digi(*digiIt);
+      std::cout << id << " " << digi << std::endl;
       (*oc_wire).insertDigi(id,digi);
     }
   }
