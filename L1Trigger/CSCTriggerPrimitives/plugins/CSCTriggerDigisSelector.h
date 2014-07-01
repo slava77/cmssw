@@ -1,7 +1,7 @@
-#ifndef CSCTriggerPrimitives_CSCGoodTriggerDigisProducer_h
-#define CSCTriggerPrimitives_CSCGoodTriggerDigisProducer_h
+#ifndef CSCTriggerPrimitives_CSCTriggerDigisSelector_h
+#define CSCTriggerPrimitives_CSCTriggerDigisSelector_h
 
-/** \class CSCGoodTriggerDigisProducer
+/** \class CSCTriggerDigisSelector
  *
  * Class to simulate failures of CFEBs, AFEBs, a single layer 
  * or an entire TMB 
@@ -21,11 +21,11 @@
 #include "CLHEP/Random/RandomEngine.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 
-class CSCGoodTriggerDigisProducer : public edm::EDProducer
+class CSCTriggerDigisSelector : public edm::EDProducer
 {
  public:
-  explicit CSCGoodTriggerDigisProducer(const edm::ParameterSet&);
-  ~CSCGoodTriggerDigisProducer();
+  explicit CSCTriggerDigisSelector(const edm::ParameterSet&);
+  ~CSCTriggerDigisSelector();
 
   //virtual void beginRun(const edm::EventSetup& setup);
   virtual void produce(edm::Event&, const edm::EventSetup&);

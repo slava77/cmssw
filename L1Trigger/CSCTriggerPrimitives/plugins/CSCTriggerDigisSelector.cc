@@ -1,4 +1,4 @@
-#include "L1Trigger/CSCTriggerPrimitives/plugins/CSCGoodTriggerDigisProducer.h"
+#include "L1Trigger/CSCTriggerPrimitives/plugins/CSCTriggerDigisSelector.h"
 
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigiCollection.h"
 #include "DataFormats/CSCDigi/interface/CSCWireDigiCollection.h"
@@ -11,7 +11,7 @@
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "L1Trigger/CSCCommonTrigger/interface/CSCTriggerGeometry.h"
 
-CSCGoodTriggerDigisProducer::CSCGoodTriggerDigisProducer(const edm::ParameterSet& conf) 
+CSCTriggerDigisSelector::CSCTriggerDigisSelector(const edm::ParameterSet& conf) 
 {
   wireDigiProducer_ = conf.getParameter<edm::InputTag>("CSCWireDigiProducer");
   compDigiProducer_ = conf.getParameter<edm::InputTag>("CSCComparatorDigiProducer");
@@ -29,13 +29,13 @@ CSCGoodTriggerDigisProducer::CSCGoodTriggerDigisProducer(const edm::ParameterSet
   produces<CSCWireDigiCollection>();
 }
 
-CSCGoodTriggerDigisProducer::~CSCGoodTriggerDigisProducer() 
+CSCTriggerDigisSelector::~CSCTriggerDigisSelector() 
 {
 }
 
-void CSCGoodTriggerDigisProducer::produce(edm::Event& ev, const edm::EventSetup& setup) 
+void CSCTriggerDigisSelector::produce(edm::Event& ev, const edm::EventSetup& setup) 
 {
-  LogDebug("CSCGoodTriggerDigisProducer") << "start filtering the bad CSC Wire and Strip digis event ";
+  LogDebug("CSCTriggerDigisSelector") << "start filtering the bad CSC Wire and Strip digis event ";
   // Find the geometry (& conditions?) for this event & cache it in 
   // CSCTriggerGeometry.
   {
