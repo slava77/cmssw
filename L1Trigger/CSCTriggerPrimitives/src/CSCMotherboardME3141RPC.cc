@@ -949,7 +949,7 @@ void CSCMotherboardME3141RPC::correlateLCTsRPC(CSCALCTDigi bestALCT, CSCALCTDigi
   }
 }
 
-CSCCorrelatedLCTDigi CSCMotherboardME3141RPC::constructLCTsRPC(const CSCALCTDigi& aLCT, const CSCCLCTDigi& cLCT, bool hasRPC) 
+CSCCorrelatedLCTDigi CSCMotherboardME3141RPC::constructLCTsRPC(const CSCALCTDigi& aLCT, const CSCCLCTDigi& cLCcLCTT, bool hasRPC) 
 {
   // CLCT pattern number
   unsigned int pattern = encodePattern(cLCT.getPattern(), cLCT.getStripType());
@@ -959,7 +959,7 @@ CSCCorrelatedLCTDigi CSCMotherboardME3141RPC::constructLCTsRPC(const CSCALCTDigi
   
   // Bunch crossing: get it from cathode LCT if anode LCT is not there.
   int bx = aLCT.isValid() ? aLCT.getBX() : cLCT.getBX();
-  if (hasRPC) bx = rpc.bx() + lct_central_bx;
+  //if (hasRPC) bx = rpc.bx() + lct_central_bx;
   
   // construct correlated LCT; temporarily assign track number of 0.
   int trknmb = 0;
