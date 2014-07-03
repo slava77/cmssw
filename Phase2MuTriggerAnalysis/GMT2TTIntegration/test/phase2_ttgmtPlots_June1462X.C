@@ -1,6 +1,6 @@
 void getTT2CSCTFRates(){
   TChain* bg = new TChain("Events");
-  bg->Add("/Data/cms/emu/phase2/May2014/tt_ntuple_Neutrino.root");
+  bg->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC12/Extended2023TTI_FwdMuons/Neutrinos/tt_ntuple_redoL1MuPhase1_*.root");
 
   TChain* bgp2 = new TChain("Events");
   bgp2->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC12/Extended2023TTI_FwdMuons/Neutrinos/tt_ntuple_redoL1Mu_*.root");
@@ -273,8 +273,11 @@ void getTT2CSCTFRates(){
   bgp2->Draw("min(Max$(tts_pt*(tts_csctf_deps2_idx>=0&&csctfs_tt_deps2_idx[tts_csctf_deps2_idx]==Iteration$&&abs(csctfs_eta[tts_csctf_deps2_idx])>=1.2&&abs(csctfs_eta[tts_csctf_deps2_idx])<2.4&&csctfs_bx[tts_csctf_deps2_idx]==0&&csctfs_nlcts[tts_csctf_deps2_idx]>=2&&csctfs_ringS1[tts_csctf_deps2_idx]>0)),99.99)>>hp2TTCSCTF1p2to2p4BX0NL2ME1(100,0,100)");
   makeRate(hp2TTCSCTF1p2to2p4BX0NL2ME1,30E3, true, true);
   //phase2 baseline with YE1
-  bgp2->Draw("min(Max$(tts_pt*(tts_csctf_deps2_idx>=0&&csctfs_tt_deps2_idx[tts_csctf_deps2_idx]==Iteration$&&abs(csctfs_eta[tts_csctf_deps2_idx])>=1.2&&abs(csctfs_eta[tts_csctf_deps2_idx])<2.4&&csctfs_bx[tts_csctf_deps2_idx]==0&&csctfs_nlcts[tts_csctf_deps2_idx]>=2&&csctfs_ringS1[tts_csctf_deps2_idx]>0&&(abs(csctfs_gemDPhiS1[tts_csctf_deps2_idx])>2||( (-tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]>-2E-3 && -tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]<sqrt((0.12/tts_pt)**2 + 5E-6) )|| abs(csctfs_gemDPhiS1[tts_csctf_deps2_idx])<min(1E-4*tts_pt**2,0.1) ) )  )),99.99)>>hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi(100,0,100)");
+  bgp2->Draw("min(Max$(tts_pt*(tts_csctf_deps2_idx>=0&&csctfs_tt_deps2_idx[tts_csctf_deps2_idx]==Iteration$&&abs(csctfs_eta[tts_csctf_deps2_idx])>=1.2&&abs(csctfs_eta[tts_csctf_deps2_idx])<2.4&&csctfs_bx[tts_csctf_deps2_idx]==0&&csctfs_nlcts[tts_csctf_deps2_idx]>=2&&csctfs_ringS1[tts_csctf_deps2_idx]>0\
+&&(abs(csctfs_gemDPhiS1[tts_csctf_deps2_idx])>2||abs(csctfs_eta[tts_csctf_deps2_idx])>2.05||((-tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]>-2E-3&&-tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]<sqrt((0.05/tts_pt)**2 + 4E-6))&&csctfs_chamberS1[tts_csctf_deps2_idx]%2==0 )||((-tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]>-3.3E-3&&-tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]<sqrt((0.12/tts_pt)**2 + 1.E-5))&&csctfs_chamberS1[tts_csctf_deps2_idx]%2==1 ) )\
+  )),99.99)>>hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi(100,0,100)");
   makeRate(hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi,30E3, true, true);
+  //&&(abs(csctfs_gemDPhiS1[tts_csctf_deps2_idx])>2||( (-tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]>-2E-3 && -tts_q*csctfs_gemDPhiS1[tts_csctf_deps2_idx]<sqrt((0.12/tts_pt)**2 + 5E-6) )|| abs(csctfs_gemDPhiS1[tts_csctf_deps2_idx])<min(1E-4*tts_pt**2,0.1) ) ) \
   gPad->SetGridx();
   gPad->SetGridy();
   gPad->SetTickx(1);
@@ -340,7 +343,7 @@ void getTT2CSCTFRates(){
   hTTCSCTF1p2to2p4BX0_Rate->Draw();
   hTTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same");
   hp2TTCSCTF1p2to2p4BX0_Rate->Draw("same");
-  hp2TTCSCTF1p2to2p4BX0NL3_Rate->Draw("same");
+  hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same");
   hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate->Draw("same");
 
 
@@ -350,7 +353,7 @@ void getTT2CSCTFRates(){
   leg->AddEntry(hTTCSCTF1p2to2p4BX0_Rate, "Baseline: closest in #DeltaR_{CORR} and in #Delta#eta#Delta#phi window");
   leg->AddEntry(hTTCSCTF1p2to2p4BX0NL2ME1_Rate, "Baseline with ME1 required");
   leg->AddEntry(hp2TTCSCTF1p2to2p4BX0_Rate, "Phase2 Baseline");
-  leg->AddEntry(hp2TTCSCTF1p2to2p4BX0NL3_Rate, "Phase2 Baseline with 3+ stubs");
+  leg->AddEntry(hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate, "Phase2 Baseline with ME1 required");
   leg->AddEntry(hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate, "Phase2 Baseline with ME1 angle (*)");
   leg->Draw();
   gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate.png");
@@ -378,7 +381,7 @@ void getTT2CSCTFRates(){
   
 }
 
-void redrawTTPlots(bool addTmp = false){
+void redrawTTPlots(int version){
   TFile* fTF1p2to2p4 = new TFile("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate.root");
   TCanvas* c = (TCanvas*)fTF1p2to2p4->Get("c1");
   TList* pl = c->GetListOfPrimitives();
@@ -386,14 +389,14 @@ void redrawTTPlots(bool addTmp = false){
   TH1F* hTTCSCTF1p2to2p4BX0_Rate = (TH1F*)pl->FindObject("hTTCSCTF1p2to2p4BX0_Rate");
   TH1F* hTTCSCTF1p2to2p4BX0NL2ME1_Rate = (TH1F*)pl->FindObject("hTTCSCTF1p2to2p4BX0NL2ME1_Rate");
   TH1F* hp2TTCSCTF1p2to2p4BX0_Rate = (TH1F*)pl->FindObject("hp2TTCSCTF1p2to2p4BX0_Rate");
-  TH1F* hp2TTCSCTF1p2to2p4BX0NL3_Rate = (TH1F*)pl->FindObject("hp2TTCSCTF1p2to2p4BX0NL3_Rate");
+  TH1F* hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate = (TH1F*)pl->FindObject("hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate");
   TH1F* hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate = (TH1F*)pl->FindObject("hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate");
 
 
   hTTCSCTF1p2to2p4BX0_Rate->SetFillColor(hTTCSCTF1p2to2p4BX0_Rate->GetLineColor());
   hTTCSCTF1p2to2p4BX0NL2ME1_Rate->SetFillColor(hTTCSCTF1p2to2p4BX0NL2ME1_Rate->GetLineColor());
   hp2TTCSCTF1p2to2p4BX0_Rate->SetFillColor(hp2TTCSCTF1p2to2p4BX0_Rate->GetLineColor());
-  hp2TTCSCTF1p2to2p4BX0NL3_Rate->SetFillColor(hp2TTCSCTF1p2to2p4BX0NL3_Rate->GetLineColor());
+  hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate->SetFillColor(hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate->GetLineColor());
   hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate->SetFillColor(hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate->GetLineColor());
 
 
@@ -418,58 +421,51 @@ void redrawTTPlots(bool addTmp = false){
   addSystUncty(hTTCSCTF1p2to2p4BX0_Rate, 0.05);
   addSystUncty(hTTCSCTF1p2to2p4BX0NL2ME1_Rate, 0.05);
   addSystUncty(hp2TTCSCTF1p2to2p4BX0_Rate, 0.05);
-  addSystUncty(hp2TTCSCTF1p2to2p4BX0NL3_Rate, 0.05);
+  addSystUncty(hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate, 0.05);
   addSystUncty(hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate, 0.05);
 
-  c->cd();
-  hTTCSCTF1p2to2p4BX0_Rate->Draw("e3");
-  gPad->SetLogy();
-  TH1F* h = hTTCSCTF1p2to2p4BX0_Rate;
-  h->SetTitle("CMS Phase 2 Simulation Preliminary,  PU = 140 @ 25 nsec");
-  h->SetTitleSize(0.05);
-  h->SetTitleOffset(1.1, "X");
-  h->SetTitleOffset(0.84, "Y");
-  h->GetXaxis()->SetLabelSize(0.05);
-  h->GetYaxis()->SetLabelSize(0.05);
-  h->GetXaxis()->SetTitleSize(0.055);
-  h->GetYaxis()->SetTitleSize(0.06);
-  h->SetXTitle("L1TkMu p_{T} [GeV]");
-  h->SetYTitle("Trigger rate [kHz]");
-  h->GetXaxis()->SetNdivisions(302);
-  h->GetXaxis()->SetMoreLogLabels();
-  tex0 = new TLatex(10, 0.036, "10");
-  tex0->SetTextFont(42);
-  tex0->SetTextSize(0.05);
-  tex0->Draw();
-  tp = new TPave(0.4, 0.83, 0.95, 0.9, 0, "NDC"); tp->SetFillColor(0);
-  tp->Draw();
-  tex1 = new TLatex(.41,.85,"L1TkMu: 1.2<|#eta|<2.4 and #geq 2 CSCTF stubs");
-  tex1->SetTextFont(42);
-  tex1->SetTextSize(0.048);
-  tex1->SetNDC();
-  tex1->Draw();
-
-  gPad->SetLogx();
-  gPad->SetGridx();
-  gPad->SetGridy();
-  hTTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same e3");
-  //  hp2TTCSCTF1p2to2p4BX0_Rate->Draw("same e3");
-  //  hp2TTCSCTF1p2to2p4BX0NL3_Rate->Draw("same e3");
-  hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate->Draw("same e3");
-
-
-  TLegend* leg = new TLegend(0.4, 0.7, 0.95, 0.84);
-  leg->SetFillColor(0); leg->SetBorderSize(0);
-  
-  if (!addTmp){
-    leg->SetTextSize(0.048); leg->SetMargin(0.13);
-    leg->AddEntry(hTTCSCTF1p2to2p4BX0_Rate, "Phase-1 muon");
-    leg->AddEntry(hTTCSCTF1p2to2p4BX0NL2ME1_Rate, "Phase-1 muon with YE-1 required");
-    leg->Draw();
-    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled.png");
-    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled.pdf");
-    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled.eps");
-  } else {
+  if (version == 0){
+    c->cd();
+    hTTCSCTF1p2to2p4BX0_Rate->Draw("e3");
+    gPad->SetLogy();
+    TH1F* h = hTTCSCTF1p2to2p4BX0_Rate;
+    h->SetTitle("CMS Phase 2 Simulation Preliminary,  PU = 140 @ 25 nsec");
+    h->SetTitleSize(0.05);
+    h->SetTitleOffset(1.1, "X");
+    h->SetTitleOffset(0.84, "Y");
+    h->GetXaxis()->SetLabelSize(0.05);
+    h->GetYaxis()->SetLabelSize(0.05);
+    h->GetXaxis()->SetTitleSize(0.055);
+    h->GetYaxis()->SetTitleSize(0.06);
+    h->SetXTitle("L1TkMu p_{T} [GeV]");
+    h->SetYTitle("Trigger rate [kHz]");
+    h->GetXaxis()->SetNdivisions(302);
+    h->GetXaxis()->SetMoreLogLabels();
+    h->SetMinimum(0.101);
+    tex0 = new TLatex(10, 0.036, "10");
+    tex0->SetTextFont(42);
+    tex0->SetTextSize(0.05);
+    tex0->Draw();
+    tp = new TPave(0.4, 0.83, 0.95, 0.9, 0, "NDC"); tp->SetFillColor(0);
+    tp->Draw();
+    tex1 = new TLatex(.41,.85,"L1TkMu: 1.2<|#eta|<2.4 and #geq 2 CSCTF stubs");
+    tex1->SetTextFont(42);
+    tex1->SetTextSize(0.048);
+    tex1->SetNDC();
+    tex1->Draw();
+    
+    gPad->SetLogx();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    hTTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same e3");
+    //  hp2TTCSCTF1p2to2p4BX0_Rate->Draw("same e3");
+    //  hp2TTCSCTF1p2to2p4BX0NL3_Rate->Draw("same e3");
+    hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate->Draw("same e3");
+    
+    
+    TLegend* leg = new TLegend(0.4, 0.7, 0.95, 0.84);
+    leg->SetFillColor(0); leg->SetBorderSize(0);
+    
     leg->SetTextSize(0.040); leg->SetMargin(0.13);
     leg->AddEntry(hTTCSCTF1p2to2p4BX0_Rate, "Phase-1 muon");
     leg->AddEntry(hTTCSCTF1p2to2p4BX0NL2ME1_Rate, "Phase-1 muon with YE-1 required");
@@ -481,7 +477,117 @@ void redrawTTPlots(bool addTmp = false){
     gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_3opts.png");
     gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_3opts.pdf");
     gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_3opts.eps");
+
   }
+  else if (version == 1) {
+    c->cd();    
+    hp2TTCSCTF1p2to2p4BX0_Rate->Draw("e3");
+    gPad->SetLogy();
+    TH1F* h = hp2TTCSCTF1p2to2p4BX0_Rate;
+    h->SetTitle("CMS Phase 2 Simulation Preliminary,  PU = 140 @ 25 nsec");
+    h->SetTitleSize(0.05);
+    h->SetTitleOffset(1.1, "X");
+    h->SetTitleOffset(0.84, "Y");
+    h->GetXaxis()->SetLabelSize(0.05);
+    h->GetYaxis()->SetLabelSize(0.05);
+    h->GetXaxis()->SetTitleSize(0.055);
+    h->GetYaxis()->SetTitleSize(0.06);
+    h->SetXTitle("L1TkMu p_{T} [GeV]");
+    h->SetYTitle("Trigger rate [kHz]");
+    h->GetXaxis()->SetNdivisions(302);
+    h->GetXaxis()->SetMoreLogLabels();
+    h->SetMinimum(0.101);
+    tex0 = new TLatex(10, 0.036, "10");
+    tex0->SetTextFont(42);
+    tex0->SetTextSize(0.05);
+    tex0->Draw();
+    tp = new TPave(0.4, 0.83, 0.95, 0.9, 0, "NDC"); tp->SetFillColor(0);
+    tp->Draw();
+    tex1 = new TLatex(.41,.85,"L1TkMu: 1.2<|#eta|<2.4 and #geq 2 CSCTF stubs");
+    tex1->SetTextFont(42);
+    tex1->SetTextSize(0.048);
+    tex1->SetNDC();
+    tex1->Draw();
+    
+    gPad->SetLogx();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    //    hTTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same e3");
+    //    hp2TTCSCTF1p2to2p4BX0_Rate->Draw("same e3");
+    //    hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same e3");
+    hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate->Draw("same e3");
+    
+    
+    TLegend* leg = new TLegend(0.4, 0.74, 0.95, 0.84);
+    leg->SetFillColor(0); leg->SetBorderSize(0);
+    
+    leg->SetTextSize(0.040); leg->SetMargin(0.13);
+    //    leg->AddEntry(hTTCSCTF1p2to2p4BX0_Rate, "Phase-1 muon");
+    //    leg->AddEntry(hTTCSCTF1p2to2p4BX0NL2ME1_Rate, "Phase-1 muon with YE-1 required");
+    leg->AddEntry(hp2TTCSCTF1p2to2p4BX0_Rate, "Phase-2 muon");
+    //    leg->AddEntry(hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate, "Phase-2 muon with YE-1 required");
+    leg->AddEntry(hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate, "Phase-2 muon with MS 1 bending angle cut");
+    leg->Draw();
+    
+    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_version1.png");
+    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_version1.pdf");
+    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_version1.eps");
+  } else if (version == 2){
+    c->cd();    
+    hTTCSCTF1p2to2p4BX0_Rate->Draw("e3");
+    gPad->SetLogy();
+    TH1F* h = hTTCSCTF1p2to2p4BX0_Rate;
+    h->SetTitle("CMS Phase 2 Simulation Preliminary,  PU = 140 @ 25 nsec");
+    h->SetTitleSize(0.05);
+    h->SetTitleOffset(1.1, "X");
+    h->SetTitleOffset(0.84, "Y");
+    h->GetXaxis()->SetLabelSize(0.05);
+    h->GetYaxis()->SetLabelSize(0.05);
+    h->GetXaxis()->SetTitleSize(0.055);
+    h->GetYaxis()->SetTitleSize(0.06);
+    h->SetXTitle("L1TkMu p_{T} [GeV]");
+    h->SetYTitle("Trigger rate [kHz]");
+    h->GetXaxis()->SetNdivisions(302);
+    h->GetXaxis()->SetMoreLogLabels();
+    h->SetMinimum(0.101);
+    tex0 = new TLatex(10, 0.036, "10");
+    tex0->SetTextFont(42);
+    tex0->SetTextSize(0.05);
+    tex0->Draw();
+    tp = new TPave(0.4, 0.86, 0.95, 0.92, 0, "NDC"); tp->SetFillColor(0);
+    tp->Draw();
+    tex1 = new TLatex(.41,.88,"L1TkMu: 1.2<|#eta|<2.4 and #geq 2 CSCTF stubs");
+    tex1->SetTextFont(42);
+    tex1->SetTextSize(0.048);
+    tex1->SetNDC();
+    tex1->Draw();
+    
+    gPad->SetLogx();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    hTTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same e3");
+    hp2TTCSCTF1p2to2p4BX0_Rate->Draw("same e3");
+    hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate->Draw("same e3");
+    hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate->Draw("same e3");
+    
+    
+    TLegend* leg = new TLegend(0.4, 0.71, 0.95, 0.87);
+    leg->SetFillColor(0); leg->SetBorderSize(0);
+    
+    leg->SetTextSize(0.040); leg->SetMargin(0.13);
+    leg->AddEntry(hTTCSCTF1p2to2p4BX0_Rate, "Phase-1 muon");
+    leg->AddEntry(hTTCSCTF1p2to2p4BX0NL2ME1_Rate, "Phase-1 muon with YE-1 required");
+    leg->AddEntry(hp2TTCSCTF1p2to2p4BX0_Rate, "Phase-2 muon");
+    leg->AddEntry(hp2TTCSCTF1p2to2p4BX0NL2ME1_Rate, "Phase-2 muon with YE-1 required");
+    leg->AddEntry(hp2TTCSCTF1p2to2p4BX0NL2ME1dPhi_Rate, "Phase-2 muon with YE-1 bending angle cut");
+    leg->Draw();
+    
+    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_version2.png");
+    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_version2.pdf");
+    gPad->SaveAs("cms/emu/June1462X/hTTCSCTF1p2to2p4_base_wME1_rate_restyled_version2.eps");
+
+  }
+  
 }
 
 
@@ -549,7 +655,8 @@ void getEfficiencyTTtoTFdetails(){
 
 
   TChain* sig = new TChain("Events");
-  sig->Add("/Data/cms/emu/phase2/May2014/tt_ntuple_SingleMu*.root");
+  sig->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC13-ttiRedigiJun14ana/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14ttnt-redoL1MuPhase1/f7346d9906da6f33ac6d3facaf675a25/tt_ntuple_redoL1Mu_*.root");
+  sig->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC13-ttiRedigiJun14ana/SingleMuMinusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14ttnt-redoL1MuPhase1/f7346d9906da6f33ac6d3facaf675a25/tt_ntuple_redoL1Mu_*.root");
 
   TChain* sigp2 = new TChain("Events");
   sigp2->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC13-ttiRedigiJun14ana/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14ttnt-redoL1Mu/f444b074e21342f24eed8d9f060fcad3/tt_ntuple_redoL1Mu_*.root");
@@ -669,7 +776,8 @@ void getEfficiencyTTtoTFcompareOpts(){
 
 
   TChain* sig = new TChain("Events");
-  sig->Add("/Data/cms/emu/phase2/May2014/tt_ntuple_SingleMu*.root");
+  sig->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC13-ttiRedigiJun14ana/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14ttnt-redoL1MuPhase1/f7346d9906da6f33ac6d3facaf675a25/tt_ntuple_redoL1Mu_*.root");
+  sig->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC13-ttiRedigiJun14ana/SingleMuMinusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14ttnt-redoL1MuPhase1/f7346d9906da6f33ac6d3facaf675a25/tt_ntuple_redoL1Mu_*.root");
 
   TChain* sigp2 = new TChain("Events");
   sigp2->Add("/Data/cms/emu/phase2/CMSSW_6_2_0_SLHC13-ttiRedigiJun14ana/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14ttnt-redoL1Mu/f444b074e21342f24eed8d9f060fcad3/tt_ntuple_redoL1Mu_*.root");
@@ -751,10 +859,12 @@ void getEfficiencyTTtoTFcompareOpts(){
 &&abs(csctfs_eta[sims_csctf_drs2_idx])>=1.2&&abs(csctfs_eta[sims_csctf_drs2_idx])<2.4&&csctfs_bx[sims_csctf_drs2_idx]==0\
 &&csctfs_nlcts[sims_csctf_drs2_idx]>=2&&csctfs_ringS1[sims_csctf_drs2_idx]>0\
 &&csctfs_tt_drs2_idx[sims_csctf_drs2_idx]>=0&&csctfs_tt_drs2_idx[sims_csctf_drs2_idx]==sims_tt_dr_idx&&tts_csctf_deps2_idx[sims_tt_dr_idx]>=0\
-&&(abs(csctfs_gemDPhiS1[sims_csctf_drs2_idx])>2||( (-tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]>-2E-3 && -tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]<sqrt((0.12/tts_pt[sims_tt_dr_idx])**2 + 5E-6) )|| abs(csctfs_gemDPhiS1[sims_csctf_drs2_idx])<min(1E-4*tts_pt[sims_tt_dr_idx]**2,0.1) ) ) \
+&&(abs(csctfs_gemDPhiS1[sims_csctf_drs2_idx])>2||abs(csctfs_eta[sims_csctf_drs2_idx])>2.05||((-tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]>-2E-3&&-tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]<sqrt((0.05/tts_pt[sims_tt_dr_idx])**2 + 4E-6))&&csctfs_chamberS1[sims_csctf_drs2_idx]%2==0 )||((-tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]>-3.3E-3&&-tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]<sqrt((0.12/tts_pt[sims_tt_dr_idx])**2 + 1.E-5))&&csctfs_chamberS1[sims_csctf_drs2_idx]%2==1 ) )\
 &&tts_pt[sims_tt_dr_idx]>20\
 :min(sims_pt,49.99)>>hp2sim1p2to2p4EffTFTTBaselineWME1dPhiTT20", "abs(sims_eta)>1.2&&abs(sims_eta)<2.4&&sims_pt>1.0", "prof");
 
+
+  //&&(abs(csctfs_gemDPhiS1[sims_csctf_drs2_idx])>2||( (-tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]>-2E-3 && -tts_q[sims_tt_dr_idx]*csctfs_gemDPhiS1[sims_csctf_drs2_idx]<sqrt((0.12/tts_pt[sims_tt_dr_idx])**2 + 5E-6) )|| abs(csctfs_gemDPhiS1[sims_csctf_drs2_idx])<min(1E-4*tts_pt[sims_tt_dr_idx]**2,0.1) ) ) \
   //&&(abs(csctfs_gemDPhiS1[sims_csctf_drs2_idx])>2||(abs(csctfs_gemDPhiS1[sims_csctf_drs2_idx])<sqrt((0.12/tts_pt[sims_tt_dr_idx])**2 + 5E-6) ) )\
 
 
@@ -921,7 +1031,7 @@ void getEfficiencyTTtoTFcompareOpts(){
 
   hsim1p2to2p4EffTFTTBaselineWME1TT20->Draw("same e3");
   hp2sim1p2to2p4EffTFTTBaselineTT20->Draw("same e3");
-  //  hp2sim1p2to2p4EffTFTTBaselineWME1TT20->Draw("same e3");
+  hp2sim1p2to2p4EffTFTTBaselineWME1TT20->Draw("same e3");
   hp2sim1p2to2p4EffTFTTBaselineWME1dPhiTT20->Draw("same e3");
 
   TH1F* htmp = new TH1F("htmp", "htmp", 10,-10,0);
@@ -934,13 +1044,47 @@ void getEfficiencyTTtoTFcompareOpts(){
   leg->AddEntry(hsim1p2to2p4EffTFTTBaselineTT20, "Phase-1 muon");
   leg->AddEntry(hsim1p2to2p4EffTFTTBaselineWME1TT20, "Phase-1 muon with YE-1 required");
   leg->AddEntry(hp2sim1p2to2p4EffTFTTBaselineTT20, "Phase-2 muon");
-  //  leg->AddEntry(hp2sim1p2to2p4EffTFTTBaselineWME1TT20, "Phase-2 muon with YE-1 required");
+  leg->AddEntry(hp2sim1p2to2p4EffTFTTBaselineWME1TT20, "Phase-2 muon with YE-1 required");
   leg->AddEntry(hp2sim1p2to2p4EffTFTTBaselineWME1dPhiTT20, "Phase-2 muon with YE-1 angle cut (*)");
   leg->Draw();
   
-  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_tmp.png");
-  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_tmp.pdf");
-  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_tmp.eps");
+  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_5opts.png");
+  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_5opts.pdf");
+  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_5opts.eps");
+
+  //
+  hsim1p2to2p4EffTFTTBaselineTT20->Draw("e3");
+  tp = new TPave(0.4, 0.71, 0.95, 0.78, 0, "NDC"); tp->SetFillColor(0);
+  tp->Draw();
+  tex1 = new TLatex(.41,.73,"p_{T}^{trig}> 20 GeV, 1.2<|#eta|<2.4 and #geq 2 CSCTF stubs");
+  tex1->SetTextFont(42);
+  tex1->SetTextSize(0.042);
+  tex1->SetNDC();
+  tex1->Draw();
+  gPad->SetLogx(0);
+
+  //  hsim1p2to2p4EffTFTTBaselineWME1TT20->Draw("same e3");
+  hp2sim1p2to2p4EffTFTTBaselineTT20->Draw("same e3");
+  //  hp2sim1p2to2p4EffTFTTBaselineWME1TT20->Draw("same e3");
+  //  hp2sim1p2to2p4EffTFTTBaselineWME1dPhiTT20->Draw("same e3");
+
+  TH1F* htmp = new TH1F("htmp", "htmp", 10,-10,0);
+  htmp->SetFillColor(2);
+  htmp->SetLineColor(2);
+
+  TLegend* leg = new TLegend(0.4, 0.56, 0.95, 0.7);
+  leg->SetFillColor(0); leg->SetBorderSize(0);
+  leg->SetTextSize(0.04); leg->SetMargin(0.13);
+  leg->AddEntry(hsim1p2to2p4EffTFTTBaselineTT20, "Phase-1 muon");
+  //  leg->AddEntry(hsim1p2to2p4EffTFTTBaselineWME1TT20, "Phase-1 muon with YE-1 required");
+  leg->AddEntry(hp2sim1p2to2p4EffTFTTBaselineTT20, "Phase-2 muon");
+  //  leg->AddEntry(hp2sim1p2to2p4EffTFTTBaselineWME1TT20, "Phase-2 muon with YE-1 required");
+  //  leg->AddEntry(hp2sim1p2to2p4EffTFTTBaselineWME1dPhiTT20, "Phase-2 muon with YE-1 angle cut (*)");
+  leg->Draw();
+  
+  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_2opts.png");
+  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_2opts.pdf");
+  gPad->SaveAs("cms/emu/June1462X/hsim1p2to2p4EffTT20_baselineVME1_2opts.eps");
 
   //
   hsim1p2to2p4EffTFTTBaselineTT20->Draw("e3");
