@@ -93,6 +93,57 @@ sim2ttDRMaker = cms.EDProducer(
     drParPt2In = cms.double(0)
     )
 
+sim2l1tkmuDRMaker = cms.EDProducer(
+    "IdxByDRMaker",
+    aliasPrefix = cms.string("sims_l1tkmu_dr"),
+    pt1InputTag = cms.InputTag("simtMaker:simspt"),
+    eta1InputTag = cms.InputTag("simtMaker:simseta"),
+    phi1InputTag = cms.InputTag("simtMaker:simsphi"),
+    pt2InputTag = cms.InputTag("l1tkmusCandMaker:l1tkmuspt"),
+    eta2InputTag = cms.InputTag("l1tkmusCandMaker:l1tkmuseta"),
+    phi2InputTag = cms.InputTag("l1tkmusCandMaker:l1tkmusphi"),
+
+    useDr = cms.bool(True),
+
+    drParConst = cms.double(0.03),
+    drParPt1In = cms.double(0),
+    drParPt2In = cms.double(0)
+    )
+
+sim2l1tkmucsctfDRMaker = cms.EDProducer(
+    "IdxByDRMaker",
+    aliasPrefix = cms.string("sims_l1tkmucsctf_dr"),
+    pt1InputTag = cms.InputTag("simtMaker:simspt"),
+    eta1InputTag = cms.InputTag("simtMaker:simseta"),
+    phi1InputTag = cms.InputTag("simtMaker:simsphi"),
+    pt2InputTag = cms.InputTag("l1tkmucsctfsCandMaker:l1tkmucsctfspt"),
+    eta2InputTag = cms.InputTag("l1tkmucsctfsCandMaker:l1tkmucsctfseta"),
+    phi2InputTag = cms.InputTag("l1tkmucsctfsCandMaker:l1tkmucsctfsphi"),
+
+    useDr = cms.bool(True),
+
+    drParConst = cms.double(0.03),
+    drParPt1In = cms.double(0),
+    drParPt2In = cms.double(0)
+    )
+
+sim2l1tkmugmtDRMaker = cms.EDProducer(
+    "IdxByDRMaker",
+    aliasPrefix = cms.string("sims_l1tkmugmt_dr"),
+    pt1InputTag = cms.InputTag("simtMaker:simspt"),
+    eta1InputTag = cms.InputTag("simtMaker:simseta"),
+    phi1InputTag = cms.InputTag("simtMaker:simsphi"),
+    pt2InputTag = cms.InputTag("l1tkmugmtsCandMaker:l1tkmugmtspt"),
+    eta2InputTag = cms.InputTag("l1tkmugmtsCandMaker:l1tkmugmtseta"),
+    phi2InputTag = cms.InputTag("l1tkmugmtsCandMaker:l1tkmugmtsphi"),
+
+    useDr = cms.bool(True),
+
+    drParConst = cms.double(0.03),
+    drParPt1In = cms.double(0),
+    drParPt2In = cms.double(0)
+    )
+
 gmt2csctfDRS2Maker = cms.EDProducer(
     "IdxByDRMaker",
     aliasPrefix = cms.string("gmts_csctf_dr"),
