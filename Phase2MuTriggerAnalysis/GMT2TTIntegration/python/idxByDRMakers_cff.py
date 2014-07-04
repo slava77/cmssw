@@ -338,6 +338,9 @@ idxByDRMakers = cms.Sequence(
     + sim2csctfDRS2Maker
     + sim2csctfDEPS2Maker
     + sim2ttDRMaker
+    + sim2l1tkmuDRMaker
+    + sim2l1tkmucsctfDRMaker
+    + sim2l1tkmugmtDRMaker
     + gmt2csctfDRS2Maker
     + csctf2gmtDRS2Maker
     + tt2gmtDRS2Maker
