@@ -7,7 +7,7 @@ process.source = cms.Source(
     "PoolSource",
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
     skipEvents = cms.untracked.uint32(0),
-    fileNames  = cms.untracked.vstring(
+    fileNames  = cms.untracked.vstring("/store/mc/TTI2023Upg14D/Neutrino_Pt2to20_gun/GEN-SIM-DIGI-RAW/PU140bx25_PH2_1K_FB_V3-v2/00000/022FFF01-E4E0-E311-9DAD-002618943919.root"
     ),
 #    fileNames  = cms.untracked.vstring('/store/mc/TTI2023Upg14D/SingleMuMinusFlatPt0p2To150/GEN-SIM-DIGI-RAW/PU140bx25_PH2_1K_FB_V3-v2/00000/FEF0177C-E8E5-E311-9756-00304867906C.root'),
     )
@@ -57,7 +57,7 @@ process.AdaptorConfig = cms.Service (
     readHint = cms.untracked.string("auto-detect")
     )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 
 process.out = cms.OutputModule(
     "PoolOutputModule",
@@ -83,18 +83,18 @@ from SLHCUpgradeSimulations.Configuration.muonCustoms import customise_csc_L1Ext
 from SLHCUpgradeSimulations.Configuration.muonCustoms import customise_csc_L1Emulator
 process = customise_csc_L1Extra_allsim(process)
 
-from SLHCUpgradeSimulations.Configuration.gemCustoms import customise2023 as customise_gem2023
-from SLHCUpgradeSimulations.Configuration.rpcCustoms import customise as customise_rpc
+#from SLHCUpgradeSimulations.Configuration.gemCustoms import customise2023 as customise_gem2023
+#from SLHCUpgradeSimulations.Configuration.rpcCustoms import customise as customise_rpc
 from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023TTI as cust_2023TTI
 process = cust_2023TTI(process)
 #the one above is "too smart" (applies customs only if certain paths exist) need to modify manually
 
 #process=customise_gem2023(process)
-from SLHCUpgradeSimulations.Configuration.gemCustoms import customise_L1Emulator2019 as customise_L1Emulator2019_gem
-from SLHCUpgradeSimulations.Configuration.gemCustoms import customise_L1Emulator2023 as customise_L1Emulator2023_gem
+#from SLHCUpgradeSimulations.Configuration.gemCustoms import customise_L1Emulator2019 as customise_L1Emulator2019_gem
+#from SLHCUpgradeSimulations.Configuration.gemCustoms import customise_L1Emulator2023 as customise_L1Emulator2023_gem
 #process = customise_L1Emulator2019_gem(process, 'pt0')
 #process = customise_L1Emulator2023_gem(process, 'pt0')
 
 #process=customise_rpc(process)
-from SLHCUpgradeSimulations.Configuration.rpcCustoms import customise_L1Emulator as customise_L1Emulator_rpc
+#from SLHCUpgradeSimulations.Configuration.rpcCustoms import customise_L1Emulator as customise_L1Emulator_rpc
 #process = customise_L1Emulator_rpc(process)
