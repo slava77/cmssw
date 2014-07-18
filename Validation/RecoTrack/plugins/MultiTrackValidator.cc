@@ -111,7 +111,6 @@ MultiTrackValidator::~MultiTrackValidator(){delete histoProducerAlgo_;}
 
 void MultiTrackValidator::bookHistograms(DQMStore::IBooker& ibook, edm::Run const&, edm::EventSetup const& setup) {
 
-  //int j=0;  //is This Necessary ???
   for (unsigned int ww=0;ww<associators.size();ww++){
     for (unsigned int www=0;www<label.size();www++){
       ibook.cd();
@@ -212,21 +211,39 @@ void MultiTrackValidator::analyze(const edm::Event& event, const edm::EventSetup
   */
 
   //calculate dR for TPs
-  std::vector<double> dR_tPCeff;
-//  for (TrackingParticleCollection::size_type i=0; i<tPCeff.size(); i++){
-  int i=0;
-  for ( auto const & tp : *TPCollectionHeff) {
-      int j=0;
-    double dR = std::numeric_limits<double>::max();
-    if(dRtpSelector(tp)) {//only for those needed for efficiency!
-     for (   auto const & tp2 : *TPCollectionHeff) {
-	if (i==j) continue;
-	if(! tpSelector(tp2)) continue;//calculare dR wrt inclusive collection (also with PU, low pT, displaced)
-	double dR_tmp = reco::deltaR(tp,tp2);
-	if (dR_tmp<dR) dR=dR_tmp;
-      ++j;}
-    } ++i;
-    dR_tPCeff.push_back(dR);
+  float dR_tPCeff[(*TPCollectionHeff).size()];
+  {
+    int j=0;
+    float etaL[(*TPCollectionHeff).size()], phiL[(*TPCollectionHeff).size()];
+    bool okL[(*TPCollectionHeff).size()];
+    for (   auto const & tp2 : *TPCollectionHeff) {
+      okL[j]=false;
+      if(tpSelector(tp2)) { //calculare dR wrt inclusive collection (also with PU, low pT, displaced)
+        okL[j]=true;
+        auto  && p = tp2.momentum();
+        etaL[j] = etaFromXYZ(p.x(),p.y(),p.z());
+        phiL[j] = atan2f(p.y(),p.x());
+
+      } 
+      ++j;
+    }
+    auto i=0U;
+    for ( auto const & tp : *TPCollectionHeff) {
+      double dR = std::numeric_limits<double>::max();
+      if(dRtpSelector(tp)) {//only for those needed for efficiency!
+        auto  && p = tp.momentum();
+        float eta = etaFromXYZ(p.x(),p.y(),p.z());
+        float phi = atan2f(p.y(),p.x());
+        for (auto j=0U; j< (*TPCollectionHeff).size(); ++j ) {
+	  if (i==j) {continue;}
+	  if(okL[j]) { //calculare dR wrt inclusive collection (also with PU, low pT, displaced)
+            auto dR_tmp = reco::deltaR2(eta, phi, etaL[j], phiL[j]);
+            if (dR_tmp<dR) dR=dR_tmp;
+          }
+        }  // ttp2 (j)
+      }
+      dR_tPCeff[i++] = std::sqrt(dR);
+    }  // tp
   }
 
   edm::Handle<View<Track> >  trackCollectionForDrCalculation;
@@ -351,9 +368,7 @@ void MultiTrackValidator::analyze(const edm::Event& event, const edm::EventSetup
 	// ##############################################
 	// fill RecoAssociated SimTracks' histograms
 	// ##############################################
-	// bool isRecoMatched(false); // UNUSED
 	const reco::Track* matchedTrackPointer=0;
-	// std::vector<std::pair<RefToBase<Track>, double> > rt;
 	if(simRecColl.find(tpr) != simRecColl.end()){
 	  auto const & rt = simRecColl[tpr];
 	  if (rt.size()!=0) {
