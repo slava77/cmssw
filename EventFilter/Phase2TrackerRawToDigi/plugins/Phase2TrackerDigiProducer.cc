@@ -4,9 +4,12 @@
 #include "DataFormats/FEDRawData/interface/FEDNumbering.h"
 #include "DataFormats/FEDRawData/src/fed_header.h"
 #include "DataFormats/FEDRawData/src/fed_trailer.h"
-#include "DataFormats/SiStripCommon/interface/SiStripConstants.h"
-#include "DataFormats/SiStripCommon/interface/SiStripEventSummary.h"
 #include "EventFilter/Phase2TrackerRawToDigi/interface/Phase2TrackerFEDBuffer.h"
+#include "EventFilter/Phase2TrackerRawToDigi/interface/Phase2TrackerFEDChannel.h"
+#include "EventFilter/Phase2TrackerRawToDigi/interface/Phase2TrackerFEDHeader.h"
+#include "EventFilter/Phase2TrackerRawToDigi/interface/Phase2TrackerFEDRawChannelUnpacker.h"
+#include "EventFilter/Phase2TrackerRawToDigi/interface/Phase2TrackerFEDZSChannelUnpacker.h"
+#include "EventFilter/Phase2TrackerRawToDigi/interface/utils.h"
 #include "CondFormats/DataRecord/interface/Phase2TrackerCablingRcd.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -17,7 +20,7 @@
 
 using namespace std;
 
-namespace sistrip {
+namespace Phase2Tracker {
 
   Phase2TrackerDigiProducer::Phase2TrackerDigiProducer( const edm::ParameterSet& pset ) :
     runNumber_(0),
@@ -61,15 +64,16 @@ namespace sistrip {
 
     // Analyze strip tracker FED buffers in data
     size_t fedIndex;
-    for( fedIndex = sistrip::FED_ID_MIN; fedIndex < sistrip::CMS_FED_ID_MAX; ++fedIndex )
+    for( fedIndex = Phase2Tracker::FED_ID_MIN; fedIndex < Phase2Tracker::CMS_FED_ID_MAX; ++fedIndex )
     {
       const FEDRawData& fed = buffers->FEDData(fedIndex);
       if(fed.size()!=0)
       {
 	// construct buffer
-	sistrip:: Phase2TrackerFEDBuffer* buffer = 0;
-	buffer = new sistrip::Phase2TrackerFEDBuffer(fed.data(),fed.size());
+	Phase2Tracker:: Phase2TrackerFEDBuffer* buffer = 0;
+	buffer = new Phase2Tracker::Phase2TrackerFEDBuffer(fed.data(),fed.size());
 
+        #ifdef EDM_ML_DEBUG
         std::ostringstream ss;
 	ss << " -------------------------------------------- " << endl;
 	ss << " buffer debug ------------------------------- " << endl;
@@ -81,7 +85,7 @@ namespace sistrip {
 	ss << " -------------------------------------------- " << endl;
         LogTrace("Phase2TrackerDigiProducer") << ss.str(); ss.clear(); ss.str("");
 
-	Phase2TrackerHeader tr_header = buffer->trackerHeader();
+	Phase2TrackerFEDHeader tr_header = buffer->trackerHeader();
 	ss << " Version  : " << hex << setw(2) << (int) tr_header.getDataFormatVersion() << endl;
 	ss << " Mode     : " << hex << setw(2) << tr_header.getDebugMode() << endl;
 	ss << " Type     : " << hex << setw(2) << (int) tr_header.getEventType() << endl;
@@ -113,6 +117,7 @@ namespace sistrip {
 	ss << " -------------------------------------------- " << endl;
 	ss << " Payload  ----------------------------------- " << endl;
 	ss << " -------------------------------------------- " << endl;
+	#endif
 
 	// loop channels
 	int ichan = 0;
@@ -120,15 +125,17 @@ namespace sistrip {
 	{
 	  for ( int icbc = 0; icbc < MAX_CBC_PER_FE; icbc++ )
 	  {
-	    const FEDChannel& channel = buffer->channel(ichan);
+	    const Phase2TrackerFEDChannel& channel = buffer->channel(ichan);
 	    if(channel.length() > 0)
 	    {
               // get fedid from cabling
               const Phase2TrackerModule mod = cabling_->findFedCh(std::make_pair(fedIndex, ife));
               uint32_t detid = mod.getDetid();
+              #ifdef EDM_ML_DEBUG
               ss << dec << " id from cabling : " << detid << endl;
               ss << dec << " reading channel : " << icbc << " on FE " << ife;
 	      ss << dec << " with length  : " << (int) channel.length() << endl;
+	      #endif
 
               // container for this channel's digis
               std::vector<Phase2TrackerDigi> stripsTop;
@@ -143,22 +150,30 @@ namespace sistrip {
                   if (unpacker.stripIndex()%2) 
                   {
 		    stripsTop.push_back(Phase2TrackerDigi( (int) (STRIPS_PER_CBC*icbc + unpacker.stripIndex())/2, 0));
+                    #ifdef EDM_ML_DEBUG
                     ss << "t";
+	            #endif
                   }
                   else 
                   {
                     stripsBottom.push_back(Phase2TrackerDigi( (int) (STRIPS_PER_CBC*icbc + unpacker.stripIndex())/2, 0));
+                    #ifdef EDM_ML_DEBUG
                     ss << "b";
+	            #endif
                   }
 		} 
                 else
 		{ 
+                  #ifdef EDM_ML_DEBUG
                   ss << "_";
+	          #endif
 		}
 		unpacker++;
 	      }
+              #ifdef EDM_ML_DEBUG
 	      ss << endl;
               LogTrace("Phase2TrackerDigiProducer") << ss.str(); ss.clear(); ss.str("");
+	      #endif
 
               // store beginning and end of this digis for this detid and add this registry to the list
               // and store data
