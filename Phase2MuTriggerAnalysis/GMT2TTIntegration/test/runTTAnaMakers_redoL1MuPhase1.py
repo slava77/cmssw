@@ -8,15 +8,7 @@ process.source = cms.Source(
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
     skipEvents = cms.untracked.uint32(0),
     fileNames  = cms.untracked.vstring(
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_1_1_aJu.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_2_2_iuW.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_3_1_TRT.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_4_2_iOj.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_5_2_jA5.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_6_2_haC.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_7_2_4Ya.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_8_2_4aM.root",
-"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_9_2_3dX.root"
+"/store/user/slava77/SingleMuPlusFlatPt0p2To150/TTI2023Upg14D-PU140bx25-ILT_SLHC14/6a6577f18a9b70d924bea399af3ff625/2023TTIUpg14D_1_1_aJu.root"
     ),
 #    fileNames  = cms.untracked.vstring('/store/mc/TTI2023Upg14D/SingleMuMinusFlatPt0p2To150/GEN-SIM-DIGI-RAW/PU140bx25_PH2_1K_FB_V3-v2/00000/FEF0177C-E8E5-E311-9756-00304867906C.root'),
     )
@@ -70,7 +62,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.out = cms.OutputModule(
     "PoolOutputModule",
-    fileName = cms.untracked.string('tt_ntuple_redoL1MuPhase2.root'),
+    fileName = cms.untracked.string('tt_ntuple_redoL1MuPhase1.root'),
     dropMetaData = cms.untracked.string("NONE")
     )
 
@@ -101,9 +93,9 @@ process = cust_2023TTI(process)
 #process=customise_gem2023(process)
 from SLHCUpgradeSimulations.Configuration.gemCustoms import customise_L1Emulator2019 as customise_L1Emulator2019_gem
 from SLHCUpgradeSimulations.Configuration.gemCustoms import customise_L1Emulator2023 as customise_L1Emulator2023_gem
-process = customise_L1Emulator2019_gem(process, 'pt0')
-process = customise_L1Emulator2023_gem(process, 'pt0')
+#process = customise_L1Emulator2019_gem(process, 'pt0')
+#process = customise_L1Emulator2023_gem(process, 'pt0')
 
 #process=customise_rpc(process)
 from SLHCUpgradeSimulations.Configuration.rpcCustoms import customise_L1Emulator as customise_L1Emulator_rpc
-process = customise_L1Emulator_rpc(process)
+#process = customise_L1Emulator_rpc(process)
