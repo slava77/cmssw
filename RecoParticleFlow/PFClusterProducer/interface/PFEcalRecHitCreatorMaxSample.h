@@ -1,5 +1,5 @@
-#ifndef RecoParticleFlow_PFClusterProducer_PFEcalRecHitCreator_h
-#define RecoParticleFlow_PFClusterProducer_PFEcalRecHitCreator_h
+#ifndef RecoParticleFlow_PFClusterProducer_PFEcalRecHitCreatorMaxSample_h
+#define RecoParticleFlow_PFClusterProducer_PFEcalRecHitCreatorMaxSample_h
 
 #include "RecoParticleFlow/PFClusterProducer/interface/PFRecHitCreatorBase.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHit.h"
@@ -24,10 +24,10 @@
 #include "RecoCaloTools/Navigation/interface/CaloNavigator.h"
 
 template <typename Geometry,PFLayer::Layer Layer,int Detector>
-  class PFEcalRecHitCreator :  public  PFRecHitCreatorBase {
+  class PFEcalRecHitCreatorMaxSample :  public  PFRecHitCreatorBase {
 
  public:  
-  PFEcalRecHitCreator(const edm::ParameterSet& iConfig,edm::ConsumesCollector& iC):
+  PFEcalRecHitCreatorMaxSample(const edm::ParameterSet& iConfig,edm::ConsumesCollector& iC):
     PFRecHitCreatorBase(iConfig,iC)
     {
       recHitToken_ = iC.consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("src"));
@@ -54,7 +54,7 @@ template <typename Geometry,PFLayer::Layer Layer,int Detector>
       iEvent.getByToken(recHitToken_,recHitHandle);
       for(const auto& erh : *recHitHandle ) {      
 	const DetId& detid = erh.detid();
-	double energy = erh.energy();
+	double energy = erh.outOfTimeEnergy();
 	double time = erh.time();
 
 	math::XYZVector position;
@@ -65,7 +65,7 @@ template <typename Geometry,PFLayer::Layer Layer,int Detector>
   
 	// find rechit geometry
 	if(!thisCell) {
-	  edm::LogError("PFEcalRecHitCreator")
+	  edm::LogError("PFEcalRecHitCreatorMaxSample")
 	    <<"warning detid "<<detid.rawId()
 	    <<" not found in geometry"<<std::endl;
 	  continue;
@@ -139,7 +139,7 @@ template <typename Geometry,PFLayer::Layer Layer,int Detector>
 };
 
 
-typedef PFEcalRecHitCreator<EcalBarrelGeometry,PFLayer::ECAL_BARREL,EcalBarrel> PFEBRecHitCreator;
-typedef PFEcalRecHitCreator<EcalEndcapGeometry,PFLayer::ECAL_ENDCAP,EcalEndcap> PFEERecHitCreator;
+typedef PFEcalRecHitCreatorMaxSample<EcalBarrelGeometry,PFLayer::ECAL_BARREL,EcalBarrel> PFEBRecHitCreatorMaxSample;
+typedef PFEcalRecHitCreatorMaxSample<EcalEndcapGeometry,PFLayer::ECAL_ENDCAP,EcalEndcap> PFEERecHitCreatorMaxSample;
 
 #endif
