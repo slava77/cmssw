@@ -323,4 +323,15 @@ template<class IPTI,class VTX> TaggingVariableList  TemplatedSecondaryVertexTagI
 }
 
 }
+
+#ifdef __GCCXML__
+namespace reco { 
+
+typedef reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex> SecondaryVertexTagInfoXYZForInstance;
+
+DECLARE_EDM_REFS(SecondaryVertexTagInfoXYZForInstance)
+
+}
+#endif
+
 #endif // DataFormats_BTauReco_TemplatedSecondaryVertexTagInfo_h

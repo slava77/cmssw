@@ -30,23 +30,39 @@
   <class name="reco::JTATagInfoRefVector"/>
   <class name="edm::Wrapper<reco::JTATagInfoCollection>"/>
 
+  <class name="reco::TrackIPTagInfo"/>
+  <class name="reco::TrackIPTagInfoCollection"/>
+  <class name="reco::TrackIPTagInfoRef"/>
+  <class name="reco::TrackIPTagInfoFwdRef"/>
+  <class name="reco::TrackIPTagInfoRefProd"/>
+  <class name="reco::TrackIPTagInfoRefVector"/>
+  <class name="edm::Wrapper<reco::TrackIPTagInfoCollection>"/>
+
+  <class name="reco::CandIPTagInfo"/>
+  <class name="reco::CandIPTagInfoCollection"/>
+  <class name="reco::CandIPTagInfoRef"/>
+  <class name="reco::CandIPTagInfoFwdRef"/>
+  <class name="reco::CandIPTagInfoRefProd"/>
+  <class name="reco::CandIPTagInfoRefVector"/>
+  <class name="edm::Wrapper<reco::CandIPTagInfoCollection>"/>
+
   <class name="reco::btag::TrackData" ClassVersion="11">
    <version ClassVersion="11" checksum="427805128"/>
    <version ClassVersion="10" checksum="3899080432"/>
   </class>
-  <ioread sourceClass="reco::SecondaryVertexTagInfo::TrackData" version="[1-]" targetClass="reco::btag::TrackData"/>
+  <ioread sourceClass="reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex>::TrackData" version="[1-]" targetClass="reco::btag::TrackData"/>
   <class name="reco::btag::IndexedTrackData"/>
   <class name="std::vector<reco::btag::IndexedTrackData>"/> 
 
   <class name="reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex>::VertexData"/>
-  <class name="std::vector<reco::SecondaryVertexTagInfo::VertexData>"/> 
-  <class name="reco::SecondaryVertexTagInfo"/>
-  <class name="reco::SecondaryVertexTagInfoCollection"/>
-  <class name="reco::SecondaryVertexTagInfoRef"/>
-  <class name="reco::SecondaryVertexTagInfoFwdRef"/>
-  <class name="reco::SecondaryVertexTagInfoRefProd"/>
-  <class name="reco::SecondaryVertexTagInfoRefVector"/>
-  <class name="edm::Wrapper<reco::SecondaryVertexTagInfoCollection>"/>
+  <class name="std::vector<reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex>::VertexData>"/> 
+  <class name="reco::SecondaryVertexTagInfoXYZForInstance"/>
+  <class name="reco::SecondaryVertexTagInfoXYZForInstanceCollection"/>
+  <class name="reco::SecondaryVertexTagInfoXYZForInstanceRef"/>
+  <class name="reco::SecondaryVertexTagInfoXYZForInstanceFwdRef"/>
+  <class name="reco::SecondaryVertexTagInfoXYZForInstanceRefProd"/>
+  <class name="reco::SecondaryVertexTagInfoXYZForInstanceRefVector"/>
+  <class name="edm::Wrapper<std::vector<reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex> > >"/>
 
   <class name="reco::TemplatedSecondaryVertexTagInfo<reco::CandIPTagInfo,reco::VertexCompositePtrCandidate>::VertexData"/>
   <class name="std::vector<reco::CandSecondaryVertexTagInfo::VertexData>"/> 
@@ -119,12 +135,12 @@
   <class name="edm::Wrapper<reco::TaggingVariableListCollection>"/>
 
   <!-- Dictionary for the association in SVTagInfoProxy-->
-  <class name="edm::Wrapper<edm::helpers::KeyVal<edm::RefProd<std::vector<reco::SecondaryVertexTagInfo> >, edm::RefProd<std::vector<reco::Vertex> > > >" persistent="false"/>
+  <class name="edm::Wrapper<edm::helpers::KeyVal<edm::RefProd<std::vector<reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex> > >, edm::RefProd<std::vector<reco::Vertex> > > >" persistent="false"/>
   <!-- persistent="false" qualifier for non-wrappers is deprecated. Will be removed when no longer needed.-->
-  <class name="edm::helpers::KeyVal<edm::RefProd<std::vector<reco::SecondaryVertexTagInfo> >, edm::RefProd<std::vector<reco::Vertex> > >" persistent="false"/>
-  <class name="edm::Wrapper<edm::AssociationMap<edm::OneToMany<std::vector<reco::SecondaryVertexTagInfo>, std::vector<reco::Vertex>, unsigned int > > >" persistent="false"/>
+  <class name="edm::helpers::KeyVal<edm::RefProd<std::vector<reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex> > >, edm::RefProd<std::vector<reco::Vertex> > >" persistent="false"/>
+  <class name="edm::Wrapper<edm::AssociationMap<edm::OneToMany<std::vector<reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex> >, std::vector<reco::Vertex>, unsigned int > > >" persistent="false"/>
   <!-- persistent="false" qualifier for non-wrappers is deprecated. Will be removed when no longer needed.-->
-  <class name="edm::AssociationMap<edm::OneToMany<std::vector<reco::SecondaryVertexTagInfo>, std::vector<reco::Vertex>, unsigned int > >" persistent="false">
+  <class name="edm::AssociationMap<edm::OneToMany<std::vector<reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex> >, std::vector<reco::Vertex>, unsigned int > >" persistent="false">
     <field name="transientMap_" transient="true" />
   </class>
   <class name="edm::Wrapper<edm::helpers::KeyVal<edm::RefProd<std::vector<reco::CandSecondaryVertexTagInfo> >, edm::RefProd<std::vector<reco::VertexCompositePtrCandidate> > > >" persistent="false"/>
@@ -222,22 +238,6 @@
   <ioread sourceClass="reco::TrackIPTagInfo::TrackIPData" version="[1-]" targetClass="reco::btag::TrackIPData"/>
   <class name="std::vector<reco::btag::TrackIPData>"/>
 
-  <class name="reco::TrackIPTagInfo"/>
-  <class name="reco::TrackIPTagInfoCollection"/>
-  <class name="reco::TrackIPTagInfoRef"/>
-  <class name="reco::TrackIPTagInfoFwdRef"/>
-  <class name="reco::TrackIPTagInfoRefProd"/>
-  <class name="reco::TrackIPTagInfoRefVector"/>
-  <class name="edm::Wrapper<reco::TrackIPTagInfoCollection>"/>
-
-  <class name="reco::CandIPTagInfo"/>
-  <class name="reco::CandIPTagInfoCollection"/>
-  <class name="reco::CandIPTagInfoRef"/>
-  <class name="reco::CandIPTagInfoFwdRef"/>
-  <class name="reco::CandIPTagInfoRefProd"/>
-  <class name="reco::CandIPTagInfoRefVector"/>
-  <class name="edm::Wrapper<reco::CandIPTagInfoCollection>"/>
-
   <class name="std::vector<Measurement1D>"/>
 
   <!-- RefToBase stuff -->
@@ -256,8 +256,8 @@
   <class name="edm::reftobase::RefHolder<reco::TrackIPTagInfoRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CandIPTagInfoRef>" />
   <class name="edm::reftobase::RefHolder<reco::CandIPTagInfoRef>" />
-  <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::SecondaryVertexTagInfoRef>" />
-  <class name="edm::reftobase::RefHolder<reco::SecondaryVertexTagInfoRef>" />
+  <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::SecondaryVertexTagInfoXYZForInstanceRef >" />
+  <class name="edm::reftobase::RefHolder<reco::SecondaryVertexTagInfoXYZForInstanceRef >" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CandSecondaryVertexTagInfoRef>" />
   <class name="edm::reftobase::RefHolder<reco::CandSecondaryVertexTagInfoRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CombinedTauTagInfoRef>" />
@@ -283,8 +283,8 @@
   <class name="edm::reftobase::RefHolder<reco::TrackIPTagInfoFwdRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CandIPTagInfoFwdRef>" />
   <class name="edm::reftobase::RefHolder<reco::CandIPTagInfoFwdRef>" />
-  <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::SecondaryVertexTagInfoFwdRef>" />
-  <class name="edm::reftobase::RefHolder<reco::SecondaryVertexTagInfoFwdRef>" />
+  <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::SecondaryVertexTagInfoXYZForInstanceFwdRef>" />
+  <class name="edm::reftobase::RefHolder<reco::SecondaryVertexTagInfoXYZForInstanceFwdRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CandSecondaryVertexTagInfoFwdRef>" />
   <class name="edm::reftobase::RefHolder<reco::CandSecondaryVertexTagInfoFwdRef>" />
   <class name="edm::reftobase::Holder<reco::BaseTagInfo, reco::CombinedTauTagInfoFwdRef>" />
@@ -316,15 +316,15 @@
   <class name="edm::Wrapper<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> > >" />
 
 
- <class name="edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> >"/>
- <class name="edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> >"/>
- <class name="std::vector<edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
- <class name="std::vector<edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
+ <class name="edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> >"/>
+ <class name="edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> >"/>
+ <class name="std::vector<edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
+ <class name="std::vector<edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
 
 
- <class name="edm::Wrapper<edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
- <class name="edm::Wrapper<edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
- <class name="edm::Wrapper<std::vector<edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > > >"/>
- <class name="edm::Wrapper<std::vector<edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo>>,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > > >"/>
+ <class name="edm::Wrapper<edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
+ <class name="edm::Wrapper<edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > >"/>
+ <class name="edm::Wrapper<std::vector<edm::FwdRef<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > > >"/>
+ <class name="edm::Wrapper<std::vector<edm::Ref<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo,edm::refhelper::FindUsingAdvance<edm::OwnVector<reco::BaseTagInfo, edm::ClonePolicy<reco::BaseTagInfo> >,reco::BaseTagInfo> > > >"/>
 
 </lcgdict>
