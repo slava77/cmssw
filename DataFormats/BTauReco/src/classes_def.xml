@@ -50,7 +50,7 @@
    <version ClassVersion="11" checksum="427805128"/>
    <version ClassVersion="10" checksum="3899080432"/>
   </class>
-  <ioread sourceClass="reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex>::TrackData" version="[1-]" targetClass="reco::btag::TrackData"/>
+  <ioread sourceClass="reco::SecondaryVertexTagInfo::TrackData" version="[1-]" targetClass="reco::btag::TrackData"/>
   <class name="reco::btag::IndexedTrackData"/>
   <class name="std::vector<reco::btag::IndexedTrackData>"/> 
 
@@ -63,6 +63,13 @@
   <class name="reco::SecondaryVertexTagInfoXYZForInstanceRefProd"/>
   <class name="reco::SecondaryVertexTagInfoXYZForInstanceRefVector"/>
   <class name="edm::Wrapper<std::vector<reco::TemplatedSecondaryVertexTagInfo<reco::TrackIPTagInfo,reco::Vertex> > >"/>
+
+  <ioread sourceClass="reco::SecondaryVertexTagInfo" checksum="[4280698582]" targetClass="reco::SecondaryVertexTagInfoXYZForInstance" source="m_trackData" target="m_trackData"/>
+  <ioread sourceClass="reco::SecondaryVertexTagInfo" checksum="[4280698582]" targetClass="reco::SecondaryVertexTagInfoXYZForInstance" source="m_svData" target="m_svData"/>
+  <ioread sourceClass="reco::SecondaryVertexTagInfo" checksum="[4280698582]" targetClass="reco::SecondaryVertexTagInfoXYZForInstance" source="m_vertexCandidates" target="m_vertexCandidates"/>
+  <ioread sourceClass="reco::SecondaryVertexTagInfo" checksum="[4280698582]" targetClass="reco::SecondaryVertexTagInfoXYZForInstance" source="m_trackIPTagInfoRef" target="m_trackIPTagInfoRef"/>
+
+  <ioread sourceClass="std::vector<reco::SecondaryVertexTagInfo>" version="[1-]" targetClass="reco::SecondaryVertexTagInfoXYZForInstanceCollection" source=" " target=" "/>
 
   <class name="reco::TemplatedSecondaryVertexTagInfo<reco::CandIPTagInfo,reco::VertexCompositePtrCandidate>::VertexData"/>
   <class name="std::vector<reco::CandSecondaryVertexTagInfo::VertexData>"/> 
