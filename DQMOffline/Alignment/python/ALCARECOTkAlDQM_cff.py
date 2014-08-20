@@ -206,6 +206,7 @@ ALCARECOTkAlMinBiasHITrackingDQM = ALCARECOTkAlMinBiasTrackingDQM.clone(
     AlgoName = 'ALCARECO'+__selectionName,
     FolderName = "AlCaReco/"+__selectionName,
     BSFolderName = "AlCaReco/"+__selectionName+"/BeamSpot",
+    primaryVertex = cms.InputTag("hiSelectedVertex"),
 # margins and settings
     TkSizeBin = 71,
     TkSizeMin = -0.5,
@@ -216,7 +217,7 @@ ALCARECOTkAlMinBiasHITrackingDQM = ALCARECOTkAlMinBiasTrackingDQM.clone(
 ALCARECOTkAlMinBiasHITkAlDQM = ALCARECOTkAlMinBiasTkAlDQM.clone(
 #names and desigantions
     TrackProducer = 'ALCARECO'+__selectionName,
-    ReferenceTrackProducer = 'hiSelectedTracks',
+    ReferenceTrackProducer = 'hiGeneralTracks',
     CaloJetCollection = 'iterativeConePu5CaloJets',
     AlgoName = 'ALCARECO'+__selectionName,
     FolderName = "AlCaReco/"+__selectionName,
