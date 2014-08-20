@@ -9,8 +9,8 @@ class BTagLikeDeDxDiscriminator: public BaseDeDxEstimator
 public: 
  BTagLikeDeDxDiscriminator(const edm::ParameterSet& iConfig){
    meVperADCStrip      = iConfig.getParameter<double>("MeVperADCStrip"); //currently needed until the map on the database are redone
-   Reccord             = iConfig.getUntrackedParameter<std::string>  ("Reccord"            , "SiStripDeDxMip_3D_Rcd");
-   ProbabilityMode     = iConfig.getUntrackedParameter<std::string>  ("ProbabilityMode"    , "Accumulation");
+   Reccord             = iConfig.getParameter<std::string>  ("Reccord");
+   ProbabilityMode     = iConfig.getParameter<std::string>  ("ProbabilityMode");
    Prob_ChargePath     = NULL;
  }
 
@@ -32,6 +32,7 @@ public:
     }
 
     size_t size  = vect_probs.size();
+    if(size<=0) return std::make_pair( -1 , -1);       
     std::sort(vect_probs.begin(), vect_probs.end(), std::less<float>() );
     float SumJet = 0.;
     for(size_t i=0;i<size;i++){if(vect_probs[i]<=0.0001)vect_probs[i] = 0.0001;   SumJet+= log(vect_probs[i]);  }
