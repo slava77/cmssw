@@ -14,6 +14,7 @@
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h" 
+#include "Geometry/TrackerGeometryBuilder/interface/GluedGeomDet.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/TrackReco/interface/DeDxData.h"
@@ -47,6 +48,7 @@ class DeDxEstimatorProducer : public edm::stream::EDProducer<> {
 public:
   explicit DeDxEstimatorProducer(const edm::ParameterSet&);
   ~DeDxEstimatorProducer();
+  static void fillDescriptions(edm::ConfigurationDescriptions & descriptions);
 
 private:
   virtual void beginRun(edm::Run const& run, const edm::EventSetup&) override;
