@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    TestElectronID/ElectronIDAnalyzer
-// Class:      ElectronIDAnalyzer
+// Package:    TestElectronID/ElectronIDValidationAnalyzer
+// Class:      ElectronIDValidationAnalyzer
 // 
-/**\class ElectronIDAnalyzer ElectronIDAnalyzer.cc TestElectronID/ElectronIDAnalyzer/plugins/ElectronIDAnalyzer.cc
+/**\class ElectronIDValidationAnalyzer ElectronIDValidationAnalyzer.cc TestElectronID/ElectronIDValidationAnalyzer/plugins/ElectronIDValidationAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -22,7 +22,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -57,10 +57,10 @@
 // class declaration
 //
 
-class ElectronIDAnalyzer : public edm::EDAnalyzer {
+class ElectronIDValidationAnalyzer : public edm::stream::EDAnalyzer<> {
    public:
-      explicit ElectronIDAnalyzer(const edm::ParameterSet&);
-      ~ElectronIDAnalyzer();
+      explicit ElectronIDValidationAnalyzer(const edm::ParameterSet&);
+      ~ElectronIDValidationAnalyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -70,14 +70,7 @@ class ElectronIDAnalyzer : public edm::EDAnalyzer {
 			  TRUE_NON_PROMPT_ELECTRON}; // The last does not include tau parents
 
    private:
-      virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
-
-      //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-      //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
   
       int matchToTruth(const reco::GsfElectron &el, const edm::Handle<edm::View<reco::GenParticle>>  &genParticles);
       void findFirstNonElectronMother(const reco::Candidate *particle, int &ancestorPID, int &ancestorStatus);
@@ -122,7 +115,7 @@ class ElectronIDAnalyzer : public edm::EDAnalyzer {
 //
 // constructors and destructor
 //
-ElectronIDAnalyzer::ElectronIDAnalyzer(const edm::ParameterSet& iConfig):
+ElectronIDValidationAnalyzer::ElectronIDValidationAnalyzer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   genToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("genparticles"))),
   convToken_(consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("convcollection"))),
@@ -157,7 +150,7 @@ ElectronIDAnalyzer::ElectronIDAnalyzer(const edm::ParameterSet& iConfig):
 }
 
 
-ElectronIDAnalyzer::~ElectronIDAnalyzer()
+ElectronIDValidationAnalyzer::~ElectronIDValidationAnalyzer()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -172,7 +165,7 @@ ElectronIDAnalyzer::~ElectronIDAnalyzer()
 
 // ------------ method called for each event  ------------
 void
-ElectronIDAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+ElectronIDValidationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    // using namespace edm;
 
@@ -215,10 +208,10 @@ ElectronIDAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
      // The if protects against ecalEnergy == inf or zero (always
      // the case for electrons below 5 GeV in miniAOD)
      if( el->ecalEnergy() == 0 ){
-       printf("Electron energy is zero!\n");
+       std::cout << "Electron energy is zero!\n";
        ooEmooP_ = 1e30;
      }else if( !std::isfinite(el->ecalEnergy())){
-       printf("Electron energy is not finite!\n");
+       std::cout << "Electron energy is not finite!\n";
        ooEmooP_ = 1e30;
      }else{
        ooEmooP_ = fabs(1.0/el->ecalEnergy() - el->eSuperClusterOverP()/el->ecalEnergy() );
@@ -244,7 +237,7 @@ ElectronIDAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
        passConversionVeto_ = !ConversionTools::hasMatchedConversion(*el,convs,
 								   thebs->position());
      }else{
-       printf("\n\nERROR!!! conversions not found!!!\n");
+       std::cout << "\n\nERROR!!! conversions not found!!!\n" ;
      }
  
      isTrue_ = matchToTruth(*el, genParticles);
@@ -256,54 +249,9 @@ ElectronIDAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
    
 }
 
-
-// ------------ method called once each job just before starting event loop  ------------
-void 
-ElectronIDAnalyzer::beginJob()
-{
-}
-
-// ------------ method called once each job just after ending the event loop  ------------
-void 
-ElectronIDAnalyzer::endJob() 
-{
-}
-
-// ------------ method called when starting to processes a run  ------------
-/*
-void 
-ElectronIDAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when ending the processing of a run  ------------
-/*
-void 
-ElectronIDAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when starting to processes a luminosity block  ------------
-/*
-void 
-ElectronIDAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
-
-// ------------ method called when ending the processing of a luminosity block  ------------
-/*
-void 
-ElectronIDAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
-
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-ElectronIDAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+ElectronIDValidationAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -313,7 +261,7 @@ ElectronIDAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& description
 
 // The function that uses algorith from Josh Bendavid with 
 // an explicit loop over gen particles. 
-int ElectronIDAnalyzer::matchToTruth(const reco::GsfElectron &el, 
+int ElectronIDValidationAnalyzer::matchToTruth(const reco::GsfElectron &el, 
 				    const edm::Handle<edm::View<reco::GenParticle>> &genParticles){
 
   // 
@@ -349,7 +297,7 @@ int ElectronIDAnalyzer::matchToTruth(const reco::GsfElectron &el,
   if( ancestorPID == -999 && ancestorStatus == -999 ){
     // No non-electron parent??? This should never happen.
     // Complain.
-    printf("ElectronNtupler: ERROR! Electron does not apper to have a non-electron parent\n");
+    std::cout << "ElectronNtupler: ERROR! Electron does not apper to have a non-electron parent\n" ;
     return UNMATCHED;
   }
   
@@ -363,11 +311,11 @@ int ElectronIDAnalyzer::matchToTruth(const reco::GsfElectron &el,
   return TRUE_PROMPT_ELECTRON;
 }
 
-void ElectronIDAnalyzer::findFirstNonElectronMother(const reco::Candidate *particle,
+void ElectronIDValidationAnalyzer::findFirstNonElectronMother(const reco::Candidate *particle,
 						   int &ancestorPID, int &ancestorStatus){
   
   if( particle == 0 ){
-    printf("ElectronNtupler: ERROR! null candidate pointer, this should never happen\n");
+    std::cout << "ElectronNtupler: ERROR! null candidate pointer, this should never happen\n";
     return;
   }
   
@@ -384,4 +332,4 @@ void ElectronIDAnalyzer::findFirstNonElectronMother(const reco::Candidate *parti
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(ElectronIDAnalyzer);
+DEFINE_FWK_MODULE(ElectronIDValidationAnalyzer);
