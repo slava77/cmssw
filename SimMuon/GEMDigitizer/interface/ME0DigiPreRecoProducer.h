@@ -1,30 +1,26 @@
-#ifndef SimMuon_GEMDigitizer_GEMDigiProducer_h
-#define SimMuon_GEMDigitizer_GEMDigiProducer_h
+#ifndef SimMuon_GEMDigitizer_ME0DigiPreRecoProducer_h
+#define SimMuon_GEMDigitizer_ME0DigiPreRecoProducer_h
 
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
-#include "DataFormats/Common/interface/DetSetVector.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 #include "SimDataFormats/CrossingFrame/interface/MixCollection.h"
-#include "SimDataFormats/TrackerDigiSimLink/interface/StripDigiSimLink.h"
 
 #include <string>
 
-class GEMGeometry;
-class GEMDigiModel;
+class ME0Geometry;
+class ME0DigiPreRecoModel;
 
-class GEMDigiProducer : public edm::EDProducer
+class ME0DigiPreRecoProducer : public edm::EDProducer
 {
 public:
 
-  typedef edm::DetSetVector<StripDigiSimLink> StripDigiSimLinks;
+  explicit ME0DigiPreRecoProducer(const edm::ParameterSet& ps);
 
-  explicit GEMDigiProducer(const edm::ParameterSet& ps);
-
-  virtual ~GEMDigiProducer();
+  virtual ~ME0DigiPreRecoProducer();
 
   virtual void beginRun(const edm::Run&, const edm::EventSetup&) override;
 
@@ -34,9 +30,9 @@ private:
 
   //Name of Collection used for create the XF 
   edm::EDGetTokenT<CrossingFrame<PSimHit> > cf_token; 
-  
-  std::string digiModelString_;
-  GEMDigiModel* gemDigiModel_;
+
+  std::string digiPreRecoModelString_;
+  ME0DigiPreRecoModel* me0DigiPreRecoModel_;
 };
 
 #endif

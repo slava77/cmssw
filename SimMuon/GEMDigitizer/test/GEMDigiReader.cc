@@ -1,7 +1,8 @@
-#ifndef SimMuon_GEMDigiReader_h
-#define SimMuon_GEMDigiReader_h
+#ifndef SimMuon_GEMDigitizer_GEMDigiReader_h
+#define SimMuon_GEMDigitizer_GEMDigiReader_h
 
 /** \class GEMDigiReader
+ *
  *  Dumps GEM digis 
  *  
  *  \authors: Vadim Khotilovich
