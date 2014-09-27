@@ -15,6 +15,7 @@ ALCARECOSiStripCalMinBiasTrackingDQM = DQM.TrackingMonitor.TrackingMonitor_cfi.T
     AlgoName = 'ALCARECO'+__selectionName,
     FolderName = "AlCaReco/"+__selectionName,
     BSFolderName = "AlCaReco/"+__selectionName+"/BeamSpot",
+    primaryVertex = cms.InputTag("hiSelectedVertex"),
 # margins and settings
     TkSizeBin = 300,
     TkSizeMin = -0.5,
@@ -27,7 +28,7 @@ ALCARECOSiStripCalMinBiasTrackerDQM = DQMOffline.Alignment.TkAlCaRecoMonitor_cfi
     TrackProducer = 'ALCARECO'+__selectionName,
     AlgoName = 'ALCARECO'+__selectionName,
     FolderName = "AlCaReco/"+__selectionName,
-    ReferenceTrackProducer = 'hiSelectedTracks',
+    ReferenceTrackProducer = 'hiGeneralTracks',
 # margins and settings
     fillInvariantMass = False,
     TrackPtMax = 30,
