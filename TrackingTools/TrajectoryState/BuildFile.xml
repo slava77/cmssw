@@ -1,4 +1,4 @@
-<flags   CXXFLAGS="-Ofast"/>
+<flags   CXXFLAGS=""/>
 
 <use   name="DataFormats/Common"/>
 <use   name="DataFormats/GeometrySurface"/>
