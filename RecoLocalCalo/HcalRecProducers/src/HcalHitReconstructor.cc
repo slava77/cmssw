@@ -48,7 +48,7 @@ HcalHitReconstructor::HcalHitReconstructor(edm::ParameterSet const& conf):
   setPileupCorrectionForNegative_(0),
   paramTS(0),
   theTopology(0),
-  puCorrMethod_(conf.getUntrackedParameter<int>("puCorrMethod", 0))
+  puCorrMethod_(conf.getUntrackedParameter<int>("puCorrMethod", 2))
 {
   // register for data access
   tok_hbhe_ = consumes<HBHEDigiCollection>(inputLabel_);
