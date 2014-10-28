@@ -1,5 +1,6 @@
 #include "CalibCalorimetry/CaloTPG/src/CaloTPGTranscoderULUT.h"
 #include "FWCore/Utilities/interface/Exception.h"
+#include "FWCore/Framework/interface/ESTransientHandle.h"
 #include "Geometry/HcalTowerAlgo/interface/HcalTrigTowerGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -367,7 +368,13 @@ std::vector<unsigned char> CaloTPGTranscoderULUT::getCompressionLUT(HcalTrigTowe
 void CaloTPGTranscoderULUT::setup(const edm::EventSetup& es, Mode mode=All) const{
    if (isLoaded_) return;
    // TODO Try/except
-   es.get<HcalLutMetadataRcd>().get(lutMetadata_);
+   edm::ESTransientHandle<HcalLutMetadata> hMetadata; 
+   es.get<HcalLutMetadataRcd>().get(hMetadata);
+   lutMetadata_.reset( new HcalLutMetadata(*hMetadata) );
+   edm::ESHandle<HcalTopology> htopo;
+   es.get<IdealGeometryRecord>().get(htopo);
+   lutMetadata_->setTopo(htopo.product());
+
    es.get<CaloGeometryRecord>().get(theTrigTowerGeometry);
    
    nominal_gain_ = lutMetadata_->getNominalGain();
