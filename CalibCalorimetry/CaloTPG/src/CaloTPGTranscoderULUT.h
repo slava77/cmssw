@@ -1,6 +1,7 @@
 #ifndef CALOTPGTRANSCODERULUT_H
 #define CALOTPGTRANSCODERULUT_H 1
 
+#include <memory>
 #include <vector>
 #include "CalibFormats/CaloTPG/interface/CaloTPGTranscoder.h"
 
@@ -72,7 +73,7 @@ public:
 
   mutable LUT *outputLUT_[NOUTLUTS];
   mutable std::vector<RCTdecompression> hcaluncomp_;
-  mutable edm::ESHandle<HcalLutMetadata> lutMetadata_;
+  mutable std::unique_ptr<HcalLutMetadata> lutMetadata_;
   mutable edm::ESHandle<HcalTrigTowerGeometry> theTrigTowerGeometry;
 };
 #endif
