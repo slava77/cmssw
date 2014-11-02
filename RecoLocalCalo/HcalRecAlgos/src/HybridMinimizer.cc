@@ -8,6 +8,9 @@
  *                                                                    *
  **********************************************************************/
 
+// by lhx: Note copied and modifed from the Minuit2Minimizer to suit our purpose
+// Changes mainly to make the SetMinimizerType public so that user can re-new to
+// different minimizer...
 // Implementation file for class HybridMinimizer
 
 #include "RecoLocalCalo/HcalRecAlgos/src/HybridMinimizer.h"
