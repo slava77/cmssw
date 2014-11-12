@@ -2,7 +2,6 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 // To be used in the future for any cut
-#include "HLTrigger/Egamma/interface/HLTEgammaGenericFilter.h"
 #include "HLTrigger/Egamma/interface/HLTEgammaGenericQuadraticFilter.h"
 #include "HLTrigger/Egamma/interface/HLTEgammaGenericQuadraticEtaFilter.h"
 #include "HLTrigger/Egamma/interface/HLTElectronGenericFilter.h"
@@ -35,7 +34,6 @@
 
 #include "HLTrigger/Egamma/interface/HLTElectronMissingHitsFilter.h"
 
-DEFINE_FWK_MODULE(HLTEgammaGenericFilter);
 DEFINE_FWK_MODULE(HLTEgammaGenericQuadraticFilter);
 DEFINE_FWK_MODULE(HLTEgammaGenericQuadraticEtaFilter);
 DEFINE_FWK_MODULE(HLTEgammaEtFilter);
