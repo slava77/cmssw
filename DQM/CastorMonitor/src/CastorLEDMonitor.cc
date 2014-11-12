@@ -165,7 +165,7 @@ void CastorLEDMonitor::processEvent( const CastorDigiCollection& castorDigis, co
     return; 
   }
 
-  float vals[10];
+  float vals[10]; memset(vals, 0, sizeof(vals));
 
   
    if(castorDigis.size()>0) {
