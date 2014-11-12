@@ -824,6 +824,7 @@ void EcalSelectiveReadoutValidation::analyzeEE(const edm::Event& event,
 					       const edm::EventSetup& es){
   bool eventError = false;
   nEeZsErrors_ = 0;
+  nEeZsErrorsType1_ = 0;
 
   {
     PgTiming t("analyzeEE: init");
@@ -1078,6 +1079,7 @@ EcalSelectiveReadoutValidation::analyzeEB(const edm::Event& event,
 
     bool eventError = false;
     nEbZsErrors_ = 0;
+    nEbZsErrorsType1_ = 0;
     vector<pair<int,int> > xtalEtaPhi;
 
   {
