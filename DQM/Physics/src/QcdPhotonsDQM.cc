@@ -83,6 +83,8 @@ QcdPhotonsDQM::QcdPhotonsDQM(const ParameterSet& parameters) {
   theEndcapRecHitToken_ = consumes<EcalRecHitCollection>(
       parameters.getParameter<InputTag>("endcapRecHitTag"));
 
+  num_events_in_run = 0;
+
   // coverity says...
   h_deltaEt_photon_jet = 0;
   h_deltaPhi_jet_jet2 = 0;
@@ -545,6 +547,8 @@ void QcdPhotonsDQM::endRun(const edm::Run& run, const edm::EventSetup& es) {
                                              h_photon_et_jetfo->getTH1F());
   h_photon_et_ratio_co_fo->getTH1F()->Divide(h_photon_et_jetco->getTH1F(),
                                              h_photon_et_jetfo->getTH1F());
+
+  num_events_in_run = 0;
 }
 
 // Local Variables:
