@@ -28,6 +28,8 @@ using namespace std;
 DTSegmentsTask::DTSegmentsTask(const edm::ParameterSet& pset) {
 
   debug = pset.getUntrackedParameter<bool>("debug",false); 
+  checkNoisyChannels = parameters.getUntrackedParameter<bool>("checkNoisyChannels",false);
+  
   parameters = pset;
   
   // the name of the 4D rec hits collection
@@ -106,7 +108,6 @@ void DTSegmentsTask::bookHistograms(DQMStore::IBooker & ibooker,
 void DTSegmentsTask::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 
   // Get the map of noisy channels
-  //  bool checkNoisyChannels = parameters.getUntrackedParameter<bool>("checkNoisyChannels",false);
   ESHandle<DTStatusFlag> statusMap;
   if(checkNoisyChannels) {
     setup.get<DTStatusFlagRcd>().get(statusMap);
