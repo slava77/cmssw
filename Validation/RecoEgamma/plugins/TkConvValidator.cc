@@ -164,6 +164,8 @@ void  TkConvValidator::bookHistograms( DQMStore::IBooker & iBooker, edm::Run con
 
   nEvt_=0;
   nEntry_=0;
+  nSimConv_[0] = nSimConv_[1] = 0;
+  nMatched_ = 0;
   nRecConv_=0;
   nRecConvAss_=0;
   nRecConvAssWithEcal_=0;
