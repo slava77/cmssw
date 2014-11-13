@@ -10,8 +10,7 @@ from RecoHI.HiMuonAlgos.HiRegitMuonTobTecStep_cff import *
 
 import RecoTracker.FinalTrackSelectors.trackListMerger_cfi
 hiGeneralAndRegitMuTracks = RecoTracker.FinalTrackSelectors.trackListMerger_cfi.trackListMerger.clone(
-    TrackProducers = (#cms.InputTag('hiGlobalPrimTracks'),
-                      cms.InputTag('hiRegitMuInitialStepTracks'),
+    TrackProducers = (cms.InputTag('hiRegitMuInitialStepTracks'),
                       cms.InputTag('hiRegitMuLowPtTripletStepTracks'),
                       cms.InputTag('hiRegitMuPixelPairStepTracks'),
                       cms.InputTag('hiRegitMuDetachedTripletStepTracks'),
@@ -19,8 +18,7 @@ hiGeneralAndRegitMuTracks = RecoTracker.FinalTrackSelectors.trackListMerger_cfi.
                       cms.InputTag('hiRegitMuPixelLessStepTracks'),
                       cms.InputTag('hiRegitMuTobTecStepTracks')
                       ),
-    selectedTrackQuals = cms.VInputTag(#cms.InputTag("hiInitialStepSelector","hiInitialStepLoose"),
-                                       cms.InputTag("hiRegitMuInitialStepSelector","hiRegitMuInitialStepLoose"),
+    selectedTrackQuals = cms.VInputTag(cms.InputTag("hiRegitMuInitialStepSelector","hiRegitMuInitialStepLoose"),
                                        cms.InputTag("hiRegitMuLowPtTripletStepSelector","hiRegitMuLowPtTripletStepLoose"),
                                        cms.InputTag("hiRegitMuPixelPairStepSelector","hiRegitMuPixelPairStep"),
                                        cms.InputTag("hiRegitMuDetachedTripletStepSelector","hiRegitMuDetachedTripletStep"),
@@ -41,17 +39,12 @@ hiRegitMuTracking = cms.Sequence(hiRegitMuonInitialStep
                                  *hiRegitMuonMixedTripletStep
                                  *hiRegitMuonPixelLessStep
                                  *hiRegitMuonTobTecStep
-                                 # *hiGeneralAndRegitMuTracks
                                  )
 
-# Emilien
-# Seed generator
-from RecoMuon.MuonSeedGenerator.standAloneMuonSeeds_cff import *
+# Standalone muons
+from RecoMuon.Configuration.RecoMuonPPonly_cff import *
 
-# Stand alone muon track producer
-from RecoMuon.StandAloneMuonProducer.standAloneMuons_cff import *
 
-hiRegitMuTrackingAndSta = cms.Sequence(standAloneMuonSeeds
-      *standAloneMuons
+hiRegitMuTrackingAndSta = cms.Sequence(standalonemuontracking
       *hiRegitMuTracking)
 
