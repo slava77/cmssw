@@ -41,8 +41,10 @@ kwds = {}
 process = scenario.visualizationProcessing(globalTag='DUMMY', writeTiers=['FEVT'], **kwds)
 
 process.source = source
+process.source.inputFileTransitionsEachEvent = cms.untracked.bool(True)
 
-process.load("DQM.Integration.test.FrontierCondition_GT_autoExpress_cfi")
+#process.load("DQM.Integration.test.FrontierCondition_GT_autoExpress_cfi")
+process.load("DQM.Integration.test.FrontierCondition_GT_Offline_cfi")
 
 process.options = cms.untracked.PSet(
         Rethrow = cms.untracked.vstring('ProductNotFound'),
