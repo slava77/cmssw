@@ -9,9 +9,6 @@
 #include "CalibFormats/HcalObjects/interface/HcalCoder.h"
 #include "CalibFormats/HcalObjects/interface/HcalCalibrations.h"
 
-#include "TFile.h"
-#include "TTree.h"
-
 #include <TMinuit.h>
 
 #include <TH1F.h>
@@ -20,6 +17,16 @@
 #include "Math/Functor.h"
 
 #include "RecoLocalCalo/HcalRecAlgos/src/HybridMinimizer.h"
+
+namespace HcalConst{
+
+   constexpr int maxSamples = 10;
+   constexpr int maxPSshapeBin = 256;
+   constexpr int nsPerBX = 25;
+   constexpr float iniTimeShift = 98.5f;
+   constexpr double invertnsPerBx = 0.04;
+
+}
 
 namespace FitterFuncs{
   
@@ -30,32 +37,30 @@ namespace FitterFuncs{
 		       double iNoise);
      ~PulseShapeFunctor();
      
-     double EvalSinglePulse(const std::vector<double>& pars);
-     double EvalDoublePulse(const std::vector<double>& pars);
-     double EvalTriplePulse(const std::vector<double>& pars);
+     double EvalPulse(const std::vector<double>& pars);
      
      void setDefaultcntNANinfit(){ cntNANinfit =0; }
      int getcntNANinfit(){ return cntNANinfit; }
      
-     void setpsFitx(double *x ){ for(int i=0; i<10; ++i) psFit_x[i] = x[i]; }
-     void setpsFity(double *y ){ for(int i=0; i<10; ++i) psFit_y[i] = y[i]; }
-     void setpsFiterry (double *erry  ){ for(int i=0; i<10; ++i) psFit_erry  [i] = erry [i]; }
-     void setpsFiterry2(double *erry2 ){ for(int i=0; i<10; ++i) psFit_erry2 [i] = erry2[i]; }
-     void setpsFitslew (double *slew  ){ for(int i=0; i<10; ++i) {psFit_slew [i] = slew [i]; } }
+     void setpsFitx(double *x ){ for(int i=0; i<HcalConst::maxSamples; ++i) psFit_x[i] = x[i]; }
+     void setpsFity(double *y ){ for(int i=0; i<HcalConst::maxSamples; ++i) psFit_y[i] = y[i]; }
+     void setpsFiterry (double *erry  ){ for(int i=0; i<HcalConst::maxSamples; ++i) psFit_erry  [i] = erry [i]; }
+     void setpsFiterry2(double *erry2 ){ for(int i=0; i<HcalConst::maxSamples; ++i) psFit_erry2 [i] = erry2[i]; }
+     void setpsFitslew (double *slew  ){ for(int i=0; i<HcalConst::maxSamples; ++i) {psFit_slew [i] = slew [i]; } }
      double sigma(double ifC);
      double singlePulseShapeFunc( const double *x );
      double doublePulseShapeFunc( const double *x );
      double triplePulseShapeFunc( const double *x );
      
    private:
-     std::array<float,256> pulse_hist;
+     std::array<float,HcalConst::maxPSshapeBin> pulse_hist;
      
      int cntNANinfit;
      std::vector<float> acc25nsVec, diff25nsItvlVec;
      std::vector<float> accVarLenIdxZEROVec, diffVarItvlIdxZEROVec;
      std::vector<float> accVarLenIdxMinusOneVec, diffVarItvlIdxMinusOneVec;
-     std::array<float,10> funcHPDShape(const double &pulseTime, const double &pulseHeight,const double &slew);
-     double psFit_x[10], psFit_y[10], psFit_erry[10], psFit_erry2[10], psFit_slew[10];
+     void funcHPDShape(std::array<float,HcalConst::maxSamples> & ntmpbin, const double &pulseTime, const double &pulseHeight,const double &slew);
+     double psFit_x[HcalConst::maxSamples], psFit_y[HcalConst::maxSamples], psFit_erry[HcalConst::maxSamples], psFit_erry2[HcalConst::maxSamples], psFit_slew[HcalConst::maxSamples];
      
      bool pedestalConstraint_;
      bool timeConstraint_;
@@ -68,6 +73,9 @@ namespace FitterFuncs{
      double pedSig_;
      double noise_;
      double timeShift_;
+
+     double inverttimeSig_, inverttimeSig2_;
+     double invertpedSig_, invertpedSig2_;
    };
    
 }
@@ -89,13 +97,13 @@ public:
 
 private:
     int pulseShapeFit(const double * energyArr, const double * pedenArr, const double *chargeArr, 
-		      const double *pedArr, const double tsTOTen, std::vector<double> &fitParsVec) const;
+		      const double *pedArr, const double *gainArr, const double tsTOTen, std::vector<double> &fitParsVec) const;
     void fit(int iFit,float &timevalfit,float &chargevalfit,float &pedvalfit,float &chi2,bool &fitStatus,double &iTSMax,
 	     const double  &iTSTOTen,double *iEnArr,int (&iBX)[3]) const;
 
     PSFitter::HybridMinimizer * hybridfitter;
     int cntsetPulseShape;
-    std::array<double,10> iniTimesArr;
+    std::array<double,HcalConst::maxSamples> iniTimesArr;
     double chargeThreshold_;
     int fitTimes_;
 
