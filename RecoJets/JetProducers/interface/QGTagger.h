@@ -8,31 +8,27 @@
 
 #include "JetMETCorrections/JetCorrector/interface/JetCorrector.h"
 #include "RecoJets/JetAlgorithms/interface/QGLikelihoodCalculator.h"
-#include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 class QGTagger : public edm::EDProducer{
    public:
       explicit QGTagger(const edm::ParameterSet&);
-      ~QGTagger(){};
+      ~QGTagger(){ delete qgLikelihood;};
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
    private:
       virtual void produce(edm::Event&, const edm::EventSetup&);
-      template <class jetClass> void calcVariables(const jetClass *jet, edm::Handle<reco::VertexCollection> vC);
-      template <typename T> void putInEvent(std::string, edm::Handle<reco::PFJetCollection>, std::vector<T>*, edm::Event&);
+      void calcVariables(const reco::Jet*, int&, float&, float&, edm::Handle<reco::VertexCollection>&);
+      template <typename T> void putInEvent(std::string, const edm::Handle<edm::View<reco::Jet>>&, std::vector<T>*, edm::Event&);
+      bool isPackedCandidate(const reco::Candidate* candidate);
 
-
-      // member data
-      edm::EDGetTokenT<reco::PFJetCollection> jets_token;
-      edm::EDGetTokenT<reco::JetCorrector> jetCorrector_token;
-      edm::EDGetTokenT<reco::VertexCollection> vertex_token;
-      edm::EDGetTokenT<double> rho_token;
-      edm::InputTag jetCorrector_inputTag;
-      std::string jetsLabel, systLabel;
-      bool useQC, useJetCorr, produceSyst;
-      QGLikelihoodCalculator *qgLikelihood;
-      float pt, axis2, ptD;
-      int mult;
+      edm::EDGetTokenT<edm::View<reco::Jet>> 	jetsToken;
+      edm::EDGetTokenT<reco::JetCorrector> 	jetCorrectorToken;
+      edm::EDGetTokenT<reco::VertexCollection> 	vertexToken;
+      edm::EDGetTokenT<double> 			rhoToken;
+      std::string 				jetsLabel, systLabel;
+      const bool 				useQC, useJetCorr, produceSyst;
+      bool					weStillNeedToCheckJetCandidates, weAreUsingPackedCandidates;
+      QGLikelihoodCalculator *			qgLikelihood;
 };
 
 #endif
