@@ -12,7 +12,9 @@
     <use   name="DataFormats/CaloTowers"/>    
     <use   name="Geometry/CaloTopology"/>    
     <use   name="Geometry/CaloGeometry"/>
+<!--
     <use   name="DataFormats/L1TrackTrigger"/>
+-->
     <use   name="SimDataFormats/SLHC"/>
     <use   name="root"/>
     <use   name="FastSimulation/Particle"/>
