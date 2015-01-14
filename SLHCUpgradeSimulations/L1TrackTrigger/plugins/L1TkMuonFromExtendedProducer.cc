@@ -199,6 +199,10 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       << " quality= " << MuCn[imu].quality
       << " sigmaEta= " << MuCn[imu].sigmaEta
       << " sigmaPhi= " << MuCn[imu].sigmaPhi 
+      << " gmtCand " << MuCn[imu].gmtCand 
+      << " dtCand " << MuCn[imu].dtCand 
+      << " cscCand " << MuCn[imu].cscCand 
+      << " rpcCand " << MuCn[imu].rpcCand 
       << endl;
 
   }//over l1mus
@@ -231,11 +235,6 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     if (!MuCn[imu].rpcCand){
       //apply something specific here
     }
-
-    cout << "\n gmtCand.empty() " << MuCn[imu].gmtCand 
-      << " dtCand.empty() " << MuCn[imu].dtCand 
-      << " cscCand.empty() " << MuCn[imu].cscCand 
-      << " rpcCand.empty()  " << MuCn[imu].rpcCand << endl;
 
     float drmin = 999;
     float ptmax = -1;
