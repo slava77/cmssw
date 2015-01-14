@@ -103,7 +103,7 @@ private:
     unsigned int quality;
     float sigmaEta;
     float sigmaPhi;
-    bool gmtMuonCand;
+    bool gmtCand;
     bool dtCand;
     bool cscCand;
     bool rpcCand;
@@ -187,7 +187,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     const auto& cscCand = l1mu.cscCand();
     const auto& rpcCand = l1mu.rpcCand();
 
-    MuCn[imu].gmtMuonCand = gmtCand.empty();
+    MuCn[imu].gmtCand = gmtCand.empty();
     MuCn[imu].dtCand = dtCand.empty();
     MuCn[imu].cscCand = cscCand.empty();
     MuCn[imu].rpcCand = rpcCand.empty();
