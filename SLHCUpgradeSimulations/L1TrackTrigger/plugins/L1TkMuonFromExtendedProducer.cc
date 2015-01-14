@@ -170,7 +170,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   for (auto l1mu : l1mus){
     imu++;
 
-    cout << "\n l1mu.gmtMuonCand()" << l1mu.gmtMuonCand() << endl;
+    // cout << "\n l1mu.gmtMuonCand()" << l1mu.gmtMuonCand() << endl;
 
     MuCn[imu].eta = l1mu.eta();
     MuCn[imu].eta = l1mu.eta();
@@ -181,6 +181,16 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     MuCn[imu].sigmaEta = l1mu.sigmaEta();
     MuCn[imu].sigmaPhi = l1mu.sigmaPhi();
     MuCn[imu].feta = fabs( l1mu.eta());
+
+    const auto& gmtCand = l1mu.gmtMuonCand();
+    const auto& dtCand  = l1mu.dtCand();
+    const auto& cscCand = l1mu.cscCand();
+    const auto& rpcCand = l1mu.rpcCand();
+
+    MuCn[imu].gmtMuonCand = gmtCand.empty();
+    MuCn[imu].dtCand = dtCand.empty();
+    MuCn[imu].cscCand = cscCand.empty();
+    MuCn[imu].rpcCand = rpcCand.empty();
 
     cout << " imu= " << imu 
       << " eta= " << MuCn[imu].eta 
@@ -204,32 +214,28 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     // can skip quality cuts at the moment, keep bx=0 req
     if (MuCn[imu].bx != 0) continue;
 
-    const auto& gmtCand = l1mu.gmtMuonCand();
-    if (!gmtCand.empty()){
+    if (!MuCn[imu].gmtCand){
       //some selections here
       //currently the input can be a merge from different track finders
       //so, the GMT cand may be missing
     }
 
-    const auto& dtCand  = l1mu.dtCand();
-    if (!dtCand.empty()){
+    if (!MuCn[imu].dtCand){
       // something can be called from here
     }
 
-    const auto& cscCand = l1mu.cscCand();
-    if (!cscCand.empty()){
+    if (!MuCn[imu].cscCand){
       //apply something specific here
     }
 
-    const auto& rpcCand = l1mu.rpcCand();
-    if (!rpcCand.empty()){
+    if (!MuCn[imu].rpcCand){
       //apply something specific here
     }
 
-    cout << "\n gmtCand.empty() " << gmtCand.empty() 
-      << " dtCand.empty() " << dtCand.empty() 
-      << " cscCand.empty() " << cscCand.empty() 
-      << " rpcCand.empty()  " << rpcCand.empty() << endl;
+    cout << "\n gmtCand.empty() " << MuCn[imu].gmtCand 
+      << " dtCand.empty() " << MuCn[imu].dtCand 
+      << " cscCand.empty() " << MuCn[imu].cscCand 
+      << " rpcCand.empty()  " << MuCn[imu].rpcCand << endl;
 
     float drmin = 999;
     float ptmax = -1;
