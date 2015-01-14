@@ -4,10 +4,8 @@
 // match the two and produce a collection of L1TkMuonParticle
 // eventually, this should be made modular and allow to swap out different algorithms
 
-
 #include "DataFormats/L1TrackTrigger/interface/L1TkMuonParticle.h"
 #include "DataFormats/L1TrackTrigger/interface/L1TkMuonParticleFwd.h"
-
 
 // for L1Tracks:
 #include "SimDataFormats/SLHC/interface/StackedTrackerTypes.h"
@@ -96,20 +94,20 @@ private:
   bool use5ParameterFit_;
 };
 
-  typedef struct {
-    Float_t eta;
-    Float_t phi;
-    Float_t pt;
-    Float_t feta;
-    Float_t bx;
+  struct L1TkMuonCand {
+    float eta;
+    float phi;
+    float pt;
+    float feta;
+    float bx;
     unsigned int quality;
-    Float_t sigmaEta;
-    Float_t sigmaPhi;
-    std::string gmtMuonCand;
-    std::string dtCand;
-    std::string cscCand;
-    std::string rpcCand;
-  } L1TkMuonCand;    
+    float sigmaEta;
+    float sigmaPhi;
+    bool gmtMuonCand;
+    bool dtCand;
+    bool cscCand;
+    bool rpcCand;
+  };  
  
 //
 // constructors  and destructor
@@ -172,9 +170,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   for (auto l1mu : l1mus){
     imu++;
 
-    /*
-    cout << l1mu.gmtMuonCand() << endl;
-    */
+    cout << "\n l1mu.gmtMuonCand()" << l1mu.gmtMuonCand() << endl;
 
     MuCn[imu].eta = l1mu.eta();
     MuCn[imu].eta = l1mu.eta();
@@ -229,6 +225,11 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     if (!rpcCand.empty()){
       //apply something specific here
     }
+
+    cout << "\n gmtCand.empty() " << gmtCand.empty() 
+      << " dtCand.empty() " << dtCand.empty() 
+      << " cscCand.empty() " << cscCand.empty() 
+      << " rpcCand.empty()  " << rpcCand.empty() << endl;
 
     float drmin = 999;
     float ptmax = -1;
