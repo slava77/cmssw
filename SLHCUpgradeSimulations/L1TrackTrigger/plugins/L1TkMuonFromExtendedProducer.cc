@@ -109,13 +109,14 @@ private:
     bool rpcCand;
   };  
  
+// maximum Muons number
+const int MuonsMax = 10;
+
 //
 // constructors  and destructor
 //
 L1TkMuonFromExtendedProducer::L1TkMuonFromExtendedProducer(const edm::ParameterSet& iConfig)
 {
-  edm::LogWarning("L1TkMuonFromExtendedProducer") << " L1TkMuonFromExtendedProducer ";
-
   L1MuonsInputTag_ = iConfig.getParameter<edm::InputTag>("L1MuonsInputTag");
   L1TrackInputTag_ = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
 
@@ -141,14 +142,12 @@ L1TkMuonFromExtendedProducer::~L1TkMuonFromExtendedProducer() {
 void
 L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  L1TkMuonCand MuCn[10];
+  L1TkMuonCand MuCn[MuonsMax];
   //  std::vector<L1TkMuonCand*> pnMuCn[10];
 
   using namespace edm;
   using namespace std;
   
-  edm::LogWarning("L1TkMuonFromExtendedProducer") << "::produce";
-
   std::auto_ptr<L1TkMuonParticleCollection> tkMuons(new L1TkMuonParticleCollection);
   
   edm::Handle<L1MuonParticleExtendedCollection> l1musH;
@@ -159,57 +158,58 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
   const L1TkTrackCollectionType& l1tks = *l1tksH.product();
 
-  cout << " l1mus.size= " << l1mus.size() << " sizeof(l1mus)= " << sizeof(l1mus) 
-       << " l1tks.size= " << l1tks.size() << " sizeof(l1tks)= " << sizeof(l1tks)
-       << endl;
+  edm::LogWarning("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size() << " l1tks.size= " << l1tks.size();
 
   L1TkMuonParticleCollection l1tkmuCands;
   l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
 
   int imu = -1;
+  int MuonNum = -1;
   for (auto l1mu : l1mus){
     imu++;
 
-    // cout << "\n l1mu.gmtMuonCand()" << l1mu.gmtMuonCand() << endl;
-
-    MuCn[imu].eta = l1mu.eta();
-    MuCn[imu].eta = l1mu.eta();
-    MuCn[imu].phi = l1mu.phi();
-    MuCn[imu].pt = l1mu.pt();
-    MuCn[imu].bx = l1mu.bx();
-    MuCn[imu].quality = l1mu.quality();
-    MuCn[imu].sigmaEta = l1mu.sigmaEta();
-    MuCn[imu].sigmaPhi = l1mu.sigmaPhi();
-    MuCn[imu].feta = fabs( l1mu.eta());
-
-    const auto& gmtCand = l1mu.gmtMuonCand();
-    const auto& dtCand  = l1mu.dtCand();
-    const auto& cscCand = l1mu.cscCand();
-    const auto& rpcCand = l1mu.rpcCand();
-
-    MuCn[imu].gmtCand = gmtCand.empty();
-    MuCn[imu].dtCand = dtCand.empty();
-    MuCn[imu].cscCand = cscCand.empty();
-    MuCn[imu].rpcCand = rpcCand.empty();
-
-    cout << " imu= " << imu 
-      << " eta= " << MuCn[imu].eta 
-      << " phi= " << MuCn[imu].phi 
-      << " bx= " << MuCn[imu].bx
-      << " quality= " << MuCn[imu].quality
-      << " sigmaEta= " << MuCn[imu].sigmaEta
-      << " sigmaPhi= " << MuCn[imu].sigmaPhi 
-      << " gmtCand " << MuCn[imu].gmtCand 
-      << " dtCand " << MuCn[imu].dtCand 
-      << " cscCand " << MuCn[imu].cscCand 
-      << " rpcCand " << MuCn[imu].rpcCand 
-      << endl;
+    if( imu<MuonsMax ) {
+      MuonNum = imu+1;
+      MuCn[imu].eta = l1mu.eta();
+      MuCn[imu].eta = l1mu.eta();
+      MuCn[imu].phi = l1mu.phi();
+      MuCn[imu].pt = l1mu.pt();
+      MuCn[imu].bx = l1mu.bx();
+      MuCn[imu].quality = l1mu.quality();
+      MuCn[imu].sigmaEta = l1mu.sigmaEta();
+      MuCn[imu].sigmaPhi = l1mu.sigmaPhi();
+      MuCn[imu].feta = fabs( l1mu.eta());
+  
+      const auto& gmtCand = l1mu.gmtMuonCand();
+      const auto& dtCand  = l1mu.dtCand();
+      const auto& cscCand = l1mu.cscCand();
+      const auto& rpcCand = l1mu.rpcCand();
+  
+      MuCn[imu].gmtCand = gmtCand.empty();
+      MuCn[imu].dtCand = dtCand.empty();
+      MuCn[imu].cscCand = cscCand.empty();
+      MuCn[imu].rpcCand = rpcCand.empty();
+  
+      LogDebug("L1TkMuonFromExtendedProducer") << " imu= " << imu
+        << " eta= " << MuCn[imu].eta 
+        << " phi= " << MuCn[imu].phi 
+        << " bx= " << MuCn[imu].bx
+        << " quality= " << MuCn[imu].quality
+        << " sigmaEta= " << MuCn[imu].sigmaEta
+        << " sigmaPhi= " << MuCn[imu].sigmaPhi 
+        << " gmtCand " << MuCn[imu].gmtCand 
+        << " dtCand " << MuCn[imu].dtCand 
+        << " cscCand " << MuCn[imu].cscCand 
+        << " rpcCand " << MuCn[imu].rpcCand;
+    } 
+    else { 
+      LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Muon number too small " << imu;
+    };
 
   }//over l1mus
 
-  imu = -1;
-  for (auto l1mu : l1mus){
-    imu++;
+  for (int imu=0; imu<MuonNum; imu++) {
+
     L1MuonParticleExtendedRef l1muRef(l1musH, imu);
 
     if (MuCn[imu].feta < ETAMIN_) continue;
@@ -324,7 +324,6 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     }
 
   }//over l1mus
-  
   
   iEvent.put( tkMuons );
   
