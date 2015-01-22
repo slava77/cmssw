@@ -114,6 +114,8 @@ const int MuonsMax = 10;
 
 struct L1TkCand {
   float pt;
+  int   nPars;
+  int   q;
   float z;
   float chi2;
   float eta;
@@ -148,7 +150,6 @@ L1TkMuonFromExtendedProducer::L1TkMuonFromExtendedProducer(const edm::ParameterS
   //   closest_ = iConfig.getParameter<bool>("closest");
 
   correctGMTPropForTkZ_ = iConfig.getParameter<bool>("correctGMTPropForTkZ");
-
   use5ParameterFit_     = iConfig.getParameter<bool>("use5ParameterFit");
   produces<L1TkMuonParticleCollection>();
 }
@@ -241,6 +242,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 
         unsigned int nPars = 4;
         if (use5ParameterFit_) nPars = 5;
+        L1Tk[imu].nPars = nPars;
         L1Tk[imu].pt = l1tk.getMomentum(nPars).perp();
         if (L1Tk[imu].pt < PTMINTRA_) continue;
   
@@ -313,8 +315,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 
     LogDebug("MYDEBUG")<<"matching index is "<<L1Tk[imu].idx;
     if (L1Tk[imu].idx >= 0){
-      const L1TkTrackType& matchTk = l1tks[L1Tk[imu].idx];
-      
+     
       float etaCut = 3.*sqrt(MuCn[imu].sigmaEta*MuCn[imu].sigmaEta + L1Tk[imu].matchSigmaEta*L1Tk[imu].matchSigmaEta);
       float phiCut = 4.*sqrt(MuCn[imu].sigmaPhi*MuCn[imu].sigmaPhi + L1Tk[imu].matchSigmaPhi*L1Tk[imu].matchSigmaPhi);
 
@@ -325,32 +326,35 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
         << " match details: prop Pt "<<L1Tk[imu].matchPt<<" Eta "<<L1Tk[imu].matchEta
         <<" Phi "<<L1Tk[imu].matchPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
         <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut;
-      
-      if (dEta < etaCut && dPhi < phiCut){
-	Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[imu].idx);
 
-	unsigned int nPars = 4;
-	if (use5ParameterFit_) nPars = 5;
-	auto p3 = matchTk.getMomentum(nPars);
-	float p4e = sqrt(0.105658369*0.105658369 + p3.mag2() );
+     // Filter for Cuts 
+     if (dEta < etaCut && dPhi < phiCut){
 
-	math::XYZTLorentzVector l1tkp4(p3.x(), p3.y(), p3.z(), p4e);
+       Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[imu].idx);
+       const L1TkTrackType& matchTk = l1tks[L1Tk[imu].idx];
 
-	auto tkv3=matchTk.getPOCA(nPars);
-	math::XYZPoint v3(tkv3.x(), tkv3.y(), tkv3.z());
-	float trkisol = -999;
-	int l1tk_q = matchTk.getRInv(nPars)>0? 1: -1;
+       auto p3 = matchTk.getMomentum(L1Tk[imu].nPars);
+       float p4e = sqrt(0.105658369*0.105658369 + p3.mag2() );
 
-	L1TkMuonParticle l1tkmu(reco::LeafCandidate(l1tk_q, l1tkp4, v3, -13*l1tk_q ));
-	l1tkmu.setTrkPtr(l1tkPtr);
-	l1tkmu.setMuExtendedRef(l1muRef);
-	l1tkmu.setQuality(MuCn[imu].quality);
-	l1tkmu.setTrkIsol(trkisol);
+       math::XYZTLorentzVector l1tkp4(p3.x(), p3.y(), p3.z(), p4e);
 
-	// EP: add the zvtx information
-	l1tkmu.setTrkzVtx( (float)tkv3.z() );
+       auto tkv3=matchTk.getPOCA(L1Tk[imu].nPars);
+       math::XYZPoint v3(tkv3.x(), tkv3.y(), tkv3.z());
+       float trkisol = -999;
 
-	tkMuons->push_back(l1tkmu);
+       L1Tk[imu].q = matchTk.getRInv(L1Tk[imu].nPars)>0? 1: -1;
+
+       L1TkMuonParticle l1tkmu(reco::LeafCandidate(L1Tk[imu].q, l1tkp4, v3, -13*L1Tk[imu].q ));
+
+       l1tkmu.setTrkPtr(l1tkPtr);
+       l1tkmu.setMuExtendedRef(l1muRef);
+       l1tkmu.setQuality(MuCn[imu].quality);
+       l1tkmu.setTrkIsol(trkisol);
+
+       // EP: add the zvtx information
+       l1tkmu.setTrkzVtx( (float)tkv3.z() );
+
+       tkMuons->push_back(l1tkmu);
       }
     }
 
