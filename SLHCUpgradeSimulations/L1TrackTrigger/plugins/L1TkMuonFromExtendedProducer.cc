@@ -118,10 +118,13 @@ struct L1TkCand {
   float chi2;
   float eta;
   float phi;
-  float dr2[MuonsMax];
-  float dr2prop[MuonsMax];
   int   nstubs;
   int   idx;
+  float matchPt;
+  float matchEta;
+  float matchPhi;
+  float matchSigmaEta;
+  float matchSigmaPhi;
 };  
   
 // maximum Tracks number
@@ -158,7 +161,7 @@ void
 L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   L1TkMuonCand MuCn[MuonsMax];
-  L1TkCand L1Tk[TrackMax];
+  L1TkCand L1Tk[MuonsMax];
 
   //  std::vector<L1TkMuonCand*> pnMuCn[10];
 
@@ -175,7 +178,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
   const L1TkTrackCollectionType& l1tks = *l1tksH.product();
 
-  edm::LogWarning("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size();
+  edm::LogWarning("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size() << " l1tks.size= " << l1tks.size();
 
   L1TkMuonParticleCollection l1tkmuCands;
   l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
@@ -228,49 +231,50 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     cout << " f: imu " << imu << endl;
 
     // trCn filling
-    edm::LogWarning("L1TkMuonFromExtendedProducer") << " l1tks.size= " << l1tks.size();
   
+    PropState matchProp;
     float drmin = 999;
     int TrackNume = -1;
     int il1tk = -1;
     for (auto l1tk : l1tks ){
       il1tk++;
   
-      if( il1tk<TrackMax ) {
+      if( imu<MuonsMax ) {
 
         unsigned int nPars = 4;
         if (use5ParameterFit_) nPars = 5;
-        L1Tk[il1tk].pt = l1tk.getMomentum(nPars).perp();
-        if (L1Tk[il1tk].pt < PTMINTRA_) continue;
+        L1Tk[imu].pt = l1tk.getMomentum(nPars).perp();
+        if (L1Tk[imu].pt < PTMINTRA_) continue;
   
-        L1Tk[il1tk].z  = l1tk.getPOCA(nPars).z();
-        if (fabs(L1Tk[il1tk].z) > ZMAX_) continue;
+        L1Tk[imu].z  = l1tk.getPOCA(nPars).z();
+        if (fabs(L1Tk[imu].z) > ZMAX_) continue;
   
-        L1Tk[il1tk].chi2 = l1tk.getChi2(nPars);
-        if (L1Tk[il1tk].chi2 > CHI2MAX_) continue;
+        L1Tk[imu].chi2 = l1tk.getChi2(nPars);
+        if (L1Tk[imu].chi2 > CHI2MAX_) continue;
         
-        L1Tk[il1tk].nstubs = l1tk.getStubRefs().size();
-        if ( L1Tk[il1tk].nstubs < nStubsmin_) continue;
+        L1Tk[imu].nstubs = l1tk.getStubRefs().size();
+        if ( L1Tk[imu].nstubs < nStubsmin_) continue;
   
-        L1Tk[il1tk].eta = l1tk.getMomentum(nPars).eta();
-        L1Tk[il1tk].phi = l1tk.getMomentum(nPars).phi();
+        L1Tk[imu].eta = l1tk.getMomentum(nPars).eta();
+        L1Tk[imu].phi = l1tk.getMomentum(nPars).phi();
   
-        L1Tk[il1tk].dr2[imu] = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[il1tk].eta, L1Tk[il1tk].phi);
-        if (L1Tk[il1tk].dr2[imu] > 0.3) continue;
+        float dr2 = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[imu].eta, L1Tk[imu].phi);
+        if (dr2 > 0.3) continue;
   
         PropState pstate = propagateToGMT(l1tk);
         if (!pstate.valid) continue;
   
-        L1Tk[il1tk].dr2prop[imu] = deltaR2(MuCn[imu].eta, MuCn[imu].phi, pstate.eta, pstate.phi);
+        float dr2prop = deltaR2(MuCn[imu].eta, MuCn[imu].phi, pstate.eta, pstate.phi);
 
-        cout << " f: tk " << il1tk << "  " << L1Tk[il1tk].dr2prop[imu] << "  " 
-             << deltaR2(MuCn[imu].eta, MuCn[imu].phi, pstate.eta, pstate.phi) 
-             << endl;
-
-        if (L1Tk[il1tk].dr2prop[imu] < drmin){
-          drmin = L1Tk[il1tk].dr2prop[imu];
-          L1Tk[il1tk].idx = il1tk;
-          // matchProp = pstate;
+        if (dr2prop < drmin){
+          drmin = dr2prop;
+          L1Tk[imu].idx = il1tk;
+          L1Tk[imu].matchPt = pstate.pt; 
+          L1Tk[imu].matchEta = pstate.eta;
+          L1Tk[imu].matchPhi = pstate.phi;
+          L1Tk[imu].matchSigmaEta = pstate.sigmaEta;
+          L1Tk[imu].matchSigmaPhi = pstate.sigmaPhi;
+          cout << "  f: il1tk " << il1tk << " drmin " << drmin << endl;
         }
 
         TrackNume = il1tk + 1;
@@ -281,7 +285,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       }
     }//over l1tks
 
-    cout << " f: TrackNume " << TrackNume << endl;
+    cout << " f: TrackNume " << TrackNume << " drmin " << drmin << endl;
   
   }//over l1mus
 
@@ -315,71 +319,24 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       //apply something specific here
     }
 
-    float drmin = 999;
-    float ptmax = -1;
-    if (ptmax < 0) ptmax = -1;	// dummy
-    
-    PropState matchProp;
-    int match_idx = -1;
-    int il1tk = -1;
-
     cout << " imu " << imu << endl;
-    edm::LogWarning("L1TkMuonFromExtendedProducer") << " l1tks.size= " << l1tks.size();
 
-    for (auto l1tk : l1tks ){
-      il1tk++;
-      /*
-      unsigned int nPars = 4;
-      if (use5ParameterFit_) nPars = 5;
-      float l1tk_pt = l1tk.getMomentum(nPars).perp();
-      if (l1tk_pt < PTMINTRA_) continue;
-
-      float l1tk_z  = l1tk.getPOCA(nPars).z();
-      if (fabs(l1tk_z) > ZMAX_) continue;
-
-      float l1tk_chi2 = l1tk.getChi2(nPars);
-      if (l1tk_chi2 > CHI2MAX_) continue;
-      
-      int l1tk_nstubs = l1tk.getStubRefs().size();
-      if ( l1tk_nstubs < nStubsmin_) continue;
-
-      float l1tk_eta = l1tk.getMomentum(nPars).eta();
-      float l1tk_phi = l1tk.getMomentum(nPars).phi();
-
-      float dr2 = deltaR2(MuCn[imu].eta, MuCn[imu].phi, l1tk_eta, l1tk_phi);
-      
-      if (dr2 > 0.3) continue;
-      */
-
-      PropState pstate = propagateToGMT(l1tk);
-      if (!pstate.valid) continue;
-
-      float dr2prop = deltaR2(MuCn[imu].eta, MuCn[imu].phi, pstate.eta, pstate.phi);
-  
-      cout << " il1tk " << il1tk << "  " << L1Tk[il1tk].dr2prop[imu] << "  " << dr2prop << endl;
-
-      if (dr2prop < drmin){
-	drmin = dr2prop;
-	match_idx = il1tk;
-	matchProp = pstate;
-      }
-    }// over l1tks
-    
     LogDebug("MYDEBUG")<<"matching index is "<<match_idx;
-    if (match_idx >= 0){
-      const L1TkTrackType& matchTk = l1tks[match_idx];
+    if (L1Tk[imu].idx >= 0){
+      const L1TkTrackType& matchTk = l1tks[L1Tk[imu].idx];
       
-      float etaCut = 3.*sqrt(MuCn[imu].sigmaEta*MuCn[imu].sigmaEta + matchProp.sigmaEta*matchProp.sigmaEta);
-      float phiCut = 4.*sqrt(MuCn[imu].sigmaPhi*MuCn[imu].sigmaPhi + matchProp.sigmaPhi*matchProp.sigmaPhi);
+      float etaCut = 3.*sqrt(MuCn[imu].sigmaEta*MuCn[imu].sigmaEta + L1Tk[imu].matchSigmaEta*L1Tk[imu].matchSigmaEta);
+      float phiCut = 4.*sqrt(MuCn[imu].sigmaPhi*MuCn[imu].sigmaPhi + L1Tk[imu].matchSigmaPhi*L1Tk[imu].matchSigmaPhi);
 
-      float dEta = std::abs(matchProp.eta - MuCn[imu].eta);
-      float dPhi = std::abs(deltaPhi(matchProp.phi, MuCn[imu].phi));
+      float dEta = std::abs(L1Tk[imu].matchEta - MuCn[imu].eta);
+      float dPhi = std::abs(deltaPhi(L1Tk[imu].matchPhi, MuCn[imu].phi));
 
-      LogDebug("MYDEBUG")<<"match details: prop "<<matchProp.pt<<" "<<matchProp.eta<<" "<<matchProp.phi
-        <<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi<<" delta "<<dEta<<" "<<dPhi<<" cut "<<etaCut<<" "<<phiCut;
+      cout << " match details: prop "<<L1Tk[imu].matchPt<<" Eta "<<L1Tk[imu].matchEta<<" Phi "<<L1Tk[imu].matchPhi
+           <<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
+	   <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut<<endl;
       
       if (dEta < etaCut && dPhi < phiCut){
-	Ptr< L1TkTrackType > l1tkPtr(l1tksH, match_idx);
+	Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[imu].idx);
 
 	unsigned int nPars = 4;
 	if (use5ParameterFit_) nPars = 5;
