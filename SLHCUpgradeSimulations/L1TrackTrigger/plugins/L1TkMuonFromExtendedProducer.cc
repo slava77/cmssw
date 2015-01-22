@@ -178,7 +178,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
   const L1TkTrackCollectionType& l1tks = *l1tksH.product();
 
-  edm::LogWarning("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size() << " l1tks.size= " << l1tks.size();
+  LogDebug("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size() << " l1tks.size= " << l1tks.size();
 
   L1TkMuonParticleCollection l1tkmuCands;
   l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
@@ -228,8 +228,6 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Muon number too small " << imu;
     };
 
-    cout << " f: imu " << imu << endl;
-
     // trCn filling
   
     PropState matchProp;
@@ -274,22 +272,16 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
           L1Tk[imu].matchPhi = pstate.phi;
           L1Tk[imu].matchSigmaEta = pstate.sigmaEta;
           L1Tk[imu].matchSigmaPhi = pstate.sigmaPhi;
-          cout << "  f: il1tk " << il1tk << " drmin " << drmin << endl;
         }
-
         TrackNume = il1tk + 1;
-  
       } 
       else {
         LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Tracks number too small " << TrackNume;
       }
     }//over l1tks
-
-    cout << " f: TrackNume " << TrackNume << " drmin " << drmin << endl;
-  
   }//over l1mus
 
- // **** Calculation 
+ // **** Calculation for Muons ****
 
  for (int imu=0; imu<MuonNum; imu++) {
 
@@ -319,9 +311,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       //apply something specific here
     }
 
-    cout << " imu " << imu << endl;
-
-    LogDebug("MYDEBUG")<<"matching index is "<<match_idx;
+    LogDebug("MYDEBUG")<<"matching index is "<<L1Tk[imu].idx;
     if (L1Tk[imu].idx >= 0){
       const L1TkTrackType& matchTk = l1tks[L1Tk[imu].idx];
       
@@ -331,9 +321,10 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       float dEta = std::abs(L1Tk[imu].matchEta - MuCn[imu].eta);
       float dPhi = std::abs(deltaPhi(L1Tk[imu].matchPhi, MuCn[imu].phi));
 
-      cout << " match details: prop "<<L1Tk[imu].matchPt<<" Eta "<<L1Tk[imu].matchEta<<" Phi "<<L1Tk[imu].matchPhi
-           <<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
-	   <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut<<endl;
+      LogDebug("L1TkMuonFromExtendedProducer") 
+        << " match details: prop Pt "<<L1Tk[imu].matchPt<<" Eta "<<L1Tk[imu].matchEta
+        <<" Phi "<<L1Tk[imu].matchPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
+        <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut;
       
       if (dEta < etaCut && dPhi < phiCut){
 	Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[imu].idx);
