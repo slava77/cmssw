@@ -340,7 +340,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 
        auto tkv3=matchTk.getPOCA(L1Tk[imu].nPars);
        math::XYZPoint v3(tkv3.x(), tkv3.y(), tkv3.z());
-       float trkisol = -999;
+
 
        L1Tk[imu].q = matchTk.getRInv(L1Tk[imu].nPars)>0? 1: -1;
 
@@ -349,6 +349,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
        l1tkmu.setTrkPtr(l1tkPtr);
        l1tkmu.setMuExtendedRef(l1muRef);
        l1tkmu.setQuality(MuCn[imu].quality);
+       float trkisol = -999;
        l1tkmu.setTrkIsol(trkisol);
 
        // EP: add the zvtx information
