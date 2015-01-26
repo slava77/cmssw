@@ -94,7 +94,7 @@ private:
   bool use5ParameterFit_;
 };
 
-struct L1TkMuonCand {
+struct L1MuonCand {
   float eta;
   float phi;
   float pt;
@@ -103,6 +103,7 @@ struct L1TkMuonCand {
   float sigmaEta;
   float sigmaPhi;
   unsigned int quality;
+  int  idx;
   bool gmtCand;
   bool dtCand;
   bool cscCand;
@@ -110,9 +111,9 @@ struct L1TkMuonCand {
 };  
 
 // maximum Muons number
-const int MuonsMax = 10;
+const int MuonsMax = 20;
 
-struct L1TkCand {
+struct L1TkMuonCand {
   float pt;
   int   nPars;
   int   q;
@@ -161,10 +162,8 @@ L1TkMuonFromExtendedProducer::~L1TkMuonFromExtendedProducer() {
 void
 L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  L1TkMuonCand MuCn[MuonsMax];
-  L1TkCand L1Tk[MuonsMax];
-
-  //  std::vector<L1TkMuonCand*> pnMuCn[10];
+  L1MuonCand MuCn[MuonsMax];
+  L1TkMuonCand L1Tk[MuonsMax];
 
   using namespace edm;
   using namespace std;
