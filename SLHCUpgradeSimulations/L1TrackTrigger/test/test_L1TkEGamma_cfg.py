@@ -4,10 +4,11 @@ process = cms.Process("ALL")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 
 #
-# This runs over a file that already contains the L1Tracks.
+# This first creates the collection of "L1Tracks for electrons" by running
+# the FullTrackingSequence. 
 #
 # It produces the following objects :
 #    - L1EG objects obtained by running the SLHCCaloTrigger sequence
@@ -43,6 +44,17 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'PH2_1K_FB_V3::All', '')
 
 
+# ---------------------------------------------------------------------------
+#
+# --- Create the collection of special tracks for electrons
+#
+
+process.load("SLHCUpgradeSimulations.L1TrackTrigger.L1TrackingSequence_cfi")
+process.pTracking = cms.Path( process.ElectronTrackingSequence )
+
+# ---------------------------------------------------------------------------
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -59,7 +71,7 @@ process.load('Configuration.Geometry.GeometryExtended2023TTIReco_cff')
 
 process.load('Configuration/StandardSequences/L1HwVal_cff')
 process.load('Configuration.StandardSequences.RawToDigi_cff')
-process.load("SLHCUpgradeSimulations.L1CaloTrigger.SLHCCaloTrigger_cff")
+process.load("SLHCUpgradeSimulations.L1CaloTrigger.SLHCCaloTrigger_forTTI_cff")
 
 # bug fix for missing HCAL TPs in MC RAW
 from SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff import HcalTPGCoderULUT
@@ -92,6 +104,10 @@ process.L1Reco = cms.Path( process.l1extraParticles )
 
 process.load("SLHCUpgradeSimulations.L1TrackTrigger.L1TkEmParticleProducer_cfi")
 process.pL1TkPhotons = cms.Path( process.L1TkPhotons )
+
+# ---- "photons", tighter isolation working point  -  e.g. for SinglePhoton trigger
+process.pL1TkPhotonsTightIsol = cms.Path( process.L1TkPhotonsTightIsol )
+
 
 # ----  "electrons" from L1Tracks. Inclusive electrons :
 
