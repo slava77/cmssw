@@ -205,6 +205,8 @@ def cust_2023TTI(process):
     process=customiseBE5DPixel10D(process)
     process=customise_HcalPhase0(process)
     process=customise_ev_l1tracker(process)
+    process=customise_gem2023(process)
+    process=customise_rpc(process)
     return process
 
 def cust_2023TTI_forHLT(process):
