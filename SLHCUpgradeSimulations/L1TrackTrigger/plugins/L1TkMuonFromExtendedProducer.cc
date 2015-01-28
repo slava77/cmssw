@@ -289,10 +289,11 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     }//over l1tks
 
     MuCn[imu].Num = TrackNum;
-    LogWarning("L1TkMuonFromExtendedProducer") << " imu " << imu << " itk " << MuCn[imu].itk << " TrackNum " << TrackNum;
+    LogDebug("L1TkMuonFromExtendedProducer") << " imu " << imu << " itk " << MuCn[imu].itk << " TrackNum " << TrackNum;
+
   }//over l1mus
 
-  LogWarning("L1TkMuonFromExtendedProducer") << " MuonNum " << MuonNum;
+  LogDebug("L1TkMuonFromExtendedProducer") << " MuonNum " << MuonNum;
 
   // **** Calculation for Muons ****
 
@@ -324,30 +325,29 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       //apply something specific here
     }
 
-    LogWarning("L1TkMuonFromExtendedProducer") << "\n imu= " << imu << " itk " << MuCn[imu].itk << " TrackNum= " << MuCn[imu].Num;
+    LogDebug("L1TkMuonFromExtendedProducer") << "\n imu= " << imu << " itk= " << MuCn[imu].itk << " Num= " << MuCn[imu].Num;
 
     // **** Calculation for Tracks ****
-    for ( int itk=0; itk<0 /*MuCn[imu].Num*/; itk++ ){
-
-      edm::LogWarning("L1TkMuonFromExtendedProducer") << " itk " << itk << " idx " << L1Tk[itk].idx;
+    for ( int itk=0; itk<MuCn[imu].Num; itk++ ){
 
       if (MuCn[imu].itk == itk && L1Tk[itk].idx >= 0){
        
+        LogDebug("L1TkMuonFromExtendedProducer") << "   itk= " << itk << " : itk= " << MuCn[imu].itk << " idx= " << L1Tk[itk].idx;
+
         float etaCut = 3.*sqrt(MuCn[imu].sigmaEta*MuCn[imu].sigmaEta + L1Tk[itk].matchSigmaEta*L1Tk[itk].matchSigmaEta);
         float phiCut = 4.*sqrt(MuCn[imu].sigmaPhi*MuCn[imu].sigmaPhi + L1Tk[itk].matchSigmaPhi*L1Tk[itk].matchSigmaPhi);
   
         float dEta = std::abs(L1Tk[itk].matchEta - MuCn[imu].eta);
         float dPhi = std::abs(deltaPhi(L1Tk[itk].matchPhi, MuCn[imu].phi));
   
-        LogDebug("L1TkMuonFromExtendedProducer") 
-          << " match details: prop Pt "<<L1Tk[itk].matchPt<<" Eta "<<L1Tk[itk].matchEta
+        LogWarning("L1TkMuonFromExtendedProducer") 
+          << "   match details: prop Pt "<<L1Tk[itk].matchPt<<" Eta "<<L1Tk[itk].matchEta
           <<" Phi "<<L1Tk[itk].matchPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
           <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut;
   
         // Filter for Cuts 
         if (dEta < etaCut && dPhi < phiCut){
   
-          // ****
           Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[itk].idx);
           const L1TkTrackType& matchTk = l1tks[L1Tk[itk].idx];
    
