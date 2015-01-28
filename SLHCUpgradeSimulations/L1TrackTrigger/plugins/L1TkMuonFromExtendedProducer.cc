@@ -378,7 +378,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       }
    
     }// over itk
-  }//over l1mus
+  }//over imu
   
   iEvent.put( tkMuons );
   
