@@ -45,6 +45,12 @@ using namespace l1extra;
 // class declaration
 //
 
+// maximum Muons number
+const int MuonMax = 20;
+
+// maximum Tracks number
+const int TrackMax = 300;
+
 class L1TkMuonFromExtendedProducer : public edm::EDProducer {
 public:
   
@@ -52,10 +58,9 @@ public:
   typedef std::vector< L1TkTrackType >        L1TkTrackCollectionType;
   
   struct PropState { //something simple, imagine it's hardware emulation
+
     PropState() : 
-      pt(-99),  eta(-99), phi(-99),
-      sigmaPt(-99),  sigmaEta(-99), sigmaPhi(-99),
-      valid(false) {}
+      pt(-99),  eta(-99), phi(-99),sigmaPt(-99),  sigmaEta(-99), sigmaPhi(-99), valid(false) {}
     float pt;
     float eta;
     float phi;
@@ -66,14 +71,55 @@ public:
 
   };
 
+  struct L1MuonCand {
+    float eta;
+    float phi;
+    float pt;
+    float feta;
+    float bx;
+    float sigmaEta;
+    float sigmaPhi;
+    unsigned int quality;
+    int  idx;
+    bool gmtCand;
+    bool dtCand;
+    bool cscCand;
+    bool rpcCand;
+    int  itk;
+    int  Num;
+  };  
+
+  struct L1Tracks {
+    float pt;
+    int   nPars;
+    int   q;
+    float z;
+    float chi2;
+    float eta;
+    float phi;
+    int   nstubs;
+    int   idx;
+    float matchPt;
+    float matchEta;
+    float matchPhi;
+    float matchSigmaEta;
+    float matchSigmaPhi;
+  };  
+  
+  L1MuonCand MuCn[MuonMax];
+  L1Tracks L1Tk[TrackMax];
+
   explicit L1TkMuonFromExtendedProducer(const edm::ParameterSet&);
   ~L1TkMuonFromExtendedProducer();
   
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-  
+
 private:
 
   virtual void produce(edm::Event&, const edm::EventSetup&);
+
+  int keepMuons(edm::Event&, L1MuonCand*);
+  int keepTracks(edm::Event&, L1Tracks*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
 
@@ -94,47 +140,6 @@ private:
   bool use5ParameterFit_;
 };
 
-// maximum Muons number
-const int MuonMax = 20;
-
-struct L1MuonCand {
-  float eta;
-  float phi;
-  float pt;
-  float feta;
-  float bx;
-  float sigmaEta;
-  float sigmaPhi;
-  unsigned int quality;
-  int  idx;
-  bool gmtCand;
-  bool dtCand;
-  bool cscCand;
-  bool rpcCand;
-  int  itk;
-  int  Num;
-};  
-
-// maximum Tracks number
-const int TrackMax = 300;
-
-struct L1TkMuonCand {
-  float pt;
-  int   nPars;
-  int   q;
-  float z;
-  float chi2;
-  float eta;
-  float phi;
-  int   nstubs;
-  int   idx;
-  float matchPt;
-  float matchEta;
-  float matchPhi;
-  float matchSigmaEta;
-  float matchSigmaPhi;
-};  
-  
 //
 // constructors  and destructor
 //
@@ -160,36 +165,24 @@ L1TkMuonFromExtendedProducer::L1TkMuonFromExtendedProducer(const edm::ParameterS
 L1TkMuonFromExtendedProducer::~L1TkMuonFromExtendedProducer() {
 }
 
-// ------------ method called to produce the data  ------------
-void
-L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+// ------------ Muon and Tracks converter  ------------
+int
+L1TkMuonFromExtendedProducer::keepMuons(edm::Event& iEvent, L1MuonCand* MuCn)
 {
-  L1MuonCand MuCn[MuonMax];
-  L1TkMuonCand L1Tk[TrackMax];
-
   using namespace edm;
   using namespace std;
-  
-  std::auto_ptr<L1TkMuonParticleCollection> tkMuons(new L1TkMuonParticleCollection);
-  
+
   edm::Handle<L1MuonParticleExtendedCollection> l1musH;
   iEvent.getByLabel(L1MuonsInputTag_, l1musH);
   const L1MuonParticleExtendedCollection& l1mus = *l1musH.product(); 
   
-  edm::Handle<L1TkTrackCollectionType> l1tksH;
-  iEvent.getByLabel(L1TrackInputTag_, l1tksH);
-  const L1TkTrackCollectionType& l1tks = *l1tksH.product();
+  LogDebug("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size();
 
-  LogDebug("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size() << " l1tks.size= " << l1tks.size();
-
-  L1TkMuonParticleCollection l1tkmuCands;
-  l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
-
-  // MuCn filling
+  // Muons filling
 
   int imu = -1;
   int MuonNum = -1;
-  int TrackNum = -1;
+  //  int TrackNum = -1;
   for (auto l1mu : l1mus){
     imu++;
 
@@ -230,35 +223,101 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     else { 
       LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Muon number too small " << imu;
     };
+  }
+  LogDebug("L1TkMuonFromExtendedProducer") << " ::keepMuons MuonNum " << MuonNum;
+  return MuonNum;
+}
 
-    // trCn filling
+// ------------ Tracks converter  ------------
+int
+L1TkMuonFromExtendedProducer::keepTracks(edm::Event& iEvent, L1Tracks* L1Tk)
+{
+  using namespace edm;
+  using namespace std;
+
+  edm::Handle<L1MuonParticleExtendedCollection> l1musH;
+  iEvent.getByLabel(L1MuonsInputTag_, l1musH);
+  const L1MuonParticleExtendedCollection& l1mus = *l1musH.product(); 
   
+  edm::Handle<L1TkTrackCollectionType> l1tksH;
+  iEvent.getByLabel(L1TrackInputTag_, l1tksH);
+  const L1TkTrackCollectionType& l1tks = *l1tksH.product();
+
+  L1TkMuonParticleCollection l1tkmuCands;
+  l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
+
+  LogDebug("L1TkMuonFromExtendedProducer") << " l1tks.size= " << l1tks.size();
+
+  int TrackNum = -1;
+  int il1tk = -1;
+  for (auto l1tk : l1tks ){
+    il1tk++;
+  
+    if( il1tk<TrackMax ) {
+
+      TrackNum = il1tk + 1;
+
+      unsigned int nPars = 4;
+      if (use5ParameterFit_) nPars = 5;
+      L1Tk[il1tk].nPars = nPars;
+
+      L1Tk[il1tk].pt = l1tk.getMomentum(nPars).perp();
+      L1Tk[il1tk].z  = l1tk.getPOCA(nPars).z();
+      L1Tk[il1tk].chi2 = l1tk.getChi2(nPars);
+      L1Tk[il1tk].nstubs = l1tk.getStubRefs().size();
+      L1Tk[il1tk].eta = l1tk.getMomentum(nPars).eta();
+      L1Tk[il1tk].phi = l1tk.getMomentum(nPars).phi();
+      /*
+      L1Tk[il1tk].matchPt = pstate.pt; 
+      L1Tk[il1tk].matchEta = pstate.eta;
+      L1Tk[il1tk].matchPhi = pstate.phi;
+      L1Tk[il1tk].matchSigmaEta = pstate.sigmaEta;
+      L1Tk[il1tk].matchSigmaPhi = pstate.sigmaPhi;
+      */
+    } 
+    else {
+      LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Tracks number too small " << TrackNum;
+    }
+  }//over l1tks
+
+  return TrackNum;
+}
+
+// ------------ method called to produce the data  ------------
+void
+L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  using namespace edm;
+  using namespace std;
+
+  int MuonNum = L1TkMuonFromExtendedProducer::keepMuons(iEvent, MuCn);
+  
+  std::auto_ptr<L1TkMuonParticleCollection> tkMuons(new L1TkMuonParticleCollection);
+
+  edm::Handle<L1MuonParticleExtendedCollection> l1musH;
+  iEvent.getByLabel(L1MuonsInputTag_, l1musH);
+  
+  edm::Handle<L1TkTrackCollectionType> l1tksH;
+  iEvent.getByLabel(L1TrackInputTag_, l1tksH);
+  const L1TkTrackCollectionType& l1tks = *l1tksH.product();
+
+
+  for (int imu=0; imu<MuonNum; imu++) { 
+
+    int TrackNum = L1TkMuonFromExtendedProducer::keepTracks(iEvent, L1Tk);
+   
     PropState matchProp;
     float drmin = 999;
-    TrackNum = -1;
     int il1tk = -1;
     for (auto l1tk : l1tks ){
       il1tk++;
   
       if( il1tk<TrackMax ) {
 
-        unsigned int nPars = 4;
-        if (use5ParameterFit_) nPars = 5;
-        L1Tk[il1tk].nPars = nPars;
-        L1Tk[il1tk].pt = l1tk.getMomentum(nPars).perp();
         if (L1Tk[il1tk].pt < PTMINTRA_) continue;
-  
-        L1Tk[il1tk].z  = l1tk.getPOCA(nPars).z();
         if (fabs(L1Tk[il1tk].z) > ZMAX_) continue;
-  
-        L1Tk[il1tk].chi2 = l1tk.getChi2(nPars);
         if (L1Tk[il1tk].chi2 > CHI2MAX_) continue;
-        
-        L1Tk[il1tk].nstubs = l1tk.getStubRefs().size();
         if ( L1Tk[il1tk].nstubs < nStubsmin_) continue;
-  
-        L1Tk[il1tk].eta = l1tk.getMomentum(nPars).eta();
-        L1Tk[il1tk].phi = l1tk.getMomentum(nPars).phi();
   
         float dr2 = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[il1tk].eta, L1Tk[il1tk].phi);
         if (dr2 > 0.3) continue;
@@ -296,7 +355,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   LogDebug("L1TkMuonFromExtendedProducer") << " MuonNum " << MuonNum;
 
   // **** Calculation for Muons ****
-
+  
   for (int imu=0; imu<MuonNum; imu++) {
 
     L1MuonParticleExtendedRef l1muRef(l1musH, imu);
@@ -381,7 +440,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   }//over imu
   
   iEvent.put( tkMuons );
-  
+
 }
 
 
