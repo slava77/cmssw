@@ -55,7 +55,6 @@ supportedBtagDiscr = {
   , 'combinedInclusiveSecondaryVertexV2BJetTags'            : ['impactParameterTagInfos', 'inclusiveSecondaryVertexFinderTagInfos']
   , 'positiveCombinedInclusiveSecondaryVertexV2BJetTags'    : ['impactParameterTagInfos', 'inclusiveSecondaryVertexFinderTagInfos']
   , 'negativeCombinedInclusiveSecondaryVertexV2BJetTags'    : ['impactParameterTagInfos', 'inclusiveSecondaryVertexFinderNegativeTagInfos']
-#  , 'combinedSecondaryVertexMVABJetTags'                    : ['impactParameterTagInfos', 'secondaryVertexTagInfos']
   , 'softPFMuonBJetTags'                                    : ['softPFMuonsTagInfos']
   , 'softPFMuonByPtBJetTags'                                : ['softPFMuonsTagInfos']
   , 'softPFMuonByIP3dBJetTags'                              : ['softPFMuonsTagInfos']
