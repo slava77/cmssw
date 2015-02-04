@@ -267,13 +267,18 @@ L1TkMuonFromExtendedProducer::keepTracks(edm::Event& iEvent, L1Tracks* L1Tk)
       L1Tk[il1tk].nstubs = l1tk.getStubRefs().size();
       L1Tk[il1tk].eta = l1tk.getMomentum(nPars).eta();
       L1Tk[il1tk].phi = l1tk.getMomentum(nPars).phi();
-      /*
+
+      L1Tk[il1tk].idx = il1tk;
+
+      PropState pstate = propagateToGMT(l1tk);
+      if (!pstate.valid) continue;
+
       L1Tk[il1tk].matchPt = pstate.pt; 
       L1Tk[il1tk].matchEta = pstate.eta;
       L1Tk[il1tk].matchPhi = pstate.phi;
       L1Tk[il1tk].matchSigmaEta = pstate.sigmaEta;
       L1Tk[il1tk].matchSigmaPhi = pstate.sigmaPhi;
-      */
+
     } 
     else {
       LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Tracks number too small " << TrackNum;
@@ -291,7 +296,11 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   using namespace std;
 
   int MuonNum = L1TkMuonFromExtendedProducer::keepMuons(iEvent, MuCn);
-  
+  LogDebug("L1TkMuonFromExtendedProducer") << " MuonNum " << MuonNum;
+
+  int TrackNum = L1TkMuonFromExtendedProducer::keepTracks(iEvent, L1Tk);
+  LogDebug("L1TkMuonFromExtendedProducer") << " TrackNum " << TrackNum;
+
   std::auto_ptr<L1TkMuonParticleCollection> tkMuons(new L1TkMuonParticleCollection);
 
   edm::Handle<L1MuonParticleExtendedCollection> l1musH;
@@ -301,63 +310,11 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
   const L1TkTrackCollectionType& l1tks = *l1tksH.product();
 
-
-  for (int imu=0; imu<MuonNum; imu++) { 
-
-    int TrackNum = L1TkMuonFromExtendedProducer::keepTracks(iEvent, L1Tk);
-   
-    PropState matchProp;
-    float drmin = 999;
-    int il1tk = -1;
-    for (auto l1tk : l1tks ){
-      il1tk++;
-  
-      if( il1tk<TrackMax ) {
-
-        if (L1Tk[il1tk].pt < PTMINTRA_) continue;
-        if (fabs(L1Tk[il1tk].z) > ZMAX_) continue;
-        if (L1Tk[il1tk].chi2 > CHI2MAX_) continue;
-        if ( L1Tk[il1tk].nstubs < nStubsmin_) continue;
-  
-        float dr2 = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[il1tk].eta, L1Tk[il1tk].phi);
-        if (dr2 > 0.3) continue;
-  
-        PropState pstate = propagateToGMT(l1tk);
-        if (!pstate.valid) continue;
-  
-        float dr2prop = deltaR2(MuCn[imu].eta, MuCn[imu].phi, pstate.eta, pstate.phi);
-
-        if (dr2prop < drmin){
-          TrackNum = il1tk + 1;
-
-          drmin = dr2prop;
-          L1Tk[il1tk].idx = il1tk;
-          MuCn[imu].itk = il1tk;
-
-          L1Tk[il1tk].matchPt = pstate.pt; 
-          L1Tk[il1tk].matchEta = pstate.eta;
-          L1Tk[il1tk].matchPhi = pstate.phi;
-          L1Tk[il1tk].matchSigmaEta = pstate.sigmaEta;
-          L1Tk[il1tk].matchSigmaPhi = pstate.sigmaPhi;
-
-        }
-      } 
-      else {
-        LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Tracks number too small " << TrackNum;
-      }
-    }//over l1tks
-
-    MuCn[imu].Num = TrackNum;
-    LogDebug("L1TkMuonFromExtendedProducer") << " imu " << imu << " itk " << MuCn[imu].itk << " TrackNum " << TrackNum;
-
-  }//over l1mus
-
-  LogDebug("L1TkMuonFromExtendedProducer") << " MuonNum " << MuonNum;
-
   // **** Calculation for Muons ****
   
   for (int imu=0; imu<MuonNum; imu++) {
 
+    // *** l1musH
     L1MuonParticleExtendedRef l1muRef(l1musH, imu);
 
     if (MuCn[imu].feta < ETAMIN_) continue;
@@ -367,9 +324,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     if (MuCn[imu].bx != 0) continue;
 
     if (!MuCn[imu].gmtCand){
-      //some selections here
-      //currently the input can be a merge from different track finders
-      //so, the GMT cand may be missing
+      //some selections here currently the input can be a merge from different track finders so, the GMT cand may be missing
     }
 
     if (!MuCn[imu].dtCand){
@@ -384,18 +339,30 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
       //apply something specific here
     }
 
-    LogDebug("L1TkMuonFromExtendedProducer") << "\n imu= " << imu << " itk= " << MuCn[imu].itk << " Num= " << MuCn[imu].Num;
-
     // **** Calculation for Tracks ****
-    for ( int itk=0; itk<MuCn[imu].Num; itk++ ){
+    float dr2 = -1;
+    float dr2prop = 999.;
+    float drmin = 999.;
 
-      if (MuCn[imu].itk == itk && L1Tk[itk].idx >= 0){
+    for ( int itk=0; itk<TrackNum; itk++ ){
+      if (L1Tk[itk].idx >= 0){
        
-        LogDebug("L1TkMuonFromExtendedProducer") << "   itk= " << itk << " : itk= " << MuCn[imu].itk << " idx= " << L1Tk[itk].idx;
+        LogDebug("L1TkMuonFromExtendedProducer") << " imu= " << imu << " itk= " << itk << " idx= " << L1Tk[itk].idx;
+
+        if (     L1Tk[itk].pt < PTMINTRA_) continue;
+        if (fabs(L1Tk[itk].z) > ZMAX_) continue;
+        if (     L1Tk[itk].chi2 > CHI2MAX_) continue;
+        if (     L1Tk[itk].nstubs < nStubsmin_) continue;
+   
+        dr2 = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[itk].eta, L1Tk[itk].phi);
+        if (dr2 > 0.3) continue;
+
+        dr2prop = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[itk].matchEta, L1Tk[itk].matchPhi);
+        if (dr2prop < drmin) drmin = dr2prop;
+        if (dr2prop < drmin) continue;
 
         float etaCut = 3.*sqrt(MuCn[imu].sigmaEta*MuCn[imu].sigmaEta + L1Tk[itk].matchSigmaEta*L1Tk[itk].matchSigmaEta);
         float phiCut = 4.*sqrt(MuCn[imu].sigmaPhi*MuCn[imu].sigmaPhi + L1Tk[itk].matchSigmaPhi*L1Tk[itk].matchSigmaPhi);
-  
         float dEta = std::abs(L1Tk[itk].matchEta - MuCn[imu].eta);
         float dPhi = std::abs(deltaPhi(L1Tk[itk].matchPhi, MuCn[imu].phi));
   
@@ -407,6 +374,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
         // Filter for Cuts 
         if (dEta < etaCut && dPhi < phiCut){
   
+          // *** l1tksH
           Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[itk].idx);
           const L1TkTrackType& matchTk = l1tks[L1Tk[itk].idx];
    
