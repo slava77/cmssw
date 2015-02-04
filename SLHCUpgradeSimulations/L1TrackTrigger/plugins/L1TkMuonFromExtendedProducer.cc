@@ -120,6 +120,7 @@ private:
 
   int keepMuons(edm::Event&, L1MuonCand*);
   int keepTracks(edm::Event&, L1Tracks*);
+  bool keepTrCand(edm::Event&, const int&, L1MuonCand*, const int&, L1Tracks*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
 
@@ -235,18 +236,9 @@ L1TkMuonFromExtendedProducer::keepTracks(edm::Event& iEvent, L1Tracks* L1Tk)
   using namespace edm;
   using namespace std;
 
-  edm::Handle<L1MuonParticleExtendedCollection> l1musH;
-  iEvent.getByLabel(L1MuonsInputTag_, l1musH);
-  const L1MuonParticleExtendedCollection& l1mus = *l1musH.product(); 
-  
   edm::Handle<L1TkTrackCollectionType> l1tksH;
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
   const L1TkTrackCollectionType& l1tks = *l1tksH.product();
-
-  L1TkMuonParticleCollection l1tkmuCands;
-  l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
-
-  LogDebug("L1TkMuonFromExtendedProducer") << " l1tks.size= " << l1tks.size();
 
   int TrackNum = -1;
   int il1tk = -1;
@@ -388,17 +380,20 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
    
           L1Tk[itk].q = matchTk.getRInv(L1Tk[itk].nPars)>0? 1: -1;
    
+          // ***
           L1TkMuonParticle l1tkmu(reco::LeafCandidate(L1Tk[itk].q, l1tkp4, v3, -13*L1Tk[itk].q ));
    
           l1tkmu.setTrkPtr(l1tkPtr);
+
+          // *** l1musH
           l1tkmu.setMuExtendedRef(l1muRef);
+
           l1tkmu.setQuality(MuCn[imu].quality);
           float trkisol = -999;
           l1tkmu.setTrkIsol(trkisol);
    
           // EP: add the zvtx information
           l1tkmu.setTrkzVtx( (float)tkv3.z() );
- 
           tkMuons->push_back(l1tkmu);
  
 	}// over Cuts
@@ -411,6 +406,63 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 
 }
 
+
+// ------------ Tracks candidate  ------------
+bool
+L1TkMuonFromExtendedProducer::keepTrCand(edm::Event& iEvent, const int& imu, L1MuonCand* MuCn, const int& itk, L1Tracks* L1Tk)
+{
+  using namespace edm;
+  using namespace std;
+
+  edm::Handle<L1MuonParticleExtendedCollection> l1musH;
+  iEvent.getByLabel(L1MuonsInputTag_, l1musH);
+  const L1MuonParticleExtendedCollection& l1mus = *l1musH.product(); 
+  
+  edm::Handle<L1TkTrackCollectionType> l1tksH;
+  iEvent.getByLabel(L1TrackInputTag_, l1tksH);
+  const L1TkTrackCollectionType& l1tks = *l1tksH.product();
+
+  L1TkMuonParticleCollection l1tkmuCands;
+  l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
+  LogDebug("L1TkMuonFromExtendedProducer") << " l1tks.size= " << l1tks.size();
+
+  std::auto_ptr<L1TkMuonParticleCollection> tkMuons(new L1TkMuonParticleCollection);
+
+  L1MuonParticleExtendedRef l1muRef(l1musH, imu);
+
+  Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[itk].idx);
+  const L1TkTrackType& matchTk = l1tks[L1Tk[itk].idx];
+   
+  auto p3 = matchTk.getMomentum(L1Tk[itk].nPars);
+  float p4e = sqrt(0.105658369*0.105658369 + p3.mag2() );
+   
+  math::XYZTLorentzVector l1tkp4(p3.x(), p3.y(), p3.z(), p4e);
+   
+  auto tkv3=matchTk.getPOCA(L1Tk[itk].nPars);
+  math::XYZPoint v3(tkv3.x(), tkv3.y(), tkv3.z());
+   
+  L1Tk[itk].q = matchTk.getRInv(L1Tk[itk].nPars)>0? 1: -1;
+   
+  // ***
+  L1TkMuonParticle l1tkmu(reco::LeafCandidate(L1Tk[itk].q, l1tkp4, v3, -13*L1Tk[itk].q ));
+   
+  l1tkmu.setTrkPtr(l1tkPtr);
+
+  // *** 
+  l1tkmu.setMuExtendedRef(l1muRef);
+  l1tkmu.setQuality(MuCn[imu].quality);
+
+  float trkisol = -999;
+  l1tkmu.setTrkIsol(trkisol);
+   
+  // EP: add the zvtx information
+  l1tkmu.setTrkzVtx( (float)tkv3.z() );
+  tkMuons->push_back(l1tkmu);
+
+  iEvent.put( tkMuons );
+
+  return(true);
+}
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
