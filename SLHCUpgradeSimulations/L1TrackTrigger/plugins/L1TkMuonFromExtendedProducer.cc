@@ -138,7 +138,7 @@ private:
   int loadL1Muons(edm::Event&, L1Muon*);
   int loadL1Tracks(edm::Event&, L1Track*);
 
-  void computeTkMuCandidates(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1Muon*, const int, L1Track*);
+  int computeTkMuCandidates(const int, L1Muon*, const int, L1Track*, L1TkMuonCand*);
   void loadTkMuCandidatesToEvent(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1Muon*, const int, L1Track*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
@@ -298,7 +298,7 @@ L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk)
       LogWarning("L1TkMuonFromExtendedProducer") << " Maximum TrackMaxn number too small " << nL1Tracks;
     }
   }//over l1tks
-
+  LogDebug("L1TkMuonFromExtendedProducer") << " ::loadL1Muons nL1Tracks " << nL1Tracks;
   return nL1Tracks;
 }
 
@@ -317,8 +317,25 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   int nL1Tracks = L1TkMuonFromExtendedProducer::loadL1Tracks(iEvent, L1Tk);
   LogDebug("L1TkMuonFromExtendedProducer") << " nL1Tracks " << nL1Tracks;
 
+  int nL1TkCand = computeTkMuCandidates(nL1Muons, MuCn, nL1Tracks, L1Tk, L1TkCn);
+  LogDebug("L1TkMuonFromExtendedProducer") << " nL1TkCand " << nL1TkCand;
+
+  iEvent.put( tkMuons );
+
+}
+
+
+// ------------ Tracks candidate computation ------------
+int
+L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* MuCn, const int nL1Tracks, L1Track* L1Tk,
+						    L1TkMuonCand* L1TkCn)
+{
+  using namespace edm;
+  using namespace std;
+
   // **** Calculation for Muons ****
-  
+  int nL1TkCand = -1;
+  int il1tkcn = -1;
   for (int imu=0; imu<nL1Muons; imu++) {
 
     if (MuCn[imu].feta < ETAMIN_) continue;
@@ -378,27 +395,18 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   
         // Filter for Cuts 
         if (dEta < etaCut && dPhi < phiCut){
-  
-          L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, imu, MuCn, itk, L1Tk);
+          il1tkcn = il1tkcn + 1;
+          ///*** L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, imu, MuCn, itk, L1Tk);
 
 	}// over Cuts
       }
    
     }// over itk
   }//over imu
-  
-  iEvent.put( tkMuons );
 
-}
-
-
-// ------------ Tracks candidate computation ------------
-void
-L1TkMuonFromExtendedProducer::computeTkMuCandidates(edm::Event& iEvent, std::auto_ptr<L1TkMuonParticleCollection>& tkMuons,
-const int imu, L1Muon* MuCn, const int itk, L1Track* L1Tk)
-{
-  using namespace edm;
-  using namespace std;
+  nL1TkCand = il1tkcn;
+  LogDebug("L1TkMuonFromExtendedProducer") << " ::computeTkMuCandidates nL1TkCand " << nL1TkCand;
+  return nL1TkCand;
 
 }
 
