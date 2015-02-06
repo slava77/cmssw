@@ -311,14 +311,17 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 
   std::auto_ptr<L1TkMuonParticleCollection> tkMuons(new L1TkMuonParticleCollection);
 
-  int nL1Muons = L1TkMuonFromExtendedProducer::loadL1Muons(iEvent, MuCn);
-  LogDebug("L1TkMuonFromExtendedProducer") << " nL1Muons " << nL1Muons;
-
-  int nL1Tracks = L1TkMuonFromExtendedProducer::loadL1Tracks(iEvent, L1Tk);
-  LogDebug("L1TkMuonFromExtendedProducer") << " nL1Tracks " << nL1Tracks;
-
-  int nL1TkCand = computeTkMuCandidates(nL1Muons, MuCn, nL1Tracks, L1Tk, L1TkCn);
-  LogDebug("L1TkMuonFromExtendedProducer") << " nL1TkCand " << nL1TkCand;
+    int nL1Muons = L1TkMuonFromExtendedProducer::loadL1Muons(iEvent, MuCn);
+    LogDebug("L1TkMuonFromExtendedProducer") << " nL1Muons " << nL1Muons;
+  
+    int nL1Tracks = L1TkMuonFromExtendedProducer::loadL1Tracks(iEvent, L1Tk);
+    LogDebug("L1TkMuonFromExtendedProducer") << " nL1Tracks " << nL1Tracks;
+  
+    int nL1TkCand = computeTkMuCandidates(nL1Muons, MuCn, nL1Tracks, L1Tk, L1TkCn);
+    LogDebug("L1TkMuonFromExtendedProducer") << " nL1TkCand " << nL1TkCand;
+  
+    // L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, L1TkCn, nL1TkCand);
+        ///*** L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, imu, MuCn, itk, L1Tk);
 
   iEvent.put( tkMuons );
 
@@ -398,6 +401,16 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
           il1tkcn = il1tkcn + 1;
           ///*** L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, imu, MuCn, itk, L1Tk);
 
+          L1TkCn.q = ;
+          L1TkCn.pt = ;
+          L1TkCn.z = ;
+          L1TkCn.eta = ;
+          L1TkCn.phi = ;
+          L1TkCn.dxy = ;
+          L1TkCn.l1MuonIndex = imu;
+          L1TkCn.l1TrackIndex = itk;
+          L1TkCn.quality = ;
+     
 	}// over Cuts
       }
    
