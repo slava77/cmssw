@@ -71,7 +71,7 @@ public:
 
   };
 
-  struct L1MuonCand {
+  struct L1Muon {
     float eta;
     float phi;
     float pt;
@@ -89,7 +89,7 @@ public:
     int  Num;
   };  
 
-  struct L1Tracks {
+  struct L1Track {
     float pt;
     int   nPars;
     int   q;
@@ -107,8 +107,8 @@ public:
     float propSigmaPhi;
   };  
   
-  L1MuonCand MuCn[MuonMax];
-  L1Tracks L1Tk[TrackMax];
+  L1Muon MuCn[MuonMax];
+  L1Track L1Tk[TrackMax];
 
   explicit L1TkMuonFromExtendedProducer(const edm::ParameterSet&);
   ~L1TkMuonFromExtendedProducer();
@@ -119,10 +119,10 @@ private:
 
   virtual void produce(edm::Event&, const edm::EventSetup&);
 
-  int loadMuons(edm::Event&, L1MuonCand*);
-  int loadTracks(edm::Event&, L1Tracks*);
+  int loadMuons(edm::Event&, L1Muon*);
+  int loadTracks(edm::Event&, L1Track*);
 
-  void keepTrCand(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1MuonCand*, const int, L1Tracks*);
+  void keepTrCand(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1Muon*, const int, L1Track*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
 
@@ -170,7 +170,7 @@ L1TkMuonFromExtendedProducer::~L1TkMuonFromExtendedProducer() {
 
 // ------------ Muon and Tracks converter  ------------
 int
-L1TkMuonFromExtendedProducer::loadMuons(edm::Event& iEvent, L1MuonCand* MuCn)
+L1TkMuonFromExtendedProducer::loadMuons(edm::Event& iEvent, L1Muon* MuCn)
 {
   using namespace edm;
   using namespace std;
@@ -233,7 +233,7 @@ L1TkMuonFromExtendedProducer::loadMuons(edm::Event& iEvent, L1MuonCand* MuCn)
 
 // ------------ Tracks converter  ------------
 int
-L1TkMuonFromExtendedProducer::loadTracks(edm::Event& iEvent, L1Tracks* L1Tk)
+L1TkMuonFromExtendedProducer::loadTracks(edm::Event& iEvent, L1Track* L1Tk)
 {
   using namespace edm;
   using namespace std;
@@ -379,7 +379,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 // ------------ Tracks candidate  ------------
 void
 L1TkMuonFromExtendedProducer::keepTrCand(edm::Event& iEvent, std::auto_ptr<L1TkMuonParticleCollection>& tkMuons,
-const int imu, L1MuonCand* MuCn, const int itk, L1Tracks* L1Tk)
+const int imu, L1Muon* MuCn, const int itk, L1Track* L1Tk)
 {
   using namespace edm;
   using namespace std;
