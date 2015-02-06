@@ -99,11 +99,12 @@ public:
     float phi;
     int   nstubs;
     int   idx;
-    float matchPt;
-    float matchEta;
-    float matchPhi;
-    float matchSigmaEta;
-    float matchSigmaPhi;
+    bool  valid;
+    float propPt;
+    float propEta;
+    float propPhi;
+    float propSigmaEta;
+    float propSigmaPhi;
   };  
   
   L1MuonCand MuCn[MuonMax];
@@ -118,10 +119,10 @@ private:
 
   virtual void produce(edm::Event&, const edm::EventSetup&);
 
-  int keepMuons(edm::Event&, L1MuonCand*);
-  int keepTracks(edm::Event&, L1Tracks*);
+  int loadMuons(edm::Event&, L1MuonCand*);
+  int loadTracks(edm::Event&, L1Tracks*);
 
-  void keepTrCand(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int&, L1MuonCand*, const int&, L1Tracks*);
+  void keepTrCand(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1MuonCand*, const int, L1Tracks*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
 
@@ -169,7 +170,7 @@ L1TkMuonFromExtendedProducer::~L1TkMuonFromExtendedProducer() {
 
 // ------------ Muon and Tracks converter  ------------
 int
-L1TkMuonFromExtendedProducer::keepMuons(edm::Event& iEvent, L1MuonCand* MuCn)
+L1TkMuonFromExtendedProducer::loadMuons(edm::Event& iEvent, L1MuonCand* MuCn)
 {
   using namespace edm;
   using namespace std;
@@ -226,13 +227,13 @@ L1TkMuonFromExtendedProducer::keepMuons(edm::Event& iEvent, L1MuonCand* MuCn)
       LogWarning("L1TkMuonFromExtendedProducer") << " Maximum Muon number too small " << imu;
     };
   }
-  LogDebug("L1TkMuonFromExtendedProducer") << " ::keepMuons MuonNum " << MuonNum;
+  LogDebug("L1TkMuonFromExtendedProducer") << " ::loadMuons MuonNum " << MuonNum;
   return MuonNum;
 }
 
 // ------------ Tracks converter  ------------
 int
-L1TkMuonFromExtendedProducer::keepTracks(edm::Event& iEvent, L1Tracks* L1Tk)
+L1TkMuonFromExtendedProducer::loadTracks(edm::Event& iEvent, L1Tracks* L1Tk)
 {
   using namespace edm;
   using namespace std;
@@ -264,13 +265,17 @@ L1TkMuonFromExtendedProducer::keepTracks(edm::Event& iEvent, L1Tracks* L1Tk)
       L1Tk[il1tk].idx = il1tk;
 
       PropState pstate = propagateToGMT(l1tk);
-      if (!pstate.valid) continue;
 
-      L1Tk[il1tk].matchPt = pstate.pt; 
-      L1Tk[il1tk].matchEta = pstate.eta;
-      L1Tk[il1tk].matchPhi = pstate.phi;
-      L1Tk[il1tk].matchSigmaEta = pstate.sigmaEta;
-      L1Tk[il1tk].matchSigmaPhi = pstate.sigmaPhi;
+      if (!pstate.valid) {
+        L1Tk[il1tk].valid = true;
+      } else { L1Tk[il1tk].valid = false;
+      };
+
+      L1Tk[il1tk].propPt = pstate.pt; 
+      L1Tk[il1tk].propEta = pstate.eta;
+      L1Tk[il1tk].propPhi = pstate.phi;
+      L1Tk[il1tk].propSigmaEta = pstate.sigmaEta;
+      L1Tk[il1tk].propSigmaPhi = pstate.sigmaPhi;
 
     } 
     else {
@@ -290,10 +295,10 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 
   std::auto_ptr<L1TkMuonParticleCollection> tkMuons(new L1TkMuonParticleCollection);
 
-  int MuonNum = L1TkMuonFromExtendedProducer::keepMuons(iEvent, MuCn);
+  int MuonNum = L1TkMuonFromExtendedProducer::loadMuons(iEvent, MuCn);
   LogDebug("L1TkMuonFromExtendedProducer") << " MuonNum " << MuonNum;
 
-  int TrackNum = L1TkMuonFromExtendedProducer::keepTracks(iEvent, L1Tk);
+  int TrackNum = L1TkMuonFromExtendedProducer::loadTracks(iEvent, L1Tk);
   LogDebug("L1TkMuonFromExtendedProducer") << " TrackNum " << TrackNum;
 
   // **** Calculation for Muons ****
@@ -336,22 +341,23 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
         if (fabs(L1Tk[itk].z) > ZMAX_) continue;
         if (     L1Tk[itk].chi2 > CHI2MAX_) continue;
         if (     L1Tk[itk].nstubs < nStubsmin_) continue;
+        // Do we need it !? // if (     L1Tk[itk].valid) continue;
    
         dr2 = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[itk].eta, L1Tk[itk].phi);
         if (dr2 > 0.3) continue;
 
-        dr2prop = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[itk].matchEta, L1Tk[itk].matchPhi);
+        dr2prop = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[itk].propEta, L1Tk[itk].propPhi);
         if (dr2prop < drmin) drmin = dr2prop;
         if (dr2prop < drmin) continue;
 
-        float etaCut = 3.*sqrt(MuCn[imu].sigmaEta*MuCn[imu].sigmaEta + L1Tk[itk].matchSigmaEta*L1Tk[itk].matchSigmaEta);
-        float phiCut = 4.*sqrt(MuCn[imu].sigmaPhi*MuCn[imu].sigmaPhi + L1Tk[itk].matchSigmaPhi*L1Tk[itk].matchSigmaPhi);
-        float dEta = std::abs(L1Tk[itk].matchEta - MuCn[imu].eta);
-        float dPhi = std::abs(deltaPhi(L1Tk[itk].matchPhi, MuCn[imu].phi));
+        float etaCut = 3.*sqrt(MuCn[imu].sigmaEta*MuCn[imu].sigmaEta + L1Tk[itk].propSigmaEta*L1Tk[itk].propSigmaEta);
+        float phiCut = 4.*sqrt(MuCn[imu].sigmaPhi*MuCn[imu].sigmaPhi + L1Tk[itk].propSigmaPhi*L1Tk[itk].propSigmaPhi);
+        float dEta = std::abs(L1Tk[itk].propEta - MuCn[imu].eta);
+        float dPhi = std::abs(deltaPhi(L1Tk[itk].propPhi, MuCn[imu].phi));
   
         LogWarning("L1TkMuonFromExtendedProducer") 
-          << "   match details: prop Pt "<<L1Tk[itk].matchPt<<" Eta "<<L1Tk[itk].matchEta
-          <<" Phi "<<L1Tk[itk].matchPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
+          << "   match details: prop Pt "<<L1Tk[itk].propPt<<" Eta "<<L1Tk[itk].propEta
+          <<" Phi "<<L1Tk[itk].propPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
           <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut;
   
         // Filter for Cuts 
@@ -373,7 +379,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 // ------------ Tracks candidate  ------------
 void
 L1TkMuonFromExtendedProducer::keepTrCand(edm::Event& iEvent, std::auto_ptr<L1TkMuonParticleCollection>& tkMuons,
-const int& imu, L1MuonCand* MuCn, const int& itk, L1Tracks* L1Tk)
+const int imu, L1MuonCand* MuCn, const int itk, L1Tracks* L1Tk)
 {
   using namespace edm;
   using namespace std;
