@@ -18,6 +18,8 @@
 #include "CalibTracker/SiStripQuality/interface/SiStripBadAPVAlgorithmFromClusterOccupancy.h"
 #include "CalibTracker/SiStripQuality/interface/SiStripBadAPVandHotStripAlgorithmFromClusterOccupancy.h"
 
+#include "Geometry/Records/interface/TrackerTopologyRcd.h"
+
 
 SiStripQualityHotStripIdentifierRoot::SiStripQualityHotStripIdentifierRoot(const edm::ParameterSet& iConfig) : ConditionDBWriter<SiStripBadStrip>(iConfig),
   m_cacheID_(0), 
@@ -190,7 +192,7 @@ SiStripBadStrip* SiStripQualityHotStripIdentifierRoot::getNewObject(){
 void SiStripQualityHotStripIdentifierRoot::algoBeginRun(const edm::Run& iRun,const edm::EventSetup& iSetup){
   //Retrieve tracker topology from geometry
   edm::ESHandle<TrackerTopology> tTopoHandle;
-  iSetup.get<IdealGeometryRecord>().get(tTopoHandle);
+  iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
   tTopo = tTopoHandle.product();
  
   iSetup.get<TrackerDigiGeometryRecord> ().get (theTrackerGeom);
