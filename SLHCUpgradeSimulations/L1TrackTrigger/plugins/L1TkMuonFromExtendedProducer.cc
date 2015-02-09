@@ -120,7 +120,6 @@ public:
     float dxy;
     int   l1TrackIndex;
     int   l1MuonIndex;
-    int   idx;
     int   quality;
   };
 
@@ -401,8 +400,6 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
         if (dEta < etaCut && dPhi < phiCut){
           il1tkcn = il1tkcn + 1;
 
-          ///*** L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, imu, MuCn, itk, L1Tk);
-
 	  L1TkCn[il1tkcn].nPars = L1Tk[itk].nPars;
           L1TkCn[il1tkcn].pt = L1Tk[itk].pt;
           L1TkCn[il1tkcn].q = L1Tk[itk].q;
@@ -410,7 +407,6 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
           L1TkCn[il1tkcn].eta = L1Tk[itk].eta;
           L1TkCn[il1tkcn].phi = L1Tk[itk].phi;
           L1TkCn[il1tkcn].dxy = 0.; // dxy =  tkv3.x()*sin(phi) -  tkv3.y()*cos(phi)
-          L1TkCn[il1tkcn].idx = L1Tk[itk].idx;
           L1TkCn[il1tkcn].l1MuonIndex = imu;
           L1TkCn[il1tkcn].l1TrackIndex = itk;
           L1TkCn[il1tkcn].quality = MuCn[imu].quality;
@@ -422,7 +418,7 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
   }//over imu
 
   nL1TkCand = il1tkcn;
-  LogWarning("L1TkMuonFromExtendedProducer") << " ::computeTkMuCandidates nL1TkCand " << nL1TkCand;
+  LogDebug("L1TkMuonFromExtendedProducer") << " ::computeTkMuCandidates nL1TkCand " << nL1TkCand;
   return nL1TkCand;
 
 }
@@ -449,8 +445,8 @@ const int nL1TkCand, L1TkMuonCand* L1TkCn)
   
   for ( int il1tkcn=0; il1tkcn<=nL1TkCand; il1tkcn++ ){
 
-    Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1TkCn[il1tkcn].idx);
-    const L1TkTrackType& matchTk = l1tks[L1TkCn[il1tkcn].idx];
+    Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1TkCn[il1tkcn].l1TrackIndex);
+    const L1TkTrackType& matchTk = l1tks[L1TkCn[il1tkcn].l1TrackIndex];
      
     auto p3 = matchTk.getMomentum(L1TkCn[il1tkcn].nPars);
     float p4e = sqrt(0.105658369*0.105658369 + p3.mag2() );
