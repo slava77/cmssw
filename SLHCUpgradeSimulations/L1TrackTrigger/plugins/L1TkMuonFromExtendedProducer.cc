@@ -111,14 +111,16 @@ public:
   };  
 
   struct L1TkMuonCand {
-    float q;
     float pt;
+    int   nPars;
+    float q;
     float z;
     float eta;
     float phi;
     float dxy;
     int   l1TrackIndex;
     int   l1MuonIndex;
+    int   idx;
     int   quality;
   };
 
@@ -139,7 +141,7 @@ private:
   int loadL1Tracks(edm::Event&, L1Track*);
 
   int computeTkMuCandidates(const int, L1Muon*, const int, L1Track*, L1TkMuonCand*);
-  void loadTkMuCandidatesToEvent(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1Muon*, const int, L1Track*);
+  void loadTkMuCandidatesToEvent(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1TkMuonCand*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
 
@@ -320,8 +322,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     int nL1TkCand = computeTkMuCandidates(nL1Muons, MuCn, nL1Tracks, L1Tk, L1TkCn);
     LogDebug("L1TkMuonFromExtendedProducer") << " nL1TkCand " << nL1TkCand;
   
-    // L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, L1TkCn, nL1TkCand);
-        ///*** L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, imu, MuCn, itk, L1Tk);
+    L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, nL1TkCand, L1TkCn);
 
   iEvent.put( tkMuons );
 
@@ -399,18 +400,21 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
         // Filter for Cuts 
         if (dEta < etaCut && dPhi < phiCut){
           il1tkcn = il1tkcn + 1;
+
           ///*** L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, imu, MuCn, itk, L1Tk);
 
-          L1TkCn.q = ;
-          L1TkCn.pt = ;
-          L1TkCn.z = ;
-          L1TkCn.eta = ;
-          L1TkCn.phi = ;
-          L1TkCn.dxy = ;
-          L1TkCn.l1MuonIndex = imu;
-          L1TkCn.l1TrackIndex = itk;
-          L1TkCn.quality = ;
-     
+	  L1TkCn[il1tkcn].nPars = L1Tk[itk].nPars;
+          L1TkCn[il1tkcn].pt = L1Tk[itk].pt;
+          L1TkCn[il1tkcn].q = L1Tk[itk].q;
+          L1TkCn[il1tkcn].z = L1Tk[itk].z;
+          L1TkCn[il1tkcn].eta = L1Tk[itk].eta;
+          L1TkCn[il1tkcn].phi = L1Tk[itk].phi;
+          L1TkCn[il1tkcn].dxy = 0.; // dxy =  tkv3.x()*sin(phi) -  tkv3.y()*cos(phi)
+          L1TkCn[il1tkcn].idx = L1Tk[itk].idx;
+          L1TkCn[il1tkcn].l1MuonIndex = imu;
+          L1TkCn[il1tkcn].l1TrackIndex = itk;
+          L1TkCn[il1tkcn].quality = MuCn[imu].quality;
+
 	}// over Cuts
       }
    
@@ -418,7 +422,7 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
   }//over imu
 
   nL1TkCand = il1tkcn;
-  LogDebug("L1TkMuonFromExtendedProducer") << " ::computeTkMuCandidates nL1TkCand " << nL1TkCand;
+  LogWarning("L1TkMuonFromExtendedProducer") << " ::computeTkMuCandidates nL1TkCand " << nL1TkCand;
   return nL1TkCand;
 
 }
@@ -426,7 +430,7 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
 // ------------ Tracks candidate  ------------
 void
 L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(edm::Event& iEvent, std::auto_ptr<L1TkMuonParticleCollection>& tkMuons,
-const int imu, L1Muon* MuCn, const int itk, L1Track* L1Tk)
+const int nL1TkCand, L1TkMuonCand* L1TkCn)
 {
   using namespace edm;
   using namespace std;
@@ -435,44 +439,47 @@ const int imu, L1Muon* MuCn, const int itk, L1Track* L1Tk)
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
   const L1TkTrackCollectionType& l1tks = *l1tksH.product();
 
-  Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1Tk[itk].idx);
-  const L1TkTrackType& matchTk = l1tks[L1Tk[itk].idx];
-   
-  auto p3 = matchTk.getMomentum(L1Tk[itk].nPars);
-  float p4e = sqrt(0.105658369*0.105658369 + p3.mag2() );
-   
-  math::XYZTLorentzVector l1tkp4(p3.x(), p3.y(), p3.z(), p4e);
-   
-  auto tkv3=matchTk.getPOCA(L1Tk[itk].nPars);
-  math::XYZPoint v3(tkv3.x(), tkv3.y(), tkv3.z());
-   
-  L1Tk[itk].q = matchTk.getRInv(L1Tk[itk].nPars)>0? 1: -1;
-
-  L1TkMuonParticle l1tkmu(reco::LeafCandidate(L1Tk[itk].q, l1tkp4, v3, -13*L1Tk[itk].q ));
-
-  l1tkmu.setTrkPtr(l1tkPtr);
-
   edm::Handle<L1MuonParticleExtendedCollection> l1musH;
   iEvent.getByLabel(L1MuonsInputTag_, l1musH);
   const L1MuonParticleExtendedCollection& l1mus = *l1musH.product(); 
-
+  
   L1TkMuonParticleCollection l1tkmuCands;
   l1tkmuCands.reserve(l1mus.size()*4); //can do more if really needed
   LogDebug("L1TkMuonFromExtendedProducer") << " l1tks.size= " << l1tks.size();
+  
+  for ( int il1tkcn=0; il1tkcn<=nL1TkCand; il1tkcn++ ){
 
-  L1MuonParticleExtendedRef l1muRef(l1musH, imu);
-  l1tkmu.setMuExtendedRef(l1muRef);
+    Ptr< L1TkTrackType > l1tkPtr(l1tksH, L1TkCn[il1tkcn].idx);
+    const L1TkTrackType& matchTk = l1tks[L1TkCn[il1tkcn].idx];
+     
+    auto p3 = matchTk.getMomentum(L1TkCn[il1tkcn].nPars);
+    float p4e = sqrt(0.105658369*0.105658369 + p3.mag2() );
+     
+    math::XYZTLorentzVector l1tkp4(p3.x(), p3.y(), p3.z(), p4e);
+     
+    auto tkv3=matchTk.getPOCA(L1TkCn[il1tkcn].nPars);
+    math::XYZPoint v3(tkv3.x(), tkv3.y(), tkv3.z());
+     
+    L1TkCn[il1tkcn].q = matchTk.getRInv(L1TkCn[il1tkcn].nPars)>0? 1: -1;
+  
+    L1TkMuonParticle l1tkmu(reco::LeafCandidate(L1TkCn[il1tkcn].q, l1tkp4, v3, -13*L1TkCn[il1tkcn].q ));
+  
+    l1tkmu.setTrkPtr(l1tkPtr);
+  
+    L1MuonParticleExtendedRef l1muRef(l1musH, L1TkCn[il1tkcn].l1MuonIndex);
+    l1tkmu.setMuExtendedRef(l1muRef);
+  
+    l1tkmu.setQuality(L1TkCn[il1tkcn].quality);
+  
+    float trkisol = -999;
+    l1tkmu.setTrkIsol(trkisol);
+     
+    // EP: add the zvtx information
+    l1tkmu.setTrkzVtx( (float)tkv3.z() );
+  
+    tkMuons->push_back(l1tkmu);
 
-  l1tkmu.setQuality(MuCn[imu].quality);
-
-  float trkisol = -999;
-  l1tkmu.setTrkIsol(trkisol);
-   
-  // EP: add the zvtx information
-  l1tkmu.setTrkzVtx( (float)tkv3.z() );
-
-  tkMuons->push_back(l1tkmu);
-
+  }//over il1tkcn
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
