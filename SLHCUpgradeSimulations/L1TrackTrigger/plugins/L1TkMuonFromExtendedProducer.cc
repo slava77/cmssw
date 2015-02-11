@@ -100,6 +100,7 @@ public:
     float chi2;
     float eta;
     float phi;
+    float dxy;
     int   nstubs;
     int   idx;
     bool  valid;
@@ -110,7 +111,7 @@ public:
     float propSigmaPhi;
   };  
 
-  struct L1TkMuonCand {
+  struct L1Cand {
     float pt;
     int   nPars;
     float q;
@@ -125,7 +126,7 @@ public:
 
   L1Muon MuCn[MuonMax];
   L1Track L1Tk[TrackMax];
-  L1TkMuonCand L1TkCn[TkMuonMax];
+  L1Cand L1TkCn[TkMuonMax];
 
   explicit L1TkMuonFromExtendedProducer(const edm::ParameterSet&);
   ~L1TkMuonFromExtendedProducer();
@@ -139,8 +140,8 @@ private:
   int loadL1Muons(edm::Event&, L1Muon*);
   int loadL1Tracks(edm::Event&, L1Track*);
 
-  int computeTkMuCandidates(const int, L1Muon*, const int, L1Track*, L1TkMuonCand*);
-  void loadTkMuCandidatesToEvent(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1TkMuonCand*);
+  int computeTkMuCandidates(const int, L1Muon*, const int, L1Track*, L1Cand*);
+  void loadTkMuCandidatesToEvent(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1Cand*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
 
@@ -279,6 +280,11 @@ L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk)
       L1Tk[il1tk].eta = l1tk.getMomentum(nPars).eta();
       L1Tk[il1tk].phi = l1tk.getMomentum(nPars).phi();
 
+      // ****
+      const L1TkTrackType& matchTk = l1tks[il1tk];
+      auto tkv3=matchTk.getPOCA(L1Tk[il1tk].nPars);
+      L1Tk[il1tk].dxy =  tkv3.x()*sin(L1Tk[il1tk].phi) -  tkv3.y()*cos(L1Tk[il1tk].phi);
+
       L1Tk[il1tk].idx = il1tk;
 
       PropState pstate = propagateToGMT(l1tk);
@@ -331,7 +337,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
 // ------------ Tracks candidate computation ------------
 int
 L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* MuCn, const int nL1Tracks, L1Track* L1Tk,
-						    L1TkMuonCand* L1TkCn)
+						    L1Cand* L1TkCn)
 {
   using namespace edm;
   using namespace std;
@@ -406,7 +412,7 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
           L1TkCn[il1tkcn].z = L1Tk[itk].z;
           L1TkCn[il1tkcn].eta = L1Tk[itk].eta;
           L1TkCn[il1tkcn].phi = L1Tk[itk].phi;
-          L1TkCn[il1tkcn].dxy = 0.; // dxy =  tkv3.x()*sin(phi) -  tkv3.y()*cos(phi)
+          L1TkCn[il1tkcn].dxy = L1Tk[itk].dxy;
           L1TkCn[il1tkcn].l1MuonIndex = imu;
           L1TkCn[il1tkcn].l1TrackIndex = itk;
           L1TkCn[il1tkcn].quality = MuCn[imu].quality;
@@ -426,7 +432,7 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
 // ------------ Tracks candidate  ------------
 void
 L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(edm::Event& iEvent, std::auto_ptr<L1TkMuonParticleCollection>& tkMuons,
-const int nL1TkCand, L1TkMuonCand* L1TkCn)
+const int nL1TkCand, L1Cand* L1TkCn)
 {
   using namespace edm;
   using namespace std;
