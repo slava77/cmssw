@@ -25,7 +25,7 @@ def customisePostLS1(process):
         process=customise_RawToDigi(process)
     if hasattr(process,'reconstruction'):
         process=customise_Reco(process)
-    if hasattr(process,'digitisation_step'):
+    if hasattr(process,'digitisation_step') or ( hasattr(process,'mix') and hasattr(process.mix,'digitizers')):
         process=customise_Digi(process)
     if hasattr(process,'HLTSchedule'):
         process=customise_HLT(process)
