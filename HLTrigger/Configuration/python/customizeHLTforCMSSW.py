@@ -36,20 +36,17 @@ def customiseFor8356(process):
     	return (module for module in process._Process__producers.values() if module._TypedParameterizable__type == type)
 
     for l3MPModule in producers_by_type(process, 'L3MuonProducer'):
-	l3MPLabel=l3MPModule._Labelable__label
-	if hasattr(process, l3MPLabel):
-            if hasattr(getattr(process, l3MPLabel), 'GlbRefitterParameters'):
-                setattr(getattr(process, l3MPLabel).GlbRefitterParameters, 'RefitFlag', cms.bool(True))
-            if hasattr(getattr(process, l3MPLabel), 'L3TrajBuilderParameters'):
-                if hasattr(getattr(process, l3MPLabel).L3TrajBuilderParameters, 'MuonTrackingRegionBuilder'):
-                    setattr(getattr(process, l3MPLabel).L3TrajBuilderParameters, 'MuonTrackingRegionBuilder', MTRBPSet)
+	if hasattr(l3MPModule, 'GlbRefitterParameters'):
+            l3MPModule.GlbRefitterParameters.RefitFlag = cms.bool(True)
+        if hasattr(l3MPModule, 'L3TrajBuilderParameters'):
+            if hasattr(l3MPModule.L3TrajBuilderParameters, 'MuonTrackingRegionBuilder'):
+                l3MPModule.L3TrajBuilderParameters.MuonTrackingRegionBuilder = MTRBPSet
 
-    for l3IOTrajModule in producers_by_type(process, 'TSGFromL2Muon'):
-        l3IOTrajLabel=l3IOTrajModule._Labelable__label
-	if 'IOHit' in l3IOTrajLabel:
-	    if hasattr(process, l3IOTrajLabel):
-	        if hasattr(getattr(process, l3IOTrajLabel), 'MuonTrackingRegionBuilder'):
-                    setattr(getattr(process, l3IOTrajLabel), 'MuonTrackingRegionBuilder', MTRBPSet)
+    listL3seedingModule = ['hltL3TrajSeedIOHit','hltL3NoFiltersNoVtxTrajSeedIOHit']
+    for l3IOTrajModule in listL3seedingModule:
+	if hasattr(process, l3IOTrajModule):
+	    if hasattr(getattr(process, l3IOTrajModule), 'MuonTrackingRegionBuilder'):
+                setattr(getattr(process, l3IOTrajModule), 'MuonTrackingRegionBuilder', MTRBPSet)
 
     return process
 
