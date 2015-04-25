@@ -46,7 +46,7 @@ std::auto_ptr<SiPixelGenErrorDBObject> SiPixelFakeGenErrorDBObjectESSource::prod
 			edm::LogInfo("SiPixelFakeGenErrorDBObjectESSource") << "Opened GenError File: " << file.fullPath().c_str() << std::endl;
 
 			// Local variables 
-			char title_char[80], c;
+			char title_char[80] {}, c;
 			SiPixelGenErrorDBObject::char2float temp;
 			float tempstore;
 			int iter,j;

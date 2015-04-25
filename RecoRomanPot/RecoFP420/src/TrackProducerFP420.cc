@@ -117,13 +117,13 @@ std::vector<TrackFP420> TrackProducerFP420::trackFinderSophisticated(edm::Handle
   int reshits1 = 12;// is max # cl in sensor of copyinlayer=1
   int reshits2 = 24;// (reshits2-reshits1) is max # cl in sensors of copyinlayers= 2 or 3
   //  int resplanes = 20;
-  int nX[20], nY[20];// resplanes =20 NUMBER OF PLANES; nX, nY - # cl for every X and Y plane
-  int uX[20], uY[20];// resplanes =20 NUMBER OF PLANES; nX, nY - current # cl used for every X and Y plane
-  double zX[24][20], xX[24][20], wX[24][20];
-  double zY[24][20], yY[24][20], wY[24][20];
-  double             yXW[24][20], wXW[24][20];
-  double             xYW[24][20], wYW[24][20];
-  bool qX[24][20], qY[24][20];
+  int nX[20] {}, nY[20] {};// resplanes =20 NUMBER OF PLANES; nX, nY - # cl for every X and Y plane
+  int uX[20] {}, uY[20] {};// resplanes =20 NUMBER OF PLANES; nX, nY - current # cl used for every X and Y plane
+  double zX[24][20] {}, xX[24][20] {}, wX[24][20] {};
+  double zY[24][20] {}, yY[24][20] {}, wY[24][20] {};
+  double             yXW[24][20] {}, wXW[24][20] {};
+  double             xYW[24][20] {}, wYW[24][20] {};
+  bool qX[24][20] {}, qY[24][20] {};
   //   .
   int txf = 0; int txs1 = 0; int txss = 0;
   int tyf = 0; int tys1 = 0; int tyss = 0;

@@ -202,7 +202,7 @@ void SiStripQualityChecker::fillDetectorStatus(DQMStore* dqm_store, const edm::E
     dqm_store->cd(dname);
     SubDetMEs local_mes = it->second;
     xbin++;
-    float flag;
+    float flag = 0.0f;
     fillSubDetStatus(dqm_store, cabling, local_mes, xbin,flag);
     global_flag += flag; 
   }

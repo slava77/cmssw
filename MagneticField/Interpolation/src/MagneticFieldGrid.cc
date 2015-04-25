@@ -144,7 +144,7 @@ void MagneticFieldGrid::interpolateAtPoint(double X1, double X2, double X3, floa
 //
 void MagneticFieldGrid::putCoordGetInd(double X1, double X2, double X3, int &Index1, int &Index2, int &Index3){
   double pnt[3] = {X1,X2,X3};
-  int index[3];
+  int index[3] {};
   switch (GridType){
   case 1:
     for (int i=0; i<3; ++i){

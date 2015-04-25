@@ -1365,7 +1365,7 @@ void SetDefaultFuncs()
 	kk = 0;
 	for(il=1; kk<Nweights; il++)
 		for(in=0; in<NET.Nneur[il]; in++)
-			for(jn=0; jn<=NET.Nneur[il-1]; jn++)
+			for(jn=0; jn<=NET.Nneur[il-1] && kk<Nweights; jn++)
 				{
 				dir[il][in][jn] = -s[kk];
 				kk++;
