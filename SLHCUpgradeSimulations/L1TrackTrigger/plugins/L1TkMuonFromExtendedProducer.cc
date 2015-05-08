@@ -49,7 +49,7 @@ using namespace l1extra;
 const int MuonMax = 20;
 
 // maximum Tracks number
-const int TrackMax = 300;
+const int TrackMax = 400;
 
 // maximum L1 Tracks Candidates number
 const int TkMuonMax = 20;
@@ -397,7 +397,7 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
         float dEta = std::abs(L1Tk[itk].propEta - MuCn[imu].eta);
         float dPhi = std::abs(deltaPhi(L1Tk[itk].propPhi, MuCn[imu].phi));
   
-        LogWarning("L1TkMuonFromExtendedProducer") 
+        LogDebug("L1TkMuonFromExtendedProducer") 
           << "   match details: prop Pt "<<L1Tk[itk].propPt<<" Eta "<<L1Tk[itk].propEta
           <<" Phi "<<L1Tk[itk].propPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
           <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut;
