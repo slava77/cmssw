@@ -383,16 +383,17 @@ EvtPlaneProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	double minet = minet_;
 	double maxet = maxet_;
 	for(int i = 0; i<NumEPNames; i++) {
+	  const HiEvtPlaneFlatten* iFlat = flat[i];
 	  if(minet_<0) minet = minTransverse[i];
 	  if(maxet_<0) maxet = maxTransverse[i];
 	  if(tower_energyet<minet) continue;
 	  if(tower_energyet>maxet) continue;
 	  if(EPDet[i]==HF) {
 	    double w = tower_energyet;
-	    if(loadDB_) w = tower_energyet*flat[i]->GetEtScale(vzr_sell,bin);
+	    if(loadDB_) w = tower_energyet*iFlat->GetEtScale(vzr_sell,bin);
 	    if(EPOrder[i]==1 ) {
 	      if(MomConsWeight[i][0]=='y' && loadDB_ ) {
-		w = flat[i]->GetW(tower_energyet, vzr_sell, bin);
+		w = iFlat->GetW(tower_energyet, vzr_sell, bin);
 	      }
 	      if(tower_eta<0 ) w=-w;
 	    }
@@ -416,6 +417,7 @@ EvtPlaneProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	double minet = minet_;
 	double maxet = maxet_;
        	for(int i = 0; i<NumEPNames; i++) {
+	  const HiEvtPlaneFlatten* iFlat = flat[i];
        	  if(EPDet[i]==Castor) {
 	    if(minet_<0) minet = minTransverse[i];
 	    if(maxet_<0) maxet = maxTransverse[i];
@@ -424,7 +426,7 @@ EvtPlaneProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
        	    double w = tower_energyet;
        	    if(EPOrder[i]==1 ) {
        	      if(MomConsWeight[i][0]=='y' && loadDB_ ) {
-       		w = flat[i]->GetW(tower_energyet, vzr_sell, bin);
+       		w = iFlat->GetW(tower_energyet, vzr_sell, bin);
        	      }
        	      if(tower_eta<0 ) w=-w;
        	    }
@@ -488,6 +490,7 @@ EvtPlaneProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  double minpt = minpt_;
 	  double maxpt = maxpt_;
 	  for(int i = 0; i<NumEPNames; i++) {
+	    const HiEvtPlaneFlatten* iFlat = flat[i];
 	    if(minpt_<0) minpt = minTransverse[i];
 	    if(maxpt_<0) maxpt = maxTransverse[i];
 	    if(track_pt<minpt) continue;
@@ -497,7 +500,7 @@ EvtPlaneProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      if(w>2.5) w=2.0;   //v2 starts decreasing above ~2.5 GeV/c
 	      if(EPOrder[i]==1) {
 		if(MomConsWeight[i][0]=='y' && loadDB_) {
-		  w = flat[i]->GetW(track_pt, vzr_sell, bin);
+		  w = iFlat->GetW(track_pt, vzr_sell, bin);
 		}
 		if(track_eta<0) w=-w;
 	      }

@@ -92,7 +92,7 @@ public:
     }
   }
 
-  int GetCutIndx(int centbin, double vtx, int iord)
+  int GetCutIndx(int centbin, double vtx, int iord) const
   {
     int cut;
     if(centbin < 0 ) return -1;
@@ -106,7 +106,7 @@ public:
     return cut;
   }
 
-  int GetOffsetIndx(int centbin, double vtx)
+  int GetOffsetIndx(int centbin, double vtx) const
   {
     int cut;
     if(centbin < 0 ) return -1;
@@ -158,24 +158,23 @@ public:
   void SetCaloCentRefBins(const int caloCentRefMinBin, const int caloCentRefMaxBin) {
     caloCentRefMinBin_ = caloCentRefMinBin;
     caloCentRefMaxBin_ = caloCentRefMaxBin;
-    caloCentRefVal_ = 1.;
   }
 
-  double GetEtScale(double vtx, int centbin) {
+  double GetEtScale(double vtx, int centbin) const {
     if(caloCentRefMinBin_<0) return 1.;
     int indx = GetOffsetIndx(centbin,vtx);
     int refmin = GetOffsetIndx(caloCentRefMinBin_,vtx);
     int refmax = GetOffsetIndx(caloCentRefMaxBin_,vtx);
-    caloCentRefVal_ = 0;
+    double caloCentRefVal = 0;
     for(int i = refmin; i<=refmax; i++) {
-      caloCentRefVal_+=GetPtDB(i);
+      caloCentRefVal+=GetPtDB(i);
     }    
-    caloCentRefVal_/=refmax-refmin+1.;
-    if(caloCentRefVal_==0 || GetPtDB(indx)==0) return 1.;
-    return caloCentRefVal_/GetPtDB(indx);
+    caloCentRefVal /=refmax-refmin+1.;
+    if(caloCentRefVal ==0 || GetPtDB(indx)==0) return 1.;
+    return caloCentRefVal /GetPtDB(indx);
    }
 
-  double GetW(double pt, double vtx, int centbin)
+  double GetW(double pt, double vtx, int centbin) const
   {
   
     int indx = GetOffsetIndx(centbin,vtx);
@@ -188,7 +187,7 @@ public:
     return 0.;
   }
 
-  double GetFlatPsi(double psi, double vtx, int centbin)
+  double GetFlatPsi(double psi, double vtx, int centbin) const
   {
     double correction = 0;
     for(int k = 0; k<hOrder; k++) {
@@ -201,7 +200,15 @@ public:
     return psi;
   }
   
-  double GetOffsetPsi(double s, double c, double w, uint m,  double vtx, int centbin)
+  double getSoffset(double s, double vtx, int centbin) const {
+    int indx = GetOffsetIndx(centbin,vtx);
+    return s-yoffDB[indx];
+  }
+  double getCoffset(double c, double vtx, int centbin) const {
+    int indx = GetOffsetIndx(centbin,vtx);
+    return c-xoffDB[indx];
+  }
+  double GetOffsetPsi(double s, double c, double w, uint m,  double vtx, int centbin) const
   {
     int indx = GetOffsetIndx(centbin,vtx);
     double snew = s-yoffDB[indx];
@@ -210,37 +217,33 @@ public:
     if((fabs(snew)<1e-4) && (fabs(cnew)<1e-4)) psi = 0.;
     psi=bounds(psi);
     psi=bounds2(psi);
-    soff_ = snew;
-    coff_ = cnew;
-    w_ = w;
-    mult_ = m;
 
     return psi;
   }
   
   ~HiEvtPlaneFlatten(){}
-  int GetHBins(){return hbins;}
-  int GetOBins(){return obins;}
-  int GetNvtx(){return nvtxbins;}
-  double GetVtxMin(){return minvtx;}
-  double GetVtxMax(){return minvtx+nvtxbins*delvtx;}
-  int GetNcent(){return hbins;}
+  int GetHBins() const {return hbins;}
+  int GetOBins() const {return obins;}
+  int GetNvtx() const {return nvtxbins;}
+  double GetVtxMin() const {return minvtx;}
+  double GetVtxMax() const {return minvtx+nvtxbins*delvtx;}
+  int GetNcent() const {return hbins;}
 
-  double GetX(int bin){return flatX[bin];}
-  double GetY(int bin){return flatY[bin];}
-  double GetXoff(int bin){return xoff[bin];}
-  double GetYoff(int bin){return yoff[bin];}
-  double GetXoffDB(int bin){return xoffDB[bin];}
-  double GetYoffDB(int bin){return yoffDB[bin];}
-  double GetXYoffcnt(int bin){return xyoffcnt[bin];}
-  double GetXYoffmult(int bin){return xyoffmult[bin];}
-  double GetPt(int bin){return pt[bin];}
-  double GetPt2(int bin){return pt2[bin];}
-  double GetPtDB(int bin){return ptDB[bin];}
-  double GetPt2DB(int bin){return pt2DB[bin];}
-  double GetPtcnt(int bin){return ptcnt[bin];}
-  double GetXDB(int bin) {return flatXDB[bin];}
-  double GetYDB(int bin) {return flatYDB[bin];}
+  double GetX(int bin) const {return flatX[bin];}
+  double GetY(int bin) const {return flatY[bin];}
+  double GetXoff(int bin) const {return xoff[bin];}
+  double GetYoff(int bin) const {return yoff[bin];}
+  double GetXoffDB(int bin) const {return xoffDB[bin];}
+  double GetYoffDB(int bin) const {return yoffDB[bin];}
+  double GetXYoffcnt(int bin) const {return xyoffcnt[bin];}
+  double GetXYoffmult(int bin) const {return xyoffmult[bin];}
+  double GetPt(int bin) const {return pt[bin];}
+  double GetPt2(int bin) const {return pt2[bin];}
+  double GetPtDB(int bin) const {return ptDB[bin];}
+  double GetPt2DB(int bin) const {return pt2DB[bin];}
+  double GetPtcnt(int bin) const {return ptcnt[bin];}
+  double GetXDB(int bin) const {return flatXDB[bin];}
+  double GetYDB(int bin) const {return flatYDB[bin];}
 
 
   double GetCnt(int bin) {return flatCnt[bin];}
@@ -250,19 +253,17 @@ public:
   void SetYoffDB(int indx, double val) {yoffDB[indx]=val;}
   void SetPtDB(int indx, double val) {ptDB[indx]=val;}
   void SetPt2DB(int indx, double val) {pt2DB[indx]=val;}
-  double sumSin() const { return soff_; }
-  double sumCos() const { return coff_; }
-  double sumw()  const { return w_; }
-  uint mult()  const {return mult_;}
+  /*
   double      qx()      const { return (w_>0)? coff_/w_:0.;};
   double      qy()      const { return (w_>0)? soff_/w_:0.;};
   double      q()      const { return ((pow(qx(),2)+pow(qy(),2))>0)? sqrt(pow(qx(),2)+pow(qy(),2)): 0.;};
-  Double_t bounds(Double_t ang) {
+  */
+  double bounds(double ang) const {
     if(ang<-pi) ang+=2.*pi;
     if(ang>pi)  ang-=2.*pi;
     return ang;
   }
-  Double_t bounds2(Double_t ang) {
+  double bounds2(double ang) const {
     double range = pi/(double) vorder;
     while(ang<-range) { ang+=2*range; }
     while(ang>range)  {ang-=2*range; }
@@ -349,16 +350,11 @@ private:
   int vorder; //order of flattened event plane
   int caloCentRefMinBin_; //min ref centrality bin for calo weight scale
   int caloCentRefMaxBin_; //max ref centrality bin for calo weight scale
-  double caloCentRefVal_; //reference <pt> or <et>
   double pi;
 
   int nvtxbins;
   double minvtx;
   double delvtx;
-  double soff_ ;
-  double coff_ ;
-  double w_ ;
-  uint mult_ ;
 
 };
 
