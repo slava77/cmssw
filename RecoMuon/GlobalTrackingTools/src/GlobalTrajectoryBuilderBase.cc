@@ -151,7 +151,7 @@ void GlobalTrajectoryBuilderBase::setEvent(const edm::Event& event) {
   //Retrieve tracker topology from geometry
   edm::ESHandle<TrackerTopology> tTopoHand;
   theService->eventSetup().get<TrackerTopologyRcd>().get(tTopoHand);
-  tTopo_=tTopoHand.product();
+  theTopo=tTopoHand.product();
 
 }
 
