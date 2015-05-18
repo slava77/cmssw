@@ -10,7 +10,7 @@ RecoHiEgammaFEVT = cms.PSet(
     "drop recoPFClusters_*_*_*",
     "keep recoElectronSeeds_*_*_*",
     "keep recoGsfElectrons_*_*_*",
-    'keep aodAODHIPhotons_AODHIPhotonProducer_*_*'
+    'keep recoHIPhotonIsolationedmValueMap_photonIsolationHIProducer_*_*'
     )
     )
 
@@ -24,13 +24,13 @@ RecoHiEgammaRECO = cms.PSet(
     "drop recoPFClusters_*_*_*",
     "keep recoElectronSeeds_*_*_*",
     "keep recoGsfElectrons_*_*_*",
-    'keep aodAODHIPhotons_AODHIPhotonProducer_*_*'
+    'keep recoHIPhotonIsolationedmValueMap_photonIsolationHIProducer_*_*'
     )
     )
 
 RecoHiEgammaAOD = cms.PSet(
     outputCommands = cms.untracked.vstring(
     'keep floatedmValueMap_*_*_*',
-    'keep aodAODHIPhotons_AODHIPhotonProducer_*_*'
+    'keep recoHIPhotonIsolationedmValueMap_photonIsolationHIProducer_*_*'
     )
     )
