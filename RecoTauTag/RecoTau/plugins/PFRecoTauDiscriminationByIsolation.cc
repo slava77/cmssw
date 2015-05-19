@@ -103,7 +103,7 @@ class PFRecoTauDiscriminationByIsolation : public PFTauDiscriminationProducerBas
     maxRelPhotonSumPt_outsideSignalCone_ = pset.getParameter<double>("maxRelPhotonSumPt_outsideSignalCone");
 
     applyFootprintCorrection_ = pset.getParameter<bool>("applyFootprintCorrection");
-    if ( applyFootprintCorrection_ ) {
+    if ( applyFootprintCorrection_ || storeRawFootprintCorrection_ ) {
       edm::VParameterSet cfgFootprintCorrections = pset.getParameter<edm::VParameterSet>("footprintCorrections");
       for ( edm::VParameterSet::const_iterator cfgFootprintCorrection = cfgFootprintCorrections.begin();
 	    cfgFootprintCorrection != cfgFootprintCorrections.end(); ++cfgFootprintCorrection ) {
@@ -507,9 +507,9 @@ PFRecoTauDiscriminationByIsolation::discriminate(const PFTauRef& pfTau) const
   double puPt = 0.;
 //--- Sum PT requirement
   if ( applySumPtCut_ || applyRelativeSumPtCut_ || storeRawSumPt_ || storeRawPUsumPt_ ) {
-    double chargedPt = 0.0;
-    double neutralPt = 0.0;
-    double weightedNeutralPt = 0.0;
+    double chargedPt = 0.;
+    double neutralPt = 0.;
+    double weightedNeutralPt = 0.;
     for ( auto const & isoObject : isoCharged_ ) {
       chargedPt += isoObject->pt();
     }
