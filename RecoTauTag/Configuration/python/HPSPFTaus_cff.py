@@ -554,7 +554,6 @@ hpsPFTauDiscriminationByCombinedIsolationSeqDBSumPtCorr3Hits = cms.Sequence(
 
 hpsPFTauDiscriminationByLoosePileupWeightedIsolation3Hits = hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr3Hits.clone(
     ApplyDiscriminationByECALIsolation = cms.bool(False),
-    applyDeltaBetaCorrection = cms.bool(False),
     ApplyDiscriminationByWeightedECALIsolation = cms.bool(True),
     UseAllPFCandsForWeights = cms.bool(True),
     applyFootprintCorrection = cms.bool(True),
@@ -818,7 +817,6 @@ hpsPFTauMVAIsolation2Seq = cms.Sequence(
     hpsPFTauChargedIsoPtSum
    + hpsPFTauNeutralIsoPtSum
    + hpsPFTauPUcorrPtSum
-   + hpsPFTauNeutralIsoPtSumWeight
    + hpsPFTauFootprintCorrection
    + hpsPFTauPhotonPtSumOutsideSignalCone
    + hpsPFTauDiscriminationByIsolationMVA3oldDMwoLTraw

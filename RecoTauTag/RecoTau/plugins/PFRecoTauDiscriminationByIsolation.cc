@@ -5,7 +5,6 @@
 #include "RecoTauTag/RecoTau/interface/RecoTauVertexAssociator.h"
 #include "RecoTauTag/RecoTau/interface/ConeTools.h"
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
-#include "CommonTools/Utils/interface/StringObjectFunction.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 
 #include "TMath.h"
@@ -104,12 +103,12 @@ class PFRecoTauDiscriminationByIsolation : public PFTauDiscriminationProducerBas
     maxRelPhotonSumPt_outsideSignalCone_ = pset.getParameter<double>("maxRelPhotonSumPt_outsideSignalCone");
 
     applyFootprintCorrection_ = pset.getParameter<bool>("applyFootprintCorrection");
-    if ( applyFootprintCorrection_ || storeRawFootprintCorrection_ ) {
+    if ( applyFootprintCorrection_ ) {
       edm::VParameterSet cfgFootprintCorrections = pset.getParameter<edm::VParameterSet>("footprintCorrections");
       for ( edm::VParameterSet::const_iterator cfgFootprintCorrection = cfgFootprintCorrections.begin();
 	    cfgFootprintCorrection != cfgFootprintCorrections.end(); ++cfgFootprintCorrection ) {
 	std::string selection = cfgFootprintCorrection->getParameter<std::string>("selection");
-	std::string offset = cfgFootprintCorrection->getParameter<std::string>("offset");
+	double offset = cfgFootprintCorrection->getParameter<double>("offset");
 	footprintCorrectionType* footprintCorrection = new footprintCorrectionType(selection, offset);
 	footprintCorrections_.push_back(footprintCorrection);
       }
@@ -231,13 +230,13 @@ class PFRecoTauDiscriminationByIsolation : public PFTauDiscriminationProducerBas
   bool applyFootprintCorrection_;
   struct footprintCorrectionType
   {
-    footprintCorrectionType(const std::string& selection, const std::string& offset)
+    footprintCorrectionType(const std::string& selection, double offset)
       : selection_(selection),
 	offset_(offset)
     {}
     ~footprintCorrectionType() {}
     StringCutObjectSelector<PFTau> selection_;
-    StringObjectFunction<PFTau> offset_;
+    double offset_;
   };
   std::vector<footprintCorrectionType*> footprintCorrections_;
 
@@ -500,9 +499,7 @@ PFRecoTauDiscriminationByIsolation::discriminate(const PFTauRef& pfTau) const
   if ( applyFootprintCorrection_ || storeRawFootprintCorrection_ ) {
     for ( std::vector<footprintCorrectionType*>::const_iterator footprintCorrection = footprintCorrections_.begin();
 	  footprintCorrection != footprintCorrections_.end(); ++footprintCorrection ) {
-      if ( (*footprintCorrection)->selection_(*pfTau) ) {
-	footprintCorrection_value = (*footprintCorrection)->offset_(*pfTau);
-      }
+      if ( (*footprintCorrection)->selection_(*pfTau) ) footprintCorrection_value = (*footprintCorrection)->offset_;
     }
   }
 
@@ -510,9 +507,9 @@ PFRecoTauDiscriminationByIsolation::discriminate(const PFTauRef& pfTau) const
   double puPt = 0.;
 //--- Sum PT requirement
   if ( applySumPtCut_ || applyRelativeSumPtCut_ || storeRawSumPt_ || storeRawPUsumPt_ ) {
-    double chargedPt = 0.;
-    double neutralPt = 0.;
-    double weightedNeutralPt = 0.;
+    double chargedPt = 0.0;
+    double neutralPt = 0.0;
+    double weightedNeutralPt = 0.0;
     for ( auto const & isoObject : isoCharged_ ) {
       chargedPt += isoObject->pt();
     }

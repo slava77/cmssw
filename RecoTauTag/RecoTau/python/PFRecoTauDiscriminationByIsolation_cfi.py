@@ -28,7 +28,7 @@ pfRecoTauDiscriminationByIsolation = cms.EDProducer("PFRecoTauDiscriminationByIs
 
     applyPhotonPtSumOutsideSignalConeCut = cms.bool(False),
     maxAbsPhotonSumPt_outsideSignalCone = cms.double(1.e+9),
-    maxRelPhotonSumPt_outsideSignalCone = cms.double(0.10),
+    maxRelPhotonSumPt_outsideSignalCone = cms.double(0.20),
 
     qualityCuts = PFTauQualityCuts, # set the standard quality cuts
 
@@ -55,23 +55,23 @@ pfRecoTauDiscriminationByIsolation = cms.EDProducer("PFRecoTauDiscriminationByIs
     footprintCorrections = cms.VPSet(
         cms.PSet(
             selection = cms.string("decayMode() = 0"),
-            offset = cms.string("0.0")
+            offset = cms.double(1.8)
         ),
         cms.PSet(
             selection = cms.string("decayMode() = 1 || decayMode() = 2"),
-            offset = cms.string("0.0")
+            offset = cms.double(1.5)
         ),
         cms.PSet(
             selection = cms.string("decayMode() = 5"),
-            offset = cms.string("2.7")
+            offset = cms.double(4.7)
         ),
         cms.PSet(
             selection = cms.string("decayMode() = 6"),
-            offset = cms.string("0.0")
+            offset = cms.double(1.9)
         ),
         cms.PSet(
             selection = cms.string("decayMode() = 10"),
-            offset = cms.string("max(2.0, 0.22*pt() - 2.0)")
+            offset = cms.double(2.0)
         )        
     ),                                                        
 
