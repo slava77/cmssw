@@ -45,6 +45,9 @@ using namespace l1extra;
 // class declaration
 //
 
+float minV=1000.;
+float maxV=-1000.;
+
 // maximum Muons number
 const int MuonMax = 20;
 
@@ -200,6 +203,15 @@ L1TkMuonFromExtendedProducer::loadL1Muons(edm::Event& iEvent, L1Muon* MuCn)
   
   LogDebug("L1TkMuonFromExtendedProducer") << " l1mus.size= " << l1mus.size();
 
+ /* L1 Muons diapasons:
+  *          min         max
+  * Eta      -2.425      2.425   
+  * Phi      -3.14159    3.09796 
+  * pt        2          140
+  * sigmaEta  0.0144337  0.0288675
+  * sigmaPhi  0          0.0125959
+  */
+
   // Muons filling
 
   int imu = -1;
@@ -209,16 +221,17 @@ L1TkMuonFromExtendedProducer::loadL1Muons(edm::Event& iEvent, L1Muon* MuCn)
 
     if( imu<MuonMax ) {
       nL1Muons = imu + 1;
-      MuCn[imu].eta = l1mu.eta();
+
       MuCn[imu].eta = l1mu.eta();
       MuCn[imu].phi = l1mu.phi();
       MuCn[imu].pt = l1mu.pt();
-      MuCn[imu].bx = l1mu.bx();
-      MuCn[imu].quality = l1mu.quality();
       MuCn[imu].sigmaEta = l1mu.sigmaEta();
       MuCn[imu].sigmaPhi = l1mu.sigmaPhi();
+
+      MuCn[imu].quality = l1mu.quality();
+      MuCn[imu].bx = l1mu.bx();
       MuCn[imu].feta = fabs( l1mu.eta());
-  
+
       const auto& gmtCand = l1mu.gmtMuonCand();
       const auto& dtCand  = l1mu.dtCand();
       const auto& cscCand = l1mu.cscCand();
@@ -232,12 +245,13 @@ L1TkMuonFromExtendedProducer::loadL1Muons(edm::Event& iEvent, L1Muon* MuCn)
       LogDebug("L1TkMuonFromExtendedProducer") << " imu= " << imu
         << " eta= " << MuCn[imu].eta 
         << " phi= " << MuCn[imu].phi 
-        << " bx= " << MuCn[imu].bx
-        << " quality= " << MuCn[imu].quality
+        << " pt= "  << MuCn[imu].pt
         << " sigmaEta= " << MuCn[imu].sigmaEta
         << " sigmaPhi= " << MuCn[imu].sigmaPhi 
+        << " bx= "  << MuCn[imu].bx
+        << " quality= "  << MuCn[imu].quality
         << " gmtCand " << MuCn[imu].gmtCand 
-        << " dtCand " << MuCn[imu].dtCand 
+        << " dtCand "  << MuCn[imu].dtCand 
         << " cscCand " << MuCn[imu].cscCand 
         << " rpcCand " << MuCn[imu].rpcCand;
     } 
@@ -255,6 +269,22 @@ L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk)
 {
   using namespace edm;
   using namespace std;
+
+ /* L1 Tracks diapasons:
+  *             min        max
+  * Eta        -2.62816    2.6378
+  * Phi        -3.14159    3.14159
+  * pt          1.29208    9000      
+  * z         -80.         55.
+  * chi2        0.000667   9504.
+  *
+  * propEta    -2.5449     2.50527                   
+  * propPhi    -3.14159    3.14158                   
+  * propPt      1.29208    9000.
+  * propSigEta  0.         0.07739
+  * propSigPhi  0.         0.08203
+  *
+  */
 
   edm::Handle<L1TkTrackCollectionType> l1tksH;
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
@@ -284,17 +314,17 @@ L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk)
       const L1TkTrackType& matchTk = l1tks[il1tk];
       auto tkv3=matchTk.getPOCA(L1Tk[il1tk].nPars);
       L1Tk[il1tk].dxy =  tkv3.x()*sin(L1Tk[il1tk].phi) -  tkv3.y()*cos(L1Tk[il1tk].phi);
-
       L1Tk[il1tk].idx = il1tk;
 
       PropState pstate = propagateToGMT(l1tk);
 
       if (!pstate.valid) {
         L1Tk[il1tk].valid = true;
-      } else { L1Tk[il1tk].valid = false;
+      } else { 
+        L1Tk[il1tk].valid = false;
       };
 
-      L1Tk[il1tk].propPt = pstate.pt; 
+      L1Tk[il1tk].propPt  = pstate.pt; 
       L1Tk[il1tk].propEta = pstate.eta;
       L1Tk[il1tk].propPhi = pstate.phi;
       L1Tk[il1tk].propSigmaEta = pstate.sigmaEta;
@@ -540,9 +570,9 @@ const {
   dest.eta = tk_eta + deta;
   dest.phi = resPhi;
   dest.pt = tk_pt; //not corrected for eloss
-
   dest.sigmaEta = 0.100/tk_pt; //multiple scattering term
   dest.sigmaPhi = 0.106/tk_pt; //need a better estimate for these
+
   return dest;
 }
 
