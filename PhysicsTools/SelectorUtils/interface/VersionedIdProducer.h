@@ -53,7 +53,7 @@ private:
 template< class PhysicsObjectPtr , class SelectorType >
 VersionedIdProducer<PhysicsObjectPtr,SelectorType>::
 VersionedIdProducer(const edm::ParameterSet& iConfig) {
-  constexpr char bitmap_label[] = "-bitmap";
+  constexpr char bitmap_label[] = "Bitmap";
   
   verbose_ = iConfig.getUntrackedParameter<bool>("verbose", false);
   
@@ -81,6 +81,7 @@ VersionedIdProducer(const edm::ParameterSet& iConfig) {
 
     if( idMD5 != calculated_md5 ) {
       edm::LogError("IdConfigurationNotValidated")
+        << "ID: " << ids_.back()->name() << "\n"
 	<< "The expected md5: " << idMD5 << " does not match the md5\n"
 	<< "calculated by the ID: " << calculated_md5 << " please\n"
 	<< "update your python configuration or determine the source\n"
@@ -102,10 +103,13 @@ VersionedIdProducer(const edm::ParameterSet& iConfig) {
 	    << "at the next relevant POG meeting." << std::endl;
     }
 
-    edm::LogWarning("IdInformation")
-      << idmsg.str();
-
-    
+    if( !isPOGApproved ) {
+      edm::LogWarning("IdInformation")
+        << idmsg.str();
+    } else {
+      edm::LogInfo("IdInformation")
+        << idmsg.str();
+    }    
 
     produces<std::string>(idname);
     produces<edm::ValueMap<bool> >(idname);
@@ -118,7 +122,7 @@ VersionedIdProducer(const edm::ParameterSet& iConfig) {
 template< class PhysicsObjectPtr , class SelectorType >
 void VersionedIdProducer<PhysicsObjectPtr,SelectorType>::
 produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  constexpr char bitmap_label[] = "-bitmap";
+  constexpr char bitmap_label[] = "Bitmap";
   
   edm::Handle<Collection> physicsObjectsHandle;
   iEvent.getByToken(physicsObjectSrc_,physicsObjectsHandle);
