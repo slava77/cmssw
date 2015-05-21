@@ -28,7 +28,8 @@ DEFINE_EDM_PLUGIN(CutApplicatorFactory,
 GsfEleFull5x5E2x5OverE5x5Cut::GsfEleFull5x5E2x5OverE5x5Cut(const edm::ParameterSet& params) :
   CutApplicatorBase(params),
   minE1x5OverE5x5Cut_(params,"minE1x5OverE5x5"),
-  minE2x5OverE5x5Cut_(params,"minE2x5OverE5x5"){
+  minE2x5OverE5x5Cut_(params,"minE2x5OverE5x5"){ 
+  
 }
 
 
