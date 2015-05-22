@@ -275,15 +275,20 @@ HcalHitReconstructor::HcalHitReconstructor(edm::ParameterSet const& conf):
               conf.getParameter<int>     ("pedestalSubtractionType"),
               conf.getParameter<double>  ("pedestalUpperLimit"),
               conf.getParameter<int>     ("timeSlewParsType"),
-              conf.getParameter<double>  ("timeSlewParHB0"),
-              conf.getParameter<double>  ("timeSlewParHB1"),
-              conf.getParameter<double>  ("timeSlewParBE0"),
-              conf.getParameter<double>  ("timeSlewParBE1"),
-              conf.getParameter<double>  ("timeSlewParHE0"),
-              conf.getParameter<double>  ("timeSlewParHE1")
+              conf.getParameter<std::vector<double> >("timeSlewPars")
               );
   }
 
+}
+
+void HcalHitReconstructor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.setAllowAnything();
+  desc.add<int>("pedestalSubtractionType", 1); 
+  desc.add<double>("pedestalUpperLimit", 2.7); 
+  desc.add<int>("timeSlewParsType",3);
+  desc.add<std::vector<double>>("timeSlewPars", {9.27638, -2.05585, 9.27638, -2.05585, 9.27638, -2.05585});
+  descriptions.add("hltHbhereco",desc);
 }
 
 HcalHitReconstructor::~HcalHitReconstructor() {
