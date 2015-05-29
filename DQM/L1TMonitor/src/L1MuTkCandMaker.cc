@@ -26,14 +26,14 @@ private:
 
 
 L1MuTkCandMaker::L1MuTkCandMaker(const edm::ParameterSet& iConfig) {
-  aliasprefix_ = iConfig.getUntrackedParameter<std::string>("aliasPrefix", "cands");
 
+  aliasprefix_ = iConfig.getUntrackedParameter<std::string>("aliasPrefix", "cands");
   LogWarning("L1MuTkCandMaker::L1MuTkCandMaker") << " aliasprefix_ = " << aliasprefix_;
 
   std::string branchprefix = aliasprefix_;
   if(branchprefix.find("_") != std::string::npos)
     branchprefix.replace(branchprefix.find("_"),1,"");
-
+  /*
   produces<std::vector<float> > (branchprefix+"vx" ).setBranchAlias(aliasprefix_+"_vx" );
   produces<std::vector<float> > (branchprefix+"vy" ).setBranchAlias(aliasprefix_+"_vy" );
   produces<std::vector<float> > (branchprefix+"vz" ).setBranchAlias(aliasprefix_+"_vz" );
@@ -42,6 +42,7 @@ L1MuTkCandMaker::L1MuTkCandMaker(const edm::ParameterSet& iConfig) {
   produces<std::vector<float> > (branchprefix+"phi" ).setBranchAlias(aliasprefix_+"_phi" );
   produces<std::vector<int> > (branchprefix+"q" ).setBranchAlias(aliasprefix_+"_q" );
   produces<std::vector<int> > (branchprefix+"pdgid" ).setBranchAlias(aliasprefix_+"_pdgid" );
+  */
 
   // input tags
   candInputTag_ = iConfig.getParameter<edm::InputTag>("candInputTag");
@@ -51,22 +52,22 @@ L1MuTkCandMaker::L1MuTkCandMaker(const edm::ParameterSet& iConfig) {
 void L1MuTkCandMaker::produce(edm::Event& ev, const edm::EventSetup& es){
 
   LogWarning("L1MuTkCandMaker") << " ::produce ";
-
+  /*
   auto_ptr<vector<float> > cands_vx     (new vector<float>  );
   auto_ptr<vector<float> > cands_vy     (new vector<float>  );
   auto_ptr<vector<float> > cands_vz     (new vector<float>  );
   auto_ptr<vector<float> > cands_pt     (new vector<float>  );
   auto_ptr<vector<float> > cands_eta    (new vector<float>  );
   auto_ptr<vector<float> > cands_phi    (new vector<float>  );
-  auto_ptr<vector<int> >   cands_q      (new vector<int>);
-  auto_ptr<vector<int> >   cands_pdgid  (new vector<int>);
-
-
+  auto_ptr<vector<int>   > cands_q      (new vector<int>    );
+  auto_ptr<vector<int>   > cands_pdgid  (new vector<int>    );
+  */
   Handle<CandView> aH;
   ev.getByLabel(candInputTag_, aH);
   const CandView& cands(*aH.product());
 
   for (auto cand : cands){
+    /*
     cands_vx->push_back(cand.vx());
     cands_vy->push_back(cand.vy());
     cands_vz->push_back(cand.vz());
@@ -75,7 +76,8 @@ void L1MuTkCandMaker::produce(edm::Event& ev, const edm::EventSetup& es){
     cands_phi->push_back(cand.phi());
     cands_q->push_back(cand.charge());
     cands_pdgid->push_back(cand.pdgId());
-    cout << " cand.pt " << cand.pt() << " cand.pdgId " << cand.pdgId() << endl;
+    */
+    cout << " produce: cand.pt " << cand.pt() << " cand.pdgId " << cand.pdgId() << endl;
   }
   /*
   ev.put(cands_vx, aliasprefix_+"vx");

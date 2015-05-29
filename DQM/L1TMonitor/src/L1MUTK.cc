@@ -12,13 +12,10 @@
 
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-#include "CondFormats/L1TObjects/interface/L1MuTriggerScales.h"
-#include "CondFormats/DataRecord/interface/L1MuTriggerScalesRcd.h"
-#include "CondFormats/L1TObjects/interface/L1MuTriggerPtScale.h"
-#include "CondFormats/DataRecord/interface/L1MuTriggerPtScaleRcd.h"
 
 using namespace std;
 using namespace edm;
+using namespace reco;
 
 const double L1MUTK::piconv_ = 180. / acos(-1.);
 
@@ -30,7 +27,6 @@ L1MUTK::L1MUTK(const ParameterSet& ps)
   verbose_ = ps.getUntrackedParameter<bool>("verbose", false);
 
   if(verbose_) cout << "L1MUTK: constructor...." << endl;
-
 
   dbe = NULL;
   if ( ps.getUntrackedParameter<bool>("DQMStore", false) ) 
@@ -86,29 +82,19 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
 {
   
   nev_++; 
-  if(verbose_) cout << "L1MUTK: analyze...." << endl;
+  LogWarning("L1MUTK") << " ::analyze ";
 
-  edm::Handle<L1MuGMTReadoutCollection> pCollection;
-  e.getByLabel(gmtSource_,pCollection);
-  
-  if (!pCollection.isValid()) {
-    edm::LogInfo("DataNotFound") << "can't find L1MuGMTReadoutCollection with label "
-    << gmtSource_.label() ;
-    return;
+  edm::Handle<CandView> aH; 
+  e.getByLabel(candInputTag_, aH);
+  const CandView& cands(*aH.product());
+
+  for (auto cand : cands){
+    cout << " L1MUTK: cand.pt " << cand.pt() << " cand.pdgId " << cand.pdgId() << endl;
   }
-
 }
 
 void L1MUTK::book_(const EventSetup& c)
 {
-  edm::ESHandle< L1MuTriggerScales > trigscales_h;
-  c.get< L1MuTriggerScalesRcd >().get( trigscales_h );
-  //const L1MuTriggerScales* scales = trigscales_h.product();
-
-  edm::ESHandle< L1MuTriggerPtScale > trigptscale_h;
-  c.get< L1MuTriggerPtScaleRcd >().get( trigptscale_h );
-  //const L1MuTriggerPtScale* scalept = trigptscale_h.product();  
-
   // get hold of back-end interface
   DQMStore* dbe = 0;
   dbe = Service<DQMStore>().operator->();
