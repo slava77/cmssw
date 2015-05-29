@@ -52,6 +52,9 @@ from DQM.L1TMonitor.L1TRPCTF_cfi import *
 # GMT DQM module 
 from DQM.L1TMonitor.L1TGMT_cfi import *
 
+# MUTK DQM module 
+from DQM.L1TMonitor.L1MUTK_cfi import *
+
 # GT DQM module 
 from DQM.L1TMonitor.L1TGT_cfi import *
 
@@ -110,6 +113,7 @@ l1tMonitorOnline = cms.Sequence(
                           l1tCsctf + 
                           l1tRpctf +
                           l1tGmt +
+                          l1MuTk +
                           l1tGt + 
                           l1ExtraDqmSeq +
                           l1tBPTX +

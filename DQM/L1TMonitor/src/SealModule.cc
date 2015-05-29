@@ -27,6 +27,9 @@ DEFINE_FWK_MODULE(L1TRPCTF);
 #include <DQM/L1TMonitor/interface/L1TGMT.h>
 DEFINE_FWK_MODULE(L1TGMT);
 
+#include <DQM/L1TMonitor/interface/L1MUTK.h>
+DEFINE_FWK_MODULE(L1MUTK);
+
 
 #include <DQM/L1TMonitor/interface/L1TGCT.h>
 DEFINE_FWK_MODULE(L1TGCT);
