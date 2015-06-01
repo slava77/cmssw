@@ -45,6 +45,9 @@ L1MUTK::L1MUTK(const ParameterSet& ps)
     outputFile_="";
   }
 
+  // input tags
+  candInputTag_ = ps.getParameter<edm::InputTag>("candInputTag");
+  cout << " L1MUTK::L1MUTK candInputTag " << candInputTag_ << endl;
 
   if ( dbe !=NULL ) {
     dbe->setCurrentFolder("L1T/L1MUTK");
@@ -82,10 +85,15 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
 {
   
   nev_++; 
-  LogWarning("L1MUTK") << " ::analyze ";
+  LogWarning("L1MUTK") << " ::analyze "<< candInputTag_;
 
   edm::Handle<CandView> aH; 
   e.getByLabel(candInputTag_, aH);
+
+  if(!aH.isValid()){
+    cout << " L1MUTK: aH.isValid()) : Can't find CandView with label" << candInputTag_ << endl;
+  }
+
   const CandView& cands(*aH.product());
 
   for (auto cand : cands){
@@ -111,10 +119,14 @@ void L1MUTK::book_(const EventSetup& c)
     std::string hname("");
     std::string htitle("");
     
-    regional_triggers = dbe->book1D("Regional_trigger","Muon trigger contribution", 27, 0., 27.);
-    regional_triggers->setAxisTitle("regional trigger",1);
-    int ib=1;
-    regional_triggers->setBinLabel(ib++,"All muons",1);
+    gem_Pt = dbe->book1D("gem_Pt","L1 Muon GEM Pt", 100, 0., 70.);
+    gem_Pt->setAxisTitle("gem_Pt",1);
+
+    gem_Phi = dbe->book1D("gem_Phi","L1 Muon GEM Phi", 100, -3., 3.);
+    gem_Phi->setAxisTitle("gem_Phi",1);
+
+    gem_Eta = dbe->book1D("gem_Eta","L1 Muon GEM Eta", 100,  0., 6.2832);
+    gem_Eta->setAxisTitle("gem_Eta",1);
 
   }  
 }

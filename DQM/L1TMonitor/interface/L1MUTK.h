@@ -17,7 +17,7 @@
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+//#include "FWCore/Framework/interface/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -70,7 +70,9 @@ private:
   // ----------member data ---------------------------
   DQMStore * dbe;
 
-  MonitorElement* regional_triggers;
+  MonitorElement* gem_Pt;
+  MonitorElement* gem_Eta;
+  MonitorElement* gem_Phi;
 
   int nev_; // Number of events processed
   std::string outputFile_; //file name for ROOT ouput
