@@ -73,6 +73,10 @@ private:
   MonitorElement* gem_Pt;
   MonitorElement* gem_Eta;
   MonitorElement* gem_Phi;
+  MonitorElement* gem_Dxy;
+  MonitorElement* gem_Z;
+  MonitorElement* gem_Q;
+  MonitorElement* gem_Pdgid;
 
   int nev_; // Number of events processed
   std::string outputFile_; //file name for ROOT ouput
@@ -88,15 +92,4 @@ private:
   edm::InputTag candInputTag_;
 
 };
-
-/*
-class L1MuTkCandM : public edm::EDProducer {
-public:
-  typedef edm::View<LeafCandidate>      CandView;
-  explicit L1MuTkCandM (const edm::ParameterSet&);
-
-private:
-  virtual void produce(edm::Event&, const edm::EventSetup&);
-};
-*/
 #endif
