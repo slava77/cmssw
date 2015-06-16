@@ -47,7 +47,7 @@ L1MUTK::L1MUTK(const ParameterSet& ps)
 
   // input tags
   candInputTag_ = ps.getParameter<edm::InputTag>("candInputTag");
-  cout << " L1MUTK::L1MUTK candInputTag " << candInputTag_ << endl;
+  LogInfo("L1MUTK") << " L1MUTK::L1MUTK candInputTag " << candInputTag_;
 
   if ( dbe !=NULL ) {
     dbe->setCurrentFolder("L1T/L1MUTK");
@@ -105,8 +105,6 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
       maxPt = cand.pt();
     }
   }
-
-  cout << " trackPt " << trackPt << " " << maxPt << endl;
 
   track = 0;
   for (auto cand : cands){
