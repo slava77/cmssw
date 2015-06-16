@@ -90,7 +90,7 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
   e.getByLabel(candInputTag_, aH);
 
   if(!aH.isValid()){
-    LogWarning("L1MUTK") << " ::analyze Can't find CandView with label **candInputTag**";
+    LogDebug("L1MUTK") << " ::analyze Can't find CandView with label **candInputTag**";
   }
 
   const CandView& cands(*aH.product());
@@ -113,8 +113,11 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
     track++;
     if ( track == trackPt ){
       dxy = cand.vx()*sin(cand.phi())-cand.vy()*cos(cand.phi());
-      LogWarning("L1MUTK") << " ::analyze track " << track << " Pt " << cand.pt() << " Phi " << cand.phi() << " Eta " << cand.eta() << " Dxy " << dxy 
-                           << " Z " << cand.vz() << " Q " << cand.charge() << " cand.pdgId " << cand.pdgId();
+
+      LogDebug("L1MUTK") << " ::analyze track " 
+          << track << " Pt " << cand.pt() << " Phi " << cand.phi() << " Eta " << cand.eta() << " Dxy " << dxy 
+          << " Z " << cand.vz() << " Q " << cand.charge() << " cand.pdgId " << cand.pdgId();
+
       gem_Pt->Fill(cand.pt());
       gem_Phi->Fill(cand.phi());
       gem_Eta->Fill(cand.eta());
