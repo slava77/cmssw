@@ -1,7 +1,7 @@
 /*
  * \file L1MUTK.cc
  *
- * $Date: 2015/06/09 12:00:00 $
+ * $Date: 2015/06/16 12:00:00 $
  * $Revision: 0.03 $
  * \author S.Baranov
  *
@@ -95,18 +95,54 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
 
   const CandView& cands(*aH.product());
 
+  int track = 0, trackPt=0;
+  double maxPt = 0.;
   double dxy;
   for (auto cand : cands){
-    dxy = cand.vx()*sin(cand.phi())-cand.vy()*cos(cand.phi());
-    LogWarning("L1MUTK") << " ::analyze Pt " << cand.pt() << " Phi " << cand.phi() << " Eta " << cand.eta() << " Dxy " << dxy 
-                       << " Z " << cand.vz() << " Q " << cand.charge() << " cand.pdgId " << cand.pdgId();
-    gem_Pt->Fill(cand.pt());
-    gem_Phi->Fill(cand.phi());
-    gem_Eta->Fill(cand.eta());
-    gem_Dxy->Fill(dxy);
-    gem_Z->Fill(cand.vz());
-    gem_Q->Fill(float(cand.charge()));
-    gem_Pdgid->Fill(float(cand.pdgId()));
+    track++;
+    if (cand.pt() >= maxPt){
+      trackPt = track;
+      maxPt = cand.pt();
+    }
+  }
+
+  cout << " trackPt " << trackPt << " " << maxPt << endl;
+
+  track = 0;
+  for (auto cand : cands){
+    track++;
+    if ( track == trackPt ){
+      dxy = cand.vx()*sin(cand.phi())-cand.vy()*cos(cand.phi());
+      LogWarning("L1MUTK") << " ::analyze track " << track << " Pt " << cand.pt() << " Phi " << cand.phi() << " Eta " << cand.eta() << " Dxy " << dxy 
+                           << " Z " << cand.vz() << " Q " << cand.charge() << " cand.pdgId " << cand.pdgId();
+      gem_Pt->Fill(cand.pt());
+      gem_Phi->Fill(cand.phi());
+      gem_Eta->Fill(cand.eta());
+      gem_Dxy->Fill(dxy);
+      gem_Z->Fill(cand.vz());
+      gem_Q->Fill(float(cand.charge()));
+      gem_Pdgid->Fill(float(cand.pdgId()));
+ 
+      if ( std::abs(cand.eta()) <= 1.1 ){
+	// Barrel
+        gem_Pt_barrel->Fill(cand.pt());
+        gem_Phi_barrel->Fill(cand.phi());
+        gem_Eta_barrel->Fill(cand.eta());
+        gem_Dxy_barrel->Fill(dxy);
+        gem_Z_barrel->Fill(cand.vz());
+        gem_Q_barrel->Fill(float(cand.charge()));
+        gem_Pdgid_barrel->Fill(float(cand.pdgId()));
+      } else {
+        // Endcap
+        gem_Pt_endcap->Fill(cand.pt());
+        gem_Phi_endcap->Fill(cand.phi());
+        gem_Eta_endcap->Fill(cand.eta());
+        gem_Dxy_endcap->Fill(dxy);
+        gem_Z_endcap->Fill(cand.vz());
+        gem_Q_endcap->Fill(float(cand.charge()));
+        gem_Pdgid_endcap->Fill(float(cand.pdgId()));
+      }
+    }
   }
 }
 
@@ -124,7 +160,10 @@ void L1MUTK::book_(const EventSetup& c)
   if ( dbe ) 
   {
     dbe->setCurrentFolder("L1T/L1MUTK");
-    
+
+    /*
+     *  All
+     */
     gem_Pt    = dbe->book1D("gem_Pt","L1 Muon GEM Pt",   100,0.,70. );
     gem_Pt->setAxisTitle("gem_Pt",1);
 
@@ -145,5 +184,54 @@ void L1MUTK::book_(const EventSetup& c)
 
     gem_Pdgid = dbe->book1D("gem_Pdgid","L1 Muon GEM Pdgid", 100,-50.,50. );
     gem_Pdgid->setAxisTitle("gem_Pdgid",1);
+
+    /*
+     *  "barrel" (|eta|<=1.1)
+     */
+    gem_Pt_barrel    = dbe->book1D("gem_Pt_barrel","L1 Muon GEM Pt barrel",   100,0.,70. );
+    gem_Pt_barrel->setAxisTitle("gem_Pt_barrel",1);
+
+    gem_Phi_barrel   = dbe->book1D("gem_Phi_barrel","L1 Muon GEM Phi barrel", 100,-3.,3. );
+    gem_Phi_barrel->setAxisTitle("gem_Phi_barrel",1);
+
+    gem_Eta_barrel   = dbe->book1D("gem_Eta_barrel","L1 Muon GEM Eta barrel", 100,-3.,3. );
+    gem_Eta_barrel->setAxisTitle("gem_Eta_barrel",1);
+
+    gem_Dxy_barrel   = dbe->book1D("gem_Dxy_barrel","L1 Muon GEM Dxy barrel", 100,-15.,15. );
+    gem_Dxy_barrel->setAxisTitle("gem_Dxy_barrel",1);
+
+    gem_Z_barrel     = dbe->book1D("gem_Z_barrel","L1 Muon GEM Z barrel", 100,-15.,15. );
+    gem_Z_barrel->setAxisTitle("gem_Z_barrel",1);
+
+    gem_Q_barrel     = dbe->book1D("gem__barrelQ","L1 Muon GEM Q barrel", 4,-2.,2. );
+    gem_Q_barrel->setAxisTitle("gem_Q_barrel",1);
+
+    gem_Pdgid_barrel = dbe->book1D("gem_Pdgid_barrel","L1 Muon GEM Pdgid barrel", 100,-50.,50. );
+    gem_Pdgid_barrel->setAxisTitle("gem_Pdgid_barrel",1);
+
+    /*
+     *  "endcap" (|eta|>1.1)
+     */
+    gem_Pt_endcap    = dbe->book1D("gem_Pt_endcap","L1 Muon GEM Pt endcap",   100,0.,70. );
+    gem_Pt_endcap->setAxisTitle("gem_Pt_endcap",1);
+
+    gem_Phi_endcap   = dbe->book1D("gem_Phi_endcap","L1 Muon GEM Phi endcap", 100,-3.,3. );
+    gem_Phi_endcap->setAxisTitle("gem_Phi_endcap",1);
+
+    gem_Eta_endcap   = dbe->book1D("gem_Eta_endcap","L1 Muon GEM Eta endcap", 100,-3.,3. );
+    gem_Eta_endcap->setAxisTitle("gem_Eta_endcap",1);
+
+    gem_Dxy_endcap   = dbe->book1D("gem_Dxy_endcap","L1 Muon GEM Dxy endcap", 100,-15.,15. );
+    gem_Dxy_endcap->setAxisTitle("gem_Dxy_endcap",1);
+
+    gem_Z_endcap     = dbe->book1D("gem_Z_endcap","L1 Muon GEM Z endcap", 100,-15.,15. );
+    gem_Z_endcap->setAxisTitle("gem_Z_endcap",1);
+
+    gem_Q_endcap     = dbe->book1D("gem_Q_endcap","L1 Muon GEM Q endcap", 4,-2.,2. );
+    gem_Q_endcap->setAxisTitle("gem_Q_endcap",1);
+
+    gem_Pdgid_endcap = dbe->book1D("gem_Pdgid_endcap","L1 Muon GEM Pdgid endcap", 100,-50.,50. );
+    gem_Pdgid_endcap->setAxisTitle("gem_Pdgid_endcap",1);
+
   }  
 }

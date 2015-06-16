@@ -4,8 +4,8 @@
 /*
  * \file L1MUTK.h
  *
- * $Date: 2015/05/29 12:00:00 $
- * $Revision: 0.01 $
+ * $Date: 2015/06/16 12:00:00 $
+ * $Revision: 0.03 $
  * \author S.Baranov
  *
 */
@@ -17,7 +17,6 @@
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-//#include "FWCore/Framework/interface/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -70,13 +69,13 @@ private:
   // ----------member data ---------------------------
   DQMStore * dbe;
 
-  MonitorElement* gem_Pt;
-  MonitorElement* gem_Eta;
-  MonitorElement* gem_Phi;
-  MonitorElement* gem_Dxy;
-  MonitorElement* gem_Z;
-  MonitorElement* gem_Q;
-  MonitorElement* gem_Pdgid;
+  MonitorElement *gem_Pt,    *gem_Pt_barrel,    *gem_Pt_endcap;
+  MonitorElement *gem_Eta,   *gem_Eta_barrel,   *gem_Eta_endcap;
+  MonitorElement *gem_Phi,   *gem_Phi_barrel,   *gem_Phi_endcap;
+  MonitorElement *gem_Dxy,   *gem_Dxy_barrel,   *gem_Dxy_endcap,;
+  MonitorElement *gem_Z,     *gem_Z_barrel,     *gem_Z_endcap;
+  MonitorElement *gem_Q,     *gem_Q_barrel,     *gem_Q_endcap;
+  MonitorElement *gem_Pdgid, *gem_Pdgid_barrel, *gem_Pdgid_endcap;
 
   int nev_; // Number of events processed
   std::string outputFile_; //file name for ROOT ouput
