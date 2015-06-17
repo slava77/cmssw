@@ -1,3 +1,4 @@
+
 // -*- C++ -*-
 //
 // input: L1 TkTracks and  L1MuonParticleExtended (standalone with component details)
@@ -206,7 +207,7 @@ L1TkMuonFromExtendedProducer::loadL1Muons(edm::Event& iEvent, L1Muon* MuCn)
  /* L1 Muons diapasons:
   *          min         max
   * Eta      -2.425      2.425   
-  * Phi      -3.14159    3.09796 
+  * Phi      -3.14159    3.14159
   * pt        2          140
   * sigmaEta  0.0144337  0.0288675
   * sigmaPhi  0          0.0125959
@@ -355,8 +356,10 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     LogDebug("L1TkMuonFromExtendedProducer") << " nL1Tracks " << nL1Tracks;
   
     int nL1TkCand = computeTkMuCandidates(nL1Muons, MuCn, nL1Tracks, L1Tk, L1TkCn);
-    LogDebug("L1TkMuonFromExtendedProducer") << " nL1TkCand " << nL1TkCand;
-  
+    if( nL1TkCand+1 > 0 ){
+      LogDebug("L1TkMuonFromExtendedProducer") << " nL1TkCand " << nL1TkCand+1;
+    }
+   
     L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, nL1TkCand, L1TkCn);
 
   iEvent.put( tkMuons );
