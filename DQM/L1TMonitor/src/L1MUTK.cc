@@ -1,13 +1,8 @@
 /*
  * \file L1MUTK.cc
  *
-<<<<<<< HEAD
  * $Date: 2015/06/16 12:00:00 $
  * $Revision: 0.03 $
-=======
- * $Date: 2015/05/29 12:00:00 $
- * $Revision: 0.01 $
->>>>>>> f1500e5... add interface/L1MUTK.h python/L1MUTK_cfi.py python/candMaker_cfi.py src/L1MUTK.cc src/L1MuTkCandMaker.cc
  * \author S.Baranov
  *
  */
@@ -17,20 +12,10 @@
 
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-<<<<<<< HEAD
 
 using namespace std;
 using namespace edm;
 using namespace reco;
-=======
-#include "CondFormats/L1TObjects/interface/L1MuTriggerScales.h"
-#include "CondFormats/DataRecord/interface/L1MuTriggerScalesRcd.h"
-#include "CondFormats/L1TObjects/interface/L1MuTriggerPtScale.h"
-#include "CondFormats/DataRecord/interface/L1MuTriggerPtScaleRcd.h"
-
-using namespace std;
-using namespace edm;
->>>>>>> f1500e5... add interface/L1MUTK.h python/L1MUTK_cfi.py python/candMaker_cfi.py src/L1MUTK.cc src/L1MuTkCandMaker.cc
 
 const double L1MUTK::piconv_ = 180. / acos(-1.);
 
@@ -43,10 +28,6 @@ L1MUTK::L1MUTK(const ParameterSet& ps)
 
   if(verbose_) cout << "L1MUTK: constructor...." << endl;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f1500e5... add interface/L1MUTK.h python/L1MUTK_cfi.py python/candMaker_cfi.py src/L1MUTK.cc src/L1MuTkCandMaker.cc
   dbe = NULL;
   if ( ps.getUntrackedParameter<bool>("DQMStore", false) ) 
   {
@@ -64,12 +45,9 @@ L1MUTK::L1MUTK(const ParameterSet& ps)
     outputFile_="";
   }
 
-<<<<<<< HEAD
   // input tags
   candInputTag_ = ps.getParameter<edm::InputTag>("candInputTag");
   LogInfo("L1MUTK") << " L1MUTK::L1MUTK candInputTag " << candInputTag_;
-=======
->>>>>>> f1500e5... add interface/L1MUTK.h python/L1MUTK_cfi.py python/candMaker_cfi.py src/L1MUTK.cc src/L1MuTkCandMaker.cc
 
   if ( dbe !=NULL ) {
     dbe->setCurrentFolder("L1T/L1MUTK");
@@ -107,7 +85,6 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
 {
   
   nev_++; 
-<<<<<<< HEAD
 
   edm::Handle<CandView> aH; 
   e.getByLabel(candInputTag_, aH);
@@ -168,34 +145,10 @@ void L1MUTK::analyze(const Event& e, const EventSetup& c)
       }
     }
   }
-=======
-  if(verbose_) cout << "L1MUTK: analyze...." << endl;
-
-  edm::Handle<L1MuGMTReadoutCollection> pCollection;
-  e.getByLabel(gmtSource_,pCollection);
-  
-  if (!pCollection.isValid()) {
-    edm::LogInfo("DataNotFound") << "can't find L1MuGMTReadoutCollection with label "
-    << gmtSource_.label() ;
-    return;
-  }
-
->>>>>>> f1500e5... add interface/L1MUTK.h python/L1MUTK_cfi.py python/candMaker_cfi.py src/L1MUTK.cc src/L1MuTkCandMaker.cc
 }
 
 void L1MUTK::book_(const EventSetup& c)
 {
-<<<<<<< HEAD
-=======
-  edm::ESHandle< L1MuTriggerScales > trigscales_h;
-  c.get< L1MuTriggerScalesRcd >().get( trigscales_h );
-  //const L1MuTriggerScales* scales = trigscales_h.product();
-
-  edm::ESHandle< L1MuTriggerPtScale > trigptscale_h;
-  c.get< L1MuTriggerPtScaleRcd >().get( trigptscale_h );
-  //const L1MuTriggerPtScale* scalept = trigptscale_h.product();  
-
->>>>>>> f1500e5... add interface/L1MUTK.h python/L1MUTK_cfi.py python/candMaker_cfi.py src/L1MUTK.cc src/L1MuTkCandMaker.cc
   // get hold of back-end interface
   DQMStore* dbe = 0;
   dbe = Service<DQMStore>().operator->();
@@ -208,7 +161,6 @@ void L1MUTK::book_(const EventSetup& c)
   if ( dbe ) 
   {
     dbe->setCurrentFolder("L1T/L1MUTK");
-<<<<<<< HEAD
 
     /*
      *  All
@@ -284,18 +236,3 @@ void L1MUTK::book_(const EventSetup& c)
 
   }  
 }
-=======
-    
-    std::string hname("");
-    std::string htitle("");
-    
-    regional_triggers = dbe->book1D("Regional_trigger","Muon trigger contribution", 27, 0., 27.);
-    regional_triggers->setAxisTitle("regional trigger",1);
-    int ib=1;
-    regional_triggers->setBinLabel(ib++,"All muons",1);
-
-  }  
-}
-
-
->>>>>>> f1500e5... add interface/L1MUTK.h python/L1MUTK_cfi.py python/candMaker_cfi.py src/L1MUTK.cc src/L1MuTkCandMaker.cc
