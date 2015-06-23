@@ -115,6 +115,16 @@ public:
     float propSigmaPhi;
   };  
 
+  struct L1TrackProp {
+    float pt;
+    float p;
+    float eta;
+    float aeta;
+    float phi;
+    float q;
+    float z;
+  };  
+
   struct L1Cand {
     float pt;
     int   nPars;
@@ -130,6 +140,7 @@ public:
 
   L1Muon MuCn[MuonMax];
   L1Track L1Tk[TrackMax];
+  L1TrackProp L1TkPr[TrackMax];
   L1Cand L1TkCn[TkMuonMax];
 
   explicit L1TkMuonFromExtendedProducer(const edm::ParameterSet&);
@@ -142,7 +153,7 @@ private:
   virtual void produce(edm::Event&, const edm::EventSetup&);
 
   int loadL1Muons(edm::Event&, L1Muon*);
-  int loadL1Tracks(edm::Event&, L1Track*);
+  int loadL1Tracks(edm::Event&, L1Track*, L1TrackProp*);
 
   int computeTkMuCandidates(const int, L1Muon*, const int, L1Track*, L1Cand*);
   void loadTkMuCandidatesToEvent(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1Cand*);
@@ -266,7 +277,7 @@ L1TkMuonFromExtendedProducer::loadL1Muons(edm::Event& iEvent, L1Muon* MuCn)
 
 // ------------ Tracks converter  ------------
 int
-L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk)
+L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk, L1TrackProp* L1TkPr)
 {
   using namespace edm;
   using namespace std;
@@ -317,20 +328,33 @@ L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk)
       L1Tk[il1tk].dxy =  tkv3.x()*sin(L1Tk[il1tk].phi) -  tkv3.y()*cos(L1Tk[il1tk].phi);
       L1Tk[il1tk].idx = il1tk;
 
-      PropState pstate = propagateToGMT(l1tk);
+      auto p3 = l1tk.getMomentum();
+      L1TkPr[il1tk].pt   = p3.perp();
+      L1TkPr[il1tk].p    = p3.mag();
+      L1TkPr[il1tk].eta  = p3.eta();
+      L1TkPr[il1tk].aeta = std::abs(p3.eta());
+      L1TkPr[il1tk].phi  = p3.phi() ;
+      L1TkPr[il1tk].q    = l1tk.getRInv()>0? 1.:-1.;
+      L1TkPr[il1tk].z    = l1tk.getPOCA().z();
 
+      /*
+      PropState pstate = propagateToGMT(l1tk);
       if (!pstate.valid) {
+
         L1Tk[il1tk].valid = true;
-      } else { 
+        L1Tk[il1tk].propPt  = pstate.pt; 
+        L1Tk[il1tk].propEta = pstate.eta;
+        L1Tk[il1tk].propPhi = pstate.phi;
+        L1Tk[il1tk].propSigmaEta = pstate.sigmaEta;
+        L1Tk[il1tk].propSigmaPhi = pstate.sigmaPhi;
+  
+        LogDebug("L1TkMuonFromExtendedProducer") << " L1Tk[" << il1tk << "].prop "
+  	    << " Pt " << L1Tk[il1tk].propPt << " eta " << L1Tk[il1tk].propEta << " phi " << L1Tk[il1tk].propPhi 
+            << " SigmaEta " << L1Tk[il1tk].propSigmaEta << " SigmaPhi " << L1Tk[il1tk].propSigmaPhi;
+        } else { 
         L1Tk[il1tk].valid = false;
       };
-
-      L1Tk[il1tk].propPt  = pstate.pt; 
-      L1Tk[il1tk].propEta = pstate.eta;
-      L1Tk[il1tk].propPhi = pstate.phi;
-      L1Tk[il1tk].propSigmaEta = pstate.sigmaEta;
-      L1Tk[il1tk].propSigmaPhi = pstate.sigmaPhi;
-
+      */
     } 
     else {
       LogWarning("L1TkMuonFromExtendedProducer") << " Maximum TrackMaxn number too small " << nL1Tracks;
@@ -352,7 +376,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
     int nL1Muons = L1TkMuonFromExtendedProducer::loadL1Muons(iEvent, MuCn);
     LogDebug("L1TkMuonFromExtendedProducer") << " nL1Muons " << nL1Muons;
   
-    int nL1Tracks = L1TkMuonFromExtendedProducer::loadL1Tracks(iEvent, L1Tk);
+    int nL1Tracks = L1TkMuonFromExtendedProducer::loadL1Tracks(iEvent, L1Tk, L1TkPr);
     LogDebug("L1TkMuonFromExtendedProducer") << " nL1Tracks " << nL1Tracks;
   
     int nL1TkCand = computeTkMuCandidates(nL1Muons, MuCn, nL1Tracks, L1Tk, L1TkCn);
@@ -362,7 +386,7 @@ L1TkMuonFromExtendedProducer::produce(edm::Event& iEvent, const edm::EventSetup&
    
     L1TkMuonFromExtendedProducer::loadTkMuCandidatesToEvent(iEvent, tkMuons, nL1TkCand, L1TkCn);
 
-  iEvent.put( tkMuons );
+    iEvent.put( tkMuons );
 
 }
 
@@ -375,9 +399,66 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
   using namespace edm;
   using namespace std;
 
+  // PropState calculation
+  for ( int itk=0; itk<nL1Tracks; itk++ ){
+
+    L1Tk[itk].valid = false;
+    L1Tk[itk].propPt  = -99.;
+    L1Tk[itk].propEta = -99.;
+    L1Tk[itk].propPhi = -99.;
+    L1Tk[itk].propSigmaEta = -99.;
+    L1Tk[itk].propSigmaPhi = -99.;
+
+    if (L1Tk[itk].idx >= 0){
+
+      if (!correctGMTPropForTkZ_) L1TkPr[itk].z = 0;
+      if ( (L1TkPr[itk].p<3.5) || (L1TkPr[itk].aeta <1.1 && L1TkPr[itk].pt < 3.5) || (L1TkPr[itk].aeta > 2.5) ){                        
+        L1Tk[itk].valid = false;
+      } 
+      else {
+        //0th order:
+        L1Tk[itk].valid = true;
+
+        float dzCorrPhi = 1.;
+        float deta = 0;
+        float etaProp = L1TkPr[itk].aeta;
+      
+        if (L1TkPr[itk].aeta < 1.1){
+          etaProp = 1.1;
+          deta = L1TkPr[itk].z/550./cosh(L1TkPr[itk].aeta);
+        } else {
+          float delta = L1TkPr[itk].z/850.; //roughly scales as distance to 2nd station
+          if (L1TkPr[itk].eta > 0) delta *=-1;
+          dzCorrPhi = 1. + delta;
+      
+          float zOzs = L1TkPr[itk].z/850.;
+          if (L1TkPr[itk].eta > 0) deta = zOzs/(1. - zOzs);
+          else deta = zOzs/(1.+zOzs);
+          deta = deta*tanh(L1TkPr[itk].eta);
+        }
+
+        float resPhi = L1TkPr[itk].phi - 1.464*L1TkPr[itk].q*cosh(1.7)/cosh(etaProp)/L1TkPr[itk].pt*dzCorrPhi - M_PI/144.;
+        if (resPhi > M_PI) resPhi -= 2.*M_PI;
+        if (resPhi < -M_PI) resPhi += 2.*M_PI;
+      
+        L1Tk[itk].propPt  = L1TkPr[itk].pt;            //not corrected for eloss
+        L1Tk[itk].propEta = L1TkPr[itk].eta + deta;
+        L1Tk[itk].propPhi = resPhi;
+        L1Tk[itk].propSigmaEta = 0.100/L1TkPr[itk].pt; //multiple scattering term
+        L1Tk[itk].propSigmaPhi = 0.106/L1TkPr[itk].pt; //need a better estimate for these
+      
+        LogDebug("L1TkMuonFromExtendedProducer") << " L1Tk[" << itk << "].prop "
+	          << " Pt " << L1Tk[itk].propPt << " eta " << L1Tk[itk].propEta << " phi " << L1Tk[itk].propPhi 
+                  << " SigmaEta " << L1Tk[itk].propSigmaEta << " SigmaPhi " << L1Tk[itk].propSigmaPhi;
+
+      }// else "true"  
+    }// if idx
+  }// over itk
+
   // **** Calculation for Muons ****
   int nL1TkCand = -1;
   int il1tkcn = -1;
+
   for (int imu=0; imu<nL1Muons; imu++) {
 
     if (MuCn[imu].feta < ETAMIN_) continue;
@@ -410,8 +491,6 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
     for ( int itk=0; itk<nL1Tracks; itk++ ){
       if (L1Tk[itk].idx >= 0){
        
-        LogDebug("L1TkMuonFromExtendedProducer") << " imu= " << imu << " itk= " << itk << " idx= " << L1Tk[itk].idx;
-
         if (     L1Tk[itk].pt < PTMINTRA_) continue;
         if (fabs(L1Tk[itk].z) > ZMAX_) continue;
         if (     L1Tk[itk].chi2 > CHI2MAX_) continue;
@@ -431,13 +510,13 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
         float dPhi = std::abs(deltaPhi(L1Tk[itk].propPhi, MuCn[imu].phi));
   
         LogDebug("L1TkMuonFromExtendedProducer") 
-          << "   match details: prop Pt "<<L1Tk[itk].propPt<<" Eta "<<L1Tk[itk].propEta
-          <<" Phi "<<L1Tk[itk].propPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
-          <<" dEta "<<dEta<<" dPhi "<<dPhi<<" cut " <<etaCut<<" "<<phiCut;
+              << " match details: prop Pt "<<L1Tk[itk].propPt<<" Eta "<<L1Tk[itk].propEta
+              << " Phi "<<L1Tk[itk].propPhi<<" mutk "<<MuCn[imu].pt<<" "<<MuCn[imu].eta<<" "<<MuCn[imu].phi
+              << " dEta "<< dEta <<" dPhi "<< dPhi <<" cut "<< etaCut <<" "<< phiCut;
   
         // Filter for Cuts 
         if (dEta < etaCut && dPhi < phiCut){
-          il1tkcn = il1tkcn + 1;
+          il1tkcn++;
 
 	  L1TkCn[il1tkcn].nPars = L1Tk[itk].nPars;
           L1TkCn[il1tkcn].pt = L1Tk[itk].pt;
@@ -461,6 +540,60 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
   return nL1TkCand;
 
 }
+
+
+L1TkMuonFromExtendedProducer::PropState L1TkMuonFromExtendedProducer::propagateToGMT(const L1TkMuonFromExtendedProducer::L1TkTrackType& tk) 
+const {
+
+  auto p3 = tk.getMomentum();
+  float tk_pt = p3.perp();
+  float tk_p = p3.mag();
+  float tk_eta = p3.eta();
+  float tk_aeta = std::abs(tk_eta);
+  float tk_phi = p3.phi();
+  float tk_q = tk.getRInv()>0? 1.: -1.;
+  float tk_z  = tk.getPOCA().z();
+
+  if (!correctGMTPropForTkZ_) tk_z = 0;
+
+  L1TkMuonFromExtendedProducer::PropState dest;
+  if (tk_p<3.5 ) return dest;
+  if (tk_aeta <1.1 && tk_pt < 3.5) return dest;
+  if (tk_aeta > 2.5) return dest;
+
+  //0th order:
+  dest.valid = true;
+
+  float dzCorrPhi = 1.;
+  float deta = 0;
+  float etaProp = tk_aeta;
+
+  if (tk_aeta < 1.1){
+    etaProp = 1.1;
+    deta = tk_z/550./cosh(tk_aeta);
+  } else {
+    float delta = tk_z/850.; //roughly scales as distance to 2nd station
+    if (tk_eta > 0) delta *=-1;
+    dzCorrPhi = 1. + delta;
+
+    float zOzs = tk_z/850.;
+    if (tk_eta > 0) deta = zOzs/(1. - zOzs);
+    else deta = zOzs/(1.+zOzs);
+    deta = deta*tanh(tk_eta);
+  }
+  float resPhi = tk_phi - 1.464*tk_q*cosh(1.7)/cosh(etaProp)/tk_pt*dzCorrPhi - M_PI/144.;
+  if (resPhi > M_PI) resPhi -= 2.*M_PI;
+  if (resPhi < -M_PI) resPhi += 2.*M_PI;
+
+  dest.eta = tk_eta + deta;
+  dest.phi = resPhi;
+  dest.pt = tk_pt; //not corrected for eloss
+  dest.sigmaEta = 0.100/tk_pt; //multiple scattering term
+  dest.sigmaPhi = 0.106/tk_pt; //need a better estimate for these
+
+  return dest;
+}
+
 
 // ------------ Tracks candidate  ------------
 void
@@ -517,6 +650,7 @@ const int nL1TkCand, L1Cand* L1TkCn)
   }//over il1tkcn
 }
 
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
 L1TkMuonFromExtendedProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
@@ -525,58 +659,6 @@ L1TkMuonFromExtendedProducer::fillDescriptions(edm::ConfigurationDescriptions& d
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
-}
-
-
-L1TkMuonFromExtendedProducer::PropState L1TkMuonFromExtendedProducer::propagateToGMT(const L1TkMuonFromExtendedProducer::L1TkTrackType& tk) 
-const {
-
-  auto p3 = tk.getMomentum();
-  float tk_pt = p3.perp();
-  float tk_p = p3.mag();
-  float tk_eta = p3.eta();
-  float tk_aeta = std::abs(tk_eta);
-  float tk_phi = p3.phi();
-  float tk_q = tk.getRInv()>0? 1.: -1.;
-  float tk_z  = tk.getPOCA().z();
-  if (!correctGMTPropForTkZ_) tk_z = 0;
-
-  L1TkMuonFromExtendedProducer::PropState dest;
-  if (tk_p<3.5 ) return dest;
-  if (tk_aeta <1.1 && tk_pt < 3.5) return dest;
-  if (tk_aeta > 2.5) return dest;
-
-  //0th order:
-  dest.valid = true;
-
-  float dzCorrPhi = 1.;
-  float deta = 0;
-  float etaProp = tk_aeta;
-
-  if (tk_aeta < 1.1){
-    etaProp = 1.1;
-    deta = tk_z/550./cosh(tk_aeta);
-  } else {
-    float delta = tk_z/850.; //roughly scales as distance to 2nd station
-    if (tk_eta > 0) delta *=-1;
-    dzCorrPhi = 1. + delta;
-
-    float zOzs = tk_z/850.;
-    if (tk_eta > 0) deta = zOzs/(1. - zOzs);
-    else deta = zOzs/(1.+zOzs);
-    deta = deta*tanh(tk_eta);
-  }
-  float resPhi = tk_phi - 1.464*tk_q*cosh(1.7)/cosh(etaProp)/tk_pt*dzCorrPhi - M_PI/144.;
-  if (resPhi > M_PI) resPhi -= 2.*M_PI;
-  if (resPhi < -M_PI) resPhi += 2.*M_PI;
-
-  dest.eta = tk_eta + deta;
-  dest.phi = resPhi;
-  dest.pt = tk_pt; //not corrected for eloss
-  dest.sigmaEta = 0.100/tk_pt; //multiple scattering term
-  dest.sigmaPhi = 0.106/tk_pt; //need a better estimate for these
-
-  return dest;
 }
 
 //define this as a plug-in
