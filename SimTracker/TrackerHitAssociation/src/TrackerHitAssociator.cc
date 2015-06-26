@@ -617,8 +617,10 @@ std::vector<SimHitIdpr>  TrackerHitAssociator::associateGSRecHit(const SiTracker
 
   vector<SimHitIdpr> simtrackid;
   simtrackid.clear();
-  SimHitIdpr currentId(gsrechit->simtrackId(), EncodedEventId(gsrechit->eeId()));
-  simtrackid.push_back(currentId);
+  for(size_t index =0;index<gsrechit->nSimTrackIds();++index){
+    SimHitIdpr currentId(gsrechit->simTrackId(index), EncodedEventId(gsrechit->eeId()));
+    simtrackid.push_back(currentId);
+  }
   return simtrackid;
 }
 
@@ -647,14 +649,16 @@ std::vector<SimHitIdpr> TrackerHitAssociator::associateMultiRecHitId(const SiTra
   return simhitid;
 }
 
-std::vector<SimHitIdpr>  TrackerHitAssociator::associateGSMatchedRecHit(const SiTrackerGSMatchedRecHit2D * gsmrechit) const
+std::vector<SimHitIdpr>  TrackerHitAssociator::associateGSMatchedRecHit(const SiTrackerGSMatchedRecHit2D * gsrechit) const
 {
   //GSRecHit is the FastSimulation RecHit that contains the TrackId already
   
   vector<SimHitIdpr> simtrackid;
   simtrackid.clear();
-  SimHitIdpr currentId(gsmrechit->simtrackId(), EncodedEventId(gsmrechit->eeId()));
-  simtrackid.push_back(currentId);
+  for(size_t index =0;index<gsrechit->nSimTrackIds();++index){
+    SimHitIdpr currentId(gsrechit->simTrackId(index), EncodedEventId(gsrechit->eeId()));
+    simtrackid.push_back(currentId);
+  }
   return simtrackid;
 }
 
