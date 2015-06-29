@@ -283,22 +283,6 @@ L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk, L1
   using namespace edm;
   using namespace std;
 
- /* L1 Tracks diapasons:
-  *             min        max
-  * Eta        -2.62816    2.6378
-  * Phi        -3.14159    3.14159
-  * pt          1.29208    9000      
-  * z         -80.         55.
-  * chi2        0.000667   9504.
-  *
-  * propEta    -2.5449     2.50527                   
-  * propPhi    -3.14159    3.14158                   
-  * propPt      1.29208    9000.
-  * propSigEta  0.         0.07739
-  * propSigPhi  0.         0.08203
-  *
-  */
-
   edm::Handle<L1TkTrackCollectionType> l1tksH;
   iEvent.getByLabel(L1TrackInputTag_, l1tksH);
   const L1TkTrackCollectionType& l1tks = *l1tksH.product();
