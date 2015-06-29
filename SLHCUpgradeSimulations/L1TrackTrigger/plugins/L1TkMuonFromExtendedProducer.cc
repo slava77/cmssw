@@ -65,9 +65,8 @@ public:
   typedef std::vector< L1TkTrackType >        L1TkTrackCollectionType;
   
   struct PropState { //something simple, imagine it's hardware emulation
-
     PropState() : 
-      pt(-99),  eta(-99), phi(-99),sigmaPt(-99),  sigmaEta(-99), sigmaPhi(-99), valid(false) {}
+       pt(-99), eta(-99), phi(-99), sigmaPt(-99), sigmaEta(-99), sigmaPhi(-99), valid(false) {}
     float pt;
     float eta;
     float phi;
@@ -75,7 +74,6 @@ public:
     float sigmaEta;
     float sigmaPhi;
     bool valid;
-
   };
 
   struct L1Muon {
@@ -119,7 +117,6 @@ public:
     float pt;
     float p;
     float eta;
-    float aeta;
     float phi;
     float q;
     float z;
@@ -159,6 +156,10 @@ private:
   void loadTkMuCandidatesToEvent(edm::Event&, std::auto_ptr<L1TkMuonParticleCollection>&, const int, L1Cand*);
 
   PropState propagateToGMT(const L1TkTrackType& l1tk) const;
+  float Pt2Bin(float Pt);
+  float Phi2Bin(float Phi);
+  float Eta2Bin(float Eta);
+  float Z2Bin(float Eta);
 
   //configuration (preserving structure of L1TkMuonFromExtendedProducer
   edm::InputTag L1MuonsInputTag_;
@@ -332,7 +333,6 @@ L1TkMuonFromExtendedProducer::loadL1Tracks(edm::Event& iEvent, L1Track* L1Tk, L1
       L1TkPr[il1tk].pt   = p3.perp();
       L1TkPr[il1tk].p    = p3.mag();
       L1TkPr[il1tk].eta  = p3.eta();
-      L1TkPr[il1tk].aeta = std::abs(p3.eta());
       L1TkPr[il1tk].phi  = p3.phi() ;
       L1TkPr[il1tk].q    = l1tk.getRInv()>0? 1.:-1.;
       L1TkPr[il1tk].z    = l1tk.getPOCA().z();
@@ -412,7 +412,7 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
     if (L1Tk[itk].idx >= 0){
 
       if (!correctGMTPropForTkZ_) L1TkPr[itk].z = 0;
-      if ( (L1TkPr[itk].p<3.5) || (L1TkPr[itk].aeta <1.1 && L1TkPr[itk].pt < 3.5) || (L1TkPr[itk].aeta > 2.5) ){                        
+      if ( (L1TkPr[itk].p<3.5) || (abs(L1TkPr[itk].eta) <1.1 && L1TkPr[itk].pt < 3.5) || (abs(L1TkPr[itk].eta) > 2.5) ){
         L1Tk[itk].valid = false;
       } 
       else {
@@ -421,11 +421,17 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
 
         float dzCorrPhi = 1.;
         float deta = 0;
-        float etaProp = L1TkPr[itk].aeta;
       
-        if (L1TkPr[itk].aeta < 1.1){
+        L1TkPr[itk].pt = L1TkMuonFromExtendedProducer::Pt2Bin(L1TkPr[itk].pt);
+	L1TkPr[itk].phi = L1TkMuonFromExtendedProducer::Phi2Bin(L1TkPr[itk].phi);
+	L1TkPr[itk].eta = L1TkMuonFromExtendedProducer::Eta2Bin(L1TkPr[itk].eta);
+	L1TkPr[itk].z = L1TkMuonFromExtendedProducer::Z2Bin(L1TkPr[itk].z);
+
+        float etaProp = abs(L1TkPr[itk].eta);
+
+        if (abs(L1TkPr[itk].eta) < 1.1){
           etaProp = 1.1;
-          deta = L1TkPr[itk].z/550./cosh(L1TkPr[itk].aeta);
+          deta = L1TkPr[itk].z/550./cosh(abs(L1TkPr[itk].eta));
         } else {
           float delta = L1TkPr[itk].z/850.; //roughly scales as distance to 2nd station
           if (L1TkPr[itk].eta > 0) delta *=-1;
@@ -491,6 +497,11 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
     for ( int itk=0; itk<nL1Tracks; itk++ ){
       if (L1Tk[itk].idx >= 0){
        
+        L1Tk[itk].pt = L1TkMuonFromExtendedProducer::Pt2Bin(L1Tk[itk].pt);
+        L1Tk[itk].phi = L1TkMuonFromExtendedProducer::Phi2Bin(L1Tk[itk].phi);
+        L1Tk[itk].eta = L1TkMuonFromExtendedProducer::Eta2Bin(L1Tk[itk].eta);
+        L1Tk[itk].z = L1TkMuonFromExtendedProducer::Z2Bin(L1Tk[itk].z);
+
         if (     L1Tk[itk].pt < PTMINTRA_) continue;
         if (fabs(L1Tk[itk].z) > ZMAX_) continue;
         if (     L1Tk[itk].chi2 > CHI2MAX_) continue;
@@ -538,7 +549,96 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
   nL1TkCand = il1tkcn;
   LogDebug("L1TkMuonFromExtendedProducer") << " ::computeTkMuCandidates nL1TkCand " << nL1TkCand;
   return nL1TkCand;
+}
 
+float L1TkMuonFromExtendedProducer::Pt2Bin(float Pt){
+  using namespace std;
+
+  float MinPt   = 2.;   // GeV
+  float MaxPt   = 200.; // GeV
+
+  // 2**6 = 64
+  float PtBinStep = (MaxPt - MinPt)/exp2(6);
+
+  // float tmpPt = Pt;
+  Pt = max( (double)MinPt, min((double)Pt, (double)MaxPt));
+  Pt = (MinPt + (float)( PtBinStep * (int)(Pt/PtBinStep)));
+
+ /*
+  cout << "   Pt " << Pt << " PtBinStep " << PtBinStep << " sPt " << tmpPt - Pt << endl;
+  */
+  return Pt;
+}
+
+
+float L1TkMuonFromExtendedProducer::Phi2Bin(float Phi){
+  using namespace std;
+
+  float MinPhi  = -3.14159; // Rad
+  float MaxPhi  =  3.14159; // Rad
+
+  // 2**8 = 256
+  float PhiBinStep = (MaxPhi - MinPhi)/exp2(8);
+
+  Phi = max( (double)MinPhi, min((double)Phi, (double)MaxPhi));
+
+  //float tmpPhi = Phi;
+  Phi = (float)( PhiBinStep * (int)(Phi/PhiBinStep));
+  if (Phi < 0.){
+    Phi = -(float)( PhiBinStep * (int)(abs(Phi)/PhiBinStep));
+  } 
+
+ /*
+  cout << "   tmpPhi " << tmpPhi << " Phi " << Phi << " dPhi " << (tmpPhi - Phi) << endl;
+  */
+  return Phi;
+}
+
+
+float L1TkMuonFromExtendedProducer::Eta2Bin(float Eta){
+  using namespace std;
+
+  float MinEta  = -2.65;
+  float MaxEta  =  2.65;
+
+  // 2**8 = 256
+  float EtaBinStep = (MaxEta - MinEta)/exp2(8);
+
+  Eta = max( (double)MinEta, min((double)Eta, (double)MaxEta));
+
+  //float tmpEta = Eta;
+  Eta = (float)( EtaBinStep * (int)(Eta/EtaBinStep));
+  if (Eta < 0.){
+    Eta = -(float)( EtaBinStep * (int)(abs(Eta)/EtaBinStep));
+  } 
+
+ /*
+  cout << "   tmpEta " << tmpEta << " Eta " << Eta << " dEta " << (tmpEta - Eta) << endl;
+  */
+  return Eta;
+}
+
+float L1TkMuonFromExtendedProducer::Z2Bin(float Z){
+  using namespace std;
+
+  float MinZ  = -17;
+  float MaxZ  =  17;
+
+  // 2**4 = 16
+  float ZBinStep = (MaxZ - MinZ)/exp2(4);
+
+  Z = max( (double)MinZ, min((double)Z, (double)MaxZ));
+
+  //float tmpZ = Z;
+  Z = (float)( ZBinStep * (int)(Z/ZBinStep));
+  if (Z < 0.){
+    Z = -(float)( ZBinStep * (int)(abs(Z)/ZBinStep));
+  } 
+
+ /*
+  cout << "   tmpZ " << tmpZ << " Z " << Z << " dZ " << (tmpZ - Z) << endl;
+  */
+  return Z;
 }
 
 
