@@ -395,6 +395,11 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
 
     if (L1Tk[itk].idx >= 0){
 
+      L1TkPr[itk].pt = L1TkMuonFromExtendedProducer::Pt2Bin(L1TkPr[itk].pt);
+      L1TkPr[itk].phi = L1TkMuonFromExtendedProducer::Phi2Bin(L1TkPr[itk].phi);
+      L1TkPr[itk].eta = L1TkMuonFromExtendedProducer::Eta2Bin(L1TkPr[itk].eta);
+      L1TkPr[itk].z = L1TkMuonFromExtendedProducer::Z2Bin(L1TkPr[itk].z);
+
       if (!correctGMTPropForTkZ_) L1TkPr[itk].z = 0;
       if ( (L1TkPr[itk].p<3.5) || (abs(L1TkPr[itk].eta) <1.1 && L1TkPr[itk].pt < 3.5) || (abs(L1TkPr[itk].eta) > 2.5) ){
         L1Tk[itk].valid = false;
@@ -405,11 +410,6 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
 
         float dzCorrPhi = 1.;
         float deta = 0;
-      
-        L1TkPr[itk].pt = L1TkMuonFromExtendedProducer::Pt2Bin(L1TkPr[itk].pt);
-	L1TkPr[itk].phi = L1TkMuonFromExtendedProducer::Phi2Bin(L1TkPr[itk].phi);
-	L1TkPr[itk].eta = L1TkMuonFromExtendedProducer::Eta2Bin(L1TkPr[itk].eta);
-	L1TkPr[itk].z = L1TkMuonFromExtendedProducer::Z2Bin(L1TkPr[itk].z);
 
         float etaProp = abs(L1TkPr[itk].eta);
 
@@ -492,6 +492,10 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
         if (     L1Tk[itk].nstubs < nStubsmin_) continue;
         // Do we need it !? // if (     L1Tk[itk].valid) continue;
    
+        MuCn[imu].pt = L1TkMuonFromExtendedProducer::Pt2Bin(MuCn[imu].pt);
+        MuCn[imu].phi = L1TkMuonFromExtendedProducer::Phi2Bin(MuCn[imu].phi);
+        MuCn[imu].eta = L1TkMuonFromExtendedProducer::Eta2Bin(MuCn[imu].eta);
+
         dr2 = deltaR2(MuCn[imu].eta, MuCn[imu].phi, L1Tk[itk].eta, L1Tk[itk].phi);
         if (dr2 > 0.3) continue;
 
