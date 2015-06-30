@@ -56,7 +56,7 @@ const int MuonMax = 20;
 const int TrackMax = 400;
 
 // maximum L1 Tracks Candidates number
-const int TkMuonMax = 20;
+const int TkMuonMax = 50;
 
 class L1TkMuonFromExtendedProducer : public edm::EDProducer {
 public:
@@ -516,17 +516,20 @@ L1TkMuonFromExtendedProducer::computeTkMuCandidates(const int nL1Muons, L1Muon* 
         // Filter for Cuts 
         if (dEta < etaCut && dPhi < phiCut){
           il1tkcn++;
-
-	  L1TkCn[il1tkcn].nPars = L1Tk[itk].nPars;
-          L1TkCn[il1tkcn].pt = L1Tk[itk].pt;
-          L1TkCn[il1tkcn].q = L1Tk[itk].q;
-          L1TkCn[il1tkcn].z = L1Tk[itk].z;
-          L1TkCn[il1tkcn].eta = L1Tk[itk].eta;
-          L1TkCn[il1tkcn].phi = L1Tk[itk].phi;
-          L1TkCn[il1tkcn].dxy = L1Tk[itk].dxy;
-          L1TkCn[il1tkcn].l1MuonIndex = imu;
-          L1TkCn[il1tkcn].l1TrackIndex = itk;
-          L1TkCn[il1tkcn].quality = MuCn[imu].quality;
+	  if(il1tkcn <= TkMuonMax) {
+   	    L1TkCn[il1tkcn].nPars = L1Tk[itk].nPars;
+            L1TkCn[il1tkcn].pt = L1Tk[itk].pt;
+            L1TkCn[il1tkcn].q = L1Tk[itk].q;
+            L1TkCn[il1tkcn].z = L1Tk[itk].z;
+            L1TkCn[il1tkcn].eta = L1Tk[itk].eta;
+            L1TkCn[il1tkcn].phi = L1Tk[itk].phi;
+            L1TkCn[il1tkcn].dxy = L1Tk[itk].dxy;
+            L1TkCn[il1tkcn].l1MuonIndex = imu;
+            L1TkCn[il1tkcn].l1TrackIndex = itk;
+            L1TkCn[il1tkcn].quality = MuCn[imu].quality;
+          } else {
+            LogWarning("L1TkMuonFromExtendedProducer") << " nL1TkCand is huge " << nL1TkCand;
+          }  
 
 	}// over Cuts
       }
@@ -546,7 +549,7 @@ float L1TkMuonFromExtendedProducer::Pt2Bin(float Pt){
   float MaxPt   = 200.; // GeV
 
   // 2**6 = 64
-  float PtBinStep = (MaxPt - MinPt)/exp2(6);
+  float PtBinStep = (MaxPt - MinPt)/exp2(5);
 
   // float tmpPt = Pt;
   Pt = max( (double)MinPt, min((double)Pt, (double)MaxPt));
