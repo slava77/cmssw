@@ -138,7 +138,7 @@ HitDoublets HitPairGeneratorFromLayerPair::doublets( const TrackingRegion& regio
 				      <<" inner and: "<< outerHitsMap.theHits.size()<<" outter";
     for(int j=0; j<3; j+=2) {
       auto b = innerRange[j]; auto e=innerRange[j+1];
-      bool ok[e-b];
+      bool ok[e-b]{};
       switch (checkRZ->algo()) {
 	case (HitRZCompatibility::zAlgo) :
 	  std::get<0>(kernels).set(checkRZ);
