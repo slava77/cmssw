@@ -43,6 +43,8 @@
  *   either BeamSpotSigma or BeamSpotFixed mode, depending on the positiveness of nSigmaZBeamSpot.
  *
  */
+#include "RecoTracker/MeasurementDet/interface/MeasurementTrackerEvent.h"
+
 class  PointSeededTrackingRegionsProducer : public TrackingRegionProducer
 {
 public:
