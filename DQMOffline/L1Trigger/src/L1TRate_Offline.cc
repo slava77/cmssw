@@ -279,6 +279,8 @@ void L1TRate_Offline::endLuminosityBlock(LuminosityBlock const& lumiBlock, Event
       prescalesIndex=m_lsPrescaleIndex[lsPreInd];
     }
 
+    edm::LogWarning("MYDEBUG")<<"before access "<<lsOffline<<" "<<" "<<counts<<" "<<m_lsPrescaleIndex.size()<<" "<<prescalesIndex<<" "
+			      <<isDefCount<<isDefLumi<<isDefPrescaleIndex<<" "<<(*m_listsPrescaleFactors).size();
     if(isDefCount && isDefLumi && isDefPrescaleIndex){
 
       const vector<int>& currentPrescaleFactors = (*m_listsPrescaleFactors).at(prescalesIndex);
