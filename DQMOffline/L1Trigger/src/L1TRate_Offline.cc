@@ -83,6 +83,8 @@ void L1TRate_Offline::bookHistograms(DQMStore::IBooker &ibooker, const edm::Run&
   // Retriving the list of prescale sets
   m_listsPrescaleFactors = &(m_l1GtPfAlgo->gtPrescaleFactors());
 
+  edm::LogWarning("MYDEBUG")<<"in bookHistograms "<<(*m_listsPrescaleFactors).size();
+
   // Getting Lowest Prescale Single Object Triggers from the menu
   L1TMenuHelper myMenuHelper = L1TMenuHelper(iSetup);
   m_l1GtUtils.retrieveL1EventSetup(iSetup);
