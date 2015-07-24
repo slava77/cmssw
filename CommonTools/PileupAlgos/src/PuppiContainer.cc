@@ -39,7 +39,12 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
   for (unsigned int i = 0; i < fRecoParticles.size(); i++){
     fastjet::PseudoJet curPseudoJet;
     auto fRecoParticle = fRecoParticles[i];
-    curPseudoJet.reset_PtYPhiM(fRecoParticle.pt,fRecoParticle.rapidity,fRecoParticle.phi,fRecoParticle.m);
+    if (edm::isFinite(fRecoParticle.pt)){
+      curPseudoJet.reset_PtYPhiM(fRecoParticle.pt,fRecoParticle.rapidity,fRecoParticle.phi,fRecoParticle.m);
+    } else {
+      //should we throw instead?
+      curPseudoJet.reset_PtYPhiM(0, 99., 0, 0);
+    }
     int puppi_register = 0;
     if(fRecoParticle.id == 0 or fRecoParticle.charge == 0)  puppi_register = 0; // zero is neutral hadron                                                         
     if(fRecoParticle.id == 1 and fRecoParticle.charge != 0) puppi_register = fRecoParticle.charge; // from PV use the                             
