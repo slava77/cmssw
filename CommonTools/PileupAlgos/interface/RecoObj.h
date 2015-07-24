@@ -5,7 +5,7 @@ class RecoObj
 {
 public:
       RecoObj():
-	pt(0), eta(0), phi(0), m(0),
+  pt(0), eta(0), phi(0), m(0), rapidity(0),
 	id(0),pfType(-1),vtxId(-1),
 	trkChi2(0),vtxChi2(0),
 	time(0),depth(0),
@@ -14,7 +14,7 @@ public:
     {}
     ~RecoObj(){}
     
-    float         pt, eta, phi, m;  // kinematics
+    float         pt, eta, phi, m, rapidity;  // kinematics
     int           id;
     int           pfType;
     int           vtxId;               // Vertex Id from Vertex Collection
