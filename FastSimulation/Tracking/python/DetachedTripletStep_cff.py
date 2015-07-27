@@ -54,6 +54,6 @@ DetachedTripletStep = cms.Sequence(detachedTripletStepMasks
                                    +detachedTripletStepSeeds
                                    +detachedTripletStepTrackCandidates
                                    +detachedTripletStepTracks
-                                   +detachedTripletStepSelector
+                                   +detachedTripletStepClassifier1*detachedTripletStepClassifier2
                                    +detachedTripletStep
                                    )

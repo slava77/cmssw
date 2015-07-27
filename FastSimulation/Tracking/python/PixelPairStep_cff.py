@@ -45,8 +45,8 @@ pixelPairStepTracks = RecoTracker.IterativeTracking.PixelPairStep_cff.pixelPairS
     Propagator = 'PropagatorWithMaterial'
 )
 # final Selection
-pixelPairStepSelector = RecoTracker.IterativeTracking.PixelPairStep_cff.pixelPairStepSelector.clone()
-pixelPairStepSelector.vertices = "firstStepPrimaryVerticesBeforeMixing"
+pixelPairStep = RecoTracker.IterativeTracking.PixelPairStep_cff.pixelPairStep.clone()
+pixelPairStep.vertices = "firstStepPrimaryVerticesBeforeMixing"
 
 # Final sequence 
 PixelPairStep = cms.Sequence(pixelPairStepMasks
