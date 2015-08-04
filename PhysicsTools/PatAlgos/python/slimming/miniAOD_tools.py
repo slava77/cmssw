@@ -162,8 +162,8 @@ def miniAOD_customizeCommon(process):
          matched = cms.InputTag("ak4CaloJets"),
          distMax = cms.double(0.4),
          values = cms.vstring('pt','emEnergyFraction'),
-	 valueLabels = cms.vstring('pt','emEnergyFraction'),
-	 lazyParser = cms.bool(True) )
+     valueLabels = cms.vstring('pt','emEnergyFraction'),
+     lazyParser = cms.bool(True) )
     process.patJets.userData.userFloats.src += [ cms.InputTag("caloJetMap:pt"), cms.InputTag("caloJetMap:emEnergyFraction") ]
 
     #EGM object modifications
@@ -201,6 +201,7 @@ def miniAOD_customizeCommon(process):
         setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
     # Adding puppi jets
+    # Here we compare PUPPI with and without leptons.
     process.load('CommonTools.PileupAlgos.Puppi_cff')
     process.load('RecoJets.JetProducers.ak4PFJetsPuppi_cfi')
     process.ak4PFJetsPuppi.doAreaFastjet = True # even for standard ak4PFJets this is overwritten in RecoJets/Configuration/python/RecoPFJets_cff
@@ -217,7 +218,6 @@ def miniAOD_customizeCommon(process):
     )
     process.puppiNoLep = process.puppi.clone()
     process.puppiNoLep.candName = cms.InputTag('pfNoLepPUPPI') 
-
     from RecoJets.JetAssociationProducers.j2tParametersVX_cfi import j2tParametersVX
     process.ak4PFJetsPuppiTracksAssociatorAtVertex = cms.EDProducer("JetTracksAssociatorAtVertex",
         j2tParametersVX,
