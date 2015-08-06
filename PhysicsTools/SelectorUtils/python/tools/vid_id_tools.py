@@ -38,14 +38,14 @@ def addVIDSelectionToPATProducer(patProducer,idProducer,idName,addUserData=True)
     if userDatas is None:
         raise Exception('StrangePatModule','%s does not have UserData sources!'%patProducer.label())
     setattr(patProducerIDs,idName,cms.InputTag('%s:%s'%(idProducer,idName)))    
-    if( addUserData ) :
+    if( addUserData ):
         if( len(userDatas.userClasses.src) == 1 and 
             type(userDatas.userClasses.src[0]) is str and 
             userDatas.userClasses.src[0] == ''            ):
             userDatas.userClasses.src = cms.VInputTag(cms.InputTag('%s:%s'%(idProducer,idName)))        
         else:
             userDatas.userClasses.src.append(cms.InputTag('%s:%s'%(idProducer,idName)))
-    sys.stderr.write('\t--- %s:%s added to %s\n'%(idProducer,idName,patProducer.label()))
+        sys.stderr.write('\t--- %s:%s added to %s\n'%(idProducer,idName,patProducer.label()))
 
 def setupAllVIDIdsInModule(process,id_module_name,setupFunction,patProducer=None,addUserData=True):
 #    idmod = importlib.import_module(id_module_name)
