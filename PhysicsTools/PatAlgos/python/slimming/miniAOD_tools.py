@@ -163,8 +163,31 @@ def miniAOD_customizeCommon(process):
         cms.InputTag("reducedEgamma","reducedEERecHits")
     process.electronIDValueMapProducer.esReducedRecHitCollection = \
         cms.InputTag("reducedEgamma","reducedESRecHits")
+    process.electronMVAValueMapProducer.src = \
+        cms.InputTag('reducedEgamma','reducedGedGsfElectrons')
+    process.electronRegressionValueMapProducer.src = \
+        cms.InputTag('reducedEgamma','reducedGedGsfElectrons')
     for idmod in electron_ids:
         setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection,None,False)
+
+    #VID Photon IDs
+    photon_ids = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff',
+                  'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring15_50ns_V1_cff',
+                  'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring15_25ns_nonTrig_V0_cff',
+                  'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring15_50ns_nonTrig_V2_cff']
+    switchOnVIDPhotonIdProducer(process,DataFormat.MiniAOD) 
+    process.egmPhotonIDs.physicsObjectSrc = \
+        cms.InputTag("reducedEgamma","reducedGedPhotons")
+    process.photonIDValueMapProducer.src = \
+        cms.InputTag("reducedEgamma","reducedGedPhotons")
+    process.photonRegressionValueMapProducer.src = \
+        cms.InputTag("reducedEgamma","reducedGedPhotons")
+    process.photonIDValueMapProducer.particleBasedIsolation = \
+        cms.InputTag("reducedEgamma","reducedPhotonPfCandMap")
+    process.photonMVAValueMapProducer.src = \
+        cms.InputTag('reducedEgamma','reducedGedPhotons')
+    for idmod in photon_ids:
+        setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection,None,False)
     
     # Adding puppi jets
     process.load('CommonTools.PileupAlgos.Puppi_cff')
