@@ -204,8 +204,10 @@ def miniAOD_customizeCommon(process):
         setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
     # Adding puppi jets
-    process.load('CommonTools.PileupAlgos.Puppi_cff')
-    process.load('RecoJets.JetProducers.ak4PFJetsPuppi_cfi')
+    from CommonTools.PileupAlgos.Puppi_cff import puppi
+    process.puppi = puppi
+    from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
+    process.ak4PFJetsPuppi = ak4PFJetsPuppi
     process.ak4PFJetsPuppi.doAreaFastjet = True # even for standard ak4PFJets this is overwritten in RecoJets/Configuration/python/RecoPFJets_cff
     #process.puppi.candName = cms.InputTag('packedPFCandidates')
     #process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
@@ -239,8 +241,8 @@ def miniAOD_customizeCommon(process):
     process.slimmedJetsPuppi.packedPFCandidates = cms.InputTag("packedPFCandidates")
 
     ## puppi met
-    process.load('RecoMET.METProducers.PFMET_cfi')
-    process.pfMetPuppi = process.pfMet.clone()
+    from RecoMET.METProducers.PFMET_cfi import pfMet
+    process.pfMetPuppi = pfMet.clone()
     process.pfMetPuppi.src = cms.InputTag("puppi")
     process.pfMetPuppi.alias = cms.string('pfMetPuppi')
     # type1 correction, from puppi jets
