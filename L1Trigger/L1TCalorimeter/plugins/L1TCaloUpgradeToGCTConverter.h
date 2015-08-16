@@ -49,23 +49,26 @@
 //
 
 class L1TCaloUpgradeToGCTConverter : public edm::global::EDProducer<> {
-public:
+  public:
   explicit L1TCaloUpgradeToGCTConverter(const edm::ParameterSet&);
-  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+    ~L1TCaloUpgradeToGCTConverter();
 
-private:
-  virtual void produce(edm::StreamID, edm::Event&, edm::EventSetup const&) const override;
+    static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-  const edm::EDGetToken EGammaToken_;
-  const edm::EDGetToken RlxTauToken_;
-  const edm::EDGetToken IsoTauToken_;
-  const edm::EDGetToken JetToken_;
-  const edm::EDGetToken EtSumToken_;
-  const edm::EDGetToken HfSumsToken_;
-  const edm::EDGetToken HfCountsToken_;
+  private:
+    virtual void produce(edm::StreamID, edm::Event&, edm::EventSetup const&) const override;    
 
-  const int bxMin_;
-  const int bxMax_;
-};
+    const edm::EDGetToken EGammaToken_;
+    const edm::EDGetToken RlxTauToken_;
+    const edm::EDGetToken IsoTauToken_;
+    const edm::EDGetToken JetToken_;
+    const edm::EDGetToken EtSumToken_;
+    const edm::EDGetToken HfSumsToken_;
+    const edm::EDGetToken HfCountsToken_;
+
+    const int bxMin_;
+    const int bxMax_;
+
+  };
 
 #endif

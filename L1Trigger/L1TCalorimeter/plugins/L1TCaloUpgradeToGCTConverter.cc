@@ -22,18 +22,21 @@
 using namespace std;
 using namespace edm;
 using namespace l1t;
+using namespace std;
+using namespace edm;
+
 
 L1TCaloUpgradeToGCTConverter::L1TCaloUpgradeToGCTConverter(const ParameterSet& iConfig):
     // register what you consume and keep token for later access:
-    EGammaToken_(   consumes<EGammaBxCollection>(iConfig.getParameter<InputTag>("InputCollection")) ),
-    RlxTauToken_(   consumes<TauBxCollection>(iConfig.getParameter<InputTag>("InputRlxTauCollection")) ),
-    IsoTauToken_(   consumes<TauBxCollection>(iConfig.getParameter<InputTag>("InputIsoTauCollection")) ),
-    JetToken_(      consumes<JetBxCollection>(iConfig.getParameter<InputTag>("InputCollection")) ),
-    EtSumToken_(    consumes<EtSumBxCollection>(iConfig.getParameter<InputTag>("InputCollection")) ),
-    HfSumsToken_(   consumes<CaloSpareBxCollection>(iConfig.getParameter<edm::InputTag>("InputHFSumsCollection")) ),
-    HfCountsToken_( consumes<CaloSpareBxCollection>(iConfig.getParameter<edm::InputTag>("InputHFCountsCollection")) ),
-    bxMin_(         iConfig.getParameter<int>("bxMin") ),
-    bxMax_(         iConfig.getParameter<int>("bxMax") )
+    EGammaToken_(consumes<EGammaBxCollection>(iConfig.getParameter<InputTag>("InputCollection"))),
+    RlxTauToken_(consumes<TauBxCollection>(iConfig.getParameter<InputTag>("InputRlxTauCollection"))),
+    IsoTauToken_(consumes<TauBxCollection>(iConfig.getParameter<InputTag>("InputIsoTauCollection"))),
+    JetToken_(consumes<JetBxCollection>(iConfig.getParameter<InputTag>("InputCollection"))),
+    EtSumToken_(consumes<EtSumBxCollection>(iConfig.getParameter<InputTag>("InputCollection"))),
+    HfSumsToken_(consumes<CaloSpareBxCollection>(iConfig.getParameter<edm::InputTag>("InputHFSumsCollection"))),
+    HfCountsToken_(consumes<CaloSpareBxCollection>(iConfig.getParameter<edm::InputTag>("InputHFCountsCollection"))),
+    bxMin_(iConfig.getParameter<int>("bxMin")),
+    bxMax_(iConfig.getParameter<int>("bxMax"))
 {
   produces<L1GctEmCandCollection>("isoEm");
   produces<L1GctEmCandCollection>("nonIsoEm");
@@ -49,7 +52,7 @@ L1TCaloUpgradeToGCTConverter::L1TCaloUpgradeToGCTConverter(const ParameterSet& i
   produces<L1GctInternEtSumCollection>();
   produces<L1GctInternHtMissCollection>();
   produces<L1GctHFBitCountsCollection>();
-  produces<L1GctHFRingEtSumsCollection>();
+  produces<L1GctHFRingEtSumsCollection>();  
 }
 
 
