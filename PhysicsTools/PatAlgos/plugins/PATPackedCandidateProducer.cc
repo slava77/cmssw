@@ -128,7 +128,15 @@ void pat::PATPackedCandidateProducer::produce(edm::Event& iEvent, const edm::Eve
     edm::Handle< edm::ValueMap<float> > puppiWeightNoLep;
     iEvent.getByToken( PuppiWeightNoLep_, puppiWeightNoLep );
     edm::Handle<std::vector< reco::PFCandidate > > puppiCandsNoLep;
-    iEvent.getByToken( PuppiCandsNoLep_, puppiCandsNoLep );    
+    iEvent.getByToken( PuppiCandsNoLep_, puppiCandsNoLep );  
+
+    std::vector<reco::CandidatePtr> puppiCandsNoLepPtrs;
+    if (puppiCandsNoLep.isValid()){
+      for (auto pup : *puppiCandsNoLep){
+        puppiCandsNoLepPtrs.push_back(pup.sourceCandidatePtr(0));
+      }
+    }
+    auto const& puppiCandsNoLepV = puppiCandsNoLep.product();
 
     edm::Handle<reco::VertexCollection> PVOrigs;
     iEvent.getByToken( PVOrigs_, PVOrigs );
@@ -245,17 +253,20 @@ void pat::PATPackedCandidateProducer::produce(edm::Event& iEvent, const edm::Eve
            // If absent, it is a lepton, so set the weight to 1.0
            if ( puppiWeightNoLep.isValid() ) {
              // Look for the pointer inside the "no lepton" candidate collection.
-             auto foundNoLep = puppiCandsNoLep->end();
-             for ( auto s = puppiCandsNoLep->begin(),  s_end = puppiCandsNoLep->end(); s != s_end; ++s ) {       
-               if ( s->sourceCandidatePtr(0) == pkref->sourceCandidatePtr(0) ) {
-                foundNoLep = s;
-                puppiWeightNoLepVal = s->pt()/cand.pt(); // a hack for now, should use the value map
+             auto pkrefPtr = pkref->sourceCandidatePtr(0);
+
+             bool foundNoLep = false;
+             for ( size_t ipcnl = 0; ipcnl < puppiCandsNoLepPtrs.size(); ipcnl++){
+              if (puppiCandsNoLepPtrs[ipcnl] == pkrefPtr){
+                foundNoLep = true;
+                  puppiWeightNoLepVal = puppiCandsNoLepV->at(ipcnl).pt()/cand.pt(); // a hack for now, should use the value map
+                  break;
+                }
+              }
+              if ( !foundNoLep || puppiWeightNoLepVal > 1 ) {
+                puppiWeightNoLepVal = 1.0;
               }
             }
-            if ( foundNoLep == puppiCandsNoLep->end() || puppiWeightNoLepVal > 1 ) {
-              puppiWeightNoLepVal = 1.0;
-            }
-          }
           outPtrP->back().setPuppiWeight( puppiWeightVal, puppiWeightNoLepVal );
 
           mappingPuppi[((*puppiCandsMap)[pkref]).key()]=ic;
