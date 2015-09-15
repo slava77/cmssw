@@ -22,30 +22,40 @@
 #include <vector>
 
 namespace {
-  constexpr char sigmaIEtaIPhi_[] = "sigmaIEtaIPhi";
-  constexpr char eMax_[] = "eMax";
-  constexpr char e2nd_[] = "e2nd";
-  constexpr char eTop_[] = "eTop";
-  constexpr char eBottom_[] = "eBottom";
-  constexpr char eLeft_[] = "eLeft";
-  constexpr char eRight_[] = "eRight";
-  constexpr char clusterMaxDR_[] = "clusterMaxDR";
-  constexpr char clusterMaxDRDPhi_[] = "clusterMaxDRDPhi";
-  constexpr char clusterMaxDRDEta_[] = "clusterMaxDRDEta";
-  constexpr char clusterMaxDRRawEnergy_[] = "clusterMaxDRRawEnergy";
-  constexpr char clusterRawEnergy0_[] = "clusterRawEnergy0";
-  constexpr char clusterRawEnergy1_[] = "clusterRawEnergy1";
-  constexpr char clusterRawEnergy2_[] = "clusterRawEnergy2";
-  constexpr char clusterDPhiToSeed0_[] = "clusterDPhiToSeed0";
-  constexpr char clusterDPhiToSeed1_[] = "clusterDPhiToSeed1";
-  constexpr char clusterDPhiToSeed2_[] = "clusterDPhiToSeed2";
-  constexpr char clusterDEtaToSeed0_[] = "clusterDEtaToSeed0";
-  constexpr char clusterDEtaToSeed1_[] = "clusterDEtaToSeed1";
-  constexpr char clusterDEtaToSeed2_[] = "clusterDEtaToSeed2";
-  constexpr char eleIPhi_[]    = "iPhi";
-  constexpr char eleIEta_[]    = "iEta";
-  constexpr char eleCryPhi_[]  = "cryPhi";
-  constexpr char eleCryEta_[]  = "cryEta";
+  enum reg_float_vars { k_NFloatVars = 0 };
+  
+  enum reg_int_vars   { k_NIntVars   = 0 };
+
+  static const std::vector<std::string> float_var_names( { } );
+  
+  static const std::vector<std::string> integer_var_names( { } );  
+  
+  inline void set_map_val( const reg_float_vars index, const float value,
+                           std::unordered_map<std::string,float>& map) {
+    map[float_var_names[index]] = value;
+  }
+  inline void set_map_val( const reg_int_vars index, const int value,
+                           std::unordered_map<std::string,int>& map) {
+    map[integer_var_names[index]] = value;
+  }
+
+  template<typename T>
+  inline void check_map(const std::unordered_map<std::string,T>& map, unsigned exp_size) {
+    if( map.size() != exp_size ) {
+      throw cms::Exception("ElectronRegressionWeirdConfig")
+        << "variable map size: " << map.size() 
+        << " not equal to expected size: " << exp_size << " !"
+        << " The regression variable calculation code definitely has a bug, fix it!";
+    }
+  }
+
+  template<typename LazyTools>
+  void calculateValues(EcalClusterLazyToolsBase* tools_tocast,
+                       const edm::Ptr<reco::GsfElectron>& iEle,
+                       const edm::EventSetup& iSetup,
+                       std::unordered_map<std::string,float>& float_vars,
+                       std::unordered_map<std::string,int>& int_vars ) {    
+  }
 }
 
 class ElectronRegressionValueMapProducer : public edm::stream::EDProducer<> {
