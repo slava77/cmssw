@@ -21,13 +21,39 @@
 
 namespace {
   // Cluster shapes
-  constexpr char sigmaIPhiIPhi_[] = "sigmaIPhiIPhi";
-  constexpr char sigmaIEtaIPhi_[] = "sigmaIEtaIPhi";
-  constexpr char e2x5Max_[] = "e2x5Max";
-  constexpr char e2x5Left_[] = "e2x5Left";
-  constexpr char e2x5Right_[] = "e2x5Right";
-  constexpr char e2x5Top_[] = "e2x5Top";
-  constexpr char e2x5Bottom_[] = "e2x5Bottom";
+  enum reg_float_vars { k_NFloatVars = 0 };
+  
+  enum reg_int_vars   { k_NIntVars   = 0 };
+
+  static const std::vector<std::string> float_var_names( { } );
+  
+  static const std::vector<std::string> integer_var_names( { } );
+
+  inline void set_map_val( const reg_float_vars index, const float value,
+                           std::unordered_map<std::string,float>& map) {
+    map[float_var_names[index]] = value;
+  }
+  inline void set_map_val( const reg_int_vars index, const int value,
+                           std::unordered_map<std::string,int>& map) {
+    map[integer_var_names[index]] = value;
+  }
+
+  template<typename T>
+  inline void check_map(const std::unordered_map<std::string,T>& map, unsigned exp_size) {
+    if( map.size() != exp_size ) {
+      throw cms::Exception("PhotonRegressionWeirdConfig")
+        << "variable map size: " << map.size() 
+        << " not equal to expected size: " << exp_size << " !"
+        << " The regression variable calculation code definitely has a bug, fix it!";
+    }
+  }
+
+  template<typename LazyTools,typename SeedType>
+  inline void calculateValues(EcalClusterLazyToolsBase* tools_tocast,
+                              const SeedType& the_seed,
+                              std::unordered_map<std::string,float>& float_vars,
+                              std::unordered_map<std::string,int>& int_vars ) {
+  }
 }
 
 class PhotonRegressionValueMapProducer : public edm::stream::EDProducer<> {
