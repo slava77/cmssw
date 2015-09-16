@@ -624,10 +624,26 @@ PFProducer::produce(Event& iEvent,
     pCleanedCandidateCollection( pfAlgo_->transferCleanedCandidates() ); 
 
   
+  edm::LogWarning("MYDEBUG")<<"Before transfer";
+  int iC=0;
+  for (auto const& pfc : *pfAlgo_->pfCandidates()){
+    edm::LogWarning("MYDEBUG")<<"pre-transfer at "<<iC
+			      <<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+    ++iC;
+  }
+
   // Save the final PFCandidate collection
   auto_ptr< reco::PFCandidateCollection > 
     pOutputCandidateCollection( pfAlgo_->transferCandidates() ); 
   
+
+  edm::LogWarning("MYDEBUG")<<"After transfer";
+  iC=0;
+  for (auto const& pfc : *pOutputCandidateCollection){
+    edm::LogWarning("MYDEBUG")<<"post-transfer at "<<iC
+			      <<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+    ++iC;
+  }
 
   
   LogDebug("PFProducer")<<"particle flow: putting products in the event"<<endl;

@@ -5,6 +5,8 @@
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h" 
 #include "FWCore/MessageLogger/interface/MessageLogger.h" 
 
+#include "FWCore/Utilities/interface/isFinite.h"
+
 using namespace reco;
 using namespace std;
 
@@ -103,6 +105,12 @@ PFCandConnector::connect(std::auto_ptr<PFCandidateCollection>& pfCand) {
       }
 
     }
+    int idC = 0;
+    for (auto const& pfc : *pfCand){
+      edm::LogWarning("MYDEBUG")<<"post-nuc-prim at "<<idC
+				<<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+      ++idC;
+    }
 
     for( unsigned int ce1=0; ce1 < pfCand->size(); ++ce1){
       if ( !bMask_[ce1] && isSecondaryNucl(pfCand->at(ce1)) ){
@@ -137,13 +145,25 @@ PFCandConnector::connect(std::auto_ptr<PFCandidateCollection>& pfCand) {
 
 
     }
+    idC = 0;
+    for (auto const& pfc : *pfCand){
+      edm::LogWarning("MYDEBUG")<<"post-nuc-sec at "<<idC
+				<<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+      ++idC;
+    }
   }   
   
 
     
 
-  for( unsigned int ce1=0; ce1 < pfCand->size(); ++ce1)
-    if (!bMask_[ce1]) pfC_->push_back(pfCand->at(ce1));
+  for( unsigned int ce1=0; ce1 < pfCand->size(); ++ce1){
+    if (!bMask_[ce1]){
+      auto const& pfc = pfCand->at(ce1);
+      edm::LogWarning("MYDEBUG")<<"Connected pfCandidate at ce1 "<<ce1<<" to ind "<<pfC_->size()
+				<<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+      pfC_->push_back(pfc);
+    }
+  }
 
 
   if(debug_ && bCorrect_) cout << "==================== ------------------------------ ===============" << endl<< endl << endl;
@@ -169,6 +189,9 @@ PFCandConnector::analyseNuclearWPrim(std::auto_ptr<PFCandidateCollection>& pfCan
 
   momentumSec = momentumPrim/momentumPrim.E()*(primaryCand.ecalEnergy() + primaryCand.hcalEnergy());
 
+  if (!edm::isFinite(momentumSec.E())){
+    edm::LogWarning("MomentumIsNaN")<<"Got a NaN momentumSec: prim "<<momentumPrim<<" ecal "<<primaryCand.ecalEnergy()<<" hcal "<<primaryCand.hcalEnergy();
+  }
   map<double, math::XYZTLorentzVectorD> candidatesWithTrackExcess;
   map<double, math::XYZTLorentzVectorD> candidatesWithoutCalo;
   
@@ -220,7 +243,11 @@ PFCandConnector::analyseNuclearWPrim(std::auto_ptr<PFCandidateCollection>& pfCan
 	// Check if the difference Track Calo is not too large and if we can trust the track, ie it doesn't miss too much hits.
 	if (deltaEn > 1  && nMissOuterHits > 1) {
 	  math::XYZTLorentzVectorD momentumToAdd = pfCand->at(ce2).p4()*caloEn/pfCand->at(ce2).p4().E();
-	  momentumSec += momentumToAdd;
+	  if (edm::isFinite(momentumToAdd.E())){
+	    momentumSec += momentumToAdd;
+	  } else {
+	    edm::LogWarning("MomentumIsNaN")<<"Got a NaN in momentumToAdd from ce2 "<<pfCand->at(ce2).p4()<<" caloE "<<caloEn;
+	  }
 	  if (debug_) cout << "The difference track-calo s really large and the track miss at least 2 hits. A secondary NI may have happened. Let's trust the calo energy" << endl << "add " << momentumToAdd << endl;
 	  
 	} else {
@@ -295,7 +322,11 @@ PFCandConnector::analyseNuclearWPrim(std::auto_ptr<PFCandidateCollection>& pfCan
     double pz = momentumPrim.Pz()*momentumSec.P()/momentumPrim.P();
     double E  = sqrt(px*px + py*py + pz*pz + pion_mass2);
     math::XYZTLorentzVectorD momentum(px, py, pz, E);
-    pfCand->at(ce1).setP4(momentum);
+    if (edm::isFinite(E)){
+      pfCand->at(ce1).setP4(momentum);
+    } else {
+      edm::LogWarning("MomentumIsNaN")<<"Got a NaN update from secondaries ==> do not update";
+    }
     
     return;
     
@@ -307,7 +338,11 @@ PFCandConnector::analyseNuclearWPrim(std::auto_ptr<PFCandidateCollection>& pfCan
     if (primDir.Mag2() < 0.1){
       // It might be 0 but this situation should never happend. Throw a warning if it happens.
       edm::LogWarning("PFCandConnector") << "A Nuclear Interaction do not have primary direction" << std::endl;
-      pfCand->at(ce1).setP4(momentumSec);
+      if (edm::isFinite(momentumSec.E())){
+	pfCand->at(ce1).setP4(momentumSec);
+      } else {
+	edm::LogWarning("MomentumIsNaN")<<"Got a NaN secondary for prompt-like primary ==> do not update";
+      }
       return;
     } else {
       // rescale the primary direction to the optimal momentum. But take care of the factthat it shall not be completly 0 to avoid a warning if Jet Area. 
@@ -319,7 +354,11 @@ PFCandConnector::analyseNuclearWPrim(std::auto_ptr<PFCandidateCollection>& pfCan
       double E  = sqrt(px*px + py*py + pz*pz + pion_mass2);
       
       math::XYZTLorentzVectorD momentum(px, py, pz, E);
-      pfCand->at(ce1).setP4(momentum);
+      if (edm::isFinite(E)){
+	pfCand->at(ce1).setP4(momentum);
+      } else {
+	edm::LogWarning("MomentumIsNaN")<<"Got a NaN update for detached primary ==> do not update";
+      }
       return;
     }
   }

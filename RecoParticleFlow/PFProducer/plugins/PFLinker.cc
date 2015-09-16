@@ -97,7 +97,11 @@ void PFLinker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       bool hasNonNullMuonRef  = cand.muonRef().isNonnull() && fillMuonRefs_;
       
       // if not an electron or a photon or a muon just fill the PFCandidate collection
-      if ( !(isphoton || iselectron || hasNonNullMuonRef)){pfCandidates_p->push_back(cand); continue;}
+      if ( !(isphoton || iselectron || hasNonNullMuonRef)){
+	edm::LogWarning("MYDEBUG")<<"Added (p.1)  pfCandidate at index "<<pfCandidates_p->size()
+				  <<" pt "<<cand.pt()<<" y "<<cand.rapidity()<<" m "<<cand.mass()<<" id "<<cand.pdgId();
+	pfCandidates_p->push_back(cand); continue;
+      }
       
       
       if (hasNonNullMuonRef) {
@@ -141,6 +145,8 @@ void PFLinker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	photonCandidateMap[photonRef] = candPtr;
       }      
 
+      edm::LogWarning("MYDEBUG")<<"Added (p.2)  pfCandidate at index "<<pfCandidates_p->size()
+				<<" pt "<<cand.pt()<<" y "<<cand.rapidity()<<" m "<<cand.mass()<<" id "<<cand.pdgId();
       pfCandidates_p->push_back(cand);
     }      
     // save the PFCandidates and get a valid handle

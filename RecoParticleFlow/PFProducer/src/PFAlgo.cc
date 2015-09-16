@@ -45,7 +45,7 @@
 #include "boost/graph/adjacency_matrix.hpp" 
 #include "boost/graph/graph_utility.hpp" 
 
-
+#include "FWCore/Utilities/interface/isFinite.h"
 
 using namespace std;
 using namespace reco;
@@ -522,8 +522,23 @@ void PFAlgo::reconstructParticles( const reco::PFBlockCollection& blocks ) {
     processBlock( *ie, empty, empty );
   }
 
+  edm::LogWarning("MYDEBUG")<<"PFAlgo::reconstructParticles has pre-postCleaning ncands "<<pfCandidates_->size();
+  for (unsigned i=0; i<pfCandidates_->size(); i++) {
+    auto const& pfc = (*pfCandidates_)[i];
+    edm::LogWarning("MYDEBUG")<<"almost candidate at "<<i
+                              <<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+  }
+
   // Post HF Cleaning
   postCleaning();
+
+  edm::LogWarning("MYDEBUG")<<"PFAlgo::reconstructParticles has pre-muon post-clean ncands "<<pfCandidates_->size();
+  for (unsigned i=0; i<pfCandidates_->size(); i++) {
+    auto const& pfc = (*pfCandidates_)[i];
+    edm::LogWarning("MYDEBUG")<<"post-HF post-clean candidate at "<<i
+                              <<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+  }
+
 
   //Muon post cleaning
   pfmu_->postClean(pfCandidates_.get());
@@ -531,6 +546,15 @@ void PFAlgo::reconstructParticles( const reco::PFBlockCollection& blocks ) {
   //Add Missing muons
    if( muonHandle_.isValid())
      pfmu_->addMissingMuons(muonHandle_,pfCandidates_.get());
+
+  edm::LogWarning("MYDEBUG")<<"PFAlgo::reconstructParticles has post-muon post-clean ncands "<<pfCandidates_->size();
+  for (unsigned i=0; i<pfCandidates_->size(); i++) {
+    auto const& pfc = (*pfCandidates_)[i];
+    edm::LogWarning("MYDEBUG")<<"post-muon post-clean candidate at "<<i
+                              <<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+  }
+
+
 }
 
 
@@ -1184,6 +1208,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
       if ( thisIsAMuon ) { 
 	(*pfCandidates_)[tmpi[0]].setEcalEnergy( clusterRef->energy(),
 						 std::min(clusterRef->energy(), muonECAL_[0]) );
+	if (!edm::isFinite(clusterRef->energy())) edm::LogWarning("MomentumIsNaN")<<"Ecal cluster e is NaN " <<clusterRef->energy()<<" eta "<<clusterRef->eta()<<" phi "<<clusterRef->phi();
 	(*pfCandidates_)[tmpi[0]].setHcalEnergy( 0., 0. );
 	(*pfCandidates_)[tmpi[0]].setHoEnergy( 0., 0. );
 	(*pfCandidates_)[tmpi[0]].setPs1Energy( 0 );
@@ -1276,6 +1301,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 	if ( thatIsAMuon ) { 
 	  (*pfCandidates_)[tmpi.back()].setEcalEnergy(clusterRef->energy(),
 						      std::min(clusterRef->energy(),muonECAL_[0]));
+	  if (!edm::isFinite(clusterRef->energy())) edm::LogWarning("MomentumIsNaN")<<"Ecal cluster e is NaN " <<clusterRef->energy()<<" eta "<<clusterRef->eta()<<" phi "<<clusterRef->phi();
 	  (*pfCandidates_)[tmpi.back()].setHcalEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpi.back()].setHoEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpi.back()].setPs1Energy( 0 );
@@ -1384,6 +1410,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 
 	  unsigned tmpe = reconstructCluster( *clusterRef, ecalEnergy ); 
 	  (*pfCandidates_)[tmpe].setEcalEnergy( clusterRef->energy(), ecalEnergy );
+	  if (!edm::isFinite(clusterRef->energy())) edm::LogWarning("MomentumIsNaN")<<"Ecal cluster e is NaN " <<clusterRef->energy()<<" eta "<<clusterRef->eta()<<" phi "<<clusterRef->phi();
 	  (*pfCandidates_)[tmpe].setHcalEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpe].setHoEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpe].setPs1Energy( ps1Ene[0] );
@@ -1459,6 +1486,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 	  neutralEnergy /= slopeEcal;
 	  unsigned tmpj = reconstructCluster( *pivotalRef, neutralEnergy ); 
 	  (*pfCandidates_)[tmpj].setEcalEnergy( pivotalRef->energy(), neutralEnergy );
+	  if (!edm::isFinite(pivotalRef->energy())) edm::LogWarning("MomentumIsNaN")<<"Ecal pivotal cluster e is NaN " <<pivotalRef->energy()<<" eta "<<pivotalRef->eta()<<" phi "<<pivotalRef->phi();
 	  (*pfCandidates_)[tmpj].setHcalEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpj].setHoEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpj].setPs1Energy( 0. );
@@ -1475,7 +1503,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 	  // Skip muons
 	  if ( (*pfCandidates_)[tmpi[ic]].particleId() == reco::PFCandidate::mu ) continue; 
 
-	  double fraction = (*pfCandidates_)[tmpi[ic]].trackRef()->p()/trackMomentum;
+	  double fraction = trackMomentum > 0 ? (*pfCandidates_)[tmpi[ic]].trackRef()->p()/trackMomentum : 0; 
 	  double ecalCal = bNeutralProduced ? 
 	    (calibEcal-neutralEnergy*slopeEcal)*fraction : calibEcal*fraction;
 	  double ecalRaw = totalEcal*fraction;
@@ -1483,6 +1511,8 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 	  if (debug_) cout << "The fraction after photon supression is " << fraction << " calibrated ecal = " << ecalCal << endl;
 
 	  (*pfCandidates_)[tmpi[ic]].setEcalEnergy( ecalRaw, ecalCal );
+	  if (!edm::isFinite(ecalRaw )) edm::LogWarning("MomentumIsNaN")<<"ecalRaw is NaN "<<ecalRaw<<" from totalEcal "<<totalEcal<<" *fraction "<<fraction
+									<<" ( p "<<(*pfCandidates_)[tmpi[ic]].trackRef()->p()<<" / momentum "<<trackMomentum;
 	  (*pfCandidates_)[tmpi[ic]].setHcalEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpi[ic]].setHoEnergy( 0., 0. );
 	  (*pfCandidates_)[tmpi[ic]].setPs1Energy( 0 );
@@ -1864,7 +1894,8 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 	  if(letMuonEatCaloEnergy) muonEcal = eclusterref->energy();
 	  // If the muon expected energy accounts for the whole ecal cluster energy, lock the ecal cluster
 	  if ( eclusterref->energy() - muonEcal  < 0.2 ) active[iEcal] = false;
-	  (*pfCandidates_)[tmpi].setEcalEnergy(eclusterref->energy(), muonEcal);
+	  (*pfCandidates_)[tmpi].setEcalEnergy(eclusterref->energy(), muonEcal); 
+	  if (!edm::isFinite(eclusterref->energy())) edm::LogWarning("MomentumIsNaN")<<"Ecal cluster e is NaN " <<eclusterref->energy()<<" eta "<<eclusterref->eta()<<" phi "<<eclusterref->phi();
 	}
 	unsigned iHO = 0;
 	double muonHO =0.;
@@ -2247,6 +2278,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 	    (*pfCandidates_)[tmpi].addElementInBlock( blockref, iEcal);
 	    double muonEcal = std::min(muonECAL_[0]+muonECAL_[1],eclusterref->energy());
 	    (*pfCandidates_)[tmpi].setEcalEnergy(eclusterref->energy(),muonEcal);
+	    if (!edm::isFinite(eclusterref->energy())) edm::LogWarning("MomentumIsNaN")<<"Ecal cluster e is NaN " <<eclusterref->energy()<<" eta "<<eclusterref->eta()<<" phi "<<eclusterref->phi();
 	  }
 	  if( useHO_ && !sortedHOs.empty() ) { 
 	    unsigned iHO = sortedHOs.begin()->second; 
@@ -2738,6 +2770,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 
       
 	(*pfCandidates_)[tmpi].setEcalEnergy( rawecalEnergy[iPivot],ecalEnergy[iPivot] );
+	if (!edm::isFinite(rawecalEnergy[iPivot])) edm::LogWarning("MomentumIsNaN")<<"Ecal cluster e is NaN for rawecalEnergy[iPivot] " <<rawecalEnergy[iPivot];
 	if ( !useHO_ ) { 
 	  (*pfCandidates_)[tmpi].setHcalEnergy( rawhcalEnergy[iPivot],hcalEnergy[iPivot] );
 	  (*pfCandidates_)[tmpi].setHoEnergy(0., 0.);
@@ -2819,6 +2852,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
       }
       //JB: fixing up (previously omitted) setting of ECAL energy gouzevit
       chargedHadron.setEcalEnergy( fraction * totalEcal, fraction * totalEcalEnergyCalibrated );
+      if (!edm::isFinite( fraction * totalEcal)) edm::LogWarning("MomentumIsNaN")<<" fraction * totalEcal ecal e is NaN: fraction "<<fraction<<" total "<<totalEcal;
     }
 
     // Finally treat unused ecal satellites as photons.
@@ -2847,6 +2881,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
       // Create a photon
       unsigned tmpi = reconstructCluster( *eclusterref, sqrt(is->second.second.Mag2()) ); 
       (*pfCandidates_)[tmpi].setEcalEnergy( eclusterref->energy(),sqrt(is->second.second.Mag2()) );
+      if (!edm::isFinite(eclusterref->energy())) edm::LogWarning("MomentumIsNaN")<<"Ecal cluster e is NaN " <<eclusterref->energy()<<" eta "<<eclusterref->eta()<<" phi "<<eclusterref->phi();
       (*pfCandidates_)[tmpi].setHcalEnergy( 0., 0. );
       (*pfCandidates_)[tmpi].setHoEnergy( 0., 0. );
       (*pfCandidates_)[tmpi].setPs1Energy( associatedPSs[iEcal].first );
@@ -3094,6 +3129,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
 
     
     (*pfCandidates_)[tmpi].setEcalEnergy( totalEcal, calibEcal );
+    if (!edm::isFinite(totalEcal)) edm::LogWarning("MomentumIsNaN")<<"Ecal totalEcal is NaN " <<totalEcal;
     if ( !useHO_ ) { 
       (*pfCandidates_)[tmpi].setHcalEnergy( totalHcal, calibHcal );
       (*pfCandidates_)[tmpi].setHoEnergy(0.,0.);
@@ -3149,6 +3185,7 @@ void PFAlgo::processBlock( const reco::PFBlockRef& blockref,
                                         particleEnergy );
  
     (*pfCandidates_)[tmpi].setEcalEnergy( clusterref->energy(),ecalEnergy );
+    if (!edm::isFinite(clusterref->energy())) edm::LogWarning("MomentumIsNaN")<<"Cluster e is NaN " <<clusterref->energy()<<" eta "<<clusterref->eta()<<" phi "<<clusterref->phi();
     (*pfCandidates_)[tmpi].setHcalEnergy( 0., 0. );
     (*pfCandidates_)[tmpi].setHoEnergy( 0., 0. );
     (*pfCandidates_)[tmpi].setPs1Energy( 0. );
@@ -3621,6 +3658,12 @@ PFAlgo::checkCleaning( const reco::PFRecHitCollection& cleanedHits ) {
   double metY = 0.;
   double sumet = 0;
   std::vector<unsigned int> hitsToBeAdded;
+  edm::LogWarning("MYDEBUG")<<"PFAlgo::checkCleaning has ncands "<<pfCandidates_->size();
+  for (unsigned i=0; i<pfCandidates_->size(); i++) {
+    auto const& pfc = (*pfCandidates_)[i];
+    edm::LogWarning("MYDEBUG")<<"candidate at "<<i
+			      <<" pt "<<pfc.pt()<<" y "<<pfc.rapidity()<<" m "<<pfc.mass()<<" id "<<pfc.pdgId();
+  }
   for(unsigned i=0; i<pfCandidates_->size(); i++) {
     const PFCandidate& pfc = (*pfCandidates_)[i];
     metX += pfc.px();

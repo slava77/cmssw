@@ -50,6 +50,9 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
 	if (edm::isFinite(fRecoParticle.rapidity)){
 	  curPseudoJet.reset_PtYPhiM(fRecoParticle.pt,fRecoParticle.rapidity,fRecoParticle.phi,fRecoParticle.m);//hacked
 	} else {
+	  edm::LogWarning("PuppiNaN")<<"Got an input with a NaN at index "<<i
+				     <<": y "<<fRecoParticle.rapidity
+				     <<" pt "<<fRecoParticle.pt<<" phi "<<fRecoParticle.phi<<" m "<<fRecoParticle.m;
 	  curPseudoJet.reset_PtYPhiM(0, 99., 0, 0);//skipping may have been a better choice
 	}
         //curPseudoJet.reset_PtYPhiM(fRecoParticle.pt,fRecoParticle.eta,fRecoParticle.phi,fRecoParticle.m);

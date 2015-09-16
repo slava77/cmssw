@@ -172,6 +172,9 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }
     }
 
+    edm::LogWarning("MYDEBUG")<<"Adding particle at index "<<fRecoObjCollection.size()
+			      <<": y "<<pReco.rapidity
+			      <<" pt "<<pReco.pt<<" phi "<<pReco.phi<<" m "<<pReco.m;
     fRecoObjCollection.push_back(pReco);
       
   }
