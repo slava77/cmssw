@@ -17,11 +17,21 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.Geometry.GeometryExtended2015MuonGEMDevReco_cff')
-process.load('Configuration.Geometry.GeometryExtended2015MuonGEMDev_cff')
+
+# Ideal geometry, needed for transient ECAL alignement
+process.load('Configuration.Geometry.GeometryRecoDB_cff')
+process.load('Geometry.CMSCommonData.cmsExtendedGeometry2015MuonGEMDevXML_cfi')
+process.load('Geometry.GEMGeometryBuilder.gemGeometry_cfi')
+process.load('Geometry.GEMGeometryBuilder.me0Geometry_cfi')
+process.load('Geometry.RPCGeometryBuilder.rpcGeometry_cfi')
+process.load('Geometry.MuonNumbering.muonNumberingInitialization_cfi')
+
+process.load('Configuration.StandardSequences.DigiToRaw_cff')
+process.load('Configuration.StandardSequences.RawToDigi_cff')
+process.load("Configuration.StandardSequences.Reconstruction_cff")               
 process.load("Configuration.StandardSequences.MagneticField_cff")                # recommended configuration
-# process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')  # deprecated configuration
-# Be careful here ot to load Configuration.StandardSequences.Reconstruction_cff
+
+
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
@@ -32,141 +42,9 @@ process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
 #process.load('RecoLocalMuon.GEMRecHit.me0RecHits_cfi')
 process.load('RecoLocalMuon.GEMRecHit.me0LocalReco_cff')
 process.load("RecoLocalMuon.Configuration.RecoLocalMuon_cff")
-
 ### me0Muon reco now
 process.load('RecoMuon.MuonIdentification.me0MuonReco_cff')
 
-
-### Try to add also Tracker local reco ###
-##########################################
-# Digi2Raw and Raw2Digi for Tracker Dets:
-process.load("EventFilter.SiPixelRawToDigi.SiPixelDigiToRaw_cfi")
-process.load("EventFilter.SiPixelRawToDigi.SiPixelRawToDigi_cfi")
-process.load("EventFilter.SiStripRawToDigi.SiStripDigiToRaw_cfi")
-process.load("EventFilter.SiStripRawToDigi.SiStripDigis_cfi")
-process.siStripDigis.ProductLabel = cms.InputTag('SiStripDigiToRaw')
-
-# --------------------------
-# - Sources of Information -
-# -----------------------------------------------------------------
-# Configuration/StandardSequences/python/Reconstruction_cff.py
-# RecoTracker/Configuration/python/customiseForRunI.py
-# RecoTracker/Configuration/python/RecoTrackerRunI_cff.py
-# RecoTracker/IterativeTracking/python/RunI_iterativeTk_cff.py
-# tgrIndex = process.globalreco.index(process.trackingGlobalReco)
-# -----------------------------------------------------------------
-# Twiki pages I should consider to read:
-# https://twiki.cern.ch/twiki/bin/view/CMS/AndreaBocciTracking
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideIterativeTracking?redirectedfrom=CMS.SWGuideIterativeTracking
-# -----------------------------------------------------------------
-
-# --------------------------
-# - Local Reco for Tracker -
-# -----------------------------------------------------------------
-process.load("RecoLocalTracker.Configuration.RecoLocalTracker_cff")
-# for Local Reco for Tracker in Run-I we need to load & redefine:
-process.load("RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizer_cfi")
-process.load("RecoPixelVertexing.Configuration.RecoPixelVertexing_cff") 
-# Run-II Local Reco
-# process.pixeltrackerlocalreco = cms.Sequence(process.siPixelClustersPreSplitting*process.siPixelRecHitsPreSplitting)
-# process.striptrackerlocalreco = cms.Sequence(process.siStripZeroSuppression*process.siStripClusters*process.siStripMatchedRecHits)
-# process.trackerlocalreco = cms.Sequence(process.pixeltrackerlocalreco*process.striptrackerlocalreco*process.clusterSummaryProducer)
-# Run-I Local Reco
-process.pixeltrackerlocalreco = cms.Sequence(process.siPixelClusters*process.siPixelRecHits)
-process.striptrackerlocalreco = cms.Sequence(process.siStripZeroSuppression*process.siStripClusters*process.siStripMatchedRecHits)
-process.trackerlocalreco = cms.Sequence(process.pixeltrackerlocalreco*process.striptrackerlocalreco*process.clusterSummaryProducerNoSplitting)
-# -----------------------------------------------------------------
-
-
-# ---------------------------
-# - Global Reco for Tracker -
-# -----------------------------------------------------------------
-# Run-2 configuration ... will not work because of Calo dependencies
-# process.load("RecoTracker.Configuration.RecoTracker_cff")
-# Run-1 configuration ... should work stand-alone
-# process.load("RecoTracker.Configuration.RecoTrackerRunI_cff")
-# taking iterTracking from this file, 
-# removing all dEdX, EcalSeeds and trackExtrapolations for (B-)Jets
-process.load("RecoTracker.IterativeTracking.RunI_iterativeTk_cff")
-process.load("RecoTracker.CkfPattern.CkfTrackCandidates_cff")
-process.ckftracks          = cms.Sequence(process.iterTracking)
-process.trackingGlobalReco = cms.Sequence(process.ckftracks) 
-
-# Now get rid of spurious reference to JetCore step
-process.earlyGeneralTracks.trackProducers = ['initialStepTracks',
-                                             'lowPtTripletStepTracks',
-                                             'pixelPairStepTracks',
-                                             'detachedTripletStepTracks',
-                                             'mixedTripletStepTracks',
-                                             'pixelLessStepTracks',
-                                             'tobTecStepTracks'
-                                             ]
-
-process.earlyGeneralTracks.inputClassifiers =["initialStepSelector",
-                                              "lowPtTripletStepSelector",
-                                              "pixelPairStepSelector",
-                                              "detachedTripletStep",
-                                              "mixedTripletStep",
-                                              "pixelLessStepSelector",
-                                              "tobTecStep"
-                                              ]
-
-# Now restore pixelVertices wherever was not possible with an ad-hoc RunI cfg
-process.muonSeededTracksInOutClassifier.vertices = 'pixelVertices'
-process.muonSeededTracksOutInClassifier.vertices = 'pixelVertices'
-process.duplicateTrackClassifier.vertices = 'pixelVertices'
-process.convStepSelector.vertices = 'pixelVertices'
-# because of removal of dEdX, EcalSeeds and trackExtrapolations
-# following processes are not called, therefore pixelVertices not restored
-# process.muonSeededTracksOutInDisplacedClassifier.vertices = 'pixelVertices'
-# process.duplicateDisplacedTrackClassifier.vertices = 'pixelVertices'
-# process.pixelPairElectronSeeds.RegionFactoryPSet.RegionPSet.VertexCollection = 'pixelVertices'
-# process.ak4CaloJetsForTrk.srcPVs = 'pixelVertices'
-# process.photonConvTrajSeedFromSingleLeg.primaryVerticesTag = 'pixelVertices'
-
-# ... and finally turn off all possible references to CCC: this is
-# done by switching off the Tight and Loose reftoPSet, rather than
-# following all the places in which they are effectively used in
-# release. The RunI-like tracking already uses CCCNone: this will
-# be useful mainly for conversions.
-process.SiStripClusterChargeCutTight.value = -1.
-process.SiStripClusterChargeCutLoose.value = -1
-
-# Defaults are ok here ...
-# process.earlyMuons.TrackAssociatorParameters.useMuon      = cms.bool(True)
-# process.earlyMuons.TrackAssociatorParameters.useHO        = cms.bool(False)
-# process.earlyMuons.TrackAssociatorParameters.useEcal      = cms.bool(False)
-# process.earlyMuons.TrackAssociatorParameters.useHcal      = cms.bool(False)
-# process.earlyMuons.TrackAssociatorParameters.useCalo      = cms.bool(False)
-# process.earlyMuons.TrackAssociatorParameters.usePreShower = cms.bool(False)
-
-# Global Reco for Tracker, including BeamSpot, Vertices, special Muon Tracking
-process.load("RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi")
-process.load("RecoPixelVertexing.PixelLowPtUtilities.siPixelClusterShapeCache_cfi")
-# necessary for Run-II
-# process.siPixelClusterShapeCachePreSplitting = process.siPixelClusterShapeCache.clone(
-#     src = 'siPixelClustersPreSplitting'
-# )
-process.load("RecoVertex.Configuration.RecoVertex_cff")
-process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
-process.load("RecoTracker.TkSeedingLayers.PixelLayerTriplets_cfi")
-
-# redefine the process vertexreco
-# check modification in RecoVertex/Configuration/python/RecoVertex_cff.py 
-# the Run-II configuration has been commented out
-# process.vertexreco = cms.Sequence(process.offlinePrimaryVertices*process.offlinePrimaryVerticesWithBS*process.generalV0Candidates*process.inclusiveVertexing)
-
-# process.vertexreco.remove(process.caloTowerForTrk)
-# process.vertexreco.remove(process.ak4CaloJetsForTrk)
-# process.sortedPrimaryVertices.jets = ""
-
-
-### Can we do also Muon Global Reco? ###
-########################################
-process.load("RecoMuon.Configuration.RecoMuon_cff")
-# process.load("RecoVertex.Configuration.RecoVertex_cff")
-# process.load("RecoPixelVertexing.Configuration.RecoPixelVertexing_cff")
-# process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
@@ -230,9 +108,9 @@ process.output = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring(
         'keep  *_*_*_*',
     ),
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('localreco_step', 'globalreco_step')
-    )
+#    SelectEvents = cms.untracked.PSet(
+#        SelectEvents = cms.vstring('localreco_step', 'globalreco_step')
+#    )
 )
 
 ### TO ACTIVATE LogTrace one NEEDS TO COMPILE IT WITH:
@@ -258,21 +136,21 @@ process.output = cms.OutputModule("PoolOutputModule",
 # )
 
 
+process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False
+process.particleFlowClusterECAL.energyCorrector.autoDetectBunchSpacing = False
+process.gedPhotons.regressionConfig.autoDetectBunchSpacing = False
+process.gedGsfElectrons.regressionConfig.autoDetectBunchSpacing = False
 
 
 ### Paths and Schedules
 #######################
-process.digi2raw_step   = cms.Path(process.siPixelRawData+process.SiStripDigiToRaw)
-process.raw2digi_step   = cms.Path(process.siPixelDigis+process.siStripDigis) 
-#process.localreco_step  = cms.Path(process.muonlocalreco+process.gemRecHits+process.me0RecHits+process.trackerlocalreco)
-process.localreco_step  = cms.Path(process.muonlocalreco+process.gemRecHits+process.me0LocalReco+process.trackerlocalreco)
+process.digi2raw_step   = cms.Path(process.siPixelRawData+process.SiStripDigiToRaw+process.rawDataCollector) 
+process.raw2digi_step   = cms.Path(process.RawToDigi) 
+process.muonlocalreco += process.gemRecHits
+process.muonlocalreco += process.me0LocalReco
+process.muonGlobalReco += process.me0MuonReco
 
-# Run-2 Global Reco Step:
-# process.globalreco_step = cms.Path(process.offlineBeamSpot*process.MeasurementTrackerEventPreSplitting*process.siPixelClusterShapeCachePreSplitting*
-#                                    process.standalonemuontracking*process.iterTracking)#process.trackingGlobalReco*process.vertexreco)#*process.muonGlobalReco)
-# Run-1 Global Reco Step: (no PreSplitting before iterTracking sequence)
-process.globalreco_step = cms.Path(process.offlineBeamSpot*process.MeasurementTrackerEvent*process.siPixelClusterShapeCache*process.PixelLayerTriplets*process.recopixelvertexing*
-                                   process.standalonemuontracking*process.trackingGlobalReco*process.vertexreco*process.me0MuonReco)#*process.muonGlobalReco)
+process.reconstruction_step = cms.Path(process.reconstruction)
 
 process.endjob_step     = cms.Path(process.endOfProcess)
 process.out_step        = cms.EndPath(process.output)
@@ -280,8 +158,14 @@ process.out_step        = cms.EndPath(process.output)
 process.schedule = cms.Schedule(
     process.digi2raw_step,
     process.raw2digi_step,
-    process.localreco_step,
-    process.globalreco_step,
+    process.reconstruction_step,
     process.endjob_step,
     process.out_step
 )
+
+process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
+    ignoreTotal = cms.untracked.int32(1),
+    oncePerEventMode = cms.untracked.bool(True)
+)
+process.Timing = cms.Service("Timing")
+process.options.wantSummary = cms.untracked.bool(True)
