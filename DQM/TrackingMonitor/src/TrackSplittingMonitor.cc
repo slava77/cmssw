@@ -39,6 +39,18 @@ TrackSplittingMonitor::TrackSplittingMonitor(const edm::ParameterSet& iConfig)
   splitTracksToken_ = consumes<std::vector<reco::Track> >(splitTracks_);
   splitMuonsToken_  = mayConsume<std::vector<reco::Muon> >(splitMuons_);
 
+  //get input tags
+  plotMuons_ = conf_.getParameter<bool>("ifPlotMuons");
+
+  // cuts
+  pixelHitsPerLeg_ = conf_.getParameter<int>("pixelHitsPerLeg");
+  totalHitsPerLeg_ = conf_.getParameter<int>("totalHitsPerLeg");
+  d0Cut_ = conf_.getParameter<double>("d0Cut");
+  dzCut_ = conf_.getParameter<double>("dzCut");
+  ptCut_ = conf_.getParameter<double>("ptCut");
+  norchiCut_ = conf_.getParameter<double>("norchiCut");
+	  
+
 }
 
 TrackSplittingMonitor::~TrackSplittingMonitor() { 
@@ -143,21 +155,6 @@ void TrackSplittingMonitor::bookHistograms(DQMStore::IBooker & ibooker,
     ddxyNormalizedResiduals_global_->setAxisTitle( "#delta 1/p_{T}/#sigma(1/p_{T})" );
   }
 
-}
-
-void TrackSplittingMonitor::beginJob(void) 
-{	
-  //get input tags
-  plotMuons_ = conf_.getParameter<bool>("ifPlotMuons");
-
-  // cuts
-  pixelHitsPerLeg_ = conf_.getParameter<int>("pixelHitsPerLeg");
-  totalHitsPerLeg_ = conf_.getParameter<int>("totalHitsPerLeg");
-  d0Cut_ = conf_.getParameter<double>("d0Cut");
-  dzCut_ = conf_.getParameter<double>("dzCut");
-  ptCut_ = conf_.getParameter<double>("ptCut");
-  norchiCut_ = conf_.getParameter<double>("norchiCut");
-	  
 }
 
 //
@@ -361,7 +358,7 @@ void TrackSplittingMonitor::analyze(const edm::Event& iEvent, const edm::EventSe
 }
 
 
-void TrackSplittingMonitor::endJob(void) {
+void TrackSplittingMonitor::endStream(void) {
   bool outputMEsInRootFile = conf_.getParameter<bool>("OutputMEsInRootFile");
   std::string outputFileName = conf_.getParameter<std::string>("OutputFileName");
   if(outputMEsInRootFile){
