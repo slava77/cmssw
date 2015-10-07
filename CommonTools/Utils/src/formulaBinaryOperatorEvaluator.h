@@ -30,11 +30,10 @@ namespace reco {
   namespace formula {
     class BinaryOperatorEvaluatorBase : public EvaluatorBase {
     public:
-    BinaryOperatorEvaluatorBase( Precedence iPrec) :
+    BinaryOperatorEvaluatorBase( Precidence iPrec) :
       EvaluatorBase(iPrec) {}
       virtual void swapLeftEvaluator(std::unique_ptr<EvaluatorBase>& iNew) = 0;
     };
-
     template<typename Op>
       class BinaryOperatorEvaluator : public BinaryOperatorEvaluatorBase
     {
@@ -42,7 +41,7 @@ namespace reco {
     public:
       BinaryOperatorEvaluator(std::unique_ptr<EvaluatorBase> iLHS, 
                               std::unique_ptr<EvaluatorBase> iRHS,
-                              Precedence iPrec):
+                              Precidence iPrec):
       BinaryOperatorEvaluatorBase(iPrec),
         m_lhs(std::move(iLHS)),
         m_rhs(std::move(iRHS)) {
