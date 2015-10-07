@@ -28,12 +28,12 @@
 // constructors and destructor
 //
 reco::formula::EvaluatorBase::EvaluatorBase():
-  m_precedence(static_cast<unsigned int>(Precedence::kFunction))
+  m_precidence(static_cast<unsigned int>(Precidence::kFunction))
 {
 }
 
-reco::formula::EvaluatorBase::EvaluatorBase(Precedence iPrec):
-  m_precedence(static_cast<unsigned int>(iPrec))
+reco::formula::EvaluatorBase::EvaluatorBase(Precidence iPrec):
+  m_precidence(static_cast<unsigned int>(iPrec))
 {
 }
 

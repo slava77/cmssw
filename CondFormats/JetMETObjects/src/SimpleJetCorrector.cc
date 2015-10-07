@@ -6,12 +6,20 @@
 #include <cmath>
 
 //------------------------------------------------------------------------
+//--- Default SimpleJetCorrector constructor -----------------------------
+//------------------------------------------------------------------------
+SimpleJetCorrector::SimpleJetCorrector()
+{
+  mDoInterpolation = false;
+  mInvertVar       = 9999;
+}
+//------------------------------------------------------------------------
 //--- SimpleJetCorrector constructor -------------------------------------
 //--- reads arguments from a file ----------------------------------------
 //------------------------------------------------------------------------
 SimpleJetCorrector::SimpleJetCorrector(const std::string& fDataFile, const std::string& fOption):
   mParameters(fDataFile,fOption),
-  mFunc((mParameters.definitions()).formula())
+  mFunc("function",((mParameters.definitions()).formula()).c_str())
 {
   mDoInterpolation = false;
   if (mParameters.definitions().isResponse())
@@ -23,11 +31,17 @@ SimpleJetCorrector::SimpleJetCorrector(const std::string& fDataFile, const std::
 //------------------------------------------------------------------------
 SimpleJetCorrector::SimpleJetCorrector(const JetCorrectorParameters& fParameters):
   mParameters(fParameters),
-  mFunc((mParameters.definitions()).formula())
+  mFunc("function",((mParameters.definitions()).formula()).c_str())
 {
   mDoInterpolation = false;
   if (mParameters.definitions().isResponse())
     mInvertVar = findInvertVar();
+}
+//------------------------------------------------------------------------
+//--- SimpleJetCorrector destructor --------------------------------------
+//------------------------------------------------------------------------
+SimpleJetCorrector::~SimpleJetCorrector()
+{
 }
 
 //------------------------------------------------------------------------
@@ -92,12 +106,13 @@ float SimpleJetCorrector::correctionBin(unsigned fBin,const std::vector<float>& 
     }
   const std::vector<float>& par = mParameters.record(fBin).parameters();
 
-  double params[par.size() - 2 * N];
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,03,00)
+  Double_t params[par.size() - 2 * N];
   for(unsigned int i=2*N;i<par.size();i++)
     {
       params[i-2*N] = par[i];
     }
-  double x[4] = {};
+  Double_t x[4] = {};
   for(unsigned i=0;i<N;i++)
     {
       x[i] = (fY[i] < par[2*i]) ? par[2*i] : (fY[i] > par[2*i+1]) ? par[2*i+1] : fY[i];
@@ -105,7 +120,28 @@ float SimpleJetCorrector::correctionBin(unsigned fBin,const std::vector<float>& 
   if (mParameters.definitions().isResponse()) {
     return invert(x, params);
   }
-  return mFunc.evaluate(reco::formula::ArrayAdaptor(x,N), reco::formula::ArrayAdaptor(params,par.size()-2*N) );
+  return mFunc.EvalPar(x, params);
+#else
+  float result = -1;
+  //Have to do calculation using a temporary TFormula to avoid
+  // thread safety issues
+  TFormula tFunc(mFunc);
+
+  for(unsigned int i=2*N;i<par.size();i++)
+    tFunc.SetParameter(i-2*N,par[i]);
+  float x[4] = {};
+  std::vector<float> tmp;
+  for(unsigned i=0;i<N;i++)
+    {
+      x[i] = (fY[i] < par[2*i]) ? par[2*i] : (fY[i] > par[2*i+1]) ? par[2*i+1] : fY[i];
+      tmp.push_back(x[i]);
+    }
+  if (mParameters.definitions().isResponse())
+    result = invert(tmp,tFunc);
+  else
+    result = tFunc.Eval(x[0],x[1],x[2],x[3]);
+  return result;
+#endif
 }
 //------------------------------------------------------------------------
 //--- find invertion variable (JetPt) ------------------------------------
@@ -127,21 +163,22 @@ unsigned SimpleJetCorrector::findInvertVar()
 //------------------------------------------------------------------------
 //--- inversion ----------------------------------------------------------
 //------------------------------------------------------------------------
-float SimpleJetCorrector::invert(const double *args, const double *params) const
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,03,00)
+float SimpleJetCorrector::invert(const Double_t *args, const Double_t *params) const
 {
   unsigned nMax = 50;
   float precision = 0.0001;
   float rsp = 1.0;
   float e = 1.0;
-  double x[4];
+  Double_t x[4];
   unsigned nLoop=0;
 
   // 4 dimensions (x, y, z, t) supported in TFormula
-  memcpy(&x, args, sizeof(double) * 4);
+  memcpy(&x, args, sizeof(Double_t) * 4);
 
   while(e > precision && nLoop < nMax)
     {
-      rsp = mFunc.evaluate(reco::formula::ArrayAdaptor(x,4), reco::formula::ArrayAdaptor(params,mFunc.numberOfParameters()));
+      rsp = mFunc.EvalPar(x, params);
       float tmp = x[mInvertVar] * rsp;
       e = fabs(tmp - args[mInvertVar])/args[mInvertVar];
       x[mInvertVar] = args[mInvertVar]/rsp;
@@ -149,3 +186,26 @@ float SimpleJetCorrector::invert(const double *args, const double *params) const
     }
   return 1./rsp;
 }
+#else
+float SimpleJetCorrector::invert(const std::vector<float>& fX, TFormula& tFunc) const
+{
+  unsigned nMax = 50;
+  unsigned N = fX.size();
+  float precision = 0.0001;
+  float rsp = 1.0;
+  float e = 1.0;
+  float x[4] = {0.0,0.0,0.0,0.0};
+  for(unsigned i=0;i<N;i++)
+    x[i] = fX[i];
+  unsigned nLoop=0;
+  while(e > precision && nLoop < nMax)
+    {
+      rsp = tFunc.Eval(x[0],x[1],x[2],x[3]);
+      float tmp = x[mInvertVar] * rsp;
+      e = fabs(tmp - fX[mInvertVar])/fX[mInvertVar];
+      x[mInvertVar] = fX[mInvertVar]/rsp;
+      nLoop++;
+    }
+  return 1./rsp;
+}
+#endif
