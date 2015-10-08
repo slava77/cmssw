@@ -44,9 +44,20 @@ public:
   VertexState(const AlgebraicVector3 & weightTimesPosition,
 	      const GlobalWeight & posWeight, const double & weightInMix= 1.0) :
     Base ( new BSVS (weightTimesPosition, posWeight, weightInMix)) {}
+      
+  // with time
+  VertexState(const GlobalPoint & pos, const GlobalError & posErr,
+              const double time, const double timeErr,
+              const double & weightInMix = 1.0);
+  VertexState(const GlobalPoint & pos, const GlobalWeight & posWeight,
+              const double time, const double timeWeight,
+              const double & weightInMix = 1.0);
+  VertexState(const AlgebraicVector3 & weightTimesPosition,
+              const GlobalWeight & posWeight,
+              const double weightTimesTime,
+              const double timeWeight,
+              const double & weightInMix = 1.0);
   
-
-
   GlobalPoint position() const
   {
     return data().position();
@@ -60,6 +71,18 @@ public:
   GlobalWeight weight() const
   {
     return data().weight();
+  }
+
+  double time() const {
+    return data().time();
+  }
+
+  double timeError() const {
+    return data().timeError();
+  }
+
+  double weightTimesTime() const {
+    return data().weightTimesTime();
   }
 
   AlgebraicVector3 weightTimesPosition() const
