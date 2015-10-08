@@ -136,12 +136,6 @@ process.output = cms.OutputModule("PoolOutputModule",
 # )
 
 
-process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False
-process.particleFlowClusterECAL.energyCorrector.autoDetectBunchSpacing = False
-process.gedPhotons.regressionConfig.autoDetectBunchSpacing = False
-process.gedGsfElectrons.regressionConfig.autoDetectBunchSpacing = False
-
-
 ### Paths and Schedules
 #######################
 process.digi2raw_step   = cms.Path(process.siPixelRawData+process.SiStripDigiToRaw+process.rawDataCollector) 
@@ -163,9 +157,3 @@ process.schedule = cms.Schedule(
     process.out_step
 )
 
-process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
-    ignoreTotal = cms.untracked.int32(1),
-    oncePerEventMode = cms.untracked.bool(True)
-)
-process.Timing = cms.Service("Timing")
-process.options.wantSummary = cms.untracked.bool(True)
