@@ -109,3 +109,9 @@ process = customise(process)
 
 # End of customisation functions
 
+#undo the harm done by muon customs to pu info
+process.pdigi += process.addPileupInfo
+from SimGeneral.MixingModule.digitizers_cfi import theDigitizers as theDigitizersOriginal
+process.mix.digitizers.puVtx = theDigitizersOriginal.puVtx
+process.FEVTDEBUGHLToutput.outputCommands += [ 'keep int_*_bunchSpacing_*' ]
+
