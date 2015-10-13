@@ -31,8 +31,7 @@ public:
   explicit VertexState(const reco::BeamSpot& beamSpot) :
     Base ( new BSVS ( GlobalPoint(Basic3DVector<float> (beamSpot.position())), 
 		      GlobalError(beamSpot.rotatedCovariance3D()), 1.0)) {}
-  
-
+    
   VertexState(const GlobalPoint & pos, 
 	      const GlobalError & posErr, const double & weightInMix= 1.0) :
     Base ( new BSVS (pos, posErr, weightInMix)) {}
@@ -52,12 +51,14 @@ public:
   VertexState(const GlobalPoint & pos, const GlobalWeight & posWeight,
               const double time, const double timeWeight,
               const double & weightInMix = 1.0);
-  VertexState(const AlgebraicVector3 & weightTimesPosition,
+  VertexState(const AlgebraicVector4 & weightTimesPosition,
               const GlobalWeight & posWeight,
               const double weightTimesTime,
               const double timeWeight,
               const double & weightInMix = 1.0);
   
+  // with time, full cov
+
   GlobalPoint position() const
   {
     return data().position();
@@ -68,9 +69,19 @@ public:
     return data().error();
   }
 
+  GlobalError error4D() const
+  {
+    return data().error4D();
+  }
+
   GlobalWeight weight() const
   {
     return data().weight();
+  }
+
+  GlobalWeight weight4D() const
+  {
+    return data().weight4D();
   }
 
   double time() const {
@@ -80,14 +91,15 @@ public:
   double timeError() const {
     return data().timeError();
   }
-
-  double weightTimesTime() const {
-    return data().weightTimesTime();
-  }
-
+  
   AlgebraicVector3 weightTimesPosition() const
   {
     return data().weightTimesPosition();
+  }
+
+  AlgebraicVector4 weightTimesPosition4D() const 
+  {
+    return data().weightTimesPosition4D();
   }
 
   double weightInMixture() const
@@ -109,6 +121,8 @@ public:
 
   /// Make the ReferenceCountingProxy method to check validity public
   bool isValid() const {return Base::isValid() && data().isValid();}
+
+  bool is4D() const { return data().is4D(); }
 
 };
 
