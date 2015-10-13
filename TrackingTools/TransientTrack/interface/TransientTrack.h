@@ -53,12 +53,23 @@ namespace reco {
     }
 
     TransientTrack( const Track & tk , const MagneticField* field); 
+    TransientTrack( const Track & tk , const double time, const double dtime, const MagneticField* field); 
+
     TransientTrack( const TrackRef & tk , const MagneticField* field); 
     TransientTrack( const CandidatePtr & ptr , const MagneticField* field);
+    TransientTrack( const TrackRef & tk , const double time, const double dtime,  const MagneticField* field); 
+    TransientTrack( const CandidatePtr & ptr, const double time, const double dtime, const MagneticField* field);
+
     TransientTrack( const TrackRef & tk , const MagneticField* field, const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
-  
+    TransientTrack( const TrackRef & tk , const double time,
+                    const double dtime, 
+                    const MagneticField* field, const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
+
     TransientTrack( const Track & tk , const MagneticField* field, const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
     TransientTrack( const CandidatePtr & ptr , const MagneticField* field,  const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
+    TransientTrack( const Track & tk , const double time, const double dtime, const MagneticField* field, const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
+    TransientTrack( const CandidatePtr & ptr, const double time, const double dtime, const MagneticField* field,  const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
+
 
 
     void setES(const edm::EventSetup& es) {sharedData().setES(es);}
@@ -106,6 +117,10 @@ namespace reco {
     const MagneticField* field() const {return data().field();}
 
     const BasicTransientTrack* basicTransientTrack() const {return &(data());}
+    
+
+    double timeExt() const { return data().timeExt(); }
+    double dtErrorExt() const { return data().dtErrorExt(); }
 
     const Track & track() const {return data().track();}
 
