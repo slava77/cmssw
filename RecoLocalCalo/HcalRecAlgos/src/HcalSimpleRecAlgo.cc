@@ -15,14 +15,15 @@ constexpr double MaximumFractionalError = 0.002; // 0.2% error allowed from this
 constexpr int HPDShapev3DataNum = 105;
 constexpr int HPDShapev3MCNum = 105;
 
-HcalSimpleRecAlgo::HcalSimpleRecAlgo(bool correctForTimeslew, bool correctForPulse, float phaseNS) : 
+HcalSimpleRecAlgo::HcalSimpleRecAlgo(bool correctForTimeslew, bool correctForPulse, float phaseNS, 
+				     int iPedSubMethod, float iPedSubThreshold, int iTimeSlewParsType, std::vector<double> iTimeSlewPars, double irespCorrM3) : 
   correctForTimeslew_(correctForTimeslew),
   correctForPulse_(correctForPulse),
   phaseNS_(phaseNS), runnum_(0), setLeakCorrection_(false), puCorrMethod_(0)
 {  
   pulseCorr_ = std::auto_ptr<HcalPulseContainmentManager>(new HcalPulseContainmentManager(MaximumFractionalError));
   pedSubFxn_ = std::auto_ptr<PedestalSub>(new PedestalSub());
-  hltOOTpuCorr_ = std::auto_ptr<HcalDeterministicFit>(new HcalDeterministicFit());
+  hltOOTpuCorr_ = std::auto_ptr<HcalDeterministicFit>(new HcalDeterministicFit((HcalTimeSlew::ParaSource)iTimeSlewParsType, HcalTimeSlew::Medium, (HcalDeterministicFit::NegStrategy)2, *pedSubFxn_, iTimeSlewPars,irespCorrM3));
 }
 
 

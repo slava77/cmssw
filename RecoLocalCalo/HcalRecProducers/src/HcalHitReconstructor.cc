@@ -25,7 +25,13 @@
 HcalHitReconstructor::HcalHitReconstructor(edm::ParameterSet const& conf):
   reco_(conf.getParameter<bool>("correctForTimeslew"),
 	conf.getParameter<bool>("correctForPhaseContainment"),
-	conf.getParameter<double>("correctionPhaseNS")),
+	conf.getParameter<double>("correctionPhaseNS"),
+	conf.getParameter<int>     ("pedestalSubtractionType"),
+	conf.getParameter<double>  ("pedestalUpperLimit"),
+	conf.getParameter<int>     ("timeSlewParsType"),
+	conf.getParameter<std::vector<double> >("timeSlewPars"),
+	conf.getParameter<double>  ("respCorrM3")
+	),
   det_(DetId::Hcal),
   inputLabel_(conf.getParameter<edm::InputTag>("digiLabel")),
   correctTiming_(conf.getParameter<bool>("correctTiming")),
@@ -270,13 +276,6 @@ HcalHitReconstructor::HcalHitReconstructor(edm::ParameterSet const& conf):
                           conf.getParameter<int>   ("fitTimes")
 			  );
   }
-  reco_.setMeth3Params(
-            conf.getParameter<int>     ("pedestalSubtractionType"),
-            conf.getParameter<double>  ("pedestalUpperLimit"),
-            conf.getParameter<int>     ("timeSlewParsType"),
-            conf.getParameter<std::vector<double> >("timeSlewPars"),
-            conf.getParameter<double>  ("respCorrM3")
-            );
 }
 
 

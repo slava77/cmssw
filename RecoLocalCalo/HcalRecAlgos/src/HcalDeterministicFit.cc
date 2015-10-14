@@ -10,12 +10,13 @@ constexpr float HcalDeterministicFit::rCorr[2];
 
 using namespace std;
 
-HcalDeterministicFit::HcalDeterministicFit() {
-}
 
 HcalDeterministicFit::~HcalDeterministicFit() { 
 }
 
+HcalDeterministicFit::HcalDeterministicFit(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, NegStrategy nStrat, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr){
+  init(tsParam, bias, nStrat, pedSubFxn_, pars, respCorr);
+}
 void HcalDeterministicFit::init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, NegStrategy nStrat, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr) {
   for(int fi=0; fi<9; fi++){
 	fpars[fi] = pars.at(fi);

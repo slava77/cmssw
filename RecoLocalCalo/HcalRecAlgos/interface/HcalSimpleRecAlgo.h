@@ -41,7 +41,8 @@ class HcalSimpleRecAlgo {
 public:
   /** Full featured constructor for HB/HE and HO (HPD-based detectors) */
   HcalSimpleRecAlgo(bool correctForTimeslew, 
-		    bool correctForContainment, float fixedPhaseNs);
+		    bool correctForContainment, float fixedPhaseNs,
+		    int iPedSubMethod, float iPedSubThreshold, int iTimeSlewParsType, std::vector<double> iTimeSlewPars, double irespCorrM3);
 
   void beginRun(edm::EventSetup const & es);
   void endRun();

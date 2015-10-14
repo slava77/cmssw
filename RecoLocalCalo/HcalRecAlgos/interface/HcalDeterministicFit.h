@@ -15,9 +15,10 @@
 class HcalDeterministicFit {
  public:
   enum NegStrategy {DoNothing=0, MoveCharge=1, MoveTiming=2};  
-  HcalDeterministicFit();
+  HcalDeterministicFit() = delete;
   ~HcalDeterministicFit();
 
+  HcalDeterministicFit(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, NegStrategy nStrat, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr);
   void init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, NegStrategy nStrat, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr);
 
   // This is the CMSSW Implementation of the apply function
