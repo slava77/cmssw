@@ -15,15 +15,17 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
-
+#include "DataFormats/Common/interface/ValueMap.h"
 
 PrimaryVertexProducer::PrimaryVertexProducer(const edm::ParameterSet& conf)
   :theConfig(conf)
 {
 
   fVerbose   = conf.getUntrackedParameter<bool>("verbose", false);
+
   trkToken = consumes<reco::TrackCollection>(conf.getParameter<edm::InputTag>("TrackLabel"));
   bsToken = consumes<reco::BeamSpot>(conf.getParameter<edm::InputTag>("beamSpotLabel"));
+  f4D = false;
 
   // select and configure the track selection
   std::string trackSelectionAlgorithm=conf.getParameter<edm::ParameterSet>("TkFilterParameters").getParameter<std::string>("algorithm");
@@ -42,15 +44,23 @@ PrimaryVertexProducer::PrimaryVertexProducer(const edm::ParameterSet& conf)
     theTrackClusterizer = new GapClusterizerInZ(conf.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkGapClusParameters"));
   }else if(clusteringAlgorithm=="DA"){
     theTrackClusterizer = new DAClusterizerInZ(conf.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters"));
-  }
+  } 
   // provide the vectorized version of the clusterizer, if supported by the build
    else if(clusteringAlgorithm == "DA_vect") {
     theTrackClusterizer = new DAClusterizerInZ_vect(conf.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters"));
   }
-
+  else if( clusteringAlgorithm=="DA2D" ) {
+    theTrackClusterizer = new DAClusterizerInZT(conf.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters"));
+    f4D = true;
+  }
 
   else{
     throw VertexException("PrimaryVertexProducerAlgorithm: unknown clustering algorithm: " + clusteringAlgorithm);  
+  }
+
+  if( f4D ) {
+    trkTimesToken     = consumes<edm::ValueMap<float> >(conf.getParameter<edm::InputTag>("TrackTimesLabel") );
+    trkTimeResosToken = consumes<edm::ValueMap<float> >(conf.getParameter<edm::InputTag>("TrackTimeResosLabel") );    
   }
 
 
@@ -155,9 +165,29 @@ PrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   // select tracks
   std::vector<reco::TransientTrack> && seltks = theTrackFilter->select( t_tks );
 
+  if( f4D ) {
+    edm::Handle<edm::ValueMap<float> > trackTimesH;
+    edm::Handle<edm::ValueMap<float> > trackTimeResosH;
+    
+    iEvent.getByLabel(trackTimesLabel, trackTimesH);
+    iEvent.getByLabel(trackTimeResosLabel, trackTimeResosH);
+    const auto& trackTimes = *trackTimesH;
+    const auto& trackTimeResos = *trackTimeResosH;
+
+    reco::TrackBaseRef temp;
+    for( auto& seltk : seltks ) {
+      temp = seltk.trackBaseRef();
+      const float time = trackTimes[temp];
+      const float timeReso = trackTimeResos[temp];
+      reco::TransientTrack temptt(temp.castTo<reco::TrackRef>(),time,timeReso,
+                                  theB->field(),theB->trackingGeometry());
+      seltk.swap(temptt);
+    }
+  }
 
   // clusterize tracks in Z
   std::vector< std::vector<reco::TransientTrack> > && clusters =  theTrackClusterizer->clusterize(seltks);
+
   if (fVerbose){std::cout <<  " clustering returned  "<< clusters.size() << " clusters  from " << seltks.size() << " selected tracks" <<std::endl;}
 
 
