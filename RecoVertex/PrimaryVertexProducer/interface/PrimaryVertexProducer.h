@@ -39,6 +39,7 @@
 #include "RecoVertex/PrimaryVertexProducer/interface/HITrackFilterForPVFinding.h"
 #include "RecoVertex/PrimaryVertexProducer/interface/GapClusterizerInZ.h"
 #include "RecoVertex/PrimaryVertexProducer/interface/DAClusterizerInZ.h"
+#include "RecoVertex/PrimaryVertexProducer/interface/DAClusterizerInZT.h"
 #include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
 #include "RecoVertex/AdaptiveVertexFit/interface/AdaptiveVertexFitter.h"
 //#include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
@@ -79,7 +80,11 @@ private:
 
   edm::ParameterSet theConfig;
   bool fVerbose;
+
   edm::EDGetTokenT<reco::BeamSpot> bsToken;
   edm::EDGetTokenT<reco::TrackCollection> trkToken;
+  edm::EDGetTokenT<edm::ValueMap<float> > trkTimesToken;
+  edm::EDGetTokenT<edm::ValueMap<float> > trkTimeResosToken;
 
+  bool f4D;
 };
