@@ -76,8 +76,20 @@ namespace sistrip {
     case READOUT_MODE_ZERO_SUPPRESSED:
       minLength = 7;
       break;
-    case READOUT_MODE_ZERO_SUPPRESSED_LITE:
     case READOUT_MODE_PREMIX_RAW:
+      minLength = 2;
+      break;
+    /*case READOUT_MODE_ZERO_SUPPRESSED_CMOVERRIDE:
+      minLength = 7;
+      break;*/
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE10:
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE10_CMOVERRIDE:
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE8:
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE8_CMOVERRIDE:
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE8_BOTBOT:
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE8_BOTBOT_CMOVERRIDE:
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE8_TOPBOT:
+    case READOUT_MODE_ZERO_SUPPRESSED_LITE8_TOPBOT_CMOVERRIDE:
       minLength = 2;
       break;
     default:
@@ -379,30 +391,6 @@ namespace sistrip {
     return summary.str();
   }
 
-  uint8_t FEDBuffer::getCorrectPacketCode() const
-  {
-    switch(readoutMode()) {
-    case READOUT_MODE_SCOPE:
-      return PACKET_CODE_SCOPE;
-      break;
-    case READOUT_MODE_VIRGIN_RAW:
-      return PACKET_CODE_VIRGIN_RAW;
-      break;
-    case READOUT_MODE_PROC_RAW:
-      return PACKET_CODE_PROC_RAW;
-      break;
-    case READOUT_MODE_ZERO_SUPPRESSED:
-      return PACKET_CODE_ZERO_SUPPRESSED;
-      break;
-    case READOUT_MODE_ZERO_SUPPRESSED_LITE:
-    case READOUT_MODE_PREMIX_RAW:
-    case READOUT_MODE_SPY:
-    case READOUT_MODE_INVALID:
-    default:
-      return 0;
-    }
-  }
-
   uint8_t FEDBuffer::nFEUnitsPresent() const
   {
     uint8_t result = 0;
@@ -435,8 +423,23 @@ namespace sistrip {
     throw cms::Exception("FEDBuffer") << ss.str();
   }
 
+  void FEDBSChannelUnpacker::throwBadChannelLength(const uint16_t length)
+  {
+    std::ostringstream ss;
+    ss << "Channel length is invalid. "
+       << "Channel length is " << uint16_t(length) << "."
+       << std::endl;
+    throw cms::Exception("FEDBuffer") << ss.str();
+  }
 
-
+  void FEDBSChannelUnpacker::throwBadWordLength(const size_t word_length)
+  {
+    std::ostringstream ss;
+    ss << "Word length is invalid. "
+       << "Word length is " << word_length << "."
+       << std::endl;
+    throw cms::Exception("FEDBuffer") << ss.str();
+  }
 
   void FEDZSChannelUnpacker::throwBadChannelLength(const uint16_t length)
   {

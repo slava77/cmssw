@@ -58,6 +58,11 @@ void SiStripTrivialDigiAnalysis::print( stringstream& ss ) {
 SiStripDigiAnalyzer::SiStripDigiAnalyzer( const edm::ParameterSet& pset ) :
   inputModuleLabel_( pset.getParameter<string>( "InputModuleLabel" ) )
 {
+  consumes< edm::DetSetVector<SiStripRawDigi> >(edm::InputTag(inputModuleLabel_, "VirginRaw"));
+  consumes< edm::DetSetVector<SiStripRawDigi> >(edm::InputTag(inputModuleLabel_, "ProcessedRaw"));
+  consumes< edm::DetSetVector<SiStripRawDigi> >(edm::InputTag(inputModuleLabel_, "ScopeMode"));
+  consumes< edm::DetSetVector<SiStripDigi> >(edm::InputTag(inputModuleLabel_, "ZeroSuppressed"));
+  consumes< SiStripEventSummary >(inputModuleLabel_);
   LogDebug("SiStripDigiAnalyzer")
     << "[SiStripDigiAnalyzer::SiStripDigiAnalyzer]"
     << " Constructing object...";
@@ -157,9 +162,11 @@ void SiStripDigiAnalyzer::analyze( const edm::Event& event, const edm::EventSetu
       vector< edm::DetSet<SiStripRawDigi> >::const_iterator raw;
       vector< edm::DetSet<SiStripDigi> >::const_iterator digis;
 
+//std::cout << "key=" << key << std::endl;
       // virgin raw
       raw = vr->find( key );
       if ( raw != vr->end() ) { 
+std::cout << "entering VR mode, collection size: " << raw->size() << std::endl;
 	for ( uint16_t istrip = 0; istrip < raw->size(); istrip++ ) { 
 	  if ( raw->data[istrip].adc() ) {
 	    vr_r.strips_++;
@@ -207,5 +214,4 @@ void SiStripDigiAnalyzer::analyze( const edm::Event& event, const edm::EventSetu
       
     } // channel loop
   } // fed loop
-  
 }
