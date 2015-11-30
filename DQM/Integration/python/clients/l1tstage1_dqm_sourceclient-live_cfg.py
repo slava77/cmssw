@@ -90,6 +90,8 @@ process.l1tMonitorPath = cms.Path(process.l1tMonitorStage1Online)
 process.l1tMonitorClientPath = cms.Path(process.l1tMonitorStage1Client)
 
 process.stage1UnpackPath = cms.Path(process.caloStage1Digis+process.caloStage1LegacyFormatDigis)
+process.caloStage1LegacyFormatDigis.bxMin = cms.int32(-2)
+process.caloStage1LegacyFormatDigis.bxMax = cms.int32(2)
 
 #
 process.l1tMonitorEndPath = cms.EndPath(process.l1tMonitorEndPathSeq)
@@ -207,6 +209,7 @@ if (process.runType.getRunType() == process.runType.hi_run):
     process.l1s.fedRawData = cms.InputTag("rawDataRepacker")
     process.caloStage1Digis.InputLabel = cms.InputTag("rawDataRepacker")
     process.rctDigis.inputLabel = cms.InputTag("rawDataRepacker")
+    process.l1GtUnpack.DaqGtInputTag = cms.InputTag("rawDataRepacker")
 
 ### process customizations included here
 from DQM.Integration.config.online_customizations_cfi import *
