@@ -74,8 +74,7 @@ class SiPixelHitEfficiencySource : public DQMEDAnalyzer {
     bool firstRun;
     
     std::map<uint32_t, SiPixelHitEfficiencyModule*> theSiPixelStructure;
-
-    std::string vtxsrc_;    
+    
     int nmissing,nvalid; 
     
     int nvtx_;

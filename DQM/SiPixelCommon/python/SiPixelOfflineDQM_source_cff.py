@@ -97,18 +97,15 @@ SiPixelHitEfficiencySource.diskOn = False
 SiPixelHitEfficiencySource.ringOn = False
 
 #HI track modules
-hiTracks = "hiGeneralTracks"
+hiTracks = "hiGlobalPrimTracks"
 
 SiPixelTrackResidualSource_HeavyIons = SiPixelTrackResidualSource.clone(
-    TrackCandidateProducer = hiTracks,
-    trajectoryInput = hiTracks,
-    tracksrc=hiTracks,
-    vtxsrc='hiSelectedVertex'
+    TrackCandidateProducer = 'hiPrimTrackCandidates',
+    trajectoryInput = hiTracks
     )
 
 SiPixelHitEfficiencySource_HeavyIons = SiPixelHitEfficiencySource.clone(
-    trajectoryInput = hiTracks,
-    vtxsrc='hiSelectedVertex'
+    trajectoryInput = hiTracks
     )
 
 

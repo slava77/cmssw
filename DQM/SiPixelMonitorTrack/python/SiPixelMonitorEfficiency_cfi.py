@@ -13,9 +13,8 @@ SiPixelHitEfficiencySource = cms.EDAnalyzer("SiPixelHitEfficiencySource",
     bladeOn = cms.untracked.bool(True),
     diskOn = cms.untracked.bool(False),
     updateEfficiencies = cms.untracked.bool(False), 
-    vtxsrc = cms.untracked.string('offlinePrimaryVertices'),
 
-    trajectoryInput = cms.InputTag('generalTracks'),  
+    trajectoryInput = cms.InputTag('rsWithMaterialTracksP5'),  
     applyEdgeCut = cms.untracked.bool(False),
     nSigma_EdgeCut = cms.untracked.double(2.)             
 )
