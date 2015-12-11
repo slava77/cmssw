@@ -59,7 +59,6 @@ PFDisplacedVertexFinder::setInput(
 
 }
 
-
 // -------- Main function which find vertices -------- //
 
 void
@@ -293,7 +292,7 @@ PFDisplacedVertexFinder::fitVertexFromSeed(PFDisplacedVertexSeed& displacedVerte
       nStep45++;
     else if (nonIt)
       nNotIterative++;
-    else if (!highQ) {
+    else if (!highQ || (*ie)->algo() == reco::TrackBase::jetCoreRegionalStep) {
       nNotIterative++;
       nStep45++;
     }
