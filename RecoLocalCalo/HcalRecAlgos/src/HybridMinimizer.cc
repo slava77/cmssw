@@ -14,6 +14,7 @@
 // Implementation file for class HybridMinimizer
 
 #include "RecoLocalCalo/HcalRecAlgos/src/HybridMinimizer.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "Math/IFunction.h"
 #include "Math/IOptions.h"
@@ -331,7 +332,12 @@ bool HybridMinimizer::Minimize() {
 //                << " convergence for edm < " << tol << " strategy " 
 //                << strategyLevel << std::endl; 
    }
-
+   edm::LogWarning("MYDEBUG") << "HybridMinimizer: Minimize with max-calls " << maxfcn
+			      << " convergence for edm < " << tol 
+			      << " strategy " << strategyLevel 
+			      << " PrintLevel "<<PrintLevel()
+			      << " Precision "<< Precision()
+			      <<std::endl; 
    // internal minuit messages
    MnPrint::SetLevel(PrintLevel() );
 
@@ -345,6 +351,7 @@ bool HybridMinimizer::Minimize() {
    ROOT::Minuit2::MnStrategy strategy(strategyLevel);
    ROOT::Math::IOptions * minuit2Opt = ROOT::Math::MinimizerOptions::FindDefault("Minuit2");
    if (minuit2Opt) { 
+     edm::LogWarning("MYDEBUG") << "HybridMinimizer: setting minuit2Opt "<<std::endl;
       // set extra strategy options
       int nGradCycles = strategy.GradientNCycles();
       int nHessCycles = strategy.HessianNCycles();

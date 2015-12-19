@@ -4,6 +4,8 @@
 #include "RecoLocalCalo/HcalRecAlgos/interface/PulseShapeFitOOTPileupCorrection.h"
 #include "FWCore/Utilities/interface/isFinite.h"
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
 namespace FitterFuncs{
 
   //Decalare the Pulse object take it in from Hcal and set some options
@@ -88,18 +90,21 @@ namespace FitterFuncs{
       ntmpbin[iTS_start] = (bin_0_start == -1 ? // Initial bin (I'm assuming this is ok)
 			      accVarLenIdxMinusOneVec[distTo25ns_start] + factor * diffVarItvlIdxMinusOneVec[distTo25ns_start]
 			    : accVarLenIdxZEROVec    [distTo25ns_start] + factor * diffVarItvlIdxZEROVec    [distTo25ns_start]);
+      std::cout<<__LINE__<<" "<<iTS_start<<" "<<ntmpbin[iTS_start]<<std::endl;
       //Fill the rest of the bins
       for(int iTS = iTS_start+1; iTS < num_bx; ++iTS){
 	int bin_idx = distTo25ns_start + 1 + (iTS-iTS_start-1)*ns_per_bx + bin_0_start;
 	ntmpbin[iTS] = acc25nsVec[bin_idx] + factor * diff25nsItvlVec[bin_idx];
+	std::cout<<__LINE__<<" "<<iTS<<" "<<ntmpbin[iTS]<<" "<<bin_idx<<" "<<acc25nsVec[bin_idx]<<" "<<factor<<" "<<diff25nsItvlVec[bin_idx]<<std::endl;
       }
       //Scale the pulse 
       for(int i=iTS_start; i < num_bx; ++i) {
 	ntmpbin[i]     *= pulseHeight;
+	std::cout<<__LINE__<<" "<<i<<" "<<ntmpbin[i]<<std::endl;
       }
 
     }
-
+    std::cout<<"ntmpbin out:"; for(auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<ntmpbin[i]; std::cout<<std::endl;
     return;
   }
 
@@ -115,11 +120,19 @@ namespace FitterFuncs{
       //calculate chisquare
       double chisq  = 0;
       unsigned int parBy2=(nPars-1)/2;
+
+      std::cout<<"in psFit_x:    "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_x[i]; std::cout<<std::endl;
+      std::cout<<"in psFit_y:    "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_y[i]; std::cout<<std::endl;
+      std::cout<<"in psFit_erry: "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_erry[i]; std::cout<<std::endl;
+      std::cout<<"in psFit_erry2:"; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_erry2[i]; std::cout<<std::endl;
+      std::cout<<"in psFit_slew: "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_slew[i]; std::cout<<std::endl;
+
       //      std::array<float,HcalConst::maxSamples> pulse_shape_;
 
       if(addPulseJitter_) {
 	int time = (pars[0]+timeShift_-timeMean_)*HcalConst::invertnsPerBx;
 	//Interpolate the fit (Quickly)
+	std::cout<<__LINE__<<std::endl;
 	funcHPDShape(pulse_shape_, pars[0],pars[1],psFit_slew[time]);
 	for (j=0; j<nbins; ++j) {
 	  psFit_erry2[j]  = psFit_erry[j]*psFit_erry[j] + pulse_shape_[j]*pulse_shape_[j]*pulseJitter_;
@@ -130,6 +143,7 @@ namespace FitterFuncs{
 	while (i<parBy2) {  
 	  time = (pars[i*2]+timeShift_-timeMean_)*HcalConst::invertnsPerBx;
 	  //Interpolate the fit (Quickly)
+	  std::cout<<__LINE__<<" "<<i<<std::endl;
 	  funcHPDShape(pulse_shape_, pars[i+2],pars[i*2+1],psFit_slew[time]);
 	  // add an uncertainty from the pulse (currently noise * pulse height =>Ecal uses full cov)
 	 /////
@@ -143,6 +157,7 @@ namespace FitterFuncs{
       else{
 	int time = (pars[0]+timeShift_-timeMean_)*HcalConst::invertnsPerBx;
 	//Interpolate the fit (Quickly)
+	std::cout<<__LINE__<<std::endl;
 	funcHPDShape(pulse_shape_, pars[0],pars[1],psFit_slew[time]);
 	for(j=0; j<nbins; ++j)
 	  pulse_shape_sum_[j] = pulse_shape_[j] + pars[nPars-1];
@@ -151,6 +166,7 @@ namespace FitterFuncs{
 	while (i<parBy2) {  
 	  time = (pars[i*2]+timeShift_-timeMean_)*HcalConst::invertnsPerBx;
 	  //Interpolate the fit (Quickly)
+	  std::cout<<__LINE__<<" "<<i<<std::endl;
 	  funcHPDShape(pulse_shape_, pars[i*2],pars[i*2+1],psFit_slew[time]);
 	  // add an uncertainty from the pulse (currently noise * pulse height =>Ecal uses full cov)
 	  for(j=0; j<nbins; ++j)
@@ -161,10 +177,12 @@ namespace FitterFuncs{
 
       for (i=0;i<nbins; ++i) 
         chisq += (psFit_y[i]- pulse_shape_sum_[i])*(psFit_y[i]- pulse_shape_sum_[i])/psFit_erry2[i];
+      std::cout<<"chisq initial "<<chisq<<" from pulse_shape_sum "; for (i=0;i<nbins; ++i) std::cout<<" "<<pulse_shape_sum_[i]; std::cout<<std::endl;
 
       if(pedestalConstraint_) {
 	 //Add the pedestal Constraint to chi2
          chisq += invertpedSig2_*(pars[nPars-1] - pedMean_)*(pars[nPars-1]- pedMean_);
+	 std::cout<<"chisq post pedestal constraint "<<chisq<<" from invertpedSig2 "<<invertpedSig2_<<" pedMean "<<pedMean_<<std::endl;
       }
         //Add the time Constraint to chi2
       if(timeConstraint_) {
@@ -172,8 +190,18 @@ namespace FitterFuncs{
 	  int time = (pars[j*2]+timeShift_-timeMean_)*(double)HcalConst::invertnsPerBx;
 	  double time1 = -100.+time*HcalConst::nsPerBX;
 	  chisq += inverttimeSig2_*(pars[j*2] - timeMean_ - time1)*(pars[j*2] - timeMean_ - time1);
+	  std::cout<<"chisq post time constraint "<<chisq<<" "<<j*2<<" from inverttimeSig2 "<<inverttimeSig2_<<" timeMean "<<timeMean_<<" time1 "<<time1<<std::endl;
 	}
       }
+      std::cout<<"out psFit_x:    "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_x[i]; std::cout<<std::endl;
+      std::cout<<"out psFit_y:    "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_y[i]; std::cout<<std::endl;
+      std::cout<<"out psFit_erry: "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_erry[i]; std::cout<<std::endl;
+      std::cout<<"out psFit_erry2:"; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_erry2[i]; std::cout<<std::endl;
+      std::cout<<"out psFit_slew: "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_slew[i]; std::cout<<std::endl;
+
+      std::cout<<"EvalPulse: "<<nPars<<" :";
+      for (auto i = 0UL; i< nPars; ++i) std::cout<<" "<<pars[i];
+      std::cout<<" chisq "<<chisq<<std::endl;
       return chisq;
    }
 
@@ -300,6 +328,10 @@ void PulseShapeFitOOTPileupCorrection::apply(const CaloSamples & cs, const std::
    }
    
    std::vector<double> fitParsVec;
+   edm::LogWarning("MYDEBUG")<<"tstrig " << tstrig<<"  ts4Min_ "<< ts4Min_<<" tsTOTen "<< tsTOTen;
+   for (auto i = 0UL; i< HcalConst::maxSamples; ++i){
+     edm::LogWarning("MYDEBUG")<<"  "<<i<<": "<<energyArr[i]<<" "<<pedenArr[i]<<" "<<chargeArr[i]<<" "<<pedArr[i]<<" "<<gainArr[i];
+   }
    if(tstrig >= ts4Min_&& tsTOTen > 0.) { //Two sigma from 0 
      pulseShapeFit(energyArr, pedenArr, chargeArr, pedArr, gainArr, tsTOTen, fitParsVec);
    }
@@ -311,6 +343,9 @@ void PulseShapeFitOOTPileupCorrection::apply(const CaloSamples & cs, const std::
      fitParsVec.push_back(999.);
      fitParsVec.push_back(false);
    }
+   std::cout<<"nans: "<< psfPtr_->getcntNANinfit()<<" fitParsVec:";
+   for (auto i = 0UL; i< fitParsVec.size(); ++i) std::cout<<" "<<fitParsVec[i];
+   std::cout<<std::endl;
    correctedOutput.swap(fitParsVec); correctedOutput.push_back(psfPtr_->getcntNANinfit());
 }
 
@@ -385,6 +420,13 @@ int PulseShapeFitOOTPileupCorrection::pulseShapeFit(const double * energyArr, co
 }
 
 void PulseShapeFitOOTPileupCorrection::fit(int iFit,float &timevalfit,float &chargevalfit,float &pedvalfit,float &chi2,bool &fitStatus,double &iTSMax,const double &iTSTOTEn,double *iEnArr,int (&iBX)[3]) const { 
+  edm::LogWarning("MYDEBUG")<<"start: iFit "<<iFit<<" "<<timevalfit<<" "<<chargevalfit<<" "<<pedvalfit<<" "<<chi2<<" "<<fitStatus<<" "<<iTSMax<<" "<<iTSTOTEn<<" "<<iBX[0]<<" "<<iBX[1]<<" "<<iBX[2];
+  std::cout<<" \t iEnArr:";
+  for (auto i = 0UL; i< HcalConst::maxSamples; ++i){
+    std::cout<<" "<<iEnArr[i];
+  }
+  std::cout<<std::endl;
+
   int n = 3;
   if(iFit == 2) n = 5; //Two   Pulse Fit 
   if(iFit == 3) n = 7; //Three Pulse Fit 
