@@ -4,6 +4,8 @@ from RecoTracker.IterativeTracking.iterativeTk_cff import *
 from RecoTracker.IterativeTracking.ElectronSeeds_cff import *
 from SLHCUpgradeSimulations.Configuration.customise_mixing import customise_pixelMixing_PU
 
+from Configuration.StandardSequences.Eras import eras
+
 def customise(process):
     if hasattr(process,'DigiToRaw'):
         process=customise_DigiToRaw(process)
@@ -34,16 +36,28 @@ def customise(process):
     return process
 
 def customise_DigiToRaw(process):
+    # These were migrated in #12361
+    if eras.phase1Pixel.isChosen():
+        return process
+
     process.digi2raw_step.remove(process.siPixelRawData)
     process.digi2raw_step.remove(process.castorRawData)
     return process
 
 def customise_RawToDigi(process):
+    # These were migrated in #12361
+    if eras.phase1Pixel.isChosen():
+        return process
+
     process.raw2digi_step.remove(process.siPixelDigis)
     process.raw2digi_step.remove(process.castorDigis)
     return process
 
 def customise_Digi(process):
+    # these were migrated in #12275
+    if eras.phase1Pixel.isChosen():
+        return process
+
     process.mix.digitizers.pixel.MissCalibrate = False
     process.mix.digitizers.pixel.LorentzAngle_DB = False
     process.mix.digitizers.pixel.killModules = False
@@ -84,17 +98,23 @@ def customise_Digi(process):
 
 # DQM steps change
 def customise_DQM(process,pileup):
+    # Ok, this customization does not work currently at all
+    # Need to be fixed before the tracking DQM can be enabled
+    return process
+
     # We cut down the number of iterative tracking steps
-    process.dqmoffline_step.remove(process.muonAnalyzer)
-    #process.dqmoffline_step.remove(process.jetMETAnalyzer)
+    if not eras.phase1Pixel.isChosen(): # these were migrated in #12459
+        process.dqmoffline_step.remove(process.muonAnalyzer)
+        #process.dqmoffline_step.remove(process.jetMETAnalyzer)
 
     #put isUpgrade flag==true
-    process.SiPixelRawDataErrorSource.isUpgrade = cms.untracked.bool(True)
-    process.SiPixelDigiSource.isUpgrade = cms.untracked.bool(True)
-    process.SiPixelClusterSource.isUpgrade = cms.untracked.bool(True)
-    process.SiPixelRecHitSource.isUpgrade = cms.untracked.bool(True)
-    process.SiPixelTrackResidualSource.isUpgrade = cms.untracked.bool(True)
-    process.SiPixelHitEfficiencySource.isUpgrade = cms.untracked.bool(True)
+    if not eras.phase1Pixel.isChosen(): # these were migrated in #12459
+        process.SiPixelRawDataErrorSource.isUpgrade = cms.untracked.bool(True)
+        process.SiPixelDigiSource.isUpgrade = cms.untracked.bool(True)
+        process.SiPixelClusterSource.isUpgrade = cms.untracked.bool(True)
+        process.SiPixelRecHitSource.isUpgrade = cms.untracked.bool(True)
+        process.SiPixelTrackResidualSource.isUpgrade = cms.untracked.bool(True)
+        process.SiPixelHitEfficiencySource.isUpgrade = cms.untracked.bool(True)
 
     from DQM.TrackingMonitor.customizeTrackingMonitorSeedNumber import customise_trackMon_IterativeTracking_PHASE1PU140
     from DQM.TrackingMonitor.customizeTrackingMonitorSeedNumber import customise_trackMon_IterativeTracking_PHASE1PU70
@@ -106,6 +126,10 @@ def customise_DQM(process,pileup):
     return process
 
 def customise_Validation(process):
+    # these were migrated in #12359
+    if eras.phase1Pixel.isChosen():
+        return process
+
     process.validation_step.remove(process.PixelTrackingRecHitsValid)
     # We don't run the HLT
     process.validation_step.remove(process.HLTSusyExoVal)
@@ -137,6 +161,10 @@ def customise_Validation_Trackingonly(process):
     return process
 
 def customise_harvesting(process):
+    # these were migrated in #12440
+    if eras.phase1Pixel.isChosen():
+        return process
+
     process.dqmHarvesting.remove(process.dataCertificationJetMET)
     #######process.dqmHarvesting.remove(process.sipixelEDAClient)
     process.sipixelEDAClient.isUpgrade = cms.untracked.bool(True)
@@ -382,13 +410,13 @@ def customise_Reco(process,pileup):
         process.siPixelRecHits
     )
     process.clusterSummaryProducer.pixelClusters = "siPixelClusters"
-    process.reconstruction.replace(process.MeasurementTrackerEventPreSplitting, process.MeasurementTrackerEvent)
-    process.reconstruction.replace(process.siPixelClusterShapeCachePreSplitting, process.siPixelClusterShapeCache)
+    process.globalreco_tracking.replace(process.MeasurementTrackerEventPreSplitting, process.MeasurementTrackerEvent)
+    process.globalreco_tracking.replace(process.siPixelClusterShapeCachePreSplitting, process.siPixelClusterShapeCache)
 
     # Enable, for now, pixel tracks and vertices
     # To be removed later together with the cluster splitting
-    process.reconstruction.replace(process.standalonemuontracking,
-                                   process.standalonemuontracking+process.recopixelvertexing)
+    process.globalreco_tracking.replace(process.standalonemuontracking,
+                                        process.standalonemuontracking+process.recopixelvertexing)
     process.initialStepSelector.vertices = "pixelVertices"
     process.highPtTripletStepSelector.vertices = "pixelVertices"
     process.lowPtQuadStepSelector.vertices = "pixelVertices"
