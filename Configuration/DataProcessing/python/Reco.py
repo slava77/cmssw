@@ -51,6 +51,8 @@ class Reco(Scenario):
         options = Options()
         options.__dict__.update(defaultOptions.__dict__)
         options.scenario = self.cbSc
+        #use cmsDriver way
+        options.inlineEventContent = False
 
         miniAODStep=''
 
@@ -111,6 +113,8 @@ class Reco(Scenario):
         options = Options()
         options.__dict__.update(defaultOptions.__dict__)
         options.scenario = self.cbSc
+        #use cmsDriver way
+        options.inlineEventContent = False
 
         eiStep=''
         if self.cbSc == 'pp':
