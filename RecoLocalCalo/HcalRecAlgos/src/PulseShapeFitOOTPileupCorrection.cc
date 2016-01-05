@@ -402,9 +402,23 @@ void PulseShapeFitOOTPileupCorrection::fit(int iFit,float &timevalfit,float &cha
      //pulse height is the integral; compute expected factor from given bin
      double vprobe[3] = {vstart[2*i+0], 1, 0};
      psfPtr_->EvalPulse(vprobe, 3);
-     double normFactor = psfPtr_->pulseShapeExpected()[iBX[i]];
-     if (edm::isNotFinite(normFactor) || normFactor <= 0) normFactor = 1.0;
-     vstart[2*i+1] = iEnArr[iBX[i]]/normFactor;
+     double normFactorC = psfPtr_->pulseShapeExpected()[iBX[i]];
+     if (edm::isNotFinite(normFactorC) || normFactorC <= 0) normFactorC = 1.0;
+     bool checkPreviousBX = false;
+     for(int j = 0; j < int((n-1)/2); j++){
+       if (iBX[j]+1 == iBX[i]){
+	 checkPreviousBX  = true;
+	 break;
+       }
+     }
+     vstart[2*i+1] = iEnArr[iBX[i]]/normFactorC;
+     if (checkPreviousBX && iBX[i]+1!= HcalConst::maxSamples){
+       double normFactorM = psfPtr_->pulseShapeExpected()[iBX[i]+1];//assume plain shift is enough
+       if (edm::isNotFinite(normFactorM) || normFactorM <= 0) normFactorM = 0.0;
+       double corrM = iEnArr[iBX[i]-1]*normFactorM/normFactorC/normFactorC;
+       if (corrM < vstart[2*i+1]) vstart[2*i+1] += -corrM;
+       else vstart[2*i+1] *= 0.1;//leave something
+     }
      step[2*i+1] = std::sqrt(0.1 + 1e-4*vstart[2*i+1]*vstart[2*i+1]);
    }
    vstart[n-1] = pedMean_;
