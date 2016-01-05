@@ -51,6 +51,8 @@ namespace FitterFuncs{
      double singlePulseShapeFunc( const double *x );
      double doublePulseShapeFunc( const double *x );
      double triplePulseShapeFunc( const double *x );
+
+     const std::array<double,HcalConst::maxSamples>& pulseShapeExpected() const;
      
    private:
      std::array<float,HcalConst::maxPSshapeBin> pulse_hist;

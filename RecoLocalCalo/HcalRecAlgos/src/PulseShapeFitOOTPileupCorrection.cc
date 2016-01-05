@@ -194,6 +194,8 @@ namespace FitterFuncs{
       return (2.75  + 0.0373*ifC + 3e-6*ifC*ifC)/3.; 
    }
   
+  const std::array<double,HcalConst::maxSamples>& PulseShapeFunctor::pulseShapeExpected() const { return pulse_shape_sum_;}
+
 }
 
 PulseShapeFitOOTPileupCorrection::PulseShapeFitOOTPileupCorrection() : cntsetPulseShape(0), chargeThreshold_(6.),
@@ -252,12 +254,7 @@ void PulseShapeFitOOTPileupCorrection::setPUParams(bool   iPedestalConstraint, b
 void PulseShapeFitOOTPileupCorrection::setPulseShapeTemplate(const HcalPulseShapes::Shape& ps) {
 
    if( cntsetPulseShape ) return;
-   ++ cntsetPulseShape;
-   psfPtr_.reset(new FitterFuncs::PulseShapeFunctor(ps,pedestalConstraint_,timeConstraint_,addPulseJitter_,applyTimeSlew_,
-								 pulseJitter_,timeMean_,timeSig_,pedMean_,pedSig_,noise_));
-   spfunctor_    = new ROOT::Math::Functor(psfPtr_.get(),&FitterFuncs::PulseShapeFunctor::singlePulseShapeFunc, 3);
-   dpfunctor_    = new ROOT::Math::Functor(psfPtr_.get(),&FitterFuncs::PulseShapeFunctor::doublePulseShapeFunc, 5);
-   tpfunctor_    = new ROOT::Math::Functor(psfPtr_.get(),&FitterFuncs::PulseShapeFunctor::triplePulseShapeFunc, 7);
+   resetPulseShapeTemplate(ps);
 }
 
 void PulseShapeFitOOTPileupCorrection::resetPulseShapeTemplate(const HcalPulseShapes::Shape& ps) { 
@@ -394,17 +391,25 @@ void PulseShapeFitOOTPileupCorrection::fit(int iFit,float &timevalfit,float &cha
    float tMax   =  TSMax_;   //Fitting Time Max
    //Checks to make sure fitting happens
    if(pedMax   < 1.) pedMax = 1.;
+
    // Set starting values andf step sizes for parameters
    double vstart[n];
+   double step[n];
    for(int i = 0; i < int((n-1)/2); i++) { 
      vstart[2*i+0] = iniTimesArr[iBX[i]]+timeMean_;
-     vstart[2*i+1] = iEnArr[iBX[i]];
+     step[2*i+0] = 1.0f;
+
+     //pulse height is the integral; compute expected factor from given bin
+     double vprobe[3] = {vstart[2*i+0], 1, 0};
+     psfPtr_->EvalPulse(vprobe, 3);
+     double normFactor = psfPtr_->pulseShapeExpected()[iBX[i]];
+     if (edm::isNotFinite(normFactor) || normFactor <= 0) normFactor = 1.0;
+     vstart[2*i+1] = iEnArr[iBX[i]]/normFactor;
+     step[2*i+1] = std::sqrt(0.1 + 1e-4*vstart[2*i+1]*vstart[2*i+1]);
    }
    vstart[n-1] = pedMean_;
+   step[n-1] = 0.1;
 
-   double step[n];
-   for(int i = 0; i < n; i++) step[i] = 0.1;
-      
    if(iFit == 1) hybridfitter->SetFunction(*spfunctor_);
    if(iFit == 2) hybridfitter->SetFunction(*dpfunctor_);
    if(iFit == 3) hybridfitter->SetFunction(*tpfunctor_);
