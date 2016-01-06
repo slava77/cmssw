@@ -120,7 +120,7 @@ namespace FitterFuncs{
       //calculate chisquare
       double chisq  = 0;
       unsigned int parBy2=(nPars-1)/2;
-
+      std::cout<<std::setprecision(15);
       std::cout<<"in psFit_x:    "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_x[i]; std::cout<<std::endl;
       std::cout<<"in psFit_y:    "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_y[i]; std::cout<<std::endl;
       std::cout<<"in psFit_erry: "; for (auto i = 0UL; i< HcalConst::maxSamples; ++i) std::cout<<" "<<psFit_erry[i]; std::cout<<std::endl;
