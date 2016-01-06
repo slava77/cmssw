@@ -205,6 +205,8 @@ PulseShapeFitOOTPileupCorrection::PulseShapeFitOOTPileupCorrection() : cntsetPul
 								       ts4Min_(0), ts4Max_(0), pulseJitter_(0), timeMean_(0), timeSig_(0), pedMean_(0), pedSig_(0),
 								       noise_(0) {
    hybridfitter = new PSFitter::HybridMinimizer(PSFitter::HybridMinimizer::kMigrad);
+   hybridfitter->SetStrategy(0);
+   hybridfitter->SetTolerance(0.04);
    iniTimesArr = { {-100,-75,-50,-25,0,25,50,75,100,125} };
 }
 
@@ -424,9 +426,18 @@ void PulseShapeFitOOTPileupCorrection::fit(int iFit,float &timevalfit,float &cha
    vstart[n-1] = pedMean_;
    step[n-1] = 0.1;
 
-   if(iFit == 1) hybridfitter->SetFunction(*spfunctor_);
-   if(iFit == 2) hybridfitter->SetFunction(*dpfunctor_);
-   if(iFit == 3) hybridfitter->SetFunction(*tpfunctor_);
+   if(iFit == 1){
+     hybridfitter->SetFunction(*spfunctor_);
+     hybridfitter->SetMaxFunctionCalls(150);//default would give 545
+   }
+   else if(iFit == 2){
+     hybridfitter->SetFunction(*dpfunctor_);
+     hybridfitter->SetMaxFunctionCalls(250);//default would give 825
+   }
+   else if(iFit == 3){
+     hybridfitter->SetFunction(*tpfunctor_);
+     hybridfitter->SetMaxFunctionCalls(300);//default would give 1145
+   }
    hybridfitter->Clear();
    //Times and amplitudes
    for(int i = 0; i < int((n-1)/2); i++) {
