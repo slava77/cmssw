@@ -375,6 +375,11 @@ int PulseShapeFitOOTPileupCorrection::pulseShapeFit(const double * energyArr, co
          tstrig += chargeArr[i] - pedArr[i];
       }
    }
+   std::cout<<"psin energyArr"; for(int i=0;i<HcalConst::maxSamples;++i) std::cout<<" "<<energyArr[i]; std::cout<<std::endl;
+   std::cout<<"psin pedenArr"; for(int i=0;i<HcalConst::maxSamples;++i) std::cout<<" "<<pedenArr[i]; std::cout<<std::endl;
+   std::cout<<"psin chargeArr"; for(int i=0;i<HcalConst::maxSamples;++i) std::cout<<" "<<chargeArr[i]; std::cout<<std::endl;
+   std::cout<<"psin pedArr"; for(int i=0;i<HcalConst::maxSamples;++i) std::cout<<" "<<pedArr[i]; std::cout<<std::endl;
+   std::cout<<"psin gainArr"; for(int i=0;i<HcalConst::maxSamples;++i) std::cout<<" "<<gainArr[i]; std::cout<<std::endl;
    psfPtr_->setpsFitx    (tmpx);
    psfPtr_->setpsFity    (tmpy);
    psfPtr_->setpsFiterry (tmperry);
