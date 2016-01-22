@@ -4,7 +4,7 @@ autoCond = {
     # GlobalTag for MC production with perfectly aligned and calibrated detector for Run1
     'run1_design'       :   '80X_mcRun1_design_v2',
     # GlobalTag for MC production (pp collisions) with realistic alignment and calibrations for Run1
-    'run1_mc'           :   '80X_mcRun1_realistic_v2',
+    'run1_mc'           :   '80X_mcRun1_realistic_Candidate_2016_01_19_19_59_03',
     # GlobalTag for MC production (Heavy Ions collisions) with realistic alignment and calibrations for Run1
     'run1_mc_hi'        :   '80X_mcRun1_HeavyIon_v2',
     # GlobalTag for MC production (p-Pb collisions) with realistic alignment and calibrations for Run1
@@ -14,13 +14,13 @@ autoCond = {
     # GlobalTag for MC production with pessimistic alignment and calibrations for Run2
     'run2_mc_50ns'      :   '80X_mcRun2_startup_v1',
     #GlobalTag for MC production with optimistic alignment and calibrations for Run2
-    'run2_mc'           :   '80X_mcRun2_asymptotic_v1',
+    'run2_mc'           :   '80X_mcRun2_asymptotic_Candidate_2016_01_19_19_28_15',
     # GlobalTag for MC production (Heavy Ions collisions) with optimistic alignment and calibrations for Run2
     'run2_mc_hi'        :   '80X_mcRun2_HeavyIon_v1',
     # GlobalTag for Run1 data reprocessing
-    'run1_data'         :   '80X_dataRun2_v2',
+    'run1_data'         :   '80X_dataRun2_Candidate_2016_01_19_19_25_45',
     # GlobalTag for Run2 data reprocessing
-    'run2_data'         :   '80X_dataRun2_v2',
+    'run2_data'         :   '80X_dataRun2_Candidate_2016_01_19_19_25_45',
     # GlobalTag for Run1 HLT: it points to the online GT
     'run1_hlt'          :   '80X_dataRun2_HLT_frozen_v1',
     # GlobalTag for Run2 HLT: it points to the online GT
