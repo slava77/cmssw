@@ -12,20 +12,28 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 
+#include "SimDataFormats/CrossingFrame/interface/CrossingFrame.h"
+#include "SimDataFormats/CrossingFrame/interface/CrossingFramePlaybackInfoExtended.h"
+#include "SimGeneral/TrackingAnalysis/interface/TPtoSimHitPtr.h"
+
 #include "SimGeneral/TrackingAnalysis/interface/SimHitTPAssociationProducer.h"
 
 SimHitTPAssociationProducer::SimHitTPAssociationProducer(const edm::ParameterSet & cfg) 
   : _simHitSrc(cfg.getParameter<std::vector<edm::InputTag> >("simHitSrc")),
+    _xframesSrc(cfg.getParameter<std::vector<edm::InputTag> >("xframesSrc")),
     _trackingParticleSrc(cfg.getParameter<edm::InputTag>("trackingParticleSrc"))
 {
   produces<SimHitTPAssociationList>();
+  produces<std::vector<TPtoSimHitPtr> >();
 }
 
 SimHitTPAssociationProducer::~SimHitTPAssociationProducer() {
 }
 		
+
 void SimHitTPAssociationProducer::produce(edm::Event& iEvent, const edm::EventSetup& es) {
   std::auto_ptr<SimHitTPAssociationList> simHitTPList(new SimHitTPAssociationList);
+  std::auto_ptr<std::vector<TPtoSimHitPtr> > simHitPTPList(new std::vector<TPtoSimHitPtr>);
  
   // TrackingParticle
   edm::Handle<TrackingParticleCollection>  TPCollectionH;
@@ -60,6 +68,61 @@ void SimHitTPAssociationProducer::produce(edm::Event& iEvent, const edm::EventSe
   std::sort(simHitTPList->begin(),simHitTPList->end(),simHitTPAssociationListGreater);
   iEvent.put(simHitTPList);
 
+  edm::Handle<CrossingFramePlaybackInfoExtended> xfInfo;
+  iEvent.getByLabel(edm::InputTag("mix","","@skipCurrentProcess"), xfInfo);
+  for (auto xftag : _xframesSrc ){
+    edm::Handle<CrossingFrame<PSimHit> > xfh;
+    iEvent.getByLabel(xftag, xfh);
+    auto const& xf = *xfh.product();
+    auto nAll = xf.getNrSignals() + xf.getNrPileups();
+    auto puOffBcr(xf.getPileupOffsetsBcr());
+    auto puOffSrc(xf.getPileupOffsetsSource());
+    auto const& offsets = xf.pileupOffsets();
+    unsigned int iSource = 0;
+    unsigned int iBcr = 0;
+    unsigned int iPUEvent = 0;
+    unsigned int ioff = 0;
+    std::vector<std::vector<edm::EventID> > puids;
+    while (puids.size()==0 && iSource < puOffSrc.size()){
+      xfInfo->getEventStartInfo(puids, iSource);
+      if (puids.size() == 0) iSource++;
+    }
+    while (puids[iBcr].size() == 0 && iBcr < puids.size()) iBcr++;
+
+    for (auto iH = 0U; iH < nAll; ++iH){
+      const PSimHit* hitP = &xf.getObject(iH);
+      EncodedEventId eid;
+      auto iPU = iH - xf.getNrSignals();
+      if (iH < xf.getNrSignals()) eid = hitP->eventId();
+      else {
+	while (ioff + 1 < offsets.size() && offsets[ioff+1] <=  iPU){
+	  ioff++;
+	  iPUEvent++;
+	  if (iPUEvent == puids[iBcr].size()){
+	    iPUEvent=0;
+	    iBcr++;
+	    if (iBcr == puids.size()){
+	      iBcr = 0;
+	      iSource++;
+	      if (iSource < puOffSrc.size()){
+		xfInfo->getEventStartInfo(puids, iSource);
+	      } else break;
+	    }
+	  }
+	  if (iSource == puOffSrc.size()) edm::LogWarning("BadAssociation")<<"Something is wrong with iSource "<<iSource;
+	  
+	}
+	eid = EncodedEventId(xf.getBunchRange().first+iBcr, iPUEvent+1);
+      }
+      std::pair<uint32_t, EncodedEventId> simTkIds(hitP->trackId(),eid);
+      auto ipos = mapping.find(simTkIds);
+      if (ipos != mapping.end()) {
+	simHitPTPList->push_back(TPtoSimHitPtr(ipos->second, hitP));
+      }
+    }
+  }
+  std::sort(simHitPTPList->begin(),simHitPTPList->end(), TPtoSimHitPtr::greater );
+  iEvent.put(simHitPTPList);
 }
 
 #include "FWCore/PluginManager/interface/ModuleDef.h"

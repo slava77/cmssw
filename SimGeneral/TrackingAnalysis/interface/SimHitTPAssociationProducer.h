@@ -29,6 +29,7 @@ private:
   virtual void endJob() {}
 
   std::vector<edm::InputTag> _simHitSrc;
+  std::vector<edm::InputTag> _xframesSrc;
   edm::InputTag _trackingParticleSrc;
 };
 #endif
