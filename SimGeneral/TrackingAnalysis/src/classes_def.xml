@@ -2,4 +2,8 @@
   <class name="std::pair<TrackingParticleRef, TrackPSimHitRef>" persistent="true" /> 
   <class name="std::vector<std::pair<TrackingParticleRef, TrackPSimHitRef> >" persistent="true" /> 
   <class name="edm::Wrapper<std::vector<std::pair<TrackingParticleRef, TrackPSimHitRef> > >" />
+
+  <class name="TPtoSimHitPtr" persistent="false" />
+  <class name="std::vector<TPtoSimHitPtr>" persistent="false" /> 
+  <class name="edm::Wrapper<std::vector<TPtoSimHitPtr> >" />
 </lcgdict>
