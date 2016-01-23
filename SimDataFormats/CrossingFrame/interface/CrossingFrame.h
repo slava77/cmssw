@@ -125,6 +125,7 @@ class CrossingFrame
     }
   }  
 
+  const std::vector< unsigned int >& pileupOffsets() const {return pileupOffsets_;}
 
   // setters needed for step2 when using mixed secondary source  
   void setEventID(edm::EventID evId) { id_ = evId; }
@@ -170,6 +171,7 @@ class CrossingFrame
   // as a function of the position of an object in the pileups_ vector
   std::vector<unsigned int> pileupOffsetsBcr_;
   std::vector< std::vector<unsigned int> > pileupOffsetsSource_; //one per source
+  std::vector<unsigned int> pileupOffsets_; //one offset value per addPileups
   
 };
 
@@ -211,6 +213,7 @@ CrossingFrame<T>::swap(CrossingFrame<T>& other) {
   for (unsigned int i=0;i<pileupOffsetsSource_.size();++i) { 
     pileupOffsetsSource_[i].swap(other.pileupOffsetsSource_[i]);
   }
+  pileupOffsets_.swap(other.pileupOffsets_);
 }
 
 template <typename T>
@@ -290,6 +293,7 @@ void CrossingFrame<T>::addPileups(T const& product) {
 #ifndef __GCCXML__
 template <class T>
 void CrossingFrame<T>::addPileups(std::vector<T> const& product){
+  pileupOffsets_.push_back(pileups_.size());
   for (auto const& item : product) {
     pileups_.push_back(&item);
   }
