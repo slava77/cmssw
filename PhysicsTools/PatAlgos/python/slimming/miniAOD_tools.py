@@ -89,13 +89,9 @@ def miniAOD_customizeCommon(process):
     # apply type I + other PFMEt corrections to pat::MET object
     # and estimate systematic uncertainties on MET
 
-    process.selectedPatJetsForMETUnc = process.selectedPatJets.clone()
-    process.selectedPatJetsForMETUnc.cut = cms.string("pt > 15")
-
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncForMiniAODProduction
     runMetCorAndUncForMiniAODProduction(process, metType="PF",
-                                        jetCollUnskimmed="patJets",
-                                        jetColl="selectedPatJetsForMETUnc")
+                                        jetCollUnskimmed="patJets")
     
     #caloMET computation
     from PhysicsTools.PatAlgos.tools.metTools import addMETCollection
@@ -112,8 +108,10 @@ def miniAOD_customizeCommon(process):
     runMetCorAndUncForMiniAODProduction(process,
                                         pfCandColl=cms.InputTag("noHFCands"),
                                         recoMetFromPFCs=True, #needed for HF removal
+                                        jetSelection="pt>15 && abs(eta)<3.",
                                         postfix="NoHF"
                                         )
+
     process.load('PhysicsTools.PatAlgos.slimming.slimmedMETs_cfi')
     process.slimmedMETsNoHF = process.slimmedMETs.clone()
     process.slimmedMETsNoHF.src = cms.InputTag("patMETsNoHF")
@@ -214,22 +212,9 @@ def miniAOD_customizeCommon(process):
     #---------------------------------------------------------------------------
 
     # Adding puppi jets
-    process.load('CommonTools.PileupAlgos.Puppi_cff')
     process.load('RecoJets.JetProducers.ak4PFJetsPuppi_cfi')
+
     process.ak4PFJetsPuppi.doAreaFastjet = True # even for standard ak4PFJets this is overwritten in RecoJets/Configuration/python/RecoPFJets_cff
-    #process.puppi.candName = cms.InputTag('packedPFCandidates')
-    #process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
-    # kind of ugly, is there a better way to do this?
-    process.pfNoLepPUPPI = cms.EDFilter("PdgIdCandViewSelector",
-        src = cms.InputTag("particleFlow"), 
-        pdgId = cms.vint32( 1,2,22,111,130,310,2112,211,-211,321,-321,999211,2212,-2212 )
-    )
-    process.pfLeptonsPUPPET = cms.EDFilter("PdgIdCandViewSelector",
-        src = cms.InputTag("particleFlow"),
-        pdgId = cms.vint32(-11,11,-13,13),
-    )
-    process.puppiNoLep = process.puppi.clone()
-    process.puppiNoLep.candName = cms.InputTag('pfNoLepPUPPI') 
 
     from RecoJets.JetAssociationProducers.j2tParametersVX_cfi import j2tParametersVX
     process.ak4PFJetsPuppiTracksAssociatorAtVertex = cms.EDProducer("JetTracksAssociatorAtVertex",
@@ -252,50 +237,25 @@ def miniAOD_customizeCommon(process):
     process.patJetsPuppi.userData.userFloats.src = cms.VInputTag(cms.InputTag(""))
     process.patJetsPuppi.jetChargeSource = cms.InputTag("patJetPuppiCharge")
 
-    process.selectedPatJetsPuppi.cut = cms.string("pt > 20")
+    process.selectedPatJetsPuppi.cut = cms.string("pt > 15")
 
     process.load('PhysicsTools.PatAlgos.slimming.slimmedJets_cfi')
     process.slimmedJetsPuppi = process.slimmedJets.clone()
     process.slimmedJetsPuppi.src = cms.InputTag("selectedPatJetsPuppi")    
     process.slimmedJetsPuppi.packedPFCandidates = cms.InputTag("packedPFCandidates")
 
+
     ## puppi met
-    process.load('RecoMET.METProducers.PFMET_cfi')
-    process.puppiForMET = cms.EDProducer("CandViewMerger",
-        src = cms.VInputTag( "pfLeptonsPUPPET", "puppiNoLep")
-    ) 
-    process.pfMetPuppi = process.pfMet.clone()
-    process.pfMetPuppi.src = cms.InputTag("puppiForMET")
-    process.pfMetPuppi.alias = cms.string('pfMetPuppi')
-    # type1 correction, from puppi jets
-    process.corrPfMetType1Puppi = process.corrPfMetType1.clone(
-        src = 'ak4PFJetsPuppi',
-        jetCorrLabel = 'ak4PFPuppiL2L3Corrector',
-    )
-    del process.corrPfMetType1Puppi.offsetCorrLabel # no L1 for PUPPI jets
-    process.pfMetT1Puppi = process.pfMetT1.clone(
-        src = 'pfMetPuppi',
-        srcCorrections = [ cms.InputTag("corrPfMetType1Puppi","type1") ]
-    )
+    from PhysicsTools.PatAlgos.slimming.puppiForMET_cff import makePuppies
+    makePuppies( process );
 
-    from PhysicsTools.PatAlgos.tools.metTools import addMETCollection
-    addMETCollection(process, labelName='patMETPuppi',   metSource='pfMetT1Puppi') # T1
-    addMETCollection(process, labelName='patPFMetPuppi', metSource='pfMetPuppi')   # RAW
-
-    process.load('PhysicsTools.PatAlgos.slimming.slimmedMETs_cfi')
-    process.slimmedMETsPuppi = process.slimmedMETs.clone()
-    process.slimmedMETsPuppi.src = cms.InputTag("patMETPuppi")
-    process.slimmedMETsPuppi.rawVariation   = cms.InputTag("patPFMetPuppi") # only central value
-    # only central values for puppi met
-    del process.slimmedMETsPuppi.t01Variation
-    del process.slimmedMETsPuppi.t1SmearedVarsAndUncs
-    del process.slimmedMETsPuppi.tXYUncForRaw
-    del process.slimmedMETsPuppi.tXYUncForT1
-    del process.slimmedMETsPuppi.tXYUncForT01
-    del process.slimmedMETsPuppi.tXYUncForT1Smear
-    del process.slimmedMETsPuppi.tXYUncForT01Smear
-    del process.slimmedMETsPuppi.caloMET
-
+    runMetCorAndUncFromMiniAOD(process,
+                               isData=runOnData,
+                               pfCandColl=cms.InputTag("puppiForMET"),
+                               reclusterJets=False,
+                               recoMetFromPFCs=False,
+                               postfix="Puppi"
+                           )
 
 def miniAOD_customizeMC(process):
     #slimmed pileup information
