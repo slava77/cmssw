@@ -123,7 +123,8 @@ void PuppiPhoton::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	if(pupCol->refAt(iPF).key() != *itPho) continue;
 	pWeight = weight_;
 	if(!useValueMap_) { 
-	  double pCorr = phoCands[iPho]->pt()/itPF->pt();
+	  auto pfpt = itPF->pt();
+	  double pCorr = pfpt == 0 ? 0 : phoCands[iPho]->pt()/pfpt;
 	  pWeight = pWeight*pCorr;
 	}
 	foundPhoIndex.push_back(iPho);
