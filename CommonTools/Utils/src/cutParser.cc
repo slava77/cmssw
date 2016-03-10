@@ -2,6 +2,7 @@
 #include "CommonTools/Utils/src/AnyObjSelector.h"
 #include "CommonTools/Utils/src/Grammar.h"
 #include "FWCore/Utilities/interface/EDMException.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 using namespace reco::parser;
 bool reco::parser::cutParser(const edm::TypeWithDict &t, const std::string & cut, SelectorPtr & sel, bool lazy=false) {
@@ -9,6 +10,7 @@ bool reco::parser::cutParser(const edm::TypeWithDict &t, const std::string & cut
     for(std::string::const_iterator c = cut.begin(); c != cut.end(); ++c) {
         if(*c != ' ') { justBlanks = false; break; }
     }
+    edm::LogWarning("MYDEBUG")<<"cut <"<<cut<<"> is interpreted to have justBlanks "<<justBlanks;
     if(justBlanks) {
         sel = SelectorPtr(new AnyObjSelector);
         return true;
