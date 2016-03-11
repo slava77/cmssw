@@ -80,39 +80,45 @@ def addHIIsolationProducer(process):
     # modify cluster limits to run pp reconstruction on peripheral PbPb
 def modifyClusterLimits(process):
 
-    process.initialStepSeedsPreSplitting.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.initialStepSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.lowPtTripletStepSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.globalSeedsFromTriplets.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.detachedTripletStepSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.mixedTripletStepSeedsA.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.mixedTripletStepSeedsB.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.globalMixedSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.pixelLessStepSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.globalPixelLessSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.globalPixelSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.pixelPairStepSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.globalSeedsFromPairsWithVertices.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.tobTecStepSeedsPair.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.tobTecStepSeedsTripl.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.pixelPairElectronSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.regionalCosmicTrackerSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.stripPairElectronSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.photonConvTrajSeedFromSingleLeg.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.photonConvTrajSeedFromQuadruplets.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
-    process.tripletElectronSeeds.ClusterCheckPSet.cut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
+    hiClusterCut = cms.string("strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)")
+
+    if hasattr(process,'initialStepSeedsPreSplitting'): process.initialStepSeedsPreSplitting.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'initialStepSeeds'): process.initialStepSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'lowPtTripletStepSeeds'): process.lowPtTripletStepSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'globalSeedsFromTriplets'): process.globalSeedsFromTriplets.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'detachedTripletStepSeeds'): process.detachedTripletStepSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'mixedTripletStepSeedsA'): process.mixedTripletStepSeedsA.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'mixedTripletStepSeedsB'): process.mixedTripletStepSeedsB.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'globalMixedSeeds'): process.globalMixedSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'pixelLessStepSeeds'): process.pixelLessStepSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'globalPixelLessSeeds'): process.globalPixelLessSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'globalPixelSeeds'): process.globalPixelSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'pixelPairStepSeeds'): process.pixelPairStepSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'globalSeedsFromPairsWithVertices'): process.globalSeedsFromPairsWithVertices.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'tobTecStepSeedsPair'): process.tobTecStepSeedsPair.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'tobTecStepSeedsTripl'): process.tobTecStepSeedsTripl.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'pixelPairElectronSeeds'): process.pixelPairElectronSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'regionalCosmicTrackerSeeds'): process.regionalCosmicTrackerSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'stripPairElectronSeeds'): process.stripPairElectronSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'photonConvTrajSeedFromSingleLeg'): process.photonConvTrajSeedFromSingleLeg.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'photonConvTrajSeedFromQuadruplets'): process.photonConvTrajSeedFromQuadruplets.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'tripletElectronSeeds'): process.tripletElectronSeeds.ClusterCheckPSet.cut = hiClusterCut
+    if hasattr(process,'jetCoreRegionalStepSeeds'): process.jetCoreRegionalStepSeeds.ClusterCheckPSet.cut = hiClusterCut
+
+
+    maxElement = cms.uint32(1000000)
     
-    process.initialStepSeedsPreSplitting.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.initialStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.lowPtTripletStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.mixedTripletStepSeedsA.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.mixedTripletStepSeedsB.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.detachedTripletStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.pixelLessStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.tobTecStepSeedsTripl.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = cms.uint32(1000000)
-    process.tobTecStepSeedsPair.OrderedHitsFactoryPSet.maxElement = cms.uint32(1000000)
-    process.pixelPairStepSeeds.OrderedHitsFactoryPSet.maxElement = cms.uint32(1000000)
-    process.jetCoreRegionalStepSeeds.OrderedHitsFactoryPSet.maxElement = cms.uint32(1000000)
+    if hasattr(process,'initialStepSeedsPreSplitting'): process.initialStepSeedsPreSplitting.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'initialStepSeeds'): process.initialStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'lowPtTripletStepSeeds'): process.lowPtTripletStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'mixedTripletStepSeedsA'): process.mixedTripletStepSeedsA.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'mixedTripletStepSeedsB'): process.mixedTripletStepSeedsB.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'detachedTripletStepSeeds'): process.detachedTripletStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'pixelLessStepSeeds'): process.pixelLessStepSeeds.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'tobTecStepSeedsTripl'): process.tobTecStepSeedsTripl.OrderedHitsFactoryPSet.GeneratorPSet.maxElement = maxElement
+    if hasattr(process,'tobTecStepSeedsPair'): process.tobTecStepSeedsPair.OrderedHitsFactoryPSet.maxElement = maxElement
+    if hasattr(process,'pixelPairStepSeeds'): process.pixelPairStepSeeds.OrderedHitsFactoryPSet.maxElement = maxElement
+    if hasattr(process,'jetCoreRegionalStepSeeds'): process.jetCoreRegionalStepSeeds.OrderedHitsFactoryPSet.maxElement = maxElement
 
     return process
 
