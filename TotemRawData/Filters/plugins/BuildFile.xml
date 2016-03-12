@@ -1,0 +1,6 @@
+<library name="TotemRawDataLibraryFiltresPlugins" file="*.cc">
+  <flags EDM_PLUGIN="1"/>
+  <use name="FWCore/Framework"/>
+  <use name="FWCore/ParameterSet"/>
+  <use name="TotemRawDataLibrary/DataFormats"/>
+</library>
