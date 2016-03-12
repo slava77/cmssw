@@ -1,0 +1,9 @@
+binaries = $(shell ls -1 bin|grep '.cc')
+
+first: test $(binaries)
+
+test:
+	mkdir -p test
+
+$(binaries): test
+	@if [ ! -L "test/$@" ]; then ln -s "../bin/$@" 'test/$@'; fi

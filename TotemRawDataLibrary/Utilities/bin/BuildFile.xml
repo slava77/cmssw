@@ -1,0 +1,13 @@
+<use name="TotemRawDataLibrary/Utilities"/>
+<use name="TotemRawDataLibrary/Readers"/>
+
+<flags cxxflags="-O3 -g3 $(CUSTOM_FLAGS)"/>
+
+<bin name="TotemAnalyzeFile" file="analyzeFile.cc">
+</bin>
+
+<bin name="TotemCheckFile" file="checkFile.cc">
+</bin>
+
+<bin name="TotemReadFile" file="readFile.cc">
+</bin>
