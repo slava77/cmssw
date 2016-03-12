@@ -1,0 +1,20 @@
+<!--
+Shifts in um, rotations in mrad.
+
+For more details see RPAlignmentCorrections::LoadXMLFile in
+TotemAlignment/RPDataFormats/src/RPAlignmentCorrectionsSequence.cc
+-->
+
+<xml DocumentType="AlignmentDescription">
+	<rp  id=" 103"                                   sh_x=" -494.66" sh_y=" +251.39" sh_x_e="   +0.35" sh_y_e="   +0.36" rot_z="  -2.841" rot_z_e="  +0.024" sh_z="   +0.00" sh_z_e="   +0.00"/>
+	<rp  id=" 104"                                   sh_x=" -130.72" sh_y=" -154.31" sh_x_e="   +0.28" sh_y_e="   +0.29" rot_z="  +0.198" rot_z_e="  +0.024" sh_z="   +0.00" sh_z_e="   +0.00"/>
+	<rp  id=" 105"                                   sh_x=" +373.38" sh_y=" -458.75" sh_x_e="   +0.21" sh_y_e="   +0.21" rot_z="  +0.715" rot_z_e="  +0.025" sh_z="   +0.00" sh_z_e="   +0.00"/>
+
+	<rp  id=" 120"                                   sh_x=" +622.54" sh_y="+1579.16" sh_x_e="   +0.20" sh_y_e="   +0.20" rot_z=" +20.189" rot_z_e="  +0.021" sh_z="   +0.00" sh_z_e="   +0.00"/>
+	<rp  id=" 121"                                   sh_x=" -112.32" sh_y=" -367.30" sh_x_e="   +0.18" sh_y_e="   +0.18" rot_z="  -0.599" rot_z_e="  +0.022" sh_z="   +0.00" sh_z_e="   +0.00"/>
+	<rp  id=" 122"                                   sh_x=" -795.59" sh_y=" +973.55" sh_x_e="   +0.31" sh_y_e="   +0.31" rot_z="  -4.163" rot_z_e="  +0.020" sh_z="   +0.00" sh_z_e="   +0.00"/>
+
+	<rp  id=" 123"                                   sh_x=" -564.85" sh_y=" -123.86" sh_x_e="   +0.56" sh_y_e="   +0.56" rot_z="  -3.191" rot_z_e="  +0.033" sh_z="   +0.00" sh_z_e="   +0.00"/>
+	<rp  id=" 124"                                   sh_x=" -569.46" sh_y=" +311.54" sh_x_e="   +0.27" sh_y_e="   +0.27" rot_z="  -0.291" rot_z_e="  +0.041" sh_z="   +0.00" sh_z_e="   +0.00"/>
+	<rp  id=" 125"                                   sh_x=" -685.40" sh_y="  -99.91" sh_x_e="   +0.27" sh_y_e="   +0.26" rot_z="  +2.250" rot_z_e="  +0.044" sh_z="   +0.00" sh_z_e="   +0.00"/>
+</xml>
