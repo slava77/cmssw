@@ -1,0 +1,40 @@
+<lcgdict>
+  <class name="RPStripDigi"/>
+  <class name="edm::DetSet<RPStripDigi>"/>
+  <class name="std::vector<edm::DetSet<RPStripDigi> >"/>
+  <class name="std::vector<RPStripDigi>"/>
+  <class name="edm::DetSetVector<RPStripDigi>"/>
+  <class name="edm::Wrapper<edm::DetSet<RPStripDigi> >"/>
+  <class name="edm::Wrapper<edm::DetSetVector<RPStripDigi> >"/>
+
+  <class name="RPRecoHit"/>
+  <class name="edm::DetSet<RPRecoHit>"/>
+  <class name="edm::DetSetVector<RPRecoHit>"/>
+  <class name="std::vector<edm::DetSet<RPRecoHit> >"/>
+  <class name="edm::Wrapper<edm::DetSetVector<RPRecoHit> >"/>
+  <class name="std::vector<RPRecoHit>"/>
+  <class name="std::vector<const RPRecoHit*>"/>
+	  
+  <class name="std::pair<__gnu_cxx::__normal_iterator<const RPRecoHit*,std::vector<RPRecoHit> >,__gnu_cxx::__normal_iterator<const RPRecoHit*,std::vector<RPRecoHit> > >"/>
+  <class name="__gnu_cxx::__normal_iterator<const RPRecoHit*,std::vector<RPRecoHit> >"/>
+
+  <class name="RPDetTrigger"/>
+  <class name="edm::DetSet<RPDetTrigger>"/>
+  <class name="std::vector<edm::DetSet<RPDetTrigger> >"/>
+  <class name="std::vector<RPDetTrigger>"/>
+  <class name="edm::DetSetVector<RPDetTrigger>"/>
+  <class name="edm::Wrapper<edm::DetSetVector<RPDetTrigger> >"/>
+  <class name="edm::Wrapper<edm::DetSet<RPDetTrigger> >"/>
+		  
+  <class name="RPDigCluster"/>
+  <class name="edm::DetSet<RPDigCluster>"/>
+  <class name="std::vector<RPDigCluster>"/>
+  <class name="std::vector<edm::DetSet<RPDigCluster> >"/>
+  <class name="edm::DetSetVector<RPDigCluster>"/>
+  <class name="edm::Wrapper<edm::DetSetVector<RPDigCluster> >"/>
+
+  <class name="RPTimingDetectorHit"/>
+  <class name="std::vector<RPTimingDetectorHit>"/>
+  <class name="edm::Wrapper<std::vector<RPTimingDetectorHit> >"/>
+
+</lcgdict>
