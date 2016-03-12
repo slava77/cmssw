@@ -1,0 +1,6 @@
+<library   name="TotemAnalysisTotemNtuplizerPlugins" file="*.cc">
+  <use   name="FWCore/Framework"/>
+  <use   name="FWCore/ServiceRegistry"/>
+  <use   name="TotemAnalysis/TotemNtuplizer"/>
+  <flags   EDM_PLUGIN="1"/>
+</library>

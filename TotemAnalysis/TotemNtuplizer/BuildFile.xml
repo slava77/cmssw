@@ -1,0 +1,20 @@
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/PluginManager"/>
+<use   name="clhep"/>
+<use   name="root"/>
+<use   name="DataFormats/Common"/>
+<use   name="DataFormats/TotemRPDataTypes"/>
+<use   name="DataFormats/TotemRPDetId"/>
+<use   name="DataFormats/TotemL1Trigger"/>
+<use   name="RecoTotemRP/RPRecoDataFormats"/>
+<use   name="RecoTotemRP/RPRomanPotResolutionService"/>
+<use   name="TotemCondFormats/DataRecord"/>
+<use   name="TotemCondFormats/BeamOpticsParamsObjects"/>
+<use   name="Geometry/TotemRPGeometryBuilder"/>
+<use   name="Geometry/TotemRecords"/>
+<use   name="SimDataFormats/GeneratorProducts"/>
+<use   name="fastjet"/>
+<export>
+  <lib   name="1"/>
+</export>
