@@ -1,0 +1,13 @@
+<use   name="clhep"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/MessageLogger"/>
+<use   name="DataFormats/Common"/>
+<use   name="RecoTotemRP/RPClusterSigmaService"/>
+<use   name="Geometry/TotemRPDetTopology"/>
+<use   name="DataFormats/TotemRPDataTypes"/>
+<use   name="RecoTotemRP/RPServiceRecords"/>
+<use   name="boost"/>
+<use   name="root"/>
+<use   name="rootrflx"/>
+<flags   EDM_PLUGIN="1"/>
