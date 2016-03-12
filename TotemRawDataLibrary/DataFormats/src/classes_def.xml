@@ -1,0 +1,35 @@
+<lcgdict>
+    <class name="Totem::VFATFrame"/>
+    <class name="std::vector<Totem::VFATFrame>"/>
+
+    <!-- do not save the "frames" data member -->
+    <class name="Totem::RawEvent">
+        <field name="frames" transient="true"/>
+    </class>
+
+    <!-- set "frames=NULL" when RawEvent is read from file -->
+    <ioread sourceClass="Totem::RawEvent" version="[1-]" targetClass="Totem::RawEvent" source="" target="frames">
+    <![CDATA[ frames = NULL;
+    ]]>
+    </ioread>
+
+    <class name="edm::Wrapper<Totem::RawEvent>"/>
+
+	<class name="Totem::FramePosition"/>
+
+	<class name="Totem::VFATFrameCollection"/>
+
+	<class name="Totem::SimpleVFATFrameCollection"/>
+	<class name="edm::Wrapper< Totem::SimpleVFATFrameCollection >"/>
+        <class name="std::map<Totem::FramePosition, Totem::VFATFrame>"/>
+
+	<class name="Totem::OptoRxVFATFrameCollection"/>
+	<class name="edm::Wrapper< Totem::OptoRxVFATFrameCollection >"/>
+	
+	<class name="Totem::OptoRxMetaData"/>
+	<class name="std::map<unsigned int, Totem::OptoRxMetaData>"/>
+		
+	<class name="Totem::TriggerData"/>
+
+	<class name="std::map<unsigned int, long>"/>
+</lcgdict>

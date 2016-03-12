@@ -1,0 +1,8 @@
+<use name="FWCore/Framework"/>
+<use name="rootrflx"/>
+
+<flags cxxflags="-O3 -g3 $(CUSTOM_FLAGS)"/>
+
+<export>
+	<lib name="1"/>
+</export>
