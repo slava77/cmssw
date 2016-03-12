@@ -1,0 +1,7 @@
+<library file="*.cc" name="TotemRawDataReadersPlugins">
+  <flags EDM_PLUGIN="1"/>
+  <flags cxxflags="-O3 -g3 $(CUSTOM_FLAGS)"/>
+  <use name="FWCore/Framework"/>
+  <use name="TotemRawDataLibrary/Readers"/>
+  <use name="TotemRawData/DataFormats"/>
+</library>
