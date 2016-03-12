@@ -1,0 +1,9 @@
+Where we took the files from:
+
+interface/event.h : opt/date/commonDefs
+interface/monitor.h : opt/date/monitoring
+
+lib/libDb.a : opt/date/db/Linux
+lib/libInfo.a : opt/date/infoLogger/Linux
+lib/libmonitorstdalone.a : opt/date/monitoring/Linux
+lib/libmysqlclient.so : usr/lib
