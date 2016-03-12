@@ -1,0 +1,7 @@
+<use   name="root"/>
+<use   name="xerces-c"/>
+<use   name="TotemProtonTransport/TotemRPProtonTransportParametrization"/>
+<bin   file="FindApertures.cc" name="TotemRPFindApertures">
+</bin>
+<bin   file="FindApproximation.cc" name="TotemRPFindApproximation">
+</bin>
