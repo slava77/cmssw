@@ -1,0 +1,7 @@
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="boost"/>
+<use   name="DataFormats/TotemRPDataTypes"/>
+<use   name="Geometry/TotemRPDetTopology"/>
+<use   name="SimDataFormats/TrackingHit"/>
+<flags   EDM_PLUGIN="1"/>
