@@ -1,0 +1,10 @@
+<library   name="RecoTotemRPRPClusterSigmaServicePlugins" file="*.cc">
+  <use   name="FWCore/Framework"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="DataFormats/TotemRPDataTypes"/>
+  <use   name="RecoTotemRP/RPServiceRecords"/>
+  <use   name="CondCore/PluginSystem"/>
+  <use   name="DetectorDescription/Core"/>
+  <use   name="RecoTotemRP/RPClusterSigmaService"/>
+  <flags   EDM_PLUGIN="1"/>
+</library>
