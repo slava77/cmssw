@@ -1,0 +1,11 @@
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/MessageLogger"/>
+<use   name="RecoTotemRP/RPRecoDataFormats"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="DataFormats/TotemRPDataTypes"/>
+<use   name="RecoTotemRP/RPServiceRecords"/>
+<use   name="CondCore/PluginSystem"/>
+<use   name="DetectorDescription/Core"/>
+<export>
+  <lib   name="1"/>
+</export>
