@@ -1,0 +1,11 @@
+<use name="FWCore/Utilities"/>
+<use name="FWCore/Framework"/>
+<use name="Geometry/Records"/>
+<use name="TotemAlignment/RPRecords"/>
+<use name="CondFormats/DataRecord"/>
+<use name="clhep"/>
+<use name="boost"/>
+
+<export>
+	<lib name="1"/>
+</export>
