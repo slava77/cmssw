@@ -1,0 +1,13 @@
+<library name="GeometryTotemRPGeometryBuilderPlugins" file="*.cc">
+	<use name="SimDataFormats/GeneratorProducts"/>
+	<use name="DetectorDescription/Core"/>
+	<use name="Geometry/TotemRecords"/>
+	<use name="TotemAlignment/RPRecords"/>
+	<use name="DataFormats/DetId"/>
+	<use name="DataFormats/TotemRPDetId"/>
+	<use name="Geometry/TrackerNumberingBuilder"/>
+	<use name="Geometry/TotemRPGeometryBuilder"/>
+	<use name="clhep"/>
+	<use name="hepmc"/>
+	<flags EDM_PLUGIN="1"/>
+</library>
