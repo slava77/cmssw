@@ -1,0 +1,11 @@
+<use   name="FWCore/Framework"/>
+<use   name="boost"/>
+<use   name="DataFormats/Common"/>
+<use   name="DataFormats/TotemRPDataTypes"/>
+<use   name="rootrflx"/>
+<use   name="clhep"/>
+<use   name="SimDataFormats/GeneratorProducts"/>
+<use   name="TotemCondFormats/BeamOpticsParamsObjects"/>
+<export>
+  <lib   name="1"/>
+</export>
