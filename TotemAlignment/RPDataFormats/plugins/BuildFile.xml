@@ -1,0 +1,8 @@
+<library name="TotemAlignmentRPDataFormatsPlugins" file="*.cc">
+	<use name="TotemAlignment/RPDataFormats"/>
+	<use name="TotemAlignment/RPRecords"/>
+	<use name="FWCore/Framework"/>
+	<use name="Geometry/TotemRPGeometryBuilder"/>
+	<use name="Geometry/TotemRecords"/>
+	<flags EDM_PLUGIN="1"/>
+</library>
