@@ -1,0 +1,580 @@
+<DDDefinition xmlns="http://www.cern.ch/mms/DDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cern.ch/mms/DDL 
+../DDLSchema.xsd">
+
+Quartz LBars have 3mm * 3mm cross section in x-y plane (perpendicular to the beam axis z coordinate) and the distance between them is 0.1mm.
+
+Quartz LBars Locations in Negative side for one set, the second set is similar to the first one:
+          ===============================
+  y=+4.65 | A13 | B13 | C13 | D13 | E13 |
+          ===============================
+ y=+1.55  | A24 | B24 | C24 | D24 | E24 |
+          ===============================
+ y=-1.55  | A13 | B13 | C13 | D13 | E13 |
+          ===============================
+  y=-4.65 | A24 | B24 | C24 | D24 | E24 |
+          ===============================
+  x=      0 1.5  4.6    7.7   10.8  13.9
+
+
+Copy number scheme of Lbars in the Negative side for both sets of L-bars matrix:
+          
+          ===============================    =================================== 
+  y=+4.65 |  15 |  16 | 17  |  18 |  19 |    |  35  |  36  |  37  |  38  |  39  |
+          ===============================    ====================================
+  y=+1.55 |  10 |  11 |  12 |  13 |  14 |    |  30  |  31  |  32  |  33  |  34  |
+          ===============================    ====================================
+  y=-1.55 |  5  |  6  |  7  |  8  |  9  |    |  25  |  26  |  27  |  28  |  29  |
+          ===============================    ====================================
+  y=-4.65 |  0  |  1  |  2  |  3  |  4  |    |  20  |  21  |  22  |  23  |  24  |
+          ===============================    ====================================
+  x=      0 1.5  4.6    7.7   10.8  13.9
+
+
+
+
+
+<PosPartSection label="PPS_Timing_Negative_Detector_Assembly.xml">
+<PosPart copyNumber="10">
+     <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_Primary_Vacuum"/>
+     <rChild name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <Translation x="0*mm" y="34*mm" z="-[PPS_Timing_Horizontal_Pot:height]/2+[PPS_Timing_Horizontal_Pot:window_thickness_bottom]+77/2*mm" />
+        <rRotation name="PPS_Timing_Transformations:PPS_Timing_90_z_270_y_rot"/>
+</PosPart>
+
+<PosPart copyNumber="10">
+     <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_Primary_Vacuum"/>
+     <rChild name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+       <Translation x="0*mm" y="-34*mm" z="-[PPS_Timing_Horizontal_Pot:height]/2+[PPS_Timing_Horizontal_Pot:window_thickness_bottom]+77/2*mm" />
+        <rRotation name="PPS_Timing_Transformations:PPS_Timing_90_z_270_y_rot"/>
+</PosPart>
+
+<!--
+<PosPart copyNumber="10">
+     <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+     <rChild name="PPS_Timing_Box_Negative:BoxOFlbar"/>
+        <Translation x="-2.295*mm " y="0*mm" z="-34*mm+4.45/2*mm" />
+</PosPart>
+
+<PosPart copyNumber="10">
+     <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+     <rChild name="PPS_Timing_Box_Negative:BoxOFlbar"/>
+        <Translation x="-2.295*mm " y="0*mm" z="-34*mm+4.45/2*mm" />
+</PosPart>
+-->
+
+
+<PosPart copyNumber="14">
+	<rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+	<rChild name="PPS_Timing_Lbar_E24:QLbar"/>
+	<Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]"  y="-1.55*mm" z="2.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="14">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="2.5*mm-[PPS_Timing_Lbar:shift]+11.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="4">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_E24:QLbar"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="2.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="4">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="2.5*mm-[PPS_Timing_Lbar:shift]+11.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="19">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_E13:QLbar"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="0*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="19">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="0*mm-[PPS_Timing_Lbar:shift]+9*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="9">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_E13:QLbar"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="0*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="9">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="0*mm-[PPS_Timing_Lbar:shift]+9*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="13">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_D24:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="7.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="13">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="7.5*mm-[PPS_Timing_Lbar:shift]+16.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="3">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_D24:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="7.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="3">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="7.5*mm-[PPS_Timing_Lbar:shift]+16.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="18">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_D13:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="18">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="5*mm-[PPS_Timing_Lbar:shift]+14*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="8">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_D13:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="8">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="5*mm-[PPS_Timing_Lbar:shift]+14*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="12">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_C24:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="12.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="12">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="12.5*mm-[PPS_Timing_Lbar:shift]+21.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="2">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_C24:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="12.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="2">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="12.5*mm-[PPS_Timing_Lbar:shift]+21.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="17">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_C13:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="10*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="17">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="10*mm-[PPS_Timing_Lbar:shift]+19*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="7">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_C13:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="10*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="7">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="10*mm-[PPS_Timing_Lbar:shift]+19*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="11">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_B24:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="17.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="11">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="17.5*mm-[PPS_Timing_Lbar:shift]+26.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="1">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_B24:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="17.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="1">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="17.5*mm-[PPS_Timing_Lbar:shift]+26.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="16">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_B13:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="15*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="16">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="15*mm-[PPS_Timing_Lbar:shift]+24*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="6">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_B13:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="15*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="6">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="15*mm-[PPS_Timing_Lbar:shift]+24*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="10">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_A24:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="22.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="10">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="22.5*mm-[PPS_Timing_Lbar:shift]+31.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="0">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_A24:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="22.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="0">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="22.5*mm-[PPS_Timing_Lbar:shift]+31.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="15">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_A13:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="20*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="15">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="20*mm-[PPS_Timing_Lbar:shift]+29*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="5">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar_A13:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="20*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="5">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_First"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="20*mm-[PPS_Timing_Lbar:shift]+29*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="34">
+	<rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+	<rChild name="PPS_Timing_Lbar_E24:QLbar"/>
+	<Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]"  y="-1.55*mm" z="2.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="34">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="2.5*mm-[PPS_Timing_Lbar:shift]+11.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="24">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_E24:QLbar"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="2.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="24">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="2.5*mm-[PPS_Timing_Lbar:shift]+11.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="39">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_E13:QLbar"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="0*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="39">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="0*mm-[PPS_Timing_Lbar:shift]+9*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="29">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_E13:QLbar"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="0*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="29">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="13.9*mm-[PPS_Timing_Lbar:shiftx]+58.8*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="0*mm-[PPS_Timing_Lbar:shift]+9*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="33">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_D24:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="7.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="33">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="7.5*mm-[PPS_Timing_Lbar:shift]+16.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="23">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_D24:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="7.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="23">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="7.5*mm-[PPS_Timing_Lbar:shift]+16.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="38">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_D13:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="38">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="5*mm-[PPS_Timing_Lbar:shift]+14*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="28">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_D13:QLbar"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="28">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="10.8*mm-[PPS_Timing_Lbar:shiftx]+61.90*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="5*mm-[PPS_Timing_Lbar:shift]+14*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="32">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_C24:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="12.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="32">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="12.5*mm-[PPS_Timing_Lbar:shift]+21.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="22">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_C24:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="12.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="22">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="12.5*mm-[PPS_Timing_Lbar:shift]+21.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="37">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_C13:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="10*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="37">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="10*mm-[PPS_Timing_Lbar:shift]+19*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="27">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_C13:QLbar"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="10*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="27">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="7.7*mm-[PPS_Timing_Lbar:shiftx]+65*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="10*mm-[PPS_Timing_Lbar:shift]+19*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="31">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_B24:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="17.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="31">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="17.5*mm-[PPS_Timing_Lbar:shift]+26.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="21">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_B24:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="17.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="21">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="17.5*mm-[PPS_Timing_Lbar:shift]+26.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="36">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_B13:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="15*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="36">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="15*mm-[PPS_Timing_Lbar:shift]+24*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="26">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_B13:QLbar"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="15*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="26">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="4.6*mm-[PPS_Timing_Lbar:shiftx]+68.10*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="15*mm-[PPS_Timing_Lbar:shift]+24*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="30">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_A24:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="-1.55*mm" z="22.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="30">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-1.55*mm" z="22.5*mm-[PPS_Timing_Lbar:shift]+31.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="20">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_A24:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="4.65*mm" z="22.5*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="20">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="4.65*mm" z="22.5*mm-[PPS_Timing_Lbar:shift]+31.5*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="35">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_A13:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="-4.65*mm" z="20*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="35">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="-4.65*mm" z="20*mm-[PPS_Timing_Lbar:shift]+29*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+<PosPart copyNumber="25">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar_A13:QLbar"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]" y="1.55*mm" z="20*mm-[PPS_Timing_Lbar:shift] " />
+</PosPart>
+
+<PosPart copyNumber="25">
+        <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Box_Second"/>
+        <rChild name="PPS_Timing_Lbar:PhotoDetector_Window"/>
+        <Translation x="1.5*mm-[PPS_Timing_Lbar:shiftx]+71.2*mm+1.5*mm+[PPS_Timing_Lbar:wind_x]/2"  y="1.55*mm" z="20*mm-[PPS_Timing_Lbar:shift]+29*mm-[PPS_Timing_Lbar:wind_z]/2 " />
+</PosPart>
+
+
+
+<!--PosPart copyNumber="10">
+     <rParent name="cms:CMSE"/>
+     <rChild name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_Primary_Vacuum"/>
+        <Translation x="[PPS_Timing_Horizontal_Pot:height]/2 " y="0*mm " z="-215.7*m" />
+        <rRotation name="PPS_Timing_Transformations:PPS_Timing_90_z_90_y_rot"/>
+</PosPart-->
+
+
+<PosPart copyNumber="1">
+     <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_Primary_Vacuum"/>
+     <rChild name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_wall"/>
+        <Translation x="0*m " y="0*mm " z="[PPS_Timing_Horizontal_Pot:height_lower_part]/2-[PPS_Timing_Horizontal_Pot:height]/2" />
+</PosPart>
+
+<PosPart copyNumber="2">
+     <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_Primary_Vacuum"/>
+     <rChild name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_wall"/>
+        <Translation x="0*m " y="0*mm " z="[PPS_Timing_Horizontal_Pot:height_lower_part]/2-[PPS_Timing_Horizontal_Pot:height]/2" />
+        <rRotation name="PPS_Timing_Transformations:PPS_Timing_z_180_rot"/>
+</PosPart>
+
+
+<PosPart copyNumber="101">
+     <rParent name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_Primary_Vacuum"/>
+     <rChild name="PPS_Timing_Box_Negative:PPS_Timing_Cylinder_bottom_wall"/>
+        <Translation x="0*m " y="0*mm " z="[PPS_Timing_Horizontal_Pot:wall_thickness_bottom_wall]/2-[PPS_Timing_Horizontal_Pot:height]/2" />
+</PosPart>
+
+
+
+</PosPartSection>
+
+</DDDefinition>

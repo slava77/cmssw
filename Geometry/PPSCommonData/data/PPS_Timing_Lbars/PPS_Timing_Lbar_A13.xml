@@ -1,0 +1,45 @@
+<DDDefinition xmlns="http://www.cern.ch/mms/DDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cern.ch/mms/DDL 
+../DDLSchema.xsd">
+
+<!--
+    Detector
+                 x
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+z    ===============   | |   | |   | |   | |
+     ====================    | |   | |   | |
+     ==========================    | |   | |
+     ================================    | |
+     ======================================
+
+************************************BEAM********************************************
+
+-->
+
+<SolidSection label="PPS_Timing_Lbar_A13.xml">
+    <Box  name="BoxHA13" dx="[PPS_Timing_Lbar:lbar_xy_xz]/2" dy="[PPS_Timing_Lbar:lbar_xy_xz]/2" dz="[PPS_Timing_Lbar:lbar_A13_z]/2"/>
+    <Box  name="BoxVA13" dx="[PPS_Timing_Lbar:lbar_A_x]/2" dy="[PPS_Timing_Lbar:lbar_xy_xz]/2" dz="[PPS_Timing_Lbar:lbar_xy_xz]/2"/>
+<UnionSolid name="Lbar" firstSolid="BoxHA13" secondSolid="BoxVA13">
+     <Translation x="[PPS_Timing_Lbar:lbar_A_x]/2-[PPS_Timing_Lbar:lbar_xy_xz]/2" y="0" z="[PPS_Timing_Lbar:lbar_A13_z]/2-[PPS_Timing_Lbar:lbar_xy_xz]/2"/>
+</UnionSolid>
+</SolidSection>
+
+<LogicalPartSection label="PPS_Timing_Lbar_A13.xml">
+     <LogicalPart name="QLbar" category="unspecified">
+             <rSolid name="Lbar"/>
+             <rMaterial name="materials:Quartz"/>
+      </LogicalPart>
+</LogicalPartSection>
+
+
+</DDDefinition>
+
+
+

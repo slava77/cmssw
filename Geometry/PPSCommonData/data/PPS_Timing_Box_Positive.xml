@@ -1,0 +1,457 @@
+<DDDefinition xmlns="http://www.cern.ch/mms/DDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cern.ch/mms/DDL 
+../DDLSchema.xsd">
+   <ConstantsSection label="PPS_Timing_Box_Positive.xml">
+        <Constant name="extend" value="6*mm"/>
+
+<Constant name="Box_left_wall_out_x" value="69.37*mm"/>
+	<Constant name="Box_left_wall_out_y" value="48.01*mm"/>
+	<Constant name="Box_left_wall_out_z" value="4.45*mm"/>
+	<Constant name="Box_left_wall_out_forward_x" value="18.591*mm"/>
+	<Constant name="Box_left_wall_out_forward_y" value="17.07*mm"/>
+	<Constant name="Box_left_wall_out_forward_z" value="4.451*mm"/>
+	<Constant name="Box_left_wall_out_back_x" value="4.801*mm"/>
+	<Constant name="Box_left_wall_out_back_y" value="35.31*mm"/>
+	<Constant name="Box_left_wall_out_back_z" value="4.451*mm"/>	
+
+	<Constant name="Box_left_wall_in_big_x" value="23.60*mm"/>
+	<Constant name="Box_left_wall_in_big_y" value="28.68*mm"/>
+	<Constant name="Box_left_wall_in_big_z" value="6.00*mm"/>
+	<Constant name="Box_left_wall_in_small_x" value="17.391*mm"/>
+	<Constant name="Box_left_wall_in_small_y" value="15.87*mm"/>
+	<Constant name="Box_left_wall_in_small_z" value="6.001*mm"/>
+
+	<Constant name="Box_left_wall_in_extraup_x" value="16.82*mm"/>
+	<Constant name="Box_left_wall_in_extraup_y" value="1.74*mm"/>
+	<Constant name="Box_left_wall_in_extraup_z" value="3.30*mm"/>
+	<Constant name="Box_left_wall_in_extrado_x" value="16.82*mm"/>
+	<Constant name="Box_left_wall_in_extrado_y" value="1.74*mm"/>
+	<Constant name="Box_left_wall_in_extrado_z" value="3.30*mm"/>
+	<Constant name="edge" value="1.52*mm"/>
+
+	<Constant name="Box_down_wall_x" value="69.37*mm"/>
+	<Constant name="Box_down_wall_y" value="6.35*mm"/>
+	<Constant name="Box_down_wall_z" value="68.00*mm"/>
+	<Constant name="Box_down_wall_small_x" value="38.10*mm"/>
+	<Constant name="Box_down_wall_small_y" value="6.351*mm"/>
+	<Constant name="Box_down_wall_small_z" value="44.45*mm"/>
+
+	<Constant name="triangle_leftdown_x1" value="69.371*mm"/>
+	<Constant name="triangle_leftdown_x2" value="69.371*mm"/>
+	<Constant name="triangle_leftdown_y1" value="12.90*mm"/>
+	<Constant name="triangle_leftdown_y2" value="0.01*mm"/>
+	<Constant name="triangle_leftdown_z" value="3.175*mm"/>
+
+
+	<Constant name="Box_right_wall_out_x" value="69.37*mm"/>
+	<Constant name="Box_right_wall_out_y" value="48.01*mm"/>
+	<Constant name="Box_right_wall_out_z" value="0.99*mm"/>
+	<Constant name="Box_right_wall_out_forward_x" value="18.591*mm"/>
+	<Constant name="Box_right_wall_out_forward_y" value="17.07*mm"/>
+	<Constant name="Box_right_wall_out_forward_z" value="0.991*mm"/>
+	<Constant name="Box_right_wall_out_back_x" value="4.801*mm"/>
+	<Constant name="Box_right_wall_out_back_y" value="35.31*mm"/>
+	<Constant name="Box_right_wall_out_back_z" value="0.991*mm"/>	
+
+	
+	<Constant name="triangle_rightdown_x1" value="69.371*mm"/>
+	<Constant name="triangle_rightdown_x2" value="69.371*mm"/>
+	<Constant name="triangle_rightdown_y1" value="0.01*mm"/>
+	<Constant name="triangle_rightdown_y2" value="12.90*mm"/>
+	<Constant name="triangle_rightdown_z" value="3.175*mm"/>
+ 
+
+	<Constant name="Box_up_wall_x" value="69.37*mm"/>
+	<Constant name="Box_up_wall_y" value="6.35*mm"/>
+	<Constant name="Box_up_wall_z" value="68.00*mm"/>
+	<Constant name="Box_up_wall_in_x" value="57.15*mm"/>
+	<Constant name="Box_up_wall_in_y" value="2.292*mm"/>
+	<Constant name="Box_up_wall_in_z" value="46.93*mm"/>
+	<Constant name="Box_up_wall_inner_x" value="38.10*mm"/>
+	<Constant name="Box_up_wall_inner_y" value="4.062*mm"/>
+	<Constant name="Box_up_wall_inner_z" value="44.45*mm"/>
+
+	<Constant name="triangle_rightup_x1" value="69.371*mm"/>
+	<Constant name="triangle_rightup_x2" value="69.371*mm"/>
+	<Constant name="triangle_rightup_y1" value="0.01*mm"/>
+	<Constant name="triangle_rightup_y2" value="12.90*mm"/>
+	<Constant name="triangle_rightup_z" value="3.175*mm"/>
+
+	<Constant name="triangle_leftup_x1" value="69.371*mm"/>
+	<Constant name="triangle_leftup_x2" value="69.371*mm"/>
+	<Constant name="triangle_leftup_y1" value="12.90*mm"/>
+	<Constant name="triangle_leftup_y2" value="0.01*mm"/>
+	<Constant name="triangle_leftup_z" value="3.175*mm"/>
+
+	<Constant name="PPS_Timing_Box_FT_x" value="77*mm"/>
+	<Constant name="PPS_Timing_Box_FT_y" value="48.01*mm"/>
+	<Constant name="PPS_Timing_Box_FT_z" value="68.00*mm"/>
+
+
+	<Constant name="triangle_ppsTimingBox_first_1_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_1_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_1_y1" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_1_y2" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_1_z" value="3.175*mm"/>
+
+	<Constant name="triangle_ppsTimingBox_first_2_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_2_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_2_y1" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_2_y2" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_2_z" value="3.175*mm"/>
+
+	<Constant name="triangle_ppsTimingBox_first_3_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_3_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_3_y1" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_3_y2" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_3_z" value="3.175*mm"/>
+
+	<Constant name="triangle_ppsTimingBox_first_4_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_4_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_4_y1" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_4_y2" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_first_4_z" value="3.175*mm"/>
+
+	<Constant name="PPS_Timing_Box_ST_x" value="77*mm"/>
+	<Constant name="PPS_Timing_Box_ST_y" value="48.01*mm"/>
+	<Constant name="PPS_Timing_Box_ST_z" value="68.00*mm"/>
+
+
+	<Constant name="triangle_ppsTimingBox_second_1_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_1_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_1_y1" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_1_y2" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_1_z" value="3.175*mm"/>
+
+	<Constant name="triangle_ppsTimingBox_second_2_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_2_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_2_y1" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_2_y2" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_2_z" value="3.175*mm"/>
+
+	<Constant name="triangle_ppsTimingBox_second_3_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_3_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_3_y1" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_3_y2" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_3_z" value="3.175*mm"/>
+
+	<Constant name="triangle_ppsTimingBox_second_4_x1" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_4_x2" value="77*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_4_y1" value="0.01*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_4_y2" value="12.90*mm"/>
+	<Constant name="triangle_ppsTimingBox_second_4_z" value="3.175*mm"/>
+
+
+
+    </ConstantsSection>
+
+<SolidSection label="PPS_Timing_Box_Positive.xml">
+
+    <Box name="Box_left_wall_out" dx="[Box_left_wall_out_x]/2" dy="[Box_left_wall_out_y]/2" dz="[Box_left_wall_out_z]/2"/>
+   <!--Box name="Box_left_wall_out" dx="69.37*mm" dy="48.01*mm" dz="4.45*mm"/-->
+         
+  	 <Box name="Box_left_wall_out_forward" dx="[Box_left_wall_out_forward_x]/2" dy="[Box_left_wall_out_forward_y]/2" dz="[Box_left_wall_out_forward_z]/2"/>
+	
+  	 <Box name="Box_left_wall_out_back" dx="[Box_left_wall_out_back_x]/2" dy="[Box_left_wall_out_back_y]/2" dz="[Box_left_wall_out_back_z]/2"/>
+
+	<Box name="Box_left_wall_in_big" dx="[Box_left_wall_in_big_x]/2" dy="[Box_left_wall_in_big_y]/2" dz="[Box_left_wall_in_big_z]/2"/>
+
+	<Box name="Box_left_wall_in_small" dx="[Box_left_wall_in_small_x]/2" dy="[Box_left_wall_in_small_y]/2" dz="[Box_left_wall_in_small_z]/2"/>
+
+	<Box name="Box_left_wall_in_extraup" dx="[Box_left_wall_in_extraup_x]/2" dy="[Box_left_wall_in_extraup_y]/2" dz="[Box_left_wall_in_extraup_z]/2"/>
+
+	<Box name="Box_left_wall_in_extrado" dx="[Box_left_wall_in_extrado_x]/2" dy="[Box_left_wall_in_extrado_y]/2" dz="[Box_left_wall_in_extrado_z]/2"/>
+
+	<Box name="Box_down_wall" dx="[Box_down_wall_x]/2" dy="[Box_down_wall_y]/2" dz="[Box_down_wall_z]/2"/>
+
+	<Box name="Box_down_wall_small" dx="[Box_down_wall_small_x]/2" dy="[Box_down_wall_small_y]/2" dz="[Box_down_wall_small_z]/2"/>
+
+	<Trd1 dx1 = "[triangle_leftdown_x1]/2" dx2 = "[triangle_leftdown_x2]/2" dy1 = "[triangle_leftdown_y1]/2" dy2 = "[triangle_leftdown_y2]/2" dz = "[triangle_leftdown_z]/2" name = "triangle_leftdown"/>
+
+
+	<Box name="Box_right_wall_out" dx="[Box_right_wall_out_x]/2" dy="[Box_right_wall_out_y]/2" dz="[Box_right_wall_out_z]/2"/>
+   
+         
+  	 <Box name="Box_right_wall_out_forward" dx="[Box_right_wall_out_forward_x]/2" dy="[Box_right_wall_out_forward_y]/2" dz="[Box_right_wall_out_forward_z]/2"/>
+	
+  	 <Box name="Box_right_wall_out_back" dx="[Box_right_wall_out_back_x]/2" dy="[Box_right_wall_out_back_y]/2" dz="[Box_right_wall_out_back_z]/2"/>
+
+	<Trd1 dx1 = "[triangle_rightdown_x1]/2" dx2 = "[triangle_rightdown_x2]/2" dy1 = "[triangle_rightdown_y1]/2" dy2 = "[triangle_rightdown_y2]/2" dz = "[triangle_rightdown_z]/2" name = "triangle_rightdown"/>
+
+
+
+	<Box name="Box_up_wall" dx="[Box_up_wall_x]/2" dy="[Box_up_wall_y]/2" dz="[Box_up_wall_z]/2"/>
+
+	<Box name="Box_up_wall_in" dx="[Box_up_wall_in_x]/2" dy="[Box_up_wall_in_y]/2" dz="[Box_up_wall_in_z]/2"/>
+
+	<Box name="Box_up_wall_inner" dx="[Box_up_wall_inner_x]/2" dy="[Box_up_wall_inner_y]/2" dz="[Box_up_wall_inner_z]/2"/>
+
+
+	<Trd1 dx1 = "[triangle_rightup_x1]/2" dx2 = "[triangle_rightup_x2]/2" dy1 = "[triangle_rightup_y1]/2" dy2 = "[triangle_rightup_y2]/2" dz = "[triangle_rightup_z]/2" name = "triangle_rightup"/>
+
+
+	<Trd1 dx1 = "[triangle_leftup_x1]/2" dx2 = "[triangle_leftup_x2]/2" dy1 = "[triangle_leftup_y1]/2" dy2 = "[triangle_leftup_y2]/2" dz = "[triangle_leftup_z]/2" name = "triangle_leftup"/>
+
+
+	<Box name="PPS_Timing_Box_FT" dx="[PPS_Timing_Box_FT_x]/2" dy="[PPS_Timing_Box_FT_y]/2" dz="[PPS_Timing_Box_FT_z]/2"/>
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_first_1_x1]/2" dx2 = "[triangle_ppsTimingBox_first_1_x2]/2" dy1 = "[triangle_ppsTimingBox_first_1_y1]/2" dy2 = "[triangle_ppsTimingBox_first_1_y2]/2" dz = "[triangle_ppsTimingBox_first_1_z]/2" name = "triangle_ppsTimingBox_first_1"/>
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_first_2_x1]/2" dx2 = "[triangle_ppsTimingBox_first_2_x2]/2" dy1 = "[triangle_ppsTimingBox_first_2_y1]/2" dy2 = "[triangle_ppsTimingBox_first_2_y2]/2" dz = "[triangle_ppsTimingBox_first_2_z]/2" name = "triangle_ppsTimingBox_first_2"/>
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_first_3_x1]/2" dx2 = "[triangle_ppsTimingBox_first_3_x2]/2" dy1 = "[triangle_ppsTimingBox_first_3_y1]/2" dy2 = "[triangle_ppsTimingBox_first_3_y2]/2" dz = "[triangle_ppsTimingBox_first_3_z]/2" name = "triangle_ppsTimingBox_first_3"/>
+
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_first_4_x1]/2" dx2 = "[triangle_ppsTimingBox_first_4_x2]/2" dy1 = "[triangle_ppsTimingBox_first_4_y1]/2" dy2 = "[triangle_ppsTimingBox_first_4_y2]/2" dz = "[triangle_ppsTimingBox_first_4_z]/2" name = "triangle_ppsTimingBox_first_4"/>
+
+
+
+<Box name="PPS_Timing_Box_ST" dx="[PPS_Timing_Box_ST_x]/2" dy="[PPS_Timing_Box_ST_y]/2" dz="[PPS_Timing_Box_ST_z]/2"/>
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_second_1_x1]/2" dx2 = "[triangle_ppsTimingBox_second_1_x2]/2" dy1 = "[triangle_ppsTimingBox_second_1_y1]/2" dy2 = "[triangle_ppsTimingBox_second_1_y2]/2" dz = "[triangle_ppsTimingBox_second_1_z]/2" name = "triangle_ppsTimingBox_second_1"/>
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_second_2_x1]/2" dx2 = "[triangle_ppsTimingBox_second_2_x2]/2" dy1 = "[triangle_ppsTimingBox_second_2_y1]/2" dy2 = "[triangle_ppsTimingBox_second_2_y2]/2" dz = "[triangle_ppsTimingBox_second_2_z]/2" name = "triangle_ppsTimingBox_second_2"/>
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_second_3_x1]/2" dx2 = "[triangle_ppsTimingBox_second_3_x2]/2" dy1 = "[triangle_ppsTimingBox_second_3_y1]/2" dy2 = "[triangle_ppsTimingBox_second_3_y2]/2" dz = "[triangle_ppsTimingBox_second_3_z]/2" name = "triangle_ppsTimingBox_second_3"/>
+
+
+	<Trd1 dx1 = "[triangle_ppsTimingBox_second_4_x1]/2" dx2 = "[triangle_ppsTimingBox_second_4_x2]/2" dy1 = "[triangle_ppsTimingBox_second_4_y1]/2" dy2 = "[triangle_ppsTimingBox_second_4_y2]/2" dz = "[triangle_ppsTimingBox_second_4_z]/2" name = "triangle_ppsTimingBox_second_4"/>
+
+
+	<SubtractionSolid name = "ppsTimingBox">
+	<rSolid name = "Box_left_wall_out"/>
+	<rSolid name = "Box_left_wall_out_forward"/>
+	<Translation x="-[Box_left_wall_out_x]/2+[Box_left_wall_out_forward_x]/2" y="0.0*m" z="0.0*m"/>
+        </SubtractionSolid>
+        <SubtractionSolid name = "ppsTimingBox2">
+	<rSolid name = "ppsTimingBox"/>
+	<rSolid name = "Box_left_wall_out_back"/>        
+	<Translation x="[Box_left_wall_out_x]/2-[Box_left_wall_out_back_x]/2" y="0.0*m" z="0.0*m"/>
+	</SubtractionSolid>
+
+
+	<SubtractionSolid name = "ppsTimingBox3">
+	<rSolid name = "Box_left_wall_in_big"/>
+	<rSolid name = "Box_left_wall_in_small"/>
+	<Translation x="-[Box_left_wall_in_big_x]/2+[Box_left_wall_in_small_x]/2" y="0.0*m" z="0.0*m"/>
+	</SubtractionSolid>
+
+	<UnionSolid name = "ppsTimingBox4">
+	<rSolid name = "ppsTimingBox2"/>
+	<rSolid name = "ppsTimingBox3"/>        
+	<Translation x="-[Box_left_wall_out_x]/2+[Box_left_wall_in_big_x]/2" y="0.0*m" z="[Box_left_wall_out_z]/2+[Box_left_wall_in_small_z]/2"/>
+        </UnionSolid>
+
+	<UnionSolid name = "ppsTimingBox5">
+	<rSolid name = "ppsTimingBox4"/>
+	<rSolid name = "Box_left_wall_in_extraup"/>
+        <Translation x="-[Box_left_wall_out_x]/2+[Box_left_wall_in_extraup_x]/2-[edge]" y="[Box_left_wall_in_small_y]/2-[Box_left_wall_in_extraup_y]/2" z="[Box_left_wall_out_z]/2+[Box_left_wall_in_small_z]/2"/>
+        </UnionSolid>
+
+        
+        <UnionSolid name = "ppsTimingBox6">
+	<rSolid name = "ppsTimingBox5"/>
+	<rSolid name = "Box_left_wall_in_extrado"/>
+        <Translation x="-[Box_left_wall_out_x]/2+[Box_left_wall_in_extrado_x]/2-[edge]" y="-[Box_left_wall_in_small_y]/2+[Box_left_wall_in_extrado_y]/2" z="[Box_left_wall_out_z]/2+[Box_left_wall_in_small_z]/2"/> 
+        </UnionSolid>
+
+
+	<SubtractionSolid name = "ppsTimingBox7">
+	<rSolid name = "Box_down_wall"/>
+	<rSolid name = "Box_down_wall_small"/>
+	<Translation x="0.0*m" y="0.0*m" z="0.0*m"/>
+	</SubtractionSolid>
+
+
+	<UnionSolid name = "ppsTimingBox8">
+	<rSolid name = "ppsTimingBox6"/>
+	<rSolid name = "ppsTimingBox7"/>        
+	<Translation x="0.0*m" y="-[Box_left_wall_out_y]/2+[Box_down_wall_y]/2" z="[Box_down_wall_z]/2-[Box_left_wall_out_z]/2"/>
+	</UnionSolid>
+
+	<SubtractionSolid name = "ppsTimingBox9">
+	<rSolid name = "ppsTimingBox8"/>
+	<rSolid name = "triangle_leftdown"/>
+	<Translation x="0.0*m" y="-[Box_left_wall_out_y]/2" z="-[Box_left_wall_out_z]/2+[triangle_leftdown_z]/2-0.1"/>
+	</SubtractionSolid>
+
+
+
+	<SubtractionSolid name = "ppsTimingBox10">
+	<rSolid name = "Box_right_wall_out"/>
+	<rSolid name = "Box_right_wall_out_forward"/>
+	<Translation x="-[Box_right_wall_out_x]/2+[Box_right_wall_out_forward_x]/2" y="0.0*m" z="0.0*m"/>
+	</SubtractionSolid>
+       	<SubtractionSolid name = "ppsTimingBox11">
+	<rSolid name = "ppsTimingBox10"/>
+	<rSolid name = "Box_right_wall_out_back"/>        
+	<Translation x="[Box_right_wall_out_x]/2-[Box_right_wall_out_back_x]/2" y="0.0*m" z="0.0*m"/>
+	</SubtractionSolid>
+
+
+	<UnionSolid name = "ppsTimingBox12">
+	<rSolid name = "ppsTimingBox9"/>
+	<rSolid name = "ppsTimingBox11"/> 
+       <Translation x="0.0*m" y="0.0*m" z="[Box_left_wall_out_z]/2-[Box_right_wall_out_z]/2+[Box_down_wall_z]-[Box_left_wall_out_z]"/>       
+	</UnionSolid>
+
+
+	<SubtractionSolid name = "ppsTimingBox13">
+	<rSolid name = "ppsTimingBox12"/>
+	<rSolid name = "triangle_rightdown"/>
+	<!--Translation x="0.0*m" y="-[Box_right_wall_out_y]/2" z="128.55/2*mm"/-->
+	<Translation x="0.0*m" y="-[Box_right_wall_out_y]/2" z="[Box_down_wall_z]-[Box_left_wall_out_z]+[Box_left_wall_out_z]/2-[triangle_rightdown_z]/2+0.1"/>
+	</SubtractionSolid>
+
+
+	<SubtractionSolid name = "ppsTimingBox14">
+	<rSolid name = "Box_up_wall"/>
+	<rSolid name = "Box_up_wall_in"/>
+	<Translation x="0.0*m" y="[Box_up_wall_inner_y]/2" z="0.0*m"/>
+	</SubtractionSolid>
+       	<SubtractionSolid name = "ppsTimingBox15">
+	<rSolid name = "ppsTimingBox14"/>
+	<rSolid name = "Box_up_wall_inner"/>        
+	<Translation x="0.0*m" y="-[Box_up_wall_in_y]/2" z="0.0*m"/>
+	</SubtractionSolid>
+
+	<UnionSolid name = "ppsTimingBox16">
+	<rSolid name = "ppsTimingBox13"/>
+	<rSolid name = "ppsTimingBox15"/> 
+        <Translation x="0.0*m" y="[Box_left_wall_out_y]/2-[Box_up_wall_y]/2" z="[Box_down_wall_z]/2-[Box_left_wall_out_z]/2"/>       
+	</UnionSolid>
+
+	<SubtractionSolid name = "ppsTimingBox17">
+	<rSolid name = "ppsTimingBox16"/>
+	<rSolid name = "triangle_rightup"/>
+	<Translation x="0.0*m" y="[Box_right_wall_out_y]/2" z="[Box_down_wall_z]-[Box_left_wall_out_z]+[Box_left_wall_out_z]/2-[triangle_rightdown_z]/2+0.1"/>
+	</SubtractionSolid>
+
+
+	<SubtractionSolid name = "ppsTimingBox18">
+	<rSolid name = "ppsTimingBox17"/>
+	<rSolid name = "triangle_leftup"/>
+	<Translation x="0.0*m" y="[Box_right_wall_out_y]/2" z="-[Box_left_wall_out_z]/2+[triangle_leftup_z]/2-0.1"/>
+	</SubtractionSolid>
+
+
+
+
+	<SubtractionSolid name = "PPS_Timing_Box_First_f">
+	<rSolid name = "PPS_Timing_Box_FT"/>
+	<rSolid name = "triangle_ppsTimingBox_first_1"/>
+	<Translation x="0.0*m" y="[Box_right_wall_out_y]/2" z="-[Box_left_wall_out_z]/2+[triangle_leftup_z]/2-0.1-[Box_down_wall_z]/2+[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+
+	<SubtractionSolid name = "PPS_Timing_Box_First_f1">
+	<rSolid name = "PPS_Timing_Box_First_f"/>
+	<rSolid name = "triangle_ppsTimingBox_first_2"/>
+	<Translation x="0.0*m" y="-[Box_right_wall_out_y]/2" z="-[Box_left_wall_out_z]/2+[triangle_leftup_z]/2-0.1-[Box_down_wall_z]/2+[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+	<SubtractionSolid name = "PPS_Timing_Box_First_f2">
+	<rSolid name = "PPS_Timing_Box_First_f1"/>
+	<rSolid name = "triangle_ppsTimingBox_first_3"/>
+	<Translation x="0.0*m" y="-[Box_right_wall_out_y]/2" z="[Box_left_wall_out_z]/2-[triangle_leftup_z]/2+0.1+[Box_down_wall_z]/2-[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+
+	<SubtractionSolid name = "PPS_Timing_Box_First">
+	<rSolid name = "PPS_Timing_Box_First_f2"/>
+	<rSolid name = "triangle_ppsTimingBox_first_4"/>
+	<Translation x="0.0*m" y="[Box_right_wall_out_y]/2" z="[Box_left_wall_out_z]/2-[triangle_leftup_z]/2+0.1+[Box_down_wall_z]/2-[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+	<SubtractionSolid name = "PPS_Timing_Box_Second_s">
+	<rSolid name = "PPS_Timing_Box_ST"/>
+	<rSolid name = "triangle_ppsTimingBox_second_1"/>
+	<Translation x="0.0*m" y="[Box_right_wall_out_y]/2" z="-[Box_left_wall_out_z]/2+[triangle_leftup_z]/2-0.1-[Box_down_wall_z]/2+[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+
+	<SubtractionSolid name = "PPS_Timing_Box_Second_s1">
+	<rSolid name = "PPS_Timing_Box_Second_s"/>
+	<rSolid name = "triangle_ppsTimingBox_second_2"/>
+	<Translation x="0.0*m" y="-[Box_right_wall_out_y]/2" z="-[Box_left_wall_out_z]/2+[triangle_leftup_z]/2-0.1-[Box_down_wall_z]/2+[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+	<SubtractionSolid name = "PPS_Timing_Box_Second_s2">
+	<rSolid name = "PPS_Timing_Box_Second_s1"/>
+	<rSolid name = "triangle_ppsTimingBox_second_3"/>
+	<Translation x="0.0*m" y="-[Box_right_wall_out_y]/2" z="[Box_left_wall_out_z]/2-[triangle_leftup_z]/2+0.1+[Box_down_wall_z]/2-[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+
+	<SubtractionSolid name = "PPS_Timing_Box_Second">
+	<rSolid name = "PPS_Timing_Box_Second_s2"/>
+	<rSolid name = "triangle_ppsTimingBox_second_4"/>
+	<Translation x="0.0*m" y="[Box_right_wall_out_y]/2" z="[Box_left_wall_out_z]/2-[triangle_leftup_z]/2+0.1+[Box_down_wall_z]/2-[Box_left_wall_out_z]/2"/>
+	</SubtractionSolid>
+
+<!--******************************-->
+
+
+        <Tubs name="PPS_Timing_Cylinder_Primary_Vacuum" rMin="0*mm" rMax="[PPS_Timing_Horizontal_Pot:outer_diameter]/2+[PPS_Timing_Horizontal_Pot:surface_margin]" dz="[PPS_Timing_Horizontal_Pot:height]/2+[PPS_Timing_Horizontal_Pot:surface_margin]" startPhi="0*deg" deltaPhi="360*deg"/>
+
+        <Tubs name="PPS_Timing_Cylinder_wall" rMin="[PPS_Timing_Horizontal_Pot:outer_diameter]/2-[PPS_Timing_Horizontal_Pot:wall_thickness]" rMax="[PPS_Timing_Horizontal_Pot:outer_diameter]/2-[PPS_Timing_Horizontal_Pot:window_thickness_front]" dz="[PPS_Timing_Horizontal_Pot:height_lower_part]/2" startPhi="0*deg" deltaPhi="180*deg"/>
+
+        <Tubs name="PPS_Timing_Cylinder_bottom_wall" rMin="0*mm" rMax="[PPS_Timing_Horizontal_Pot:outer_diameter]/2-[PPS_Timing_Horizontal_Pot:wall_thickness]" dz="[PPS_Timing_Horizontal_Pot:wall_thickness_bottom_wall]/2" startPhi="0*deg" deltaPhi="360*deg"/>
+
+    <Box name="RB_Cylinder_Window_Rect"  dx="[PPS_Timing_Horizontal_Pot:window_width]/2" dy="2*[PPS_Timing_Horizontal_Pot:wall_thickness]" dz="[PPS_Timing_Horizontal_Pot:window_height]/2-[PPS_Timing_Horizontal_Pot:window_thickness_bottom]/2"/>
+    <Box name="PPS_Timing_Cylinder_bottom_wall_cut"  dx="48.01/2*mm+6.35*mm" dy="[PPS_Timing_Horizontal_Pot:outer_diameter]" dz="[PPS_Timing_Horizontal_Pot:wall_thickness_bottom_wall]/2"/>
+
+        <SubtractionSolid name="PPS_Timing_Cylinder_wall2">
+            <rSolid name="PPS_Timing_Cylinder_wall"/>
+            <rSolid name="RB_Cylinder_Window_Rect"/>
+            <Translation x="0*mm" y="[PPS_Timing_Horizontal_Pot:outer_diameter]/2" z="-[PPS_Timing_Horizontal_Pot:height_lower_part]/2+[PPS_Timing_Horizontal_Pot:window_height]/2+[PPS_Timing_Horizontal_Pot:window_thickness_bottom]/2" />
+        </SubtractionSolid>
+
+        <SubtractionSolid name="PPS_Timing_Cylinder_bottom_wall2">
+            <rSolid name="PPS_Timing_Cylinder_bottom_wall"/>
+            <rSolid name="PPS_Timing_Cylinder_bottom_wall_cut"/>
+            <Translation x="0*mm" y="0*mm" z="[PPS_Timing_Horizontal_Pot:window_thickness_bottom]" />
+        </SubtractionSolid>
+
+
+</SolidSection>
+
+
+<LogicalPartSection label="PPS_Timing_Box_Positive.xml">
+      <LogicalPart name="BoxOFlbar" category="unspecified">
+             <rSolid name="ppsTimingBox18"/>
+             <rMaterial name="materials:Aluminium"/>
+      </LogicalPart>
+
+     <LogicalPart name="PPS_Timing_Box_First" category="unspecified">
+             <rSolid name="PPS_Timing_Box_First"/>
+             <rMaterial name="materials:Vacuum"/>
+    </LogicalPart>
+
+     <LogicalPart name="PPS_Timing_Box_Second" category="unspecified">
+             <rSolid name="PPS_Timing_Box_Second"/>
+             <rMaterial name="materials:Vacuum"/>
+    </LogicalPart>
+
+
+        <LogicalPart name="PPS_Timing_Cylinder_Primary_Vacuum">
+            <rSolid name="PPS_Timing_Cylinder_Primary_Vacuum"/>
+            <rMaterial name="materials:Vacuum"/>
+        </LogicalPart>
+
+        <LogicalPart name="PPS_Timing_Cylinder_wall">
+            <rSolid name="PPS_Timing_Cylinder_wall2"/>
+            <rMaterial name="materials:Air"/>
+        </LogicalPart>
+
+        <LogicalPart name="PPS_Timing_Cylinder_bottom_wall">
+            <rSolid name="PPS_Timing_Cylinder_bottom_wall2"/>
+            <rMaterial name="materials:Air"/>
+        </LogicalPart>
+
+
+
+</LogicalPartSection>
+
+
+</DDDefinition>
+

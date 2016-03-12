@@ -1,0 +1,96 @@
+<DDDefinition xmlns="http://www.cern.ch/mms/DDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cern.ch/mms/DDL 
+../DDLSchema.xsd">
+
+<!--
+    Detector
+                 x
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+                 | |   | |   | |   | |   | |
+z    ===============   | |   | |   | |   | |
+     ====================    | |   | |   | |
+     ==========================    | |   | |
+     ================================    | |
+     ======================================
+
+************************************BEAM********************************************
+
+
+
+TIMING LBAR
+-->
+
+
+   <ConstantsSection label="PPS_Timing_Lbar.xml">
+        <Constant name="lbar_xy_xz" value="3*mm"/>
+
+        <Constant name="lbar_E24_z" value="23*mm"/>
+        <Constant name="lbar_E_x" value="61.8*mm"/>
+        <Constant name="lbar_E13_z" value="18*mm"/>
+
+        <Constant name="lbar_D24_z" value="33*mm"/>
+        <Constant name="lbar_D_x" value="64.9*mm"/>
+        <Constant name="lbar_D13_z" value="28*mm"/>
+
+        <Constant name="lbar_C24_z" value="43*mm"/>
+        <Constant name="lbar_C_x" value="68*mm"/>
+        <Constant name="lbar_C13_z" value="38*mm"/>
+
+        <Constant name="lbar_B24_z" value="53*mm"/>
+        <Constant name="lbar_B_x" value="71.1*mm"/>
+        <Constant name="lbar_B13_z" value="48*mm"/>
+
+        <Constant name="lbar_A24_z" value="63*mm"/>
+        <Constant name="lbar_A_x" value="74.2*mm"/>
+        <Constant name="lbar_A13_z" value="58*mm"/>
+
+        <Constant name="pos_x_A" value="1.45*mm"/>
+        <Constant name="pos_x_B" value="4.55*mm"/>
+        <Constant name="pos_x_C" value="7.65*mm"/>
+        <Constant name="pos_x_D" value="10.75*mm"/>
+        <Constant name="pos_x_E" value="13.85*mm"/>
+
+        <Constant name="pos_y_1" value="-4.65*mm"/>
+        <Constant name="pos_y_2" value="-1.55*mm"/>
+        <Constant name="pos_y_3" value="1.55*mm"/>
+        <Constant name="pos_y_4" value="4.65*mm"/>
+
+
+
+
+        <Constant name="wind_x" value="2*mm"/>
+        <Constant name="wind_y" value="3*mm"/>
+        <Constant name="wind_z" value="3*mm"/>
+        <Constant name="shift" value="34*mm-9*mm-1.27*mm"/>
+        <Constant name="shiftx" value="77/2*mm"/>
+    </ConstantsSection>
+
+
+
+<SolidSection label="PPS_Timing_Lbar.xml">
+    <Box name="PhotoDetector_Window"  dx="[wind_x]/2" dy="[wind_y]/2" dz="[wind_z]/2"/>
+   
+</SolidSection>
+
+
+
+
+<LogicalPartSection label="PPS_Timing_Lbar.xml">
+
+     <LogicalPart name="PhotoDetector_Window" category="unspecified">
+             <rSolid name="PhotoDetector_Window"/>
+             <rMaterial name="materials:Glass"/>
+     </LogicalPart>
+</LogicalPartSection>
+
+
+</DDDefinition>
+
+
+

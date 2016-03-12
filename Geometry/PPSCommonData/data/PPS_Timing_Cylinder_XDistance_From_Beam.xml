@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DDDefinition xmlns="http://www.cern.ch/mms/DDL"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.cern.ch/mms/DDL ../DDLSchema.xsd">
+    <ConstantsSection label="PPS_Timing_Cylinder_XDistance_From_Beam.xml">
+
+ <Constant name="Cylinder_beam_distance" value="0*mm"/>
+
+
+    </ConstantsSection>
+</DDDefinition>
+
