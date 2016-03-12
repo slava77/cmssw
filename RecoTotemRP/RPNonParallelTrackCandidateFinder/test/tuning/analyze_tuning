@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------------------------------
+
+alignments=9
+
+echo ">> ca"
+
+for i in `seq 1 $alignments`
+do
+	line=`cat "seed $i/test.log" | grep "cas_max =" `
+	value=${line##*= }
+	echo $value
+done
+
+echo ">> cb"
+
+for i in `seq 1 $alignments`
+do
+	line=`cat "seed $i/test.log" | grep "cbs_max =" `
+	value=${line##*= }
+	echo $value
+done

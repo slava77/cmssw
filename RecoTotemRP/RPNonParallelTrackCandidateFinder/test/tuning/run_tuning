@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------------------------------
+
+function RunOne
+{
+	seed="$1"
+	dir="seed $seed"
+
+	mkdir -p "$dir" || return 1
+	cd "$dir"
+	
+	../generate_misalignment -seed "$seed" -rps "120" -output "alignments"
+
+	cat "../template.py" | sed "\
+			s|\$seed|$seed|;
+		" > "test.py"
+
+	cmsRun "test.py" &> "test.log" &
+
+	cd ".."
+}
+
+#----------------------------------------------------------------------------------------------------
+
+make || exit 1
+
+alignments=1
+
+for i in `seq 1 $alignments`
+do
+	echo "* seed $i"
+	RunOne $i
+done
