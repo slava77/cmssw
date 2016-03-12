@@ -1,0 +1,14 @@
+<library   file="*.cc" name="TotemRawDataRawToDigiPlugins">
+  <flags   EDM_PLUGIN="1"/>
+  <flags   cxxflags="-O3 -g3 $(CUSTOM_FLAGS)"/>
+  <use   name="FWCore/Framework"/>
+  <use   name="FWCore/PluginManager"/>
+  <use   name="FWCore/ParameterSet"/>
+  <use   name="TotemRawData/RawToDigi"/>
+  <use   name="TotemRawDataLibrary/DataFormats"/>
+  <use   name="DataFormats/TotemRPDataTypes"/>
+  <use   name="DataFormats/Common"/>
+  <use   name="DataFormats/DetId"/>
+  <use   name="TotemCondFormats/DataRecord"/>
+  <use   name="TotemCondFormats/DAQInformation"/>
+</library>
