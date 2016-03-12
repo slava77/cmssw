@@ -1,0 +1,15 @@
+<use   name="root"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/MessageLogger"/>
+<use   name="DataFormats/Common"/>
+<use   name="boost"/>
+<use   name="DataFormats/TotemRPDataTypes"/>
+<use   name="Geometry/TotemRPDetTopology"/>
+<use   name="Geometry/TotemRPGeometryBuilder"/>
+<use   name="RecoTotemRP/RPRecoDataFormats"/>
+<use   name="clhep"/>
+<use   name="Geometry/TotemRecords"/>
+<use   name="DataFormats/TotemRPDetId"/>
+<use   name="RecoTotemRP/RPTrackCandidateFitter"/>
+<flags   EDM_PLUGIN="1"/>
