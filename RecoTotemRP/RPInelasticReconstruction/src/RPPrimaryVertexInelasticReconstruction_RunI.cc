@@ -33,7 +33,7 @@ void RPPrimaryVertexInelasticReconstruction_RunI::InitInverseParametrizationFitt
   
   //220 station right
   if(verbosity_)
-    std::cout<<"RPPrimaryVertexInelasticReconstruction_RunI::InitInverseParametrizationFitter"<<std::cout;
+    std::cout<<"RPPrimaryVertexInelasticReconstruction_RunI::InitInverseParametrizationFitter"<<std::endl;
     
   if(station_220_mandatory_in_reconstruction_ || any_station_in_reconstruction_)
   {

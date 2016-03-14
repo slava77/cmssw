@@ -34,7 +34,7 @@ void RPPrimaryVertex2ArmReconstruction::InitInverseParametrizationFitter()
   std::string par_name;
   
   if(verbosity_)
-    std::cout<<"RPPrimaryVertex2ArmReconstruction::InitInverseParametrizationFitter"<<std::cout;
+    std::cout<<"RPPrimaryVertex2ArmReconstruction::InitInverseParametrizationFitter"<<std::endl;
     
   if(station_220_mandatory_in_reconstruction_ || any_station_in_reconstruction_)
   {
