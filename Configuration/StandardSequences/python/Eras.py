@@ -39,7 +39,8 @@ class Eras (object):
         # phase1Pixel detector.
         self.trackingPhase1 = cms.Modifier()
         self.trackingPhase1PU70 = cms.Modifier()
-        
+        self.trackingLowPU = cms.Modifier()
+
         # This era should not be set by the user with the "--era" command, it's
         # activated automatically if the "--fast" command is used.
         self.fastSim = cms.Modifier()
@@ -68,6 +69,9 @@ class Eras (object):
         self.Run2_2017_trackingPhase1PU70 = cms.ModifierChain( self.Run2_2016, self.phase1Pixel, self.trackingPhase1PU70 )
         self.Run2_2017_trackingRun2 = cms.ModifierChain( self.Run2_2016, self.phase1Pixel ) # no tracking-era = Run2 tracking
         
+        # Scenarios with low-PU tracking (for B=0T reconstruction)
+        self.Run2_2016_trackingLowPU = cms.ModifierChain(self.Run2_2016, self.trackingLowPU)
+
         # The only thing this collection is used for is for cmsDriver to
         # warn the user if they specify an era that is discouraged from being
         # set directly. It also stops these eras being printed in the error
@@ -82,6 +86,7 @@ class Eras (object):
                                 self.phase2dev_common, self.phase2dev_tracker,
                                 self.phase2dev_hgc, self.phase2dev_muon,
                                 self.trackingPhase1, self.trackingPhase1PU70,
+                                self.trackingLowPU
                                ]
 
 eras=Eras()
