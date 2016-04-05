@@ -36,6 +36,12 @@ PixelTrackReconstructionBlock = cms.PSet (
     )
 )
 
+eras.trackingLowPU.toModify(PixelTrackReconstructionBlock,
+    OrderedHitsFactoryPSet = dict(
+        SeedingLayers = "PixelLayerTripletsPreSplitting",
+        GeneratorPSet = dict(SeedComparitorPSet = dict(clusterShapeCacheSrc = "siPixelClusterShapeCachePreSplitting"))
+    ),
+)
 eras.trackingPhase1PU70.toModify(PixelTrackReconstructionBlock,
     SeedMergerPSet = cms.PSet(
         layerList = cms.PSet(refToPSet_ = cms.string('PixelSeedMergerQuadruplets')),
