@@ -18,8 +18,10 @@ from CondCore.DBCommon.CondDBCommon_cfi import *
 
 def _modifySimMuonForPhase2( theProcess ):
     theProcess.load("SimMuon.GEMDigitizer.muonGEMDigi_cff")
-    theProcess.load("SimMuon.GEMDigitizer.muonME0DigisPreReco_cfi")
     theProcess.muonDigi += theProcess.muonGEMDigi
+
+def _modifySimMuonForPhase2( theProcess ):
+    theProcess.load("SimMuon.GEMDigitizer.muonME0DigisPreReco_cfi")
     theProcess.muonDigi += theProcess.simMuonME0Digis
 
     theProcess.rpcphase2recovery_essource = cms.ESSource("PoolDBESSource",
@@ -39,4 +41,5 @@ def _modifySimMuonForPhase2( theProcess ):
     theProcess.rpcphase2recovery_esprefer = cms.ESPrefer("PoolDBESSource","rpcphase2recovery_essource")
 
 from Configuration.StandardSequences.Eras import eras
+modifyConfigurationStandardSequencesSimMuonRun3_ = eras.run3_GEM.makeProcessModifier( _modifySimMuonForRun3 )
 modifyConfigurationStandardSequencesSimMuonPhase2_ = eras.phase2_muon.makeProcessModifier( _modifySimMuonForPhase2 )

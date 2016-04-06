@@ -219,11 +219,12 @@ mixPCFHepMCProducts = cms.PSet(
     type = cms.string('HepMCProductPCrossingFrame')
 )
 
-def _modifyMixSimHitsForPhase2( object ):
+def _modifyMixSimHitsForRun3( object ):
     object.mixSH.input.append(cms.InputTag("g4SimHits","MuonGEMHits"))
     object.mixSH.subdets.append('MuonGEMHits')
     object.mixSH.crossingFrames.append('MuonGEMHits')
 
+def _modifyMixSimHitsForPhase2( object ):
     object.mixSH.input.append(cms.InputTag("g4SimHits","MuonME0Hits"))
     object.mixSH.subdets.append('MuonME0Hits')
     object.mixSH.crossingFrames.append('MuonME0Hits')
@@ -237,5 +238,6 @@ def _modifyMixSimHitsForPhase2( object ):
     object.mixCH.subdets.append( hgchefrontDigitizer.hitCollection.value() )    
 
 from Configuration.StandardSequences.Eras import eras
+eras.run3_GEM.toModify( theMixObjects, func=_modifyMixSimHitsForRun3 )
 eras.phase2_muon.toModify( theMixObjects, func=_modifyMixSimHitsForPhase2 )
 
