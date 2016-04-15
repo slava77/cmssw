@@ -14,11 +14,14 @@ from SimMuon.DTDigitizer.muondtdigi_cfi import *
 from SimMuon.RPCDigitizer.muonrpcdigi_cfi import *
 muonDigi = cms.Sequence(simMuonCSCDigis+simMuonDTDigis+simMuonRPCDigis)
 
-def _modifySimMuonForPhase2( theProcess ):
+def _modifySimMuonForRun3( theProcess ):
     theProcess.load("SimMuon.GEMDigitizer.muonGEMDigi_cff")
-    theProcess.load("SimMuon.GEMDigitizer.muonME0DigisPreReco_cfi")
     theProcess.muonDigi += theProcess.muonGEMDigi
+
+def _modifySimMuonForPhase2( theProcess ):
+    theProcess.load("SimMuon.GEMDigitizer.muonME0DigisPreReco_cfi")
     theProcess.muonDigi += theProcess.simMuonME0Digis
 
 from Configuration.StandardSequences.Eras import eras
+modifyConfigurationStandardSequencesSimMuonRun3_ = eras.run3_GEM.makeProcessModifier( _modifySimMuonForRun3 )
 modifyConfigurationStandardSequencesSimMuonPhase2_ = eras.phase2_muon.makeProcessModifier( _modifySimMuonForPhase2 )
