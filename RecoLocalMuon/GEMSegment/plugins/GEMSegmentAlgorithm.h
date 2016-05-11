@@ -1,44 +1,45 @@
-#ifndef GEMRecHit_ME0SegAlgoMM_h
-#define GEMRecHit_ME0SegAlgoMM_h
+#ifndef GEMRecHit_GEMSegmentAlgorithm_h
+#define GEMRecHit_GEMSegmentAlgorithm_h
 
 /**
- * \class ME0SegAlgoMM
+ * \class GEMSegmentAlgorithm
  *
  * This algorithm is very basic no attemp to deal with ambiguities , noise etc.
- * The ME0 track segments is built out of the rechit's in a the 6 ME0 Layer denoted
- * as the ME0 Ensabmle .<BR>
+ * The GEM track segments (actually more correct would be: GEM correlated hits)
+ * is built out of the rechits in two GEM layers (GE1/1) or three GEM layers (GE2/1)
+ * as the GEM Ensabmle .<BR>
  *
- *  \authors Marcello Maggi 
- *
+ *  \authors Piet Verwilligen 
+ *  updated by Jason Lee to use general segment fitter, MuonSegFit
  */
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include <RecoLocalMuon/GEMSegment/plugins/ME0SegmentAlgorithm.h>
-#include <DataFormats/GEMRecHit/interface/ME0RecHit.h>
-
+#include "RecoLocalMuon/GEMSegment/plugins/GEMSegmentAlgorithmBase.h"
+#include "DataFormats/GEMRecHit/interface/GEMRecHit.h"
+#include "FWCore/Utilities/interface/Exception.h"
 #include <deque>
 #include <vector>
 
-class ME0SegFit;
+class MuonSegFit;
 
-class ME0SegAlgoMM : public ME0SegmentAlgorithm {
-
+class GEMSegmentAlgorithm : public GEMSegmentAlgorithmBase {
 
 public:
 
   /// Typedefs
-  typedef std::vector<const ME0RecHit*> EnsembleHitContainer;
+  typedef std::vector<const GEMRecHit*> EnsembleHitContainer;
   typedef std::vector<EnsembleHitContainer> ProtoSegments;
+  typedef std::vector<const TrackingRecHit*> MuonRecHitContainer;
 
   /// Constructor
-  explicit ME0SegAlgoMM(const edm::ParameterSet& ps);
+  explicit GEMSegmentAlgorithm(const edm::ParameterSet& ps);
   /// Destructor
-  virtual ~ME0SegAlgoMM();
+  virtual ~GEMSegmentAlgorithm();
 
   /**
    * Build segments for all desired groups of hits
    */
-  std::vector<ME0Segment> run(const ME0Ensemble& ensemble, const EnsembleHitContainer& rechits); 
+  std::vector<GEMSegment> run(const GEMEnsemble& ensemble, const EnsembleHitContainer& rechits); 
 
 private:
   /// Utility functions 
@@ -52,14 +53,12 @@ private:
   bool isGoodToMerge(const EnsembleHitContainer& newChain, const EnsembleHitContainer& oldChain);
 
   // Build track segments in this chamber (this is where the actual segment-building algorithm hides.)
-  std::vector<ME0Segment> buildSegments(const EnsembleHitContainer& rechits);
+  std::vector<GEMSegment> buildSegments(const EnsembleHitContainer& rechits);
 
   // Member variables
- private:
   const std::string myName; 
 
   // input from .cfi file
- private:
   bool    debug;
   unsigned int     minHitsPerSegment;
   bool    preClustering;
@@ -68,15 +67,16 @@ private:
   bool    preClustering_useChaining;
   double  dPhiChainBoxMax;
   double  dEtaChainBoxMax;
-  double  dTimeChainBoxMax;
   int     maxRecHitsInCluster;
+  bool    clusterOnlySameBXRecHits;
+  // bool    useGE21Short;
   
- private:
   EnsembleHitContainer proto_segment;
-  ME0Ensemble theEnsemble;
+  GEMEnsemble theEnsemble;
+  GEMDetId    theChamberId;
 
-  static constexpr float running_max=999999.;
-  std::unique_ptr<ME0SegFit> sfit_;
+  static constexpr float running_max=std::numeric_limits<float>::max();
+  std::unique_ptr<MuonSegFit> sfit_;
 
 };
 
