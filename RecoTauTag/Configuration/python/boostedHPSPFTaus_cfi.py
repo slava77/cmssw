@@ -13,8 +13,6 @@ def addBoostedTaus(process):
     process.PATTauSequence = cms.Sequence(_RecoPFTauTag.PFTau+_patSequences.makePatTaus+_patSequences.selectedPatTaus)
     process.PATTauSequenceBoosted = cloneProcessingSnippet(process,process.PATTauSequence, "Boosted")
     del process.PATTauSequence
-    del _RecoPFTauTag
-    del _patSequences
 
     process.recoTauAK4PFJets08RegionBoosted.src = cms.InputTag('boostedTauSeeds')
     process.recoTauAK4PFJets08RegionBoosted.pfCandSrc = cms.InputTag('particleFlow')
