@@ -165,6 +165,7 @@ void HcalDigiToRawuHTR::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     const HFDigiCollection& qie8hfdc=*(hfDigiCollection);
     for(HFDigiCollection::const_iterator qiedf=qie8hfdc.begin();qiedf!=qie8hfdc.end();qiedf++){
       DetId detid = qiedf->id();
+
       HcalElectronicsId eid(readoutMap->lookup(detid));
       int crateId = eid.crateId();
       int slotId = eid.slot();
@@ -184,6 +185,7 @@ void HcalDigiToRawuHTR::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
     const HBHEDigiCollection& qie8hbhedc=*(hbheDigiCollection);
     for(HBHEDigiCollection::const_iterator qiedf=qie8hbhedc.begin();qiedf!=qie8hbhedc.end();qiedf++){
       DetId detid = qiedf->id();
+
       HcalElectronicsId eid(readoutMap->lookup(detid));
       int crateId = eid.crateId();
       int slotId = eid.slot();
@@ -278,6 +280,7 @@ void HcalDigiToRawuHTR::fillDescriptions(edm::ConfigurationDescriptions& descrip
   desc.add<edm::InputTag>("HBHEqie8", edm::InputTag("simHcalDigis"));
   desc.add<edm::InputTag>("HFqie8", edm::InputTag("simHcalDigis"));
   desc.add<edm::InputTag>("TP", edm::InputTag("simHcalTriggerPrimitiveDigis"));
+  descriptions.add("hcalDigiToRawuHTR",desc);
   descriptions.addDefault(desc);
 }
 
