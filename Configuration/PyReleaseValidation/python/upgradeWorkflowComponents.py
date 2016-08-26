@@ -16,6 +16,7 @@ upgradeKeys[2023] = [
     '2023D2PU',
     '2023D3',
     '2023D3PU',
+    '2017NewFPix'
 ]
 
 upgradeSteps=[
@@ -77,6 +78,12 @@ upgradeProperties[2023] = {
         'Era' : 'Phase2C2',
         'ScenToRun' : ['GenSimFull','DigiFull','RecoFullGlobal', 'HARVESTFullGlobal'],
     },
+    '2017NewFPix' : {
+        'Geom' : 'Extended2017NewFPix',
+        'GT' : 'auto:phase1_2017_realistic',
+        'Era' : 'Run2_2017',
+        'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull'],
+    },    
 }
 
 upgradeProperties[2023]['2023D1PU'] = deepcopy(upgradeProperties[2023]['2023D1'])
