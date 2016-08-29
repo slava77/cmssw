@@ -2,7 +2,6 @@
 #define _TRACKER_GLOBAL_ERROR_H_
 
 #include "DataFormats/GeometryCommonDetAlgo/interface/GlobalErrorBase.h"
-#include "DataFormats/GeometryCommonDetAlgo/interface/GlobalErrorBase4D.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/GlobalErrorBaseExtended.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/ErrorMatrixTag.h"
 
