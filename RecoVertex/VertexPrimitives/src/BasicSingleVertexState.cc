@@ -8,7 +8,7 @@ namespace {
 
 BasicSingleVertexState::BasicSingleVertexState()
   : thePos(GlobalPoint(0, 0, 0)), 
-    theTime(dNan)
+    theTime(dNaN),
     theErr(AlgebraicSymMatrix44()),  
     theWeight(AlgebraicSymMatrix44()), 
     theWeightTimesPos(AlgebraicVector4()), theWeightInMix(0.) , 
@@ -20,7 +20,7 @@ BasicSingleVertexState::BasicSingleVertexState(const GlobalPoint & pos,
 			     const GlobalError & posErr,
 			     const double & weightInMix)
   : thePos(pos), 
-    theTime(dNan),
+    theTime(dNaN),
     theErr(posErr), 
     theWeight(AlgebraicSymMatrix44()), 
     theWeightTimesPos(AlgebraicVector4()),
@@ -34,7 +34,7 @@ BasicSingleVertexState::BasicSingleVertexState(const GlobalPoint & pos,
 			     const GlobalWeight & posWeight,
 			     const double & weightInMix)
   : thePos(pos),
-    theTime(dNan),
+    theTime(dNaN),
     theErr(AlgebraicSymMatrix44()),
     theWeight(posWeight),
     theWeightTimesPos(AlgebraicVector4()), 
@@ -51,7 +51,7 @@ BasicSingleVertexState::BasicSingleVertexState(const AlgebraicVector3 & weightTi
     theTime(dNaN),
     theErr(AlgebraicSymMatrix44()), 
     theWeight(posWeight), 
-    theWeightTimesPos(weightTimesPosition), 
+    theWeightTimesPos(weightTimesPosition[0], weightTimesPosition[1], weightTimesPosition[2], 0), 
     theWeightInMix(weightInMix),
     thePosAvailable(false), theTimeAvailable(false), theErrAvailable(false),theWeightAvailable(true), theWeightTimesPosAvailable(true),
     valid(true), vertexIs4D(false)
@@ -63,12 +63,14 @@ BasicSingleVertexState::BasicSingleVertexState(const GlobalPoint & pos,
                                                const double time,
                                                const double timeErr,
                                                const double & weightInMix)
-  : thePos(pos), thePosAvailable(true),
-    theTime(time), theTimeAvailable(true),
-    theErr(posErr), theErrAvailable(true),
-    theWeight(AlgebraicSymMatrix44()), theWeightAvailable(false),
-    theWeightTimesPos(AlgebraicVector4()), theWeightTimesPosAvailable(false),
-    valid(true), vertexIs4D(true), theWeightInMix(weightInMix)
+  : thePos(pos), 
+    theTime(time), 
+    theErr(posErr),
+    theWeight(AlgebraicSymMatrix44()),
+    theWeightTimesPos(AlgebraicVector4()),
+    theWeightInMix(weightInMix),
+    thePosAvailable(true), theTimeAvailable(true), theErrAvailable(true), theWeightAvailable(false), theWeightTimesPosAvailable(false),
+    valid(true), vertexIs4D(true) 
 {
   // You dumb bastard. It's not a schooner, its a sailboat.
   GlobalError timeErrMat(0.,
@@ -84,12 +86,14 @@ BasicSingleVertexState::BasicSingleVertexState(const GlobalPoint & pos,
                                                const double time,
                                                const double timeWeight,
                                                const double & weightInMix)
-  : thePos(pos), thePosAvailable(true),
-    theTime(time), theTimeAvailable(true),
-    theErr(AlgebraicSymMatrix44()), theErrAvailable(false),
-    theWeight(posWeight), theWeightAvailable(true),
-    theWeightTimesPos(AlgebraicVector4()), theWeightTimesPosAvailable(false),
-    valid(true), vertexIs4D(true), theWeightInMix(weightInMix)
+  : thePos(pos), 
+    theTime(time), 
+    theErr(AlgebraicSymMatrix44()), 
+    theWeight(posWeight), 
+    theWeightTimesPos(AlgebraicVector4()), 
+    theWeightInMix(weightInMix),
+    thePosAvailable(true), theTimeAvailable(true), theErrAvailable(false), theWeightAvailable(true), theWeightTimesPosAvailable(false),
+    valid(true), vertexIs4D(true)
 {
   GlobalWeight timeWeightMat(0.,
                              0.,0.,
@@ -104,13 +108,14 @@ BasicSingleVertexState::BasicSingleVertexState(const AlgebraicVector3 & weightTi
                                                const double weightTimesTime,
                                                const double timeWeight,
                                                const double & weightInMix)
-  : thePos(GlobalPoint(0, 0, 0)), thePosAvailable(false),
-    theTime(dNaN), theTimeAvailable(false),
-    theErr(AlgebraicSymMatrix44()), theErrAvailable(false),
-    theWeight(posWeight), theWeightAvailable(true),
-    theWeightTimesPos(AlgebraicVector4(weightTimesPosition[0],weightTimesPosition[1],weightTimesPosition[2],weightTimesTime)), 
-    theWeightTimesPosAvailable(true),
-    valid(true), vertexIs4D(true), theWeightInMix(weightInMix)
+  : thePos(GlobalPoint(0, 0, 0)), 
+    theTime(dNaN), 
+    theErr(AlgebraicSymMatrix44()), 
+    theWeight(posWeight), 
+    theWeightTimesPos(weightTimesPosition[0],weightTimesPosition[1],weightTimesPosition[2],weightTimesTime), 
+    theWeightInMix(weightInMix),
+    thePosAvailable(false), theTimeAvailable(false), theErrAvailable(false), theWeightAvailable(true), theWeightTimesPosAvailable(true),
+    valid(true), vertexIs4D(true)
 {
   GlobalWeight timeWeightMat(0.,
                              0.,0.,
@@ -124,12 +129,14 @@ BasicSingleVertexState::BasicSingleVertexState(const GlobalPoint & pos,
                                                const double time,
                                                const GlobalError & posTimeErr, // fully filled 4x4 matrix
                                                const double & weightInMix)
-  : thePos(pos), thePosAvailable(true),
-    theTime(time), theTimeAvailable(true),
-    theErr(posTimeErr), theErrAvailable(true),
-    theWeight(AlgebraicSymMatrix44()), theWeightAvailable(false),
-    theWeightTimesPos(AlgebraicVector4()), theWeightTimesPosAvailable(false),
-    valid(true), vertexIs4D(true), theWeightInMix(weightInMix)
+  : thePos(pos), 
+    theTime(time), 
+    theErr(posTimeErr), 
+    theWeight(AlgebraicSymMatrix44()), 
+    theWeightTimesPos(AlgebraicVector4()), 
+    theWeightInMix(weightInMix),
+    thePosAvailable(true), theTimeAvailable(true), theErrAvailable(true), theWeightAvailable(false), theWeightTimesPosAvailable(false),
+    valid(true), vertexIs4D(true)
 {}
 
 
@@ -137,24 +144,28 @@ BasicSingleVertexState::BasicSingleVertexState(const GlobalPoint & pos,
                                                const double time,
                                                const GlobalWeight & posTimeWeight,
                                                const double & weightInMix)
-  : thePos(pos), thePosAvailable(true),
-    theTime(time), theTimeAvailable(true),
-    theErr(AlgebraicSymMatrix44()), theErrAvailable(false),
-    theWeight(posTimeWeight), theWeightAvailable(true),
-    theWeightTimesPos(AlgebraicVector4()), theWeightTimesPosAvailable(false),
-    valid(true), vertexIs4D(true), theWeightInMix(weightInMix)
+  : thePos(pos), 
+    theTime(time), 
+    theErr(AlgebraicSymMatrix44()), 
+    theWeight(posTimeWeight), 
+    theWeightTimesPos(AlgebraicVector4()), 
+    theWeightInMix(weightInMix),
+    thePosAvailable(true), theTimeAvailable(true), theErrAvailable(false), theWeightAvailable(true), theWeightTimesPosAvailable(false),
+    valid(true), vertexIs4D(true)
 {}
 
 
 BasicSingleVertexState::BasicSingleVertexState(const AlgebraicVector4 & weightTimesPosition,
                                                const GlobalWeight & posWeight,
                                                const double & weightInMix)
-  : thePos(GlobalPoint(0, 0, 0)), thePosAvailable(false),
-    theTime(dNaN), theTimeAvailable(false),
-    theErr(AlgebraicSymMatrix44()), theErrAvailable(false),
-    theWeight(posWeight), theWeightAvailable(true),
-    theWeightTimesPos(weightTimesPosition), theWeightTimesPosAvailable(true),
-    valid(true), vertexIs4D(true), theWeightInMix(weightInMix)
+  : thePos(GlobalPoint(0, 0, 0)), 
+    theTime(dNaN), 
+    theErr(AlgebraicSymMatrix44()), 
+    theWeight(posWeight), 
+    theWeightTimesPos(weightTimesPosition),
+    theWeightInMix(weightInMix),
+    thePosAvailable(false), theTimeAvailable(false), theErrAvailable(false), theWeightAvailable(true), theWeightTimesPosAvailable(true),
+    valid(true), vertexIs4D(true)
 {}
 
 GlobalPoint BasicSingleVertexState::position() const
