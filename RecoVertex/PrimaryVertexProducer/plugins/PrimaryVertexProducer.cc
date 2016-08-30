@@ -15,7 +15,7 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "DataFormats/Common/interface/ValueMap.h"
+
 
 PrimaryVertexProducer::PrimaryVertexProducer(const edm::ParameterSet& conf)
   :theConfig(conf)
@@ -169,8 +169,8 @@ PrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
     edm::Handle<edm::ValueMap<float> > trackTimesH;
     edm::Handle<edm::ValueMap<float> > trackTimeResosH;
     
-    iEvent.getByLabel(trackTimesLabel, trackTimesH);
-    iEvent.getByLabel(trackTimeResosLabel, trackTimeResosH);
+    iEvent.getByToken(trkTimesToken, trackTimesH);
+    iEvent.getByToken(trkTimeResosToken, trackTimeResosH);
     const auto& trackTimes = *trackTimesH;
     const auto& trackTimeResos = *trackTimeResosH;
 

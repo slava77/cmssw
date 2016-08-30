@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #ifndef TrackingTools_TransientTrack_TrackingTransientTrack_h
 #define TrackingTools_TransientTrack_TrackingTransientTrack_h
 

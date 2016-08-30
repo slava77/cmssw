@@ -119,6 +119,7 @@ public:
   GlobalError error4D() const;
   GlobalWeight weight() const;
   GlobalWeight weight4D() const;
+  AlgebraicVector3 weightTimesPosition() const;
   AlgebraicVector4 weightTimesPosition4D() const;
   std::vector<RefCountedVertexTrack> tracks() const { return theTracks; }
   const std::vector<RefCountedVertexTrack> &tracksRef() const { return theTracks; }

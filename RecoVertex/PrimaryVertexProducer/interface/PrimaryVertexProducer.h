@@ -47,7 +47,7 @@
 #include <algorithm>
 #include "RecoVertex/PrimaryVertexProducer/interface/VertexHigherPtSquared.h"
 #include "RecoVertex/VertexTools/interface/VertexCompatibleWithBeam.h"
-
+#include "DataFormats/Common/interface/ValueMap.h"
 //
 // class declaration
 //
