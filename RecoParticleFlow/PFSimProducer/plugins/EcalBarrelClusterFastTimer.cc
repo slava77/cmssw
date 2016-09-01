@@ -54,8 +54,6 @@ private:
   std::pair<float, DetId> getTimeForECALPFCluster(const EcalRecHitCollection&,const reco::PFCluster&) const;
   float correctTimeToVertex(const float intime, const DetId& timeDet, const reco::Vertex& vtx, 
                             const CaloSubdetectorGeometry* ecalGeom) const;
-  // RNG
-  CLHEP::HepRandomEngine* _rng_engine;
 };
 
 DEFINE_FWK_MODULE(EcalBarrelClusterFastTimer);
@@ -104,10 +102,13 @@ EcalBarrelClusterFastTimer::EcalBarrelClusterFastTimer(const edm::ParameterSet& 
       << "EcalBarrelClusterFastTimer::EcalBarrelClusterFastTimer() - RandomNumberGeneratorService is not present in configuration file.\n"
       << "Add the service in the configuration file or remove the modules that require it.";
   }
-  _rng_engine = &(rng->getEngine());
+  
 }
 
 void EcalBarrelClusterFastTimer::produce(edm::Event& evt, const edm::EventSetup& es) {
+  edm::Service<edm::RandomNumberGenerator> rng;
+  CLHEP::HepRandomEngine* rng_engine = &(rng->getEngine(evt.streamID()));
+
   edm::Handle<std::vector<reco::PFCluster> > clustersH;
   edm::Handle<EcalRecHitCollection> timehitsH;
   edm::Handle<reco::VertexCollection> verticesH;
@@ -145,7 +146,7 @@ void EcalBarrelClusterFastTimer::produce(edm::Event& evt, const edm::EventSetup&
     for( unsigned i = 0 ; i < clusters.size(); ++i ) {      
       const float theresolution = reso->getTimeResolution(clusters[i]);
       
-      smeared_times.emplace_back( CLHEP::RandGauss::shoot(_rng_engine, times[i].first, theresolution), times[i].second );
+      smeared_times.emplace_back( CLHEP::RandGauss::shoot(rng_engine, times[i].first, theresolution), times[i].second );
       resolutions.push_back( theresolution );
     }
 
