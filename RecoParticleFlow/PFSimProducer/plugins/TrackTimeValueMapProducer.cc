@@ -24,10 +24,7 @@
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
 
-#include "SimTracker/Records/interface/TrackAssociatorRecord.h"
-#include "SimTracker/TrackAssociation/interface/TrackAssociatorByChi2.h"
-#include "SimTracker/TrackAssociation/interface/QuickTrackAssociatorByHits.h"
-#include "SimTracker/TrackerHitAssociation/interface/TrackerHitAssociator.h"
+#include "SimDataFormats/Associations/interface/TrackToTrackingParticleAssociator.h"
 
 #include <memory>
 
@@ -38,6 +35,9 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 
+#include "FWCore/Utilities/interface/isFinite.h"
+#include "FWCore/Utilities/interface/transform.h"
+
 class TrackTimeValueMapProducer : public edm::EDProducer {
 public:    
   TrackTimeValueMapProducer(const edm::ParameterSet&);
@@ -47,18 +47,18 @@ public:
   
 private:
   // inputs
-  const edm::EDGetTokenT<edm::View<reco::Track> > _tracks;
-  const edm::EDGetTokenT<edm::View<reco::Track> > _gsfTracks;
-  const edm::EDGetTokenT<TrackingParticleCollection> _trackingParticles;
-  const edm::EDGetTokenT<TrackingVertexCollection> _trackingVertices;
-  const edm::EDGetTokenT<edm::HepMCProduct> _hepMCProduct;
-  // tp associator
-  const std::string _associatorName;
+  const edm::EDGetTokenT<edm::View<reco::Track> > tracks_;
+  const edm::EDGetTokenT<edm::View<reco::Track> > gsfTracks_;
+  const edm::EDGetTokenT<TrackingParticleCollection> trackingParticles_;
+  const edm::EDGetTokenT<TrackingVertexCollection> trackingVertices_;
+  const edm::EDGetTokenT<edm::HepMCProduct> hepMCProduct_;
+  // tracking particle associators by order of preference
+  const std::vector<edm::EDGetTokenT<reco::TrackToTrackingParticleAssociator> > associators_;  
   // options
-  std::vector<std::unique_ptr<const ResolutionModel> > _resolutions;
+  std::vector<std::unique_ptr<const ResolutionModel> > resolutions_;
   // functions
   void calculateTrackTimes( const edm::View<reco::Track>&, 
-                            const reco::RecoToSimCollection&,
+                            const std::vector<reco::RecoToSimCollection>&,
                             std::vector<float>& ) const;
   std::pair<float,float> extractTrackVertexTime(const std::vector<std::pair<TrackingParticleRef, double> >&) const;
   // RNG
@@ -86,18 +86,18 @@ namespace {
 }
 
 TrackTimeValueMapProducer::TrackTimeValueMapProducer(const edm::ParameterSet& conf) :
-  _tracks(consumes<edm::View<reco::Track> >( conf.getParameter<edm::InputTag>("trackSrc") ) ),
-  _gsfTracks(consumes<edm::View<reco::Track> >( conf.getParameter<edm::InputTag>("gsfTrackSrc") ) ),
-  _trackingParticles(consumes<TrackingParticleCollection>( conf.getParameter<edm::InputTag>("trackingParticleSrc") ) ),
-  _trackingVertices(consumes<TrackingVertexCollection>( conf.getParameter<edm::InputTag>("trackingVertexSrc") ) ),
-  _associatorName( conf.getParameter<std::string>("tpAssociator") )
+  tracks_(consumes<edm::View<reco::Track> >( conf.getParameter<edm::InputTag>("trackSrc") ) ),
+  gsfTracks_(consumes<edm::View<reco::Track> >( conf.getParameter<edm::InputTag>("gsfTrackSrc") ) ),
+  trackingParticles_(consumes<TrackingParticleCollection>( conf.getParameter<edm::InputTag>("trackingParticleSrc") ) ),
+  trackingVertices_(consumes<TrackingVertexCollection>( conf.getParameter<edm::InputTag>("trackingVertexSrc") ) ),
+  associators_( edm::vector_transform( conf.getParameter<std::vector<edm::InputTag> >("associators"), [this](const edm::InputTag& tag){ return this->consumes<reco::TrackToTrackingParticleAssociator>(tag); } ) )
 {
   // setup resolution models
   const std::vector<edm::ParameterSet>& resos = conf.getParameterSetVector("resolutionModels");
   for( const auto& reso : resos ) {
     const std::string& name = reso.getParameter<std::string>("modelName");
     ResolutionModel* resomod = ResolutionModelFactory::get()->create(name,reso);
-    _resolutions.emplace_back( resomod );  
+    resolutions_.emplace_back( resomod );  
 
     // times and time resolutions for general tracks
     produces<edm::ValueMap<float> >(generalTracksName+name);
@@ -114,33 +114,41 @@ TrackTimeValueMapProducer::TrackTimeValueMapProducer(const edm::ParameterSet& co
       << "TrackTimeValueMapProducer::TrackTimeValueMapProducer() - RandomNumberGeneratorService is not present in configuration file.\n"
       << "Add the service in the configuration file or remove the modules that require it.";
   }
-  _rng_engine = &(rng->getEngine());
+
 }
 
 void TrackTimeValueMapProducer::produce(edm::Event& evt, const edm::EventSetup& es) {
-  std::vector<float> generalTrackTimes, gsfTrackTimes;
+  // get RNG engine
+  edm::Service<edm::RandomNumberGenerator> rng;  
+  auto rng_engine = &(rng->getEngine(evt.streamID()));
 
-  //get associator
-  edm::ESHandle<TrackAssociatorBase> theAssociator;
-  es.get<TrackAssociatorRecord>().get(_associatorName,theAssociator);
-  
+  // get sim track associators
+  std::vector<edm::Handle<reco::TrackToTrackingParticleAssociator> > associators;
+  for( const auto& token : associators_ ) {
+    associators.emplace_back();
+    auto& back = associators.back();
+    evt.getByToken(token,back);
+  }
+
+  std::vector<float> generalTrackTimes, gsfTrackTimes;
+ 
   //get track collections
   edm::Handle<edm::View<reco::Track> > TrackCollectionH;
-  evt.getByToken(_tracks, TrackCollectionH);
+  evt.getByToken(tracks_, TrackCollectionH);
   const edm::View<reco::Track>& TrackCollection = *TrackCollectionH;
 
   edm::Handle<edm::View<reco::Track> > GsfTrackCollectionH;
-  evt.getByToken(_gsfTracks, GsfTrackCollectionH);
+  evt.getByToken(gsfTracks_, GsfTrackCollectionH);
   const edm::View<reco::Track>& GsfTrackCollection = *GsfTrackCollectionH;
 
   //get tracking particle collections
   edm::Handle<TrackingParticleCollection>  TPCollectionH;
-  evt.getByToken(_trackingParticles, TPCollectionH);
+  evt.getByToken(trackingParticles_, TPCollectionH);
   //const TrackingParticleCollection&  TPCollection = *TPCollectionH;
 
   /*
   edm::Handle<TrackingVertexCollection>  TVCollectionH;
-  evt.getByToken(_trackingVertices, TVCollectionH);
+  evt.getByToken(trackingVertices_, TVCollectionH);
   const TrackingVertexCollection&  TVCollection= *TVCollectionH;
   */
 
@@ -152,24 +160,22 @@ void TrackTimeValueMapProducer::produce(edm::Event& evt, const edm::EventSetup& 
   */
   
   // associate the reco tracks / gsf Tracks
-  reco::RecoToSimCollection generalRecSimColl, gsfRecSimColl;
-  generalRecSimColl = theAssociator->associateRecoToSim(TrackCollectionH,
-                                                        TPCollectionH,
-                                                        &evt,&es);
-  gsfRecSimColl = theAssociator->associateRecoToSim(GsfTrackCollectionH,
-                                                    TPCollectionH,
-                                                    &evt,&es);
-
+  std::vector<reco::RecoToSimCollection> associatedTracks, associatedTracksGsf;  
+  for( auto associator : associators ) {
+    associatedTracks.emplace_back(associator->associateRecoToSim(TrackCollectionH, TPCollectionH));
+    associatedTracksGsf.emplace_back(associator->associateRecoToSim(GsfTrackCollectionH, TPCollectionH));
+  }
+  
   /*
   std::cout << "Track association sizes: " << generalRecSimColl.size() << ' ' 
             << gsfRecSimColl.size() << std::endl;
   */
   //std::cout << "tracksSrc" << std::endl;
-  calculateTrackTimes(TrackCollection, generalRecSimColl, generalTrackTimes);
+  calculateTrackTimes(TrackCollection, associatedTracks, generalTrackTimes);
   //std::cout << "gsfTracksSrc" << std::endl;
-  calculateTrackTimes(GsfTrackCollection, gsfRecSimColl, gsfTrackTimes);
+  calculateTrackTimes(GsfTrackCollection, associatedTracksGsf, gsfTrackTimes);
 
-  for( const auto& reso : _resolutions ) {
+  for( const auto& reso : resolutions_ ) {
     const std::string& name = reso->name();
     std::vector<float> times, resos;
     std::vector<float> gsf_times, gsf_resos;
@@ -183,7 +189,7 @@ void TrackTimeValueMapProducer::produce(edm::Event& evt, const edm::EventSetup& 
       const reco::Track& tk = TrackCollection[i];
       if( edm::isFinite( generalTrackTimes[i] ) && generalTrackTimes[i] != 0.f) {
         const float resolution = reso->getTimeResolution(tk);
-        times.push_back( CLHEP::RandGauss::shoot(_rng_engine, generalTrackTimes[i], resolution) );
+        times.push_back( CLHEP::RandGauss::shoot(rng_engine, generalTrackTimes[i], resolution) );
         resos.push_back( resolution );
       } else {
         times.push_back( generalTrackTimes[i] );
@@ -195,7 +201,7 @@ void TrackTimeValueMapProducer::produce(edm::Event& evt, const edm::EventSetup& 
       const reco::Track& tk = GsfTrackCollection[i];
       if( edm::isFinite( gsfTrackTimes[i] )  && gsfTrackTimes[i] != 0.f ) {
         const float resolution = reso->getTimeResolution(tk);
-        gsf_times.push_back( CLHEP::RandGauss::shoot(_rng_engine, gsfTrackTimes[i], resolution) );
+        gsf_times.push_back( CLHEP::RandGauss::shoot(rng_engine, gsfTrackTimes[i], resolution) );
         gsf_resos.push_back( resolution ); 
       } else {
         gsf_times.push_back( gsfTrackTimes[i] );
@@ -211,14 +217,18 @@ void TrackTimeValueMapProducer::produce(edm::Event& evt, const edm::EventSetup& 
 }
 
 void TrackTimeValueMapProducer::calculateTrackTimes( const edm::View<reco::Track>& tkcoll,
-                                                     const reco::RecoToSimCollection& assoc,
+                                                     const std::vector<reco::RecoToSimCollection>& assocs,
                                                      std::vector<float>& tvals ) const { 
   constexpr float flt_max = std::numeric_limits<float>::quiet_NaN();
   
   for( unsigned itk = 0; itk < tkcoll.size(); ++itk ) {
     const auto tkref = tkcoll.refAt(itk);
-    auto track_tps = assoc.find(tkref);    
-    if( track_tps != assoc.end() ) {
+    reco::RecoToSimCollection::const_iterator track_tps = assocs.back().end();
+    for( const auto& association : assocs ) {
+      track_tps = association.find(tkref);
+      if( track_tps != association.end() ) break;
+    }
+    if( track_tps != assocs.back().end() ) {
       if( !track_tps->val.size() ) {
         tvals.push_back(flt_max);
       } else {
