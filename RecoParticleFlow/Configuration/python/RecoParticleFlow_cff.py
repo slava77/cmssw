@@ -60,14 +60,16 @@ _phase2_hgcal_particleFlowReco = cms.Sequence( _phase2_hgcal_simPFSequence * par
 _phase2_hgcal_particleFlowReco.replace( particleFlowTmpSeq, cms.Sequence( particleFlowTmpBarrel * particleFlowTmp ) )
 
 eras.phase2_hgcal.toModify( quickTrackAssociatorByHits,
-                            pixelSimLinkSrc = cms.InputTag("simSiPixelDigis","Pixel"),
-                            stripSimLinkSrc = cms.InputTag("simSiPixelDigis","Tracker")
-                            )
+                              pixelSimLinkSrc = cms.InputTag("simSiPixelDigis","Pixel"),
+                              stripSimLinkSrc = cms.InputTag("simSiPixelDigis","Tracker")
+                              )
 
 eras.phase2_hgcal.toModify( tpClusterProducer,
-                            pixelSimLinkSrc = cms.InputTag("simSiPixelDigis", "Pixel"),
-                            phase2OTSimLinkSrc = cms.InputTag("simSiPixelDigis","Tracker")
-                            )
-
+                              pixelSimLinkSrc = cms.InputTag("simSiPixelDigis", "Pixel"),
+                              phase2OTSimLinkSrc = cms.InputTag("simSiPixelDigis","Tracker")
+                              )
 eras.phase2_hgcal.toReplaceWith( particleFlowTmp, _phase2_hgcal_particleFlowTmp )
 eras.phase2_hgcal.toReplaceWith( particleFlowReco, _phase2_hgcal_particleFlowReco )
+
+
+

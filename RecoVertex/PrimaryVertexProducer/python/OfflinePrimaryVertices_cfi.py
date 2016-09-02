@@ -17,9 +17,7 @@ offlinePrimaryVertices = cms.EDProducer(
     verbose = cms.untracked.bool(False),
     TrackLabel = cms.InputTag("generalTracks"),
     beamSpotLabel = cms.InputTag("offlineBeamSpot"),
-    TrackTimesLabel = cms.InputTag("trackTimeValueMapProducer:generalTracksConfigurableFlatResolutionModel"),
-    TrackTimeResosLabel = cms.InputTag("trackTimeValueMapProducer:generalTracksConfigurableFlatResolutionModelResolution"),
-                                    
+    
     TkFilterParameters = cms.PSet(
         algorithm=cms.string('filter'),
         maxNormalizedChi2 = cms.double(20.0),

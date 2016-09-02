@@ -1,5 +1,5 @@
-#ifndef VertexState_H
-#define VertexState_H
+#ifndef RecoVertex_VertexPrimitives_VertexState_H
+#define RecoVertex_VertexPrimitives_VertexState_H
 
 #include "RecoVertex/VertexPrimitives/interface/BasicVertexState.h"
 #include "RecoVertex/VertexPrimitives/interface/BasicSingleVertexState.h"

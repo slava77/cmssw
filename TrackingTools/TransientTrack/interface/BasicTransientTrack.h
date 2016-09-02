@@ -64,6 +64,7 @@ namespace reco {
     
     virtual CandidatePtr candidate() const { return reco::CandidatePtr(); }
 
+    virtual void setTime(double t, double dt) = 0;
     virtual double timeExt() const = 0;
     virtual double dtErrorExt() const = 0;
 

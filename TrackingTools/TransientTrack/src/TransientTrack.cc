@@ -20,6 +20,7 @@ TransientTrack::TransientTrack( const CandidatePtr & ptr , const MagneticField* 
 
 TransientTrack::TransientTrack( const TrackRef & tk , const MagneticField* field) : 
   Base( new TTT(tk, field)) {}
+
 TransientTrack::TransientTrack( const TrackRef & tk , const double time, const double dtime, const MagneticField* field) : 
   Base( new TTT(tk, time, dtime, field)) {}
 

@@ -231,8 +231,7 @@ void TrackTimeValueMapProducer::calculateTrackTimes( const edm::View<reco::Track
     if( track_tps != assocs.back().end() ) {
       if( !track_tps->val.size() ) {
         tvals.push_back(flt_max);
-      } else {
-        
+      } else {        
         const std::pair<float,float> time_info = extractTrackVertexTime(track_tps->val);
         //std::cout << "track z = " << tkref->vz() << " +/- " << tkref->dzError() << " cm ,";
         //std::cout << " sim vertex z = " << time_info.second << " t = "  << time_info.first;
