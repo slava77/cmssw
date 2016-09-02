@@ -2,7 +2,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexException.h"
-
+#include "FWCore/Utilities/interface/isFinite.h"
 
 using namespace std;
 
@@ -24,34 +24,36 @@ DAClusterizerInZT::fill( const vector<reco::TransientTrack> & tracks )const{
   vector<track_t> tks;
   for(vector<reco::TransientTrack>::const_iterator it=tracks.begin(); it!=tracks.end(); it++){
     track_t t;
+    t.pi = 1.;
     t.z = ((*it).stateAtBeamLine().trackStateAtPCA()).position().z();
-    
-    double tantheta=tan(((*it).stateAtBeamLine().trackStateAtPCA()).momentum().theta());
-    double phi=((*it).stateAtBeamLine().trackStateAtPCA()).momentum().phi();
-    //  get the beam-spot
-    reco::BeamSpot beamspot=(it->stateAtBeamLine()).beamSpot();
-    t.dz2= std::pow((*it).track().dzError(),2.)          // track errror
-      + (std::pow(beamspot.BeamWidthX()*cos(phi),2.)+std::pow(beamspot.BeamWidthY()*sin(phi),2.))/std::pow(tantheta,2.) // beam-width induced
-      + std::pow(vertexSize_,2);                        // intrinsic vertex size, safer for outliers and short lived decays
-    
-    //std::cout << "got transient track with time = " << it->timeExt() << " +/- "  << it->dtErrorExt() << " ns"<< std::endl;
-
     t.t = it->timeExt(); // the time
+    
+    if (std::abs(t.z) > 1000.) continue;
+    auto const & t_mom = (*it).stateAtBeamLine().trackStateAtPCA().momentum();
+    //  get the beam-spot
+    reco::BeamSpot beamspot = (it->stateAtBeamLine()).beamSpot();
+    double t_dz2 = 
+      std::pow((*it).track().dzError(), 2) // track errror
+      + (std::pow(beamspot.BeamWidthX()*t_mom.x(),2)+std::pow(beamspot.BeamWidthY()*t_mom.y(),2))*std::pow(t_mom.z(),2)/std::pow(t_mom.perp2(),2) // beam spot width
+      + std::pow(vertexSize_, 2); // intrinsic vertex size, safer for outliers and short lived decays
+    t.dz2 = 1./ t_dz2;
+    
     t.dtz = 0.;
     t.dt2 = std::pow((*it).dtErrorExt(),2.0) + std::pow(0.010,2.0);   // the ~injected~ timing error, need to add a small minimum vertex size in time
     
     if (d0CutOff_>0){
       Measurement1D IP=(*it).stateAtBeamLine().transverseImpactParameter();// error constains beamspot
-      t.pi=1./(1.+exp(pow(IP.value()/IP.error(),2) - std::pow(d0CutOff_ ,2)));  // reduce weight for high ip tracks  
+      t.pi=1./(1.+std::exp(std::pow(IP.value()/IP.error(),2.0) - std::pow(d0CutOff_ ,2)));  // reduce weight for high ip tracks  
     }else{
       t.pi=1.;
     }    
     t.tt=&(*it);
     t.Z=1.;
-    if( t.pi > 1e-3 ) {
+    if( edm::isFinite(t.pi) &&  t.pi >= std::numeric_limits<double>::epsilon() ) {
       tks.push_back(t);
     }
   }
+
   return tks;
 }
 

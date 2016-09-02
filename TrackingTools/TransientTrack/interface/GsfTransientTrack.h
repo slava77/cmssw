@@ -93,6 +93,10 @@ namespace reco {
 
     TrajectoryStateClosestToBeamLine stateAtBeamLine() const;
 
+    void setTime(double t, double dt) {
+      hasTime = true; timeExt_ = t; dtErrorExt_ = dt;
+    }
+
     double timeExt() const { return ( hasTime ? timeExt_ : std::numeric_limits<double>::quiet_NaN() ); }
 
     double dtErrorExt() const { return ( hasTime ? dtErrorExt_ : std::numeric_limits<double>::quiet_NaN() ); }

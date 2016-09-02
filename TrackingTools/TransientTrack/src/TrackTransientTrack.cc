@@ -87,7 +87,7 @@ TrackTransientTrack::TrackTransientTrack( const TrackRef & tk , const double tim
                                           const double dtime,
                                           const MagneticField* field, 
                                           const edm::ESHandle<GlobalTrackingGeometry>& tg) :
-  Track(*tk), tkr_(tk), hasTime(false), timeExt_(time), dtErrorExt_(dtime), theField(field), m_TSOS(kUnset), m_TSCP(kUnset), m_SCTBL(kUnset), theTrackingGeometry(tg)
+  Track(*tk), tkr_(tk), hasTime(true), timeExt_(time), dtErrorExt_(dtime), theField(field), m_TSOS(kUnset), m_TSCP(kUnset), m_SCTBL(kUnset), theTrackingGeometry(tg)
 {
   
   initialFTS = trajectoryStateTransform::initialFreeState(*tk, field);
@@ -96,8 +96,8 @@ TrackTransientTrack::TrackTransientTrack( const TrackRef & tk , const double tim
 
 TrackTransientTrack::TrackTransientTrack( const TrackTransientTrack & tt ) :
   Track(tt), tkr_(tt.persistentTrackRef()), 
- hasTime(tt.hasTime), timeExt_(tt.timeExt_), dtErrorExt_(tt.dtErrorExt_),
-theField(tt.field()), 
+  hasTime(tt.hasTime), timeExt_(tt.timeExt()), dtErrorExt_(tt.dtErrorExt()),
+  theField(tt.field()), 
   initialFTS(tt.initialFreeState()), m_TSOS(kUnset), m_TSCP(kUnset)
 {
   // see ThreadSafe statement above about the order of operator= and store

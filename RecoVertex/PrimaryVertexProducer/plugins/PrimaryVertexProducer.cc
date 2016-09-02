@@ -156,7 +156,17 @@ PrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   // interface RECO tracks to vertex reconstruction
   edm::ESHandle<TransientTrackBuilder> theB;
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theB);
-  std::vector<reco::TransientTrack> t_tks = (*theB).build(tks, beamSpot);
+  std::vector<reco::TransientTrack> t_tks;
+
+  if( f4D ) {
+    edm::Handle<edm::ValueMap<float> > trackTimesH;
+    edm::Handle<edm::ValueMap<float> > trackTimeResosH;    
+    iEvent.getByToken(trkTimesToken, trackTimesH);
+    iEvent.getByToken(trkTimeResosToken, trackTimeResosH);
+    t_tks = (*theB).build(tks, beamSpot, trackTimesH, trackTimeResosH);
+  } else {
+    t_tks = (*theB).build(tks, beamSpot);
+  }
   if(fVerbose) {std::cout << "RecoVertex/PrimaryVertexProducer"
 		     << "Found: " << t_tks.size() << " reconstructed tracks" << "\n";
   }
@@ -164,30 +174,6 @@ PrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
 
   // select tracks
   std::vector<reco::TransientTrack> && seltks = theTrackFilter->select( t_tks );
-
-  if( f4D ) {
-    edm::Handle<edm::ValueMap<float> > trackTimesH;
-    edm::Handle<edm::ValueMap<float> > trackTimeResosH;
-    
-    iEvent.getByToken(trkTimesToken, trackTimesH);
-    iEvent.getByToken(trkTimeResosToken, trackTimeResosH);
-    const auto& trackTimes = *trackTimesH;
-    const auto& trackTimeResos = *trackTimeResosH;
-
-    for( auto& seltk : seltks ) {
-      auto temp = seltk.trackBaseRef();
-      double time = trackTimes[temp];
-      double timeReso = trackTimeResos[temp];
-      timeReso = ( timeReso > 1e-6 ? timeReso : 0.170 ); // make the error much larger than the BS time width
-      if( edm::isNotFinite(time) ) {
-        time = 0.0;
-        timeReso = 1.0;
-      }
-      reco::TransientTrack temptt(temp.castTo<reco::TrackRef>(),time,timeReso,
-                                  theB->field(),theB->trackingGeometry());
-      seltk.swap(temptt);
-    }
-  }
 
   // clusterize tracks in Z
   std::vector< std::vector<reco::TransientTrack> > && clusters =  theTrackClusterizer->clusterize(seltks);
@@ -226,7 +212,7 @@ PrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
       if( algorithm->useBeamConstraint && validBS &&((*iclus).size()>1) ){
         
 	v = algorithm->fitter->vertex(*iclus, beamSpot);
-        
+	
         if( f4D ) {
           if( v.isValid() ) {
             auto err = v.positionError().matrix4D();
