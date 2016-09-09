@@ -21,8 +21,12 @@ namespace reco {
 
     // constructor from persistent track
     CandidatePtrTransientTrack();
-    CandidatePtrTransientTrack( const CandidatePtr & tk , const MagneticField* field);
-    CandidatePtrTransientTrack( const CandidatePtr & tk , const MagneticField* field, const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
+    
+    CandidatePtrTransientTrack( const CandidatePtr & tk, const MagneticField* field);
+    CandidatePtrTransientTrack( const CandidatePtr & tk, const double time, const double dtime, const MagneticField* field);
+
+    CandidatePtrTransientTrack( const CandidatePtr & tk, const MagneticField* field, const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
+    CandidatePtrTransientTrack( const CandidatePtr & tk, const double time, const double dtime, const MagneticField* field, const edm::ESHandle<GlobalTrackingGeometry>& trackingGeometry);
 
     CandidatePtrTransientTrack( const CandidatePtrTransientTrack & tt );
 
@@ -72,9 +76,18 @@ namespace reco {
 
     TrajectoryStateClosestToBeamLine stateAtBeamLine() const;
 
+    void setTime(double t, double dt) {
+      hasTime = true; timeExt_ = t; dtErrorExt_ = dt;
+    }
+
+    double timeExt() const { return ( hasTime ? timeExt_ : std::numeric_limits<double>::quiet_NaN() ); }
+    double dtErrorExt() const { return ( hasTime ? dtErrorExt_ : std::numeric_limits<double>::quiet_NaN() ); }
+
   private:
 
     CandidatePtr ptr_;
+    bool hasTime;
+    double timeExt_, dtErrorExt_;
     const MagneticField* theField;
 
     FreeTrajectoryState initialFTS;
