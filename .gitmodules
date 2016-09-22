@@ -1,0 +1,3 @@
+[submodule "TrackingTests"]
+	path = TrackingTests
+	url = git@github.com:cerati/tracking-tests.git
