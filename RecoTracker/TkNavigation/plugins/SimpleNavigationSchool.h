@@ -23,6 +23,9 @@ public:
   SimpleNavigationSchool() : theField(0),theTracker(0){};
   SimpleNavigationSchool(const GeometricSearchTracker* theTracker,
 			 const MagneticField* field);
+  SimpleNavigationSchool(const GeometricSearchTracker* theTracker,
+			 const MagneticField* field, bool addFWD);
+  void Init(const GeometricSearchTracker* theTracker, const MagneticField* field);
   ~SimpleNavigationSchool(){cleanMemory();}
 
   // from base class
@@ -79,6 +82,9 @@ protected:
   const GeometricSearchTracker* theTracker;
 
   void cleanMemory();
+
+ private:
+  const bool theAddFWD = true;
 };
 
 #endif // SimpleNavigationSchool_H

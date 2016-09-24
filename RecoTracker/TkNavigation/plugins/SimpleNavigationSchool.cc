@@ -28,7 +28,19 @@ using namespace std;
 
 SimpleNavigationSchool::SimpleNavigationSchool(const GeometricSearchTracker* theInputTracker,
 					       const MagneticField* field) : 
-  theBarrelLength(0),theField(field), theTracker(theInputTracker)
+  theBarrelLength(0),theField(field), theTracker(theInputTracker) 
+{
+  Init(theInputTracker, field);
+}
+SimpleNavigationSchool::SimpleNavigationSchool(const GeometricSearchTracker* theInputTracker,
+					       const MagneticField* field, bool addFWD) : 
+  theBarrelLength(0),theField(field), theTracker(theInputTracker) , theAddFWD(addFWD)
+{
+  Init(theInputTracker, field);
+}
+
+void SimpleNavigationSchool::Init(const GeometricSearchTracker* theInputTracker,
+			     const MagneticField* field)
 {
 
   theAllDetLayersInSystem=&theInputTracker->allLayers();
@@ -99,9 +111,11 @@ linkBarrelLayers( SymmetricLayerFinder& symFinder)
     // always add next barrel layer first
     if ( i+1 != theBarrelLayers.end()) reachableBL.push_back(*(i+1));
  
-    // Add closest reachable forward layer (except for last BarrelLayer)
-    if (i != theBarrelLayers.end() - 1) {
-      linkNextForwardLayer( *i, rightFL);
+    if (theAddFWD){
+      // Add closest reachable forward layer (except for last BarrelLayer)
+      if (i != theBarrelLayers.end() - 1) {
+	linkNextForwardLayer( *i, rightFL);
+      }
     }
 
     // Add next BarrelLayer with length larger than the current BL
