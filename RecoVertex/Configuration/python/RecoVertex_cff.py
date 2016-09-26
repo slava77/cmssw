@@ -33,6 +33,7 @@ vertexreco = cms.Sequence(unsortedOfflinePrimaryVertices*
                           )
 
 #timing
+from RecoVertex.PrimaryVertexProducer.TkClusParameters_cff import DA2DParameters
 unsortedOfflinePrimaryVertices1D = unsortedOfflinePrimaryVertices.clone()
 unsortedOfflinePrimaryVertices1D.TkFilterParameters.minPt = cms.double(1.0)
 offlinePrimaryVertices1D=sortedPrimaryVertices.clone(vertices="unsortedOfflinePrimaryVertices1D", particles="trackRefsForJetsBeforeSorting")
@@ -46,9 +47,9 @@ unsortedOfflinePrimaryVertices4D.TrackTimeResosLabel = cms.InputTag("trackTimeVa
 offlinePrimaryVertices4D=sortedPrimaryVertices.clone(vertices="unsortedOfflinePrimaryVertices4D", particles="trackRefsForJetsBeforeSorting")
 offlinePrimaryVertices4DWithBS=sortedPrimaryVertices.clone(vertices="unsortedOfflinePrimaryVertices4D:WithBS", particles="trackRefsForJetsBeforeSorting")
 
-from SimTracker.TrackerHitAssociation.tpClusterProducer_cfi import *
-from SimTracker.TrackAssociatorProducers.quickTrackAssociatorByHits_cfi import *
-from SimTracker.TrackAssociation.trackTimeValueMapProducer_cfi import *
+from SimTracker.TrackerHitAssociation.tpClusterProducer_cfi import tpClusterProducer
+from SimTracker.TrackAssociatorProducers.quickTrackAssociatorByHits_cfi import quickTrackAssociatorByHits
+from SimTracker.TrackAssociation.trackTimeValueMapProducer_cfi import trackTimeValueMapProducer
 from Configuration.StandardSequences.Eras import eras
 _phase2_tktiming_vertexreco = cms.Sequence( vertexreco.copy() *
                                             tpClusterProducer *
@@ -62,13 +63,4 @@ _phase2_tktiming_vertexreco = cms.Sequence( vertexreco.copy() *
                                             offlinePrimaryVertices4DWithBS 
                                             )
 
-eras.phase2_timing.toModify( quickTrackAssociatorByHits,
-                             pixelSimLinkSrc = cms.InputTag("simSiPixelDigis","Pixel"),
-                             stripSimLinkSrc = cms.InputTag("simSiPixelDigis","Tracker")
-                             )
-
-eras.phase2_timing.toModify( tpClusterProducer,
-                             pixelSimLinkSrc = cms.InputTag("simSiPixelDigis", "Pixel"),
-                             phase2OTSimLinkSrc = cms.InputTag("simSiPixelDigis","Tracker")
-                             )
 eras.phase2_timing.toReplaceWith(vertexreco, _phase2_tktiming_vertexreco)

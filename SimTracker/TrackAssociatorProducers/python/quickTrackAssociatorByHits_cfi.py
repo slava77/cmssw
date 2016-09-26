@@ -21,3 +21,9 @@ if eras.fastSim.isChosen():
     quickTrackAssociatorByHits.associateStrip = False
     quickTrackAssociatorByHits.associatePixel = False
     quickTrackAssociatorByHits.useClusterTPAssociation = False
+
+eras.phase2_tracker.toModify( 
+    quickTrackAssociatorByHits,
+    pixelSimLinkSrc = cms.InputTag("simSiPixelDigis","Pixel"),
+    stripSimLinkSrc = cms.InputTag("simSiPixelDigis","Tracker")
+)
