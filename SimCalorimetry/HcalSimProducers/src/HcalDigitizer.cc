@@ -91,6 +91,7 @@ HcalDigitizer::HcalDigitizer(const edm::ParameterSet& ps, edm::ConsumesCollector
   hogeo(true),
   hfgeo(true),
   doHFWindow_(ps.getParameter<bool>("doHFWindow")),
+  killHE_(ps.getParameter<bool>("killHE")),
   hitsProducer_(ps.getParameter<std::string>("hitsProducer")),
   theHOSiPMCode(ps.getParameter<edm::ParameterSet>("ho").getParameter<int>("siPMCode")),
   deliveredLumi(0.),
@@ -101,6 +102,7 @@ HcalDigitizer::HcalDigitizer(const edm::ParameterSet& ps, edm::ConsumesCollector
   iC.consumes<std::vector<PCaloHit> >(edm::InputTag(hitsProducer_, "HcalHits"));
 
   bool doNoise = ps.getParameter<bool>("doNoise");
+ 
   bool PreMix1 = ps.getParameter<bool>("HcalPreMixStage1");  // special threshold/pedestal treatment
   bool PreMix2 = ps.getParameter<bool>("HcalPreMixStage2");  // special threshold/pedestal treatment
   bool doEmpty = ps.getParameter<bool>("doEmpty");
@@ -355,6 +357,10 @@ void HcalDigitizer::accumulateCaloHits(edm::Handle<std::vector<PCaloHit> > const
       else if(hid.subdet()==HcalForward && !doHFWindow_ && hcalHitsOrig[i].depth()!=0){
         //skip HF window hits unless desired
         continue;
+      }
+      else if( killHE_ && hid.subdet()==HcalEndcap ) {
+	// remove HE hits if asked for (phase 2)
+	continue;
       }
       else {
 #ifdef DebugLog
