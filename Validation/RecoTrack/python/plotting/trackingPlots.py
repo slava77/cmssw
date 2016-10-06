@@ -1029,7 +1029,9 @@ class Iteration:
                 setattr(self, name, modules)
 
         _set(clusterMasking, "_clusterMasking", [self._name+"Clusters"])
-        _set(seeding, "_seeding", [self._name+"SeedingLayers", self._name+"Seeds"])
+        # it's fine to include e.g. quadruplets here also for pair
+        # steps, as non-existing modules are just ignored
+        _set(seeding, "_seeding", [self._name+"SeedingLayers", self._name+"TrackingRegions", self._name+"HitDoublets", self._name+"HitTriplets", self._name+"HitQuadruplets", self._name+"Seeds"])
         _set(building, "_building", [self._name+"TrackCandidates"])
         _set(fit, "_fit", [self._name+"Tracks"])
         _set(selection, "_selection", [self._name])
@@ -1071,6 +1073,10 @@ class Iteration:
 _iterations = [
     Iteration("initialStepPreSplitting", clusterMasking=[],
               seeding=["initialStepSeedLayersPreSplitting",
+                       "initialStepTrackingRegionsPreSplitting",
+                       "initialStepHitDoubletsPreSplitting",
+                       "initialStepHitTripletsPreSplitting",
+                       "initialStepHitQuadrupletsPreSplitting",
                        "initialStepSeedsPreSplitting"],
               building=["initialStepTrackCandidatesPreSplitting"],
               fit=["initialStepTracksPreSplitting"],
@@ -1108,6 +1114,12 @@ _iterations = [
     Iteration("mixedTripletStep",
               seeding=["mixedTripletStepSeedLayersA",
                        "mixedTripletStepSeedLayersB",
+                       "mixedTripletStepTrackingRegionsA",
+                       "mixedTripletStepTrackingRegionsB",
+                       "mixedTripletStepHitDoubletsA",
+                       "mixedTripletStepHitDoubletsB",
+                       "mixedTripletStepHitTripletsA",
+                       "mixedTripletStepHitTripletsB",
                        "mixedTripletStepSeedsA",
                        "mixedTripletStepSeedsB",
                        "mixedTripletStepSeeds"],
@@ -1121,6 +1133,11 @@ _iterations = [
     Iteration("tobTecStep",
               seeding=["tobTecStepSeedLayersTripl",
                        "tobTecStepSeedLayersPair",
+                       "tobTecStepTrackingRegionsTripl",
+                       "tobTecStepTrackingRegionsPair",
+                       "tobTecStepHitDoubletsTripl",
+                       "tobTecStepHitDoubletsPair",
+                       "tobTecStepHitTripletsTripl",
                        "tobTecStepSeedsTripl",
                        "tobTecStepSeedsPair",
                        "tobTecStepSeeds"],
@@ -1162,6 +1179,9 @@ _iterations = [
               building=["convTrackCandidates"],
               fit=["convStepTracks"],
               selection=["convStepSelector"]),
+    Iteration("Other", clusterMasking=[], seeding=[], building=[], fit=[], selection=[],
+              other=["trackerClusterCheckPreSplitting",
+                     "trackerClusterCheck"]),
 ]
 
 def _iterModuleMap(includeConvStep=True, onlyConvStep=False):
