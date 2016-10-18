@@ -1,3 +1,4 @@
+
 // -*- C++ -*-
 //
 // Package:    METAlgorithms
@@ -38,12 +39,15 @@ metsig::METSignificance::~METSignificance() {
 reco::METCovMatrix
 metsig::METSignificance::getCovariance(const edm::View<reco::Jet>& jets,
 				       const std::vector< edm::Handle<reco::CandidateView> >& leptons,
-				       const edm::Handle<edm::View<reco::Candidate> >& pfCandidates,
+				       const edm::Handle<edm::View<reco::Candidate> >& pfCandidatesH,
 				       double rho,
 				       JME::JetResolution& resPtObj,
 				       JME::JetResolution& resPhiObj,
 				       JME::JetResolutionScaleFactor& resSFObj,
 				       bool isRealData) {
+
+  //pfcandidates
+  const edm::View<reco::Candidate>* pfCandidates=pfCandidatesH.product();
 
    // metsig covariance
    double cov_xx = 0;
@@ -90,7 +94,7 @@ metsig::METSignificance::getCovariance(const edm::View<reco::Jet>& jets,
 
        //dP4 recovery
        for( std::set<reco::CandidatePtr>::const_iterator it=footprint.begin();it!=footprint.end();it++) {
-	 if( ((*it)->p4()-(*pfCandidates)[i].p4()).Rho()<0.005 ){
+	 if( ((*it)->p4()-(*pfCandidates)[i].p4()).Et2()<0.000025 ){
 	   cleancand = false;
 	   break;
 	 }
