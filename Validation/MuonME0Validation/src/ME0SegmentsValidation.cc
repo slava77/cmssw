@@ -84,7 +84,7 @@ void ME0SegmentsValidation::analyze(const edm::Event& e,
 
    // The ME0 Ensamble DetId refers to layer = 1
    ME0DetId id = me0s->me0DetId();
-   std::cout <<" Original ME0DetID "<<id<<std::endl;
+   //std::cout <<" Original ME0DetID "<<id<<std::endl;
    auto chamber = ME0Geometry_->chamber(id);
    //std::cout <<"Global Segment Position "<< chamber->toGlobal(me0s->localPosition())<<std::endl;
    auto segLP = me0s->localPosition();

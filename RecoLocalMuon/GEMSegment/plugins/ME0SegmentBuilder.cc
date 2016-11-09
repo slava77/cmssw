@@ -82,7 +82,6 @@ void ME0SegmentBuilder::build(const ME0RecHitCollection* recHits, ME0SegmentColl
     // Add the segments to the chamber segment collection
     // segment is defined from first partition of first layer    
     ME0DetId midch = mid.chamberId();
-    std::cout << "ME0SegmentBuilder "<< mid.chamberId()<<std::endl;
     ensembleSeg[midch.rawId()].insert(ensembleSeg[midch.rawId()].end(), segv.begin(), segv.end());
   }
 
