@@ -459,10 +459,8 @@ StandAloneMuonTrajectoryBuilder::propagateTheSeedTSOS(TrajectoryStateOnSurface& 
     LogTrace(metname) << "Compatible layers:"<<endl;
     for( vector<const DetLayer*>::const_iterator layer = detLayers.begin(); 
 	 layer != detLayers.end(); layer++){
-      // LogTrace(metname) << debug.dumpMuonId((*layer)->basicComponents().front()->geographicalId());
-      // LogTrace(metname) << debug.dumpLayer(*layer);
-      //std::cout << debug.dumpMuonId((*layer)->basicComponents().front()->geographicalId());
-      //std::cout << debug.dumpLayer(*layer);      
+      LogTrace(metname) << debug.dumpMuonId((*layer)->basicComponents().front()->geographicalId());
+      LogTrace(metname) << debug.dumpLayer(*layer);
     }
 
     const DetLayer* finalLayer = detLayers.back();

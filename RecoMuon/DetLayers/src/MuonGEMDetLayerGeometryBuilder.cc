@@ -80,7 +80,7 @@ MuonGEMDetLayerGeometryBuilder::buildLayer(int endcap,vector<int>& rings, int st
 
       vector<const GeomDet*> frontDets, backDets;
       
-      for(std::vector<int>::iterator chamber=chambers.begin()+1; chamber<chambers.end(); chamber++) {
+      for(std::vector<int>::iterator chamber=chambers.begin(); chamber<chambers.end(); chamber++) {
           GEMDetId gemId(endcap,(*ring), station,layer,(*chamber), (*roll));
 
  	  const GeomDet* geomDet = geo.idToDet(gemId);
