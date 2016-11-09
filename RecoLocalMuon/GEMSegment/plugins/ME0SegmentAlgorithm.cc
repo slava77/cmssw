@@ -300,16 +300,15 @@ void ME0SegmentAlgorithm::buildSegments(const ME0Ensemble& ensemble, const Ensem
   MuonSegFit::MuonRecHitContainer muonRecHits;
   proto_segment.clear();
   
-  uint32_t refid = ensemble.second.begin()->first;
-  const ME0EtaPartition * refPart = (ensemble.second.find(refid))->second;
   // select hits from the ensemble and sort it 
+  const ME0Chamber * chamber   = ensemble.first;
   for (auto rh=rechits.begin(); rh!=rechits.end();rh++){
     proto_segment.push_back(*rh);
 
-    // for segFit - using local point in first partition frame
+    // for segFit - using local point in chamber frame
     const ME0EtaPartition * thePartition   = (ensemble.second.find((*rh)->me0Id()))->second;
     GlobalPoint gp = thePartition->toGlobal((*rh)->localPosition());
-    const LocalPoint lp = refPart->toLocal(gp);    
+    const LocalPoint lp = chamber->toLocal(gp);    
     ME0RecHit *newRH = (*rh)->clone();
     newRH->setPosition(lp);
     

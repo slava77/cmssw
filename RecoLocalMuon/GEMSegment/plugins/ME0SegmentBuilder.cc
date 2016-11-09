@@ -3,6 +3,7 @@
 #include "DataFormats/GEMRecHit/interface/ME0RecHit.h"
 #include "Geometry/GEMGeometry/interface/ME0Geometry.h"
 #include "Geometry/GEMGeometry/interface/ME0EtaPartition.h"
+#include "Geometry/GEMGeometry/interface/ME0Chamber.h"
 #include "RecoLocalMuon/GEMSegment/plugins/ME0SegmentAlgorithmBase.h"
 #include "RecoLocalMuon/GEMSegment/plugins/ME0SegmentBuilderPluginFactory.h"
 	 
@@ -54,14 +55,14 @@ void ME0SegmentBuilder::build(const ME0RecHitCollection* recHits, ME0SegmentColl
     
     std::vector<const ME0RecHit*> me0RecHits;
     std::map<uint32_t,const ME0EtaPartition* > ens;
-
-    // all detIds have been assigned to the according detId with layer 1
-    const ME0EtaPartition* firstlayer = geom_->etaPartition(enIt->first); 
+    
+    // all detIds have been assigned to the to chamber
+    const ME0Chamber* chamber = geom_->chamber(enIt->first);    
     for(auto rechit = enIt->second.begin(); rechit != enIt->second.end(); ++rechit) {
       me0RecHits.push_back(*rechit);
       ens[(*rechit)->me0Id()]=geom_->etaPartition((*rechit)->me0Id());
     }    
-    ME0SegmentAlgorithmBase::ME0Ensemble ensemble(std::pair<const ME0EtaPartition*, std::map<uint32_t,const ME0EtaPartition*> >(firstlayer,ens));
+    ME0SegmentAlgorithmBase::ME0Ensemble ensemble(std::pair<const ME0Chamber*, std::map<uint32_t,const ME0EtaPartition*> >(chamber,ens));
     
     ME0DetId mid(enIt->first);
     #ifdef EDM_ML_DEBUG

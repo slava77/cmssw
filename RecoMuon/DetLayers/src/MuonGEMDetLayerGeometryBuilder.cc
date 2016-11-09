@@ -22,6 +22,7 @@ using namespace std;
 
 
 // Builds the forward (first) and backward (second) layers
+// Builds superChambers (for segments) and etaPartitions (for rechits)
 pair<vector<DetLayer*>, vector<DetLayer*> > 
 MuonGEMDetLayerGeometryBuilder::buildEndcapLayers(const GEMGeometry& geo) {
   
@@ -35,7 +36,7 @@ MuonGEMDetLayerGeometryBuilder::buildEndcapLayers(const GEMGeometry& geo) {
 
 	vector<int> rolls, rings, chambers;  
 	for(int ring = GEMDetId::minRingId; ring <= GEMDetId::maxRingId; ++ring) rings.push_back(ring);
-	for(int chamber = GEMDetId::minChamberId; chamber <= GEMDetId::maxChamberId; chamber++ ) chambers.push_back(chamber);
+	for(int chamber = GEMDetId::minChamberId+1; chamber <= GEMDetId::maxChamberId; chamber++ ) chambers.push_back(chamber);
 
 	// layer 0 is super chamber, it doesnt have rolls
 	if (layer == 0){
