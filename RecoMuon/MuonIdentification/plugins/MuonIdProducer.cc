@@ -884,7 +884,6 @@ void MuonIdProducer::fillMuonId(edm::Event& iEvent, const edm::EventSetup& iSetu
          ", chamber x: " << matchedChamber.x << ", max: " << maxAbsDx_;
        LogTrace("MuonIdentification") << " matching local y, segment y: " << matchedSegment.y <<
          ", chamber y: " << matchedChamber.y << ", max: " << maxAbsDy_;
-       
        const double matchedSegChDx = std::abs(matchedSegment.x - matchedChamber.x);
        const double matchedSegChDy = std::abs(matchedSegment.y - matchedChamber.y);
        const double matchedSegChPullX = matchedSegChDx/std::hypot(matchedSegment.xErr, matchedChamber.xErr);
@@ -898,7 +897,6 @@ void MuonIdProducer::fillMuonId(edm::Event& iEvent, const edm::EventSetup& iSetu
        if (matchedSegChDy < maxAbsDy_) matchedY = true;
        if (matchedSegment.xErr>0 && matchedChamber.xErr>0 && matchedSegChPullX < maxAbsPullX_) matchedX = true;
        if (matchedSegment.yErr>0 && matchedChamber.yErr>0 && matchedSegChPullY < maxAbsPullY_) matchedY = true;
-	 
        if (matchedX && matchedY){
 	 if (matchedChamber.id.subdetId() == MuonSubdetId::ME0)
 	   matchedChamber.me0Matches.push_back(matchedSegment);
