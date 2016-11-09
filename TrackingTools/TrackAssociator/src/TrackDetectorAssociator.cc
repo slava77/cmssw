@@ -823,14 +823,10 @@ void TrackDetectorAssociator::fillMuon( const edm::Event& iEvent,
 	  if (parameters.useME0){
 	    if (const ME0Chamber* chamber = dynamic_cast<const ME0Chamber*>(geomDet) ) {
 	      // Get the range for the corresponding segments
-	      std::cout << "TrackDetectorAssociator::ME0 " << chamber->id()<<std::endl;
 	      ME0SegmentCollection::range  range = me0Segments->get(chamber->id());
 	      // Loop over the segments
-	      for (ME0SegmentCollection::const_iterator segment = range.first; segment!=range.second; segment++) {
-		std::cout << "TrackDetectorAssociator::ME0 in loop"<<std::endl;
-		
+	      for (ME0SegmentCollection::const_iterator segment = range.first; segment!=range.second; segment++) {		
 		if (addTAMuonSegmentMatch(*matchedChamber, &(*segment), parameters)) {
-		std::cout << "TrackDetectorAssociator::ME0 found match"<<std::endl;
 		  matchedChamber->segments.back().me0SegmentRef = ME0SegmentRef(me0Segments, segment - me0Segments->begin());
 		}
 	      }
@@ -879,12 +875,6 @@ bool TrackDetectorAssociator::addTAMuonSegmentMatch(TAMuonChamberMatch& matchedC
      } else isGood = sqrt( pow(segmentGlobalPosition.eta()-trajectoryStateOnSurface.freeState()->position().eta(),2) + 
 			   deltaPhi*deltaPhi) < parameters.dRMuon;
 
-   if (segment->geographicalId().subdetId() == MuonSubdetId::ME0){
-     std::cout << "TrackDetectorAssociator::addTAMuonSegmentMatch " << isGood
-	       << "  " << isGood
-	       << std::endl;
-   }
-   
    if(isGood) {
       TAMuonSegmentMatch muonSegment;
       muonSegment.segmentGlobalPosition = getPoint(segmentGlobalPosition);

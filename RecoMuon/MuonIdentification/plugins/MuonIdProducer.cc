@@ -771,8 +771,6 @@ bool MuonIdProducer::isGoodME0Muon( const reco::Muon& muon )
 {
   // need to update min cuts on pt
   if(muon.track()->p() < minP_) return false;
-  if (muon.numberOfMatches( reco::Muon::ME0SegmentAndTrackArbitration ))
-    std::cout << "MuonIdProducer::isGoodME0Muon"<<std::endl;
   return ( muon.numberOfMatches( reco::Muon::ME0SegmentAndTrackArbitration ) >= 1 );
 }
 
@@ -900,27 +898,10 @@ void MuonIdProducer::fillMuonId(edm::Event& iEvent, const edm::EventSetup& iSetu
        if (matchedSegChDy < maxAbsDy_) matchedY = true;
        if (matchedSegment.xErr>0 && matchedChamber.xErr>0 && matchedSegChPullX < maxAbsPullX_) matchedX = true;
        if (matchedSegment.yErr>0 && matchedChamber.yErr>0 && matchedSegChPullY < maxAbsPullY_) matchedY = true;
-
-	 if (matchedChamber.id.subdetId() == MuonSubdetId::ME0)
-	   {
-	     std::cout << "MuonIdentification::matchedChamber matchedX " <<matchedX
-		       << " matchedY "<< matchedY
-		       <<std::endl;	   
-	     std::cout<< " matching local x, segment x: " << matchedSegment.x <<
-         ", chamber x: " << matchedChamber.x << ", max: " << maxAbsDx_		       <<std::endl;
-
-	     std::cout << " matching local y, segment y: " << matchedSegment.y <<
-         ", chamber y: " << matchedChamber.y << ", max: " << maxAbsDy_		       <<std::endl;
-	   }
-	     
 	 
        if (matchedX && matchedY){
 	 if (matchedChamber.id.subdetId() == MuonSubdetId::ME0)
-	   {
-	     std::cout << "MuonIdentification::matchedChamber.me0Matches"<<std::endl;
-
 	   matchedChamber.me0Matches.push_back(matchedSegment);
-	   }
 	 else if (matchedChamber.id.subdetId() == MuonSubdetId::GEM)
 	   matchedChamber.gemMatches.push_back(matchedSegment);
 	 else matchedChamber.segmentMatches.push_back(matchedSegment);
