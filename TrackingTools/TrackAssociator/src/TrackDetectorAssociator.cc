@@ -825,7 +825,7 @@ void TrackDetectorAssociator::fillMuon( const edm::Event& iEvent,
 	      // Get the range for the corresponding segments
 	      ME0SegmentCollection::range  range = me0Segments->get(chamber->id());
 	      // Loop over the segments
-	      for (ME0SegmentCollection::const_iterator segment = range.first; segment!=range.second; segment++) {		
+	      for (ME0SegmentCollection::const_iterator segment = range.first; segment!=range.second; segment++) {
 		if (addTAMuonSegmentMatch(*matchedChamber, &(*segment), parameters)) {
 		  matchedChamber->segments.back().me0SegmentRef = ME0SegmentRef(me0Segments, segment - me0Segments->begin());
 		}
