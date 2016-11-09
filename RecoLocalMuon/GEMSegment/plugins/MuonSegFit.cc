@@ -21,13 +21,11 @@ bool MuonSegFit::fit(void) {
     fit2();
   }
   else if (2*n <= MaxHits2){
-    std::cout << "MuonSegFit::fit "<< n <<std::endl;
     fitlsq();
   }
   else {
     edm::LogVerbatim("MuonSegFit") << "[MuonSegFit::fit] - cannot fit more than "<< MaxHits2/2 <<" hits!!";
   }
-  std::cout << "MuonSegFit::fit intercept "<< intercept() <<std::endl;
   return fitdone_;
 }
 
@@ -153,7 +151,6 @@ void MuonSegFit::fitlsq(void) {
     double u = lp.x();
     double v = lp.y();
     double z = lp.z();
-    std::cout<< "MuonSegFit= "<< lp <<"\n";
 
     // Covariance matrix of local errors 
     SMatrixSym2 IC; // 2x2, init to 0

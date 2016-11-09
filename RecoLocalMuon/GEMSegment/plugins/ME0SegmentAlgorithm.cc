@@ -302,9 +302,6 @@ void ME0SegmentAlgorithm::buildSegments(const ME0Ensemble& ensemble, const Ensem
   
   // select hits from the ensemble and sort it 
   const ME0Chamber * chamber   = ensemble.first;
-  std::cout << "ME0SegmentAlgorithm::buildSegments "<< chamber->id()<<std::endl;    
-
-  int nhits = 0;
   for (auto rh=rechits.begin(); rh!=rechits.end();rh++){
     proto_segment.push_back(*rh);
     // for segFit - using local point in chamber frame
@@ -314,9 +311,6 @@ void ME0SegmentAlgorithm::buildSegments(const ME0Ensemble& ensemble, const Ensem
     ME0RecHit *newRH = (*rh)->clone();
     newRH->setPosition(lp);
 
-    std::cout<< "ME0SegmentAlgorithm= "<< newRH->localPosition() <<"\n";
-    if (nhits > 2) break;
-    nhits++;
     MuonSegFit::MuonRecHitPtr trkRecHit(newRH);
     muonRecHits.push_back(trkRecHit);
   }
@@ -337,9 +331,6 @@ void ME0SegmentAlgorithm::buildSegments(const ME0Ensemble& ensemble, const Ensem
   LocalVector protoDirection     = sfit_->localdir();
   AlgebraicSymMatrix protoErrors = sfit_->covarianceMatrix(); 
   double protoChi2               = sfit_->chi2();
-  std::cout << "ME0SegmentAlgorithm lp "<< protoIntercept<< std::endl;
-  std::cout << "ME0SegmentAlgorithm ld "<< protoDirection<< std::endl;
-  std::cout << "ME0SegmentAlgorithm protoChi2 "<< protoChi2<< std::endl;
   // Calculate the central value and uncertainty of the segment time
   float averageTime=0.;
   for (auto rh=rechits.begin(); rh!=rechits.end(); ++rh){
