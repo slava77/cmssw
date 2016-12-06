@@ -158,6 +158,12 @@ options.register ('calo',
                   VarParsing.VarParsing.varType.bool,
                   "write Calo geometry")
 
+options.register ('timing',
+                  False, # default value
+                  VarParsing.VarParsing.multiplicity.singleton,
+                  VarParsing.VarParsing.varType.bool,
+                  "write Timing geometry")
+
 options.register ('out',
                   defaultOutputFileName, # default value
                   VarParsing.VarParsing.multiplicity.singleton,
@@ -183,7 +189,8 @@ if ( options.tgeo == True):
     process.add_(cms.ESProducer("FWTGeoRecoGeometryESProducer",
                  Tracker = cms.untracked.bool(options.tracker),
                  Muon = cms.untracked.bool(options.muon),
-                 Calo = cms.untracked.bool(options.calo)))
+                 Calo = cms.untracked.bool(options.calo),
+                 Timing = cms.untracked.bool(options.timing)))
     process.dump = cms.EDAnalyzer("DumpFWTGeoRecoGeometry",
                               tagInfo = cms.untracked.string(options.tag),
                        outputFileName = cms.untracked.string(options.out)
@@ -194,7 +201,8 @@ else:
     process.add_(cms.ESProducer("FWRecoGeometryESProducer",
                  Tracker = cms.untracked.bool(options.tracker),
                  Muon = cms.untracked.bool(options.muon),
-                 Calo = cms.untracked.bool(options.calo)))
+                 Calo = cms.untracked.bool(options.calo),
+                 Timing = cms.untracked.bool(options.timing)))
     process.dump = cms.EDAnalyzer("DumpFWRecoGeometry",
                               level   = cms.untracked.int32(1),
                               tagInfo = cms.untracked.string(options.tag),
