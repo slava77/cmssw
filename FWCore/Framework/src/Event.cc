@@ -11,6 +11,8 @@
 #include "FWCore/Utilities/interface/Algorithms.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
 namespace edm {
 
   std::string const Event::emptyString_;
@@ -199,6 +201,7 @@ namespace edm {
 
   void
   Event::addToGotBranchIDs(Provenance const& prov) const {
+    edm::LogWarning("MYDEBUG")<<" got branch: "<<prov;
     gotBranchIDs_.insert(prov.branchID());
   }
 
