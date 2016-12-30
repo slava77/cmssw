@@ -150,6 +150,22 @@ def customiseFor16792(process):
 
     return process
 
+def customiseFor17098(process):
+    for producer in producers_by_type(process,"DeDxEstimatorProducer"):
+       del producer.UseTrajectory
+       del producer.trajectoryTrackAssociation
+    for producer in producers_by_type(process,"TrackProducer"):
+       producer.TrajectoryInEvent = cms.bool(False)
+       producer.useHitsSplitting = cms.bool(False)  # HI still set this on...
+    for producer in producers_by_type(process,"TrackCollectionFilterCloner"):
+       producer.copyExtras = cms.untracked.bool(True)
+       producer.copyTrajectories = cms.untracked.bool(False)
+       del producer.cloner
+    for producer in producers_by_type(process,"AnalyticalTrackSelector") :
+       producer.copyExtras = cms.untracked.bool(True)
+       producer.copyTrajectories = cms.untracked.bool(False)
+    return process
+
 #
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
@@ -170,6 +186,7 @@ def customizeHLTforCMSSW(process, menuType="GRun"):
 
     if cmsswVersion >= "CMSSW_9_0":
         process = customiseFor16792(process)
+        process = customiseFor17098(process)
         pass
 
 #   stage-2 changes only if needed
