@@ -158,6 +158,15 @@ namespace edm {
     endpathsAreActive_(true),
     skippingEvent_(false){
 
+    for (auto w :allWorkers()) {
+      if (w->description().moduleLabel() == "muPFIsoValueCharged03"){
+	auto pset = pset::Registry::instance()->getMapped(w->description().parameterSetID());
+	if(0!=pset) {
+	  edm::LogWarning("MYDEBUG")<<"At entry: got a pset for muPFIsoValueCharged03 "<<*pset;
+	}
+      }
+    }
+
     ParameterSet const& opts = proc_pset.getUntrackedParameterSet("options", ParameterSet());
     bool hasPath = false;
 
@@ -186,6 +195,15 @@ namespace edm {
       ++bitpos;
     }
 
+    for (auto w :allWorkers()) {
+      if (w->description().moduleLabel() == "muPFIsoValueCharged03"){
+	auto pset = pset::Registry::instance()->getMapped(w->description().parameterSetID());
+	if(0!=pset) {
+	  edm::LogWarning("MYDEBUG")<<"Before check used: got a pset for muPFIsoValueCharged03 "<<*pset;
+	}
+      }
+    }
+
     //See if all modules were used
     std::set<std::string> usedWorkerLabels;
     for (auto const& worker : allWorkers()) {
@@ -212,7 +230,20 @@ namespace edm {
           ParameterSet* modulePSet(proc_pset.getPSetForUpdate(label, isTracked));
           assert(isTracked);
           assert(modulePSet != nullptr);
+	  if (label == "muPFIsoValueCharged03" || label == "muPFSumDRIsoValueCharged03"){
+	    edm::LogWarning("MYDEBUG")<<"muPFIsoValueCharged03 or muPFSumDRIsoValueCharged03 addToUnscheduledWorkers with pset"<<*modulePSet;
+	  }
           workerManager_.addToUnscheduledWorkers(*modulePSet, preg, &prealloc, processConfiguration, label, unscheduledLabels, shouldBeUsedLabels);
+	  if (label == "muPFIsoValueCharged03" || label == "muPFSumDRIsoValueCharged03"){
+	    for (auto w :allWorkers()) {
+	      if (w->description().moduleLabel() == "muPFIsoValueCharged03" || w->description().moduleLabel() == "muPFSumDRIsoValueCharged03"){
+		auto pset = pset::Registry::instance()->getMapped(w->description().parameterSetID());
+		if(0!=pset) {
+		  edm::LogWarning("MYDEBUG")<<"After adding muPFIsoValueCharged03 or muPFSumDRIsoValueCharged03 to unscheduled: got a pset for muPFIsoValueCharged03 or muPFSumDRIsoValueCharged03 "<<*pset;
+		}
+	      }
+	    }
+	  }
         } else {
           //everthing is marked are unused so no 'on demand' allowed
           shouldBeUsedLabels.push_back(label);
@@ -234,10 +265,28 @@ namespace edm {
       }
     }
     if (!unscheduledLabels.empty()) {
+      
+      for (auto w :allWorkers()) {
+	if (w->description().moduleLabel() == "muPFIsoValueCharged03"){
+	  auto pset = pset::Registry::instance()->getMapped(w->description().parameterSetID());
+	  if(0!=pset) {
+	    edm::LogWarning("MYDEBUG")<<"Have unscheduledLabels before setOnDemandProducts: got a pset for muPFIsoValueCharged03 "<<*pset;
+	  }
+	}
+      }
+
       number_of_unscheduled_modules_=unscheduledLabels.size();
       workerManager_.setOnDemandProducts(preg, unscheduledLabels);
     }
 
+    for (auto w :allWorkers()) {
+      if (w->description().moduleLabel() == "muPFIsoValueCharged03"){
+	auto pset = pset::Registry::instance()->getMapped(w->description().parameterSetID());
+	if(0!=pset) {
+	  edm::LogWarning("MYDEBUG")<<"Before initializeEarlyDelete: got a pset for muPFIsoValueCharged03 "<<*pset;
+	}
+      }
+    }
 
     initializeEarlyDelete(*modReg, opts,preg,allowEarlyDelete);
     
@@ -291,22 +340,34 @@ namespace edm {
     }
     
     for (auto w :allWorkers()) {
+      edm::LogWarning("MYDEBUG")<<"Check worker "
+				<<" "<<w->description().moduleName()
+				<<" "<<w->description().moduleLabel()
+				<<" "<<w->description().id();
+      if (w->description().moduleLabel() == "muPFIsoValueCharged03") edm::LogWarning("MYDEBUG")<<"full description "<< w->description();
       //determine if this module could read a branch we want to delete early
       auto pset = pset::Registry::instance()->getMapped(w->description().parameterSetID());
       if(0!=pset) {
+	edm::LogWarning("MYDEBUG")<<" got a pset "<<*pset;
         auto branches = pset->getUntrackedParameter<std::vector<std::string>>("mightGet",kEmpty);
         if(not branches.empty()) {
           ++upperLimitOnReadingWorker;
-        }
+        } else edm::LogWarning("MYDEBUG")<<"mightGet list is empty";
         for(auto const& branch:branches){
+	  edm::LogWarning("MYDEBUG")<<"Check mightGet branch "<<branch;
           auto found = branchToReadingWorker.equal_range(branch);
           if(found.first != found.second) {
+	    edm::LogWarning("MYDEBUG")<<"the "<<branch<<" is in branchToReadingWorker";
             ++upperLimitOnIndicies;
             ++reserveSizeForWorker[w];
             if(nullptr == found.first->second) {
               found.first->second = w;
             } else {
               branchToReadingWorker.insert(make_pair(found.first->first,w));
+	      edm::LogWarning("MYDEBUG")<<"Added pair "<<found.first->first
+					<<" "<<w->description().moduleName()
+					<<" "<<w->description().moduleLabel()
+					<<" "<<w->description().id();
             }
           }
         }

@@ -116,6 +116,8 @@ double CandIsolatorFromDeposits::SingleDeposit::compute(const reco::CandidateBas
 
 /// constructor with config
 CandIsolatorFromDeposits::CandIsolatorFromDeposits(const ParameterSet& par) {
+  edm::LogWarning("MYDEBUG")<<"Constructed CandIsolatorFromDeposits with PSet ID "<<par.id()<<" content: "<<par;
+
   typedef std::vector<edm::ParameterSet> VPSet;
   VPSet depPSets = par.getParameter<VPSet>("deposits");
   for (VPSet::const_iterator it = depPSets.begin(), ed = depPSets.end(); it != ed; ++it) {
