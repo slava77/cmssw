@@ -25,7 +25,6 @@ def makeRecoJetCollection(process,
         jetColName+="CHS"
         
 
-    from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
     setattr(process, jetColName+postfix, getattr(process,"ak4PFJets").clone(
             src = cms.InputTag(internalPfCandColl),
             rParam=cms.double(coneSize),
@@ -37,6 +36,7 @@ def makeRecoJetCollection(process,
 def backupUncorrectedJetCollection(process, jetCollection, tag):
 
     if not hasattr(process,jetCollection): 
+        raise RuntimeError, "This shouldn't happen"
         #means that we go only to the patjet level
         #and we have to go up to slimmed Jets before 
         #reducing the collection
@@ -72,8 +72,10 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
 def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateCollection="puppiBackupTmp"):
     
     backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
-    backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "")
-    
+    #backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "")
+
+    return
+
     makeRecoJetCollection(process, 
                           pfCandCollection=pfCandidateCollection,
                           coneSize=0.8,
