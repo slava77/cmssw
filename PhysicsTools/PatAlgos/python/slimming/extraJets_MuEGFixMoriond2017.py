@@ -9,21 +9,19 @@ def makeRecoJetCollection(process,
     jetColName="ak"+str(int(coneSize*10))+"PFJets"
     internalPfCandColl=pfCandCollection
     if useCHSAlgo:
-        setattr( process, "tmpPFCandCollPtr", 
+        setattr( process, "tmpPFCandCollPtr"+postfix, 
                  cms.EDProducer("PFCandidateFwdPtrProducer",
                                 src = cms.InputTag(pfCandCollection) ) 
                  )
         process.load("CommonTools.ParticleFlow.pfNoPileUpJME_cff")
         from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet
         cloneProcessingSnippet(process, getattr(process,"pfNoPileUpJMESequence"), postfix )
-        getattr(process, "pfPileUpJME"+postfix).PFCandidates = cms.InputTag("tmpPFCandCollPtr")
-        pfCHS = getattr(process, "pfNoPileUpJME").clone( bottomCollection = cms.InputTag("tmpPFCandCollPtr") )
+        getattr(process, "pfPileUpJME"+postfix).PFCandidates = cms.InputTag("tmpPFCandCollPtr"+postfix)
+        getattr(process, "pfNoPileUpJME"+postfix).bottomCollection = cms.InputTag("tmpPFCandCollPtr"+postfix) 
         
-        if not hasattr(process, "pfCHS"+postfix):
-            setattr(process,"pfCHS"+postfix,pfCHS)
-            internalPfCandColl = "pfCHS"+postfix
+        internalPfCandColl = "pfNoPileUpJME"+postfix
         jetColName+="CHS"
-        
+        print "--->",internalPfCandColl,getattr(process,"pfNoPileUpJME"+postfix).bottomCollection
 
     from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
     setattr(process, jetColName+postfix, getattr(process,"ak4PFJets").clone(
@@ -83,7 +81,7 @@ def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateColl
                           pfCandCollection=puppiCandidateCollection, #not sure it exists
                           coneSize=0.8,
                           useCHSAlgo=False,
-                          postfix="BackupTmp")
+                          postfix="PuppiBackupTmp")
 
     from PhysicsTools.PatAlgos.slimming.applySubstructure_cff import applySubstructure
     applySubstructure(process, "BackupTmp")
@@ -99,7 +97,7 @@ def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateColl
     
     setattr(process,"slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackup",
             cms.EDProducer("JetCollectionReducer",
-               jetCollection=cms.InputTag("slimmedJetsAK8PFCHSSoftDropPackedBackupTmp:SubJets"),
+               jetCollection=cms.InputTag("slimmedJetsAK8PFCHSSoftDropPackedPuppiBackupTmp:SubJets"),
                triggeringCollections=cms.VInputTag(
                 cms.InputTag("cloneGlobalMuonTagger","bad"),
                 cms.InputTag("badGlobalMuonTagger","bad") )
@@ -108,7 +106,7 @@ def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateColl
 
     setattr(process,"slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackup",
             cms.EDProducer("JetCollectionReducer",
-               jetCollection=cms.InputTag("slimmedJetsAK8PFPuppiSoftDropPackedBackupTmp:SubJets"),
+               jetCollection=cms.InputTag("slimmedJetsAK8PFPuppiSoftDropPackedPuppiBackupTmp:SubJets"),
                triggeringCollections=cms.VInputTag(
                 cms.InputTag("cloneGlobalMuonTagger","bad"),
                 cms.InputTag("badGlobalMuonTagger","bad") )

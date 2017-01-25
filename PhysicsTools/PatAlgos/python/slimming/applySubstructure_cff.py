@@ -41,9 +41,12 @@ def applySubstructure( process, postfix="" ) :
 
     ## AK8 groomed masses
     from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSPruned, ak8PFJetsCHSSoftDrop, ak8PFJetsPuppiSoftDrop 
-    setattr(process, "ak8PFJetsCHSPruned"+postfix, ak8PFJetsCHSPruned.clone() )
-    setattr(process, "ak8PFJetsCHSSoftDrop"+postfix, ak8PFJetsCHSSoftDrop.clone() )
-    setattr(process, "ak8PFJetsPuppiSoftDrop"+postfix,  ak8PFJetsPuppiSoftDrop.clone() )
+    setattr(process, "ak8PFJetsCHSPruned"+postfix, ak8PFJetsCHSPruned.clone(
+            src = cms.InputTag("pfNoPileUpJME"+postfix),
+            ) )
+    setattr(process, "ak8PFJetsCHSSoftDrop"+postfix, ak8PFJetsCHSSoftDrop.clone(
+            src = cms.InputTag("pfNoPileUpJME"+postfix),
+            ) )
     from RecoJets.JetProducers.ak8PFJetsCHS_groomingValueMaps_cfi import ak8PFJetsCHSPrunedMass, ak8PFJetsCHSSoftDropMass
     setattr(process, "ak8PFJetsCHSPrunedMass"+postfix, ak8PFJetsCHSPrunedMass.clone(
             src = cms.InputTag("ak8PFJetsCHS"+postfix),
@@ -102,7 +105,9 @@ def applySubstructure( process, postfix="" ) :
 
     ## AK8 groomed masses
     from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsPuppiSoftDrop
-    setattr(process,"ak8PFJetsPuppiSoftDrop"+postfix, ak8PFJetsPuppiSoftDrop.clone() )
+    setattr(process,"ak8PFJetsPuppiSoftDrop"+postfix, ak8PFJetsPuppiSoftDrop.clone(
+            src = cms.InputTag("puppi"+postfix),
+            ) )
     from RecoJets.JetProducers.ak8PFJetsPuppi_groomingValueMaps_cfi import ak8PFJetsPuppiSoftDropMass
     setattr(process, "ak8PFJetsPuppiSoftDropMass"+postfix, ak8PFJetsPuppiSoftDropMass.clone(
             src = cms.InputTag("ak8PFJetsPuppi"+postfix),
