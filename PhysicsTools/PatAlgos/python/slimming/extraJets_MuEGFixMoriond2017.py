@@ -72,7 +72,7 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
 def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateCollection="puppiBackupTmp"):
     
     backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
-    backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "")
+    backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
     
     makeRecoJetCollection(process, 
                           pfCandCollection=pfCandidateCollection,
