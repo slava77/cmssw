@@ -34,6 +34,7 @@ def makeRecoJetCollection(process,
 
 def backupUncorrectedJetCollection(process, jetCollection, tag):
 
+    print "--->> ", jetCollection, hasattr(process,jetCollection)
     if not hasattr(process,jetCollection): 
         #means that we go only to the patjet level
         #and we have to go up to slimmed Jets before 
@@ -41,7 +42,7 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
         
         #dummy name fix for central collection
         inputName="selectedPatJets"+tag
-        inputColl="patJets"+tag+"Backup"
+        inputColl="patJets"+tag+"BackupTmp"
         #if tag=="AK4": 
         #    inputName="selectedPatJets"
         #inputColl="patJetsBackup"
@@ -71,17 +72,20 @@ def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateColl
     
     backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
     backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
-    
-    makeRecoJetCollection(process, 
-                          pfCandCollection=pfCandidateCollection,
-                          coneSize=0.8,
-                          useCHSAlgo=True,
-                          postfix="BackupTmp")
-    makeRecoJetCollection(process, 
-                          pfCandCollection=puppiCandidateCollection, #not sure it exists
-                          coneSize=0.8,
-                          useCHSAlgo=False,
-                          postfix="PuppiBackupTmp")
+    backupUncorrectedJetCollection(process, "slimmedJetsAK8BackupTmp", "")
+    #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackupTmp", "")
+    #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackupTmp", "")
+
+    #makeRecoJetCollection(process, 
+    #                      pfCandCollection=pfCandidateCollection,
+    #                      coneSize=0.8,
+    #                      useCHSAlgo=True,
+    #                      postfix="BackupTmp")
+    #makeRecoJetCollection(process, 
+    #                      pfCandCollection=puppiCandidateCollection, #not sure it exists
+    #                      coneSize=0.8,
+    #                      useCHSAlgo=False,
+    #                      postfix="PuppiBackupTmp")
 
     from PhysicsTools.PatAlgos.slimming.applySubstructure_cff import applySubstructure
     applySubstructure(process, "BackupTmp")

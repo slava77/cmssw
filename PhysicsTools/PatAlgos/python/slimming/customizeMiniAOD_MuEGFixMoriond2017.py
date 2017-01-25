@@ -74,6 +74,13 @@ def customizeAll(process, verbose=False):
     process.originalAK4PuppiJetSequence = listDependencyChain(process, process.slimmedJetsPuppi, ('particleFlow', 'muons'))
     backupAK4PuppiJetSequence = cloneProcessingSnippet(process, process.originalAK4PuppiJetSequence, "BackupTmp")
 
+    process.originalAK8JetSequence = listDependencyChain(process, process.slimmedJetsAK8, ('particleFlow', 'muons'))
+    backupAK8JetSequence = cloneProcessingSnippet(process, process.originalAK8JetSequence, "BackupTmp")
+    #process.originalAK8CHSSoftDropJetSequence = listDependencyChain(process, process.slimmedJetsAK8PFCHSSoftDropPacked, ('particleFlow', 'muons'))
+    #backupAK8CHSSoftDropJetSequence = cloneProcessingSnippet(process, process.originalAK8CHSSoftDropJetSequence, "BackupTmp")
+    #process.originalAK8PuppiSoftDropJetSequence = listDependencyChain(process, process.slimmedJetsAK8PFPuppiSoftDropPacked, ('particleFlow', 'muons'))
+    #backupAK8PuppiSoftDropJetSequence = cloneProcessingSnippet(process, process.originalAK8PuppiSoftDropJetSequence, "BackupTmp")
+
     addBadMuonFilters(process)    
 
     # clean the muons and PF candidates, and make *everything* point to the new candidates
@@ -88,6 +95,14 @@ def customizeAll(process, verbose=False):
     massSearchReplaceAnyInputTag(backupAK4JetSequence, "muonsCleaned", "muons")
     massSearchReplaceAnyInputTag(backupAK4PuppiJetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
     massSearchReplaceAnyInputTag(backupAK4PuppiJetSequence, "muonsCleaned", "muons")
+    massSearchReplaceAnyInputTag(backupAK8JetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
+    massSearchReplaceAnyInputTag(backupAK8JetSequence, "muonsCleaned", "muons")
+    #massSearchReplaceAnyInputTag(backupAK8CHSSoftDropJetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
+    #massSearchReplaceAnyInputTag(backupAK8CHSSoftDropJetSequence, "muonsCleaned", "muons")
+    #massSearchReplaceAnyInputTag(backupAK8PuppiSoftDropJetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
+    #massSearchReplaceAnyInputTag(backupAK8PuppiSoftDropJetSequence, "muonsCleaned", "muons")
+
+    
     addKeepStatement(process, "keep *_slimmedJets_*_*",
                      ["keep *_slimmedJetsBackup_*_*"],
                      verbose=verbose)
@@ -131,7 +146,7 @@ def customizeAll(process, verbose=False):
     #jets ====
     from PhysicsTools.PatAlgos.slimming.extraJets_MuEGFixMoriond2017 import backupJets
     backupJets(process)
-
+    #del process.patJetsAK8BackupTmp.userData
     addKeepStatement(process,
                      "keep *_slimmedJets_*_*",
                      ["keep *_slimmedJetsBackup_*_*"],
