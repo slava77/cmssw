@@ -19,8 +19,11 @@ def cleanPFCandidates(process, badMuons, verbose=False):
                 replaceMuons.doIt(obj, name)
             if obj != process.pfCandidatesBadMuonsCleaned: 
                 replacePFCandidates.doIt(obj, name)
-                
-    #FIXME: particleBasedIsolation, the e/gamma GED map, needs to be fixed with the new PFCands
+            
+    process.load("CommonTools.ParticleFlow.pfEGammaToCandidateRemapper_cfi")
+    process.pfEGammaToCandidateRemapper.pf2pf = cms.InputTag("pfCandidatesBadMuonsCleaned")
+    process.reducedEgamma.gsfElectronsPFValMap = cms.InputTag("pfEGammaToCandidateRemapper","electrons")
+    process.reducedEgamma.photonsPFValMap      = cms.InputTag("pfEGammaToCandidateRemapper","photons")
 
 
 def addKeepStatement(process, oldKeep, newKeeps, verbose=False):
