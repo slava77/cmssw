@@ -19,8 +19,11 @@ def cleanPFCandidates(process, badMuons, verbose=False):
                 replaceMuons.doIt(obj, name)
             if obj != process.pfCandidatesBadMuonsCleaned: 
                 replacePFCandidates.doIt(obj, name)
-                
-    #FIXME: particleBasedIsolation, the e/gamma GED map, needs to be fixed with the new PFCands
+            
+    process.load("CommonTools.ParticleFlow.pfEGammaToCandidateRemapper_cfi")
+    process.pfEGammaToCandidateRemapper.pf2pf = cms.InputTag("pfCandidatesBadMuonsCleaned")
+    process.reducedEgamma.gsfElectronsPFValMap = cms.InputTag("pfEGammaToCandidateRemapper","electrons")
+    process.reducedEgamma.photonsPFValMap      = cms.InputTag("pfEGammaToCandidateRemapper","photons")
 
 
 def addKeepStatement(process, oldKeep, newKeeps, verbose=False):
@@ -28,8 +31,9 @@ def addKeepStatement(process, oldKeep, newKeeps, verbose=False):
         if out.type_() == 'PoolOutputModule' and hasattr(out, "outputCommands"):
             if oldKeep in out.outputCommands:
                 out.outputCommands += newKeeps
-            print "Adding the following keep statements to output module %s: " % name
-            for k in newKeeps: print "\t'%s'," % k
+            if verbose:
+                print "Adding the following keep statements to output module %s: " % name
+                for k in newKeeps: print "\t'%s'," % k
 
 def addDiscardedPFCandidates(process, inputCollection, verbose=False):
     process.primaryVertexAssociationDiscardedCandidates = process.primaryVertexAssociation.clone(
@@ -43,8 +47,14 @@ def addDiscardedPFCandidates(process, inputCollection, verbose=False):
         vertexAssociator = cms.InputTag("primaryVertexAssociationDiscardedCandidates","original")
         )
     addKeepStatement(process, "keep patPackedCandidates_packedPFCandidates_*_*",
-                     ["keep patPackedCandidates_packedPFCandidatesDiscarded_*_*"],
-                     verbose=verbose)
+                             ["keep patPackedCandidates_packedPFCandidatesDiscarded_*_*"],
+                              verbose=verbose)
+    # Now make the mixed map for rekeying
+    from PhysicsTools.PatAlgos.slimming.packedPFCandidateRefMixer_cfi import packedPFCandidateRefMixer
+    process.oldPFCandToPackedOrDiscarded = packedPFCandidateRefMixer.clone(
+        pf2pf = cms.InputTag(inputCollection.moduleLabel),
+        pf2packed = cms.VInputTag(cms.InputTag("packedPFCandidates"), cms.InputTag("packedPFCandidatesDiscarded"))
+    )
 
 def loadJetMETBTag(process):
     import RecoJets.Configuration.RecoPFJets_cff
@@ -61,7 +71,6 @@ def loadJetMETBTag(process):
 def customizeAll(process, verbose=False):
 
     # MM first duplicate uncorrected sequences needed by JetMET
-    from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet
     cloneProcessingSnippet(process, getattr(process,"makePatPhotons"),"UnClean")
     cloneProcessingSnippet(process, getattr(process,"makePatElectrons"),"UnClean")
     
@@ -73,7 +82,6 @@ def customizeAll(process, verbose=False):
     backupAK4JetSequence = cloneProcessingSnippet(process, process.originalAK4JetSequence, "BackupTmp")
     process.originalAK4PuppiJetSequence = listDependencyChain(process, process.slimmedJetsPuppi, ('particleFlow', 'muons'))
     backupAK4PuppiJetSequence = cloneProcessingSnippet(process, process.originalAK4PuppiJetSequence, "BackupTmp")
-
     process.originalAK8JetSequence = listDependencyChain(process, process.slimmedJetsAK8, ('particleFlow', 'muons'))
     backupAK8JetSequence = cloneProcessingSnippet(process, process.originalAK8JetSequence, "BackupTmp")
     #process.originalAK8CHSSoftDropJetSequence = listDependencyChain(process, process.slimmedJetsAK8PFCHSSoftDropPacked, ('particleFlow', 'muons'))
@@ -102,64 +110,66 @@ def customizeAll(process, verbose=False):
     #massSearchReplaceAnyInputTag(backupAK8PuppiSoftDropJetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
     #massSearchReplaceAnyInputTag(backupAK8PuppiSoftDropJetSequence, "muonsCleaned", "muons")
 
+    process.slimmedJetsBackupTmp.mixedDaughters = True
+    process.slimmedJetsBackupTmp.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
+    process.slimmedJetsPuppiBackupTmp.mixedDaughters = True
+    process.slimmedJetsPuppiBackupTmp.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
+    process.slimmedJetsAK8BackupTmp.mixedDaughters = True
+    process.slimmedJetsAK8BackupTmp.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
     
-    addKeepStatement(process, "keep *_slimmedJets_*_*",
-                     ["keep *_slimmedJetsBackup_*_*"],
-                     verbose=verbose)
-    addKeepStatement(process, "keep *_slimmedJetsPuppi_*_*",
-                     ["keep *_slimmedJetsPuppiBackup_*_*"],
-                     verbose=verbose)
 
     process.patMuons.embedCaloMETMuonCorrs = False # FIXME
+   ##extra METs and MET corrections ===============================================================
+   from PhysicsTools.PatAlgos.slimming.extraSlimmedMETs_MuEGFixMoriond2017 import addExtraMETCollections,addExtraPuppiMETCorrections
+   
+   addExtraMETCollections(process,
+                          unCleanPFCandidateCollection="particleFlow",
+                          cleanElectronCollection="slimmedElectrons",
+                          cleanPhotonCollection="slimmedPhotons",
+                          unCleanElectronCollection="patElectronsUnClean",
+                          unCleanPhotonCollection="patPhotonsUnClean")
+   addExtraPuppiMETCorrections(process,
+                               cleanPFCandidateCollection="particleFlow",
+                               unCleanPFCandidateCollection="pfCandidatesBadMuonsCleaned",
+                               cleanElectronCollection="slimmedElectrons",
+                               cleanPhotonCollection="slimmedPhotons",
+                               unCleanElectronCollection="patElectronsUnClean",
+                               unCleanPhotonCollection="patPhotonsUnClean")
 
-
-    #extra METs and MET corrections ===============================================================
-    from PhysicsTools.PatAlgos.slimming.extraSlimmedMETs_MuEGFixMoriond2017 import addExtraMETCollections,addExtraPuppiMETCorrections
-    
-    addExtraMETCollections(process, 
-                           unCleanPFCandidateCollection="particleFlow",
-                           cleanElectronCollection="slimmedElectrons",
-                           cleanPhotonCollection="slimmedPhotons",
-                           unCleanElectronCollection="patElectronsUnClean",
-                           unCleanPhotonCollection="patPhotonsUnClean")
-    addExtraPuppiMETCorrections(process,
-                                cleanPFCandidateCollection="particleFlow",
-                                unCleanPFCandidateCollection="pfCandidatesBadMuonsCleaned",
-                                cleanElectronCollection="slimmedElectrons",
-                                cleanPhotonCollection="slimmedPhotons",
-                                unCleanElectronCollection="patElectronsUnClean",
-                                unCleanPhotonCollection="patPhotonsUnClean")
-
-    addKeepStatement(process,
-                     "keep *_slimmedMETs_*_*",
-                     ["keep *_slimmedMETsUncorrected_*_*",
-                      "keep *_slimmedMETsEGClean_*_*",
-                      "keep *_slimmedMETsMuEGClean_*_*"],
-                     verbose=verbose)
-    addKeepStatement(process,
-                     "keep *_slimmedMETsPuppi_*_*",
-                     ["keep *_puppiMETEGCor_*_*",
-                      "keep *_puppiMETMuCor_*_*"],
-                     verbose=verbose)
+   addKeepStatement(process,
+                    "keep *_slimmedMETs_*_*",
+                    ["keep *_slimmedMETsUncorrected_*_*",
+                     "keep *_slimmedMETsEGClean_*_*",
+                     "keep *_slimmedMETsMuEGClean_*_*"],
+                    verbose=verbose)
+   addKeepStatement(process,
+                    "keep *_slimmedMETsPuppi_*_*",
+                    ["keep *_puppiMETEGCor_*_*",
+                     "keep *_puppiMETMuCor_*_*"],
+                    verbose=verbose)
 
 
     #jets ====
     from PhysicsTools.PatAlgos.slimming.extraJets_MuEGFixMoriond2017 import backupJets
     backupJets(process)
     #del process.patJetsAK8BackupTmp.userData
+
     addKeepStatement(process,
                      "keep *_slimmedJets_*_*",
                      ["keep *_slimmedJetsBackup_*_*"],
+                     verbose=verbose)
+    addKeepStatement(process, "keep *_slimmedJetsPuppi_*_*",
+                     ["keep *_slimmedJetsPuppiBackup_*_*"],
                      verbose=verbose)
     addKeepStatement(process,
                      "keep *_slimmedJetsAK8_*_*",
                      ["keep *_slimmedJetsAK8Backup_*_*"],
                      verbose=verbose)
-    addKeepStatement(process,"keep *_slimmedJetsAK8PFCHSSoftDropPacked_SubJets_*",
-                     ["keep *_slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackup_*_*"],
-                     verbose=verbose)
-    addKeepStatement(process,"keep *_slimmedJetsAK8PFPuppiSoftDropPacked_SubJets_*",
-                     ["keep *_slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackup_*_*"],
-                     verbose=verbose)
+    #addKeepStatement(process,"keep *_slimmedJetsAK8PFCHSSoftDropPacked_SubJets_*",
+    #                 ["keep *_slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackup_*_*"],
+    #                 verbose=verbose)
+    #addKeepStatement(process,"keep *_slimmedJetsAK8PFPuppiSoftDropPacked_SubJets_*",
+    #                 ["keep *_slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackup_*_*"],
+    #                 verbose=verbose)
 
     return process

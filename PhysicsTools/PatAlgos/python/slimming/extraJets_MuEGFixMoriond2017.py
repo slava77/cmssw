@@ -23,7 +23,6 @@ def makeRecoJetCollection(process,
         jetColName+="CHS"
         print "--->",internalPfCandColl,getattr(process,"pfNoPileUpJME"+postfix).bottomCollection
 
-    from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
     setattr(process, jetColName+postfix, getattr(process,"ak4PFJets").clone(
             src = cms.InputTag(internalPfCandColl),
             rParam=cms.double(coneSize),
@@ -36,6 +35,7 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
 
     print "--->> ", jetCollection, hasattr(process,jetCollection)
     if not hasattr(process,jetCollection): 
+        raise RuntimeError, "This shouldn't happen"
         #means that we go only to the patjet level
         #and we have to go up to slimmed Jets before 
         #reducing the collection
@@ -71,8 +71,9 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
 def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateCollection="puppiBackupTmp"):
     
     backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
-    backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
-    backupUncorrectedJetCollection(process, "slimmedJetsAK8BackupTmp", "")
+    #backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
+    #backupUncorrectedJetCollection(process, "slimmedJetsAK8BackupTmp", "")
+    
     #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackupTmp", "")
     #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackupTmp", "")
 
@@ -86,6 +87,17 @@ def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateColl
     #                      coneSize=0.8,
     #                      useCHSAlgo=False,
     #                      postfix="PuppiBackupTmp")
+
+    makeRecoJetCollection(process, 
+                          pfCandCollection=pfCandidateCollection,
+                          coneSize=0.8,
+                          useCHSAlgo=True,
+                          postfix="BackupTmp")
+    makeRecoJetCollection(process, 
+                          pfCandCollection=puppiCandidateCollection, #not sure it exists
+                          coneSize=0.8,
+                          useCHSAlgo=False,
+                          postfix="BackupTmp")
 
     from PhysicsTools.PatAlgos.slimming.applySubstructure_cff import applySubstructure
     applySubstructure(process, "BackupTmp")
