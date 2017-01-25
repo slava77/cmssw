@@ -28,8 +28,9 @@ def addKeepStatement(process, oldKeep, newKeeps, verbose=False):
         if out.type_() == 'PoolOutputModule' and hasattr(out, "outputCommands"):
             if oldKeep in out.outputCommands:
                 out.outputCommands += newKeeps
-            print "Adding the following keep statements to output module %s: " % name
-            for k in newKeeps: print "\t'%s'," % k
+            if verbose:
+                print "Adding the following keep statements to output module %s: " % name
+                for k in newKeeps: print "\t'%s'," % k
 
 def addDiscardedPFCandidates(process, inputCollection, verbose=False):
     process.primaryVertexAssociationDiscardedCandidates = process.primaryVertexAssociation.clone(
@@ -45,6 +46,12 @@ def addDiscardedPFCandidates(process, inputCollection, verbose=False):
     addKeepStatement(process, "keep patPackedCandidates_packedPFCandidates_*_*",
                              ["keep patPackedCandidates_packedPFCandidatesDiscarded_*_*"],
                               verbose=verbose)
+    # Now make the mixed map for rekeying
+    from PhysicsTools.PatAlgos.slimming.packedPFCandidateRefMixer_cfi import packedPFCandidateRefMixer
+    process.oldPFCandToPackedOrDiscarded = packedPFCandidateRefMixer.clone(
+        pf2pf = cms.InputTag(inputCollection.moduleLabel),
+        pf2packed = cms.VInputTag(cms.InputTag("packedPFCandidates"), cms.InputTag("packedPFCandidatesDiscarded"))
+    )
 
 def loadJetMETBTag(process):
     import RecoJets.Configuration.RecoPFJets_cff
@@ -81,7 +88,9 @@ def customizeAll(process, verbose=False):
     addKeepStatement(process, "keep *_slimmedJets_*_*",
                              ["keep *_slimmedJetsBackup_*_*"],
                               verbose=verbose)
-
+    process.slimmedJetsBackup.mixedDaughters = True
+    process.slimmedJetsBackup.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
+    # now divert the packed PF candidates 
     process.patMuons.embedCaloMETMuonCorrs = False # FIXME
 
     return process

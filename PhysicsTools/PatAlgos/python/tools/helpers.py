@@ -409,7 +409,6 @@ def listDependencyChain(process, module, sources, verbose=False):
     if not livemodules: return None
     modulelist = [livemodules.pop()]
     for module in livemodules:
-        print modulelist
         for i,m in enumerate(modulelist):
             if module in flatdeps and m in flatdeps[module]:
                 modulelist.insert(i, module)

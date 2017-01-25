@@ -165,6 +165,7 @@ def applySubstructure( process ) :
         dropSpecific = cms.string("1"),
         dropTagInfos = cms.string("1"),
         modifyJets = cms.bool(True),
+        mixedDaughters = cms.bool(False),
         modifierConfig = cms.PSet( modifications = cms.VPSet() )
     )
 
@@ -215,6 +216,7 @@ def applySubstructure( process ) :
         dropSpecific = cms.string("1"),
         dropTagInfos = cms.string("1"),
         modifyJets = cms.bool(True),
+        mixedDaughters = cms.bool(False),
         modifierConfig = cms.PSet( modifications = cms.VPSet() )
     )
 
