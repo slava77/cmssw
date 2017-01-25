@@ -35,6 +35,13 @@ def loadJetMETBTag(process):
     process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
 
 def customizeAll(process):
+
+    # MM first duplicate uncorrected sequences needed by JetMET
+    from PhysicsTools.PatAlgos.tools.helpers import cloneProcessingSnippet
+    cloneProcessingSnippet(process, getattr(process,"makePatPhotons"),"UnClean")
+    cloneProcessingSnippet(process, getattr(process,"makePatElectrons"),"UnClean")
+    cloneProcessingSnippet(process, getattr(process,"makePatJets"),"UnClean")
+    
     process.load("RecoEgamma.EgammaTools.egammaGainSwitchFix_cff")
 
     addBadMuonFilters(process)    
@@ -46,5 +53,28 @@ def customizeAll(process):
                       verbose=True) # FIXME set to False when no longer needed
 
     process.patMuons.embedCaloMETMuonCorrs = False # FIXME
+
+
+    #extra METs and MET corrections ===============================================================
+    from PhysicsTools.PatAlgos.slimming.extraSlimmedMETs_MuEGFixMoriond2017 import addExtraMETCollections,addExtraPuppiMETCorrections
+    
+    addExtraMETCollections(process, 
+                           unCleanPFCandidateCollection="particleFlow",
+                           cleanElectronCollection="slimmedElectrons",
+                           cleanPhotonCollection="slimmedPhotons",
+                           unCleanElectronCollection="patElectronsUnClean",
+                           unCleanPhotonCollection="patPhotonsUnClean")
+    addExtraPuppiMETCorrections(process,
+                                cleanPFCandidateCollection="particleFlow",
+                                unCleanPFCandidateCollection="pfCandidatesBadMuonsCleaned",
+                                cleanElectronCollection="slimmedElectrons",
+                                cleanPhotonCollection="slimmedPhotons",
+                                unCleanElectronCollection="patElectronsUnClean",
+                                unCleanPhotonCollection="patPhotonsUnClean")
+
+    #jets ====
+    from PhysicsTools.PatAlgos.slimming.extraJets_MuEGFixMoriond2017 import backupJets
+    backupJets(process)
+
 
     return process
