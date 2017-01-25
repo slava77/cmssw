@@ -26,7 +26,7 @@ def makeRecoJetCollection(process,
         
 
     from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
-    setattr(process, jetColName, getattr(process,"ak4PFJets").clone(
+    setattr(process, jetColName+postfix, getattr(process,"ak4PFJets").clone(
             src = cms.InputTag(internalPfCandColl),
             rParam=cms.double(coneSize),
             doAreaFastjet = True)
@@ -42,7 +42,7 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
         #reducing the collection
         
         #dummy name fix for central collection
-        inputName="selectedPatJets"+tag #+"UnClean"
+        inputName="selectedPatJets"+tag
         inputColl="patJets"+tag+"UnClean"
         if tag=="AK4": 
             inputName="selectedPatJets"
@@ -54,43 +54,62 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
                 ) )
         setattr(process, "slimmedJets"+tag+"UnClean",
                 getattr(process, "slimmedJets").clone( #+tag
-                 packedPFCandidates = cms.InputTag("packedPFCandidates"), #arg!
+                 packedPFCandidates = cms.InputTag("packedPFCandidates"), #arg! #MM FIXME
                  src = cms.InputTag("selectedPatJets"+tag+"UnClean")
                 ) )
 
-    setattr(process,"uncorSlimmedJets"+tag+"Backup",
+    setattr(process,"slimmedJets"+tag+"Backup",
             cms.EDProducer("JetCollectionReducer",
-                           jetCollection=cms.InputTag(jetCollection), #"slimmedJets"
+                           jetCollection=cms.InputTag(jetCollection),
                            triggeringCollections=cms.VInputTag(
                               cms.InputTag("cloneGlobalMuonTagger","bad"),
                               cms.InputTag("badGlobalMuonTagger","bad") )
                            ) 
             )
-            
-    process.MINIAODoutput.outputCommands.append("keep *_uncorSlimmedJets"+tag+"Backup_*_*")
-
-
-def makeExtraPuppiJetCollection(process):
-    print "blou"
-
-
-
-def backupJets(process):
     
-    backupUncorrectedJetCollection(process, "slimmedJetsUnClean", "AK4")
-    #backupUncorrectedJetCollection(process, "slimmedJetsAK8UnClean", "AK8")
+
+def backupJets(process, pfCandidate=, puppiCandidateCollection=):
+    
+    backupUncorrectedJetCollection(process, "slimmedJetsBackup", "AK4")
+   
+    
     makeRecoJetCollection(process, 
                           pfCandCollection="particleFlow",
                           coneSize=0.8,
                           useCHSAlgo=True,
-                          postfix="UnClean")
+                          postfix="BackupTmp")
     makeRecoJetCollection(process, 
                           pfCandCollection="puppiUnClean", #not sure it exists
                           coneSize=0.8,
                           useCHSAlgo=False,
-                          postfix="UnClean")
+                          postfix="BackupTmp")
 
     from PhysicsTools.PatAlgos.slimming.applySubstructure_cff import applySubstructure
-    applySubstructure(process, "UnClean")
+    applySubstructure(process, "BackupTmp")
 
+    setattr(process,"slimmedJetsAK8Backup",
+            cms.EDProducer("JetCollectionReducer",
+                           jetCollection=cms.InputTag("slimmedJetsAK8BackupTmp"),
+                           triggeringCollections=cms.VInputTag(
+                cms.InputTag("cloneGlobalMuonTagger","bad"),
+                cms.InputTag("badGlobalMuonTagger","bad") )
+                           ) 
+            )
+    
+    setattr(process,"slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackup",
+            cms.EDProducer("JetCollectionReducer",
+               jetCollection=cms.InputTag("slimmedJetsAK8PFCHSSoftDropPackedBackupTmp:SubJets"),
+               triggeringCollections=cms.VInputTag(
+                cms.InputTag("cloneGlobalMuonTagger","bad"),
+                cms.InputTag("badGlobalMuonTagger","bad") )
+                           ) 
+            )
 
+    setattr(process,"slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackup",
+            cms.EDProducer("JetCollectionReducer",
+               jetCollection=cms.InputTag("slimmedJetsAK8PFPuppiSoftDropPackedBackupTmp:SubJets"),
+               triggeringCollections=cms.VInputTag(
+                cms.InputTag("cloneGlobalMuonTagger","bad"),
+                cms.InputTag("badGlobalMuonTagger","bad") )
+                           ) 
+            )

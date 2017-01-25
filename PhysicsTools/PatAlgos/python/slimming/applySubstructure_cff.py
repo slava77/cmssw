@@ -61,7 +61,7 @@ def applySubstructure( process, postfix="" ) :
     # add Njetiness
     from RecoJets.JetProducers.nJettinessAdder_cfi import Njettiness
     #process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
-    getattr(process,"NjettinessAK8"+postfix, Njettiness.clone(
+    setattr(process,"NjettinessAK8"+postfix, Njettiness.clone(
             src = cms.InputTag("ak8PFJetsCHS"),
             cone = cms.double(0.8) )
             )
@@ -71,7 +71,7 @@ def applySubstructure( process, postfix="" ) :
 
 
     #add AK8 from PUPPI
-    #MM no need for that
+    #MM no need for that, already done on L23
     #process.load('RecoJets.JetProducers.ak8PFJetsPuppi_cfi')
     #from RecoJets.JetProducers.ak8PFJetsPuppi_cfi import ak8PFJetsPuppi
     #getattr(process, "ak8PFJetsPuppi".doAreaFastjet = True # even for standard ak8PFJets this is overwritten in RecoJets/Configuration/python/RecoPFJets_cff
@@ -103,8 +103,12 @@ def applySubstructure( process, postfix="" ) :
     ## AK8 groomed masses
     from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsPuppiSoftDrop
     setattr(process,"ak8PFJetsPuppiSoftDrop"+postfix, ak8PFJetsPuppiSoftDrop.clone() )
-    #process.load("RecoJets.JetProducers.ak8PFJetsPuppi_groomingValueMaps_cfi") #MM already loaded
-    getattr(process,"patJetsAK8Puppi"+postfix).userData.userFloats.src += ['ak8PFJetsPuppiSoftDropMass']
+    from RecoJets.JetProducers.ak8PFJetsPuppi_groomingValueMaps_cfi import ak8PFJetsPuppiSoftDropMass
+    setattr(process, "ak8PFJetsPuppiSoftDropMass"+postfix, ak8PFJetsPuppiSoftDropMass.clone(
+            src = cms.InputTag("ak8PFJetsPuppi"+postfix),
+            matched = cms.InputTag("ak8PFJetsPuppiSoftDrop"+postfix), 
+            ) )
+    getattr(process,"patJetsAK8Puppi"+postfix).userData.userFloats.src += ['ak8PFJetsPuppiSoftDropMass'+postfix]
     getattr(process,"patJetsAK8Puppi"+postfix).addTagInfos = cms.bool(False)
 
 
@@ -114,12 +118,11 @@ def applySubstructure( process, postfix="" ) :
             src = cms.InputTag("ak8PFJetsPuppi"+postfix),
             cone = cms.double(0.8) )
             )
-    getattr(process,"patJetsAK8Puppi"+postfix).userData.userFloats.src += ['NjettinessAK8Puppi'+postfix+':tau1','NjettinessAK8Puppi'+postfix+':tau2','NjettinessAK8Puppi'+postfix+':tau3']
+    getattr(process,"patJetsAK8Puppi"+postfix).userData.userFloats.src += ['NjettinessAK8Puppi'+postfix+':tau1',
+                                                                           'NjettinessAK8Puppi'+postfix+':tau2',
+                                                                           'NjettinessAK8Puppi'+postfix+':tau3']
 
-
-
-
-    getattr(process,"ak8PFJetsPuppiValueMap"+postfix, 
+    setattr(process,"ak8PFJetsPuppiValueMap"+postfix, 
             cms.EDProducer("RecoJetToPatJetDeltaRValueMapProducer",
                            src = cms.InputTag("ak8PFJetsCHS"+postfix),
                            matched = cms.InputTag("patJetsAK8Puppi"+postfix),                                         
