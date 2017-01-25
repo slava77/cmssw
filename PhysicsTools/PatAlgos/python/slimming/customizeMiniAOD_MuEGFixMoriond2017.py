@@ -70,7 +70,9 @@ def customizeAll(process, verbose=False):
     loadJetMETBTag(process)
 
     process.originalAK4JetSequence = listDependencyChain(process, process.slimmedJets, ('particleFlow', 'muons'))
-    backupAK4JetSequence = cloneProcessingSnippet(process, process.originalAK4JetSequence, "Backup")
+    backupAK4JetSequence = cloneProcessingSnippet(process, process.originalAK4JetSequence, "BackupTmp")
+    process.originalAK4PuppiJetSequence = listDependencyChain(process, process.slimmedJetsPuppi, ('particleFlow', 'muons'))
+    backupAK4PuppiJetSequence = cloneProcessingSnippet(process, process.originalAK4PuppiJetSequence, "BackupTmp")
 
     addBadMuonFilters(process)    
 
@@ -84,8 +86,13 @@ def customizeAll(process, verbose=False):
     # now make the backup sequences point to the right place
     massSearchReplaceAnyInputTag(backupAK4JetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
     massSearchReplaceAnyInputTag(backupAK4JetSequence, "muonsCleaned", "muons")
+    massSearchReplaceAnyInputTag(backupAK4PuppiJetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
+    massSearchReplaceAnyInputTag(backupAK4PuppiJetSequence, "muonsCleaned", "muons")
     addKeepStatement(process, "keep *_slimmedJets_*_*",
                      ["keep *_slimmedJetsBackup_*_*"],
+                     verbose=verbose)
+    addKeepStatement(process, "keep *_slimmedJetsPuppi_*_*",
+                     ["keep *_slimmedJetsPuppiBackup_*_*"],
                      verbose=verbose)
 
     process.patMuons.embedCaloMETMuonCorrs = False # FIXME

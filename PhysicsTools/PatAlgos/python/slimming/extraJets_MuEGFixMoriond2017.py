@@ -43,20 +43,21 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
         
         #dummy name fix for central collection
         inputName="selectedPatJets"+tag
-        inputColl="patJets"+tag+"UnClean"
-        if tag=="AK4": 
-            inputName="selectedPatJets"
-            inputColl="patJetsUnClean"
+        inputColl="patJets"+tag+"Backup"
+        #if tag=="AK4": 
+        #    inputName="selectedPatJets"
+        #inputColl="patJetsBackup"
 
-        setattr(process, "selectedPatJets"+tag+"UnClean",
+        setattr(process, "selectedPatJets"+tag+"BackupTmp",
                 getattr(process, inputName ).clone(
                 src = cms.InputTag(inputColl)
                 ) )
-        setattr(process, "slimmedJets"+tag+"UnClean",
+        setattr(process, "slimmedJets"+tag+"BackupTmp",
                 getattr(process, "slimmedJets").clone( #+tag
                  packedPFCandidates = cms.InputTag("packedPFCandidates"), #arg! #MM FIXME
-                 src = cms.InputTag("selectedPatJets"+tag+"UnClean")
+                 src = cms.InputTag("selectedPatJets"+tag+"BackupTmp")
                 ) )
+        jetCollection="slimmedJets"+tag+"BackupTmp"
 
     setattr(process,"slimmedJets"+tag+"Backup",
             cms.EDProducer("JetCollectionReducer",
@@ -68,18 +69,18 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
             )
     
 
-def backupJets(process, pfCandidate=, puppiCandidateCollection=):
+def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateCollection="puppiBackupTmp"):
     
-    backupUncorrectedJetCollection(process, "slimmedJetsBackup", "AK4")
-   
+    backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
+    backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "")
     
     makeRecoJetCollection(process, 
-                          pfCandCollection="particleFlow",
+                          pfCandCollection=pfCandidateCollection,
                           coneSize=0.8,
                           useCHSAlgo=True,
                           postfix="BackupTmp")
     makeRecoJetCollection(process, 
-                          pfCandCollection="puppiUnClean", #not sure it exists
+                          pfCandCollection=puppiCandidateCollection, #not sure it exists
                           coneSize=0.8,
                           useCHSAlgo=False,
                           postfix="BackupTmp")
