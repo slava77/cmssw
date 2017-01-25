@@ -65,10 +65,10 @@ def applySubstructure( process, postfix="" ) :
     from RecoJets.JetProducers.nJettinessAdder_cfi import Njettiness
     #process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
     setattr(process,"NjettinessAK8"+postfix, Njettiness.clone(
-            src = cms.InputTag("ak8PFJetsCHS"),
+            src = cms.InputTag("ak8PFJetsCHS"+postfix),
             cone = cms.double(0.8) )
             )
-    getattr(process, "patJetsAK8"+postfix).userData.userFloats.src += ['NjettinessAK8:tau1','NjettinessAK8:tau2','NjettinessAK8:tau3']
+    getattr(process, "patJetsAK8"+postfix).userData.userFloats.src += ['NjettinessAK8'+postfix+':tau1','NjettinessAK8'+postfix+':tau2','NjettinessAK8'+postfix+':tau3']
 
 
 
@@ -203,7 +203,7 @@ def applySubstructure( process, postfix="" ) :
 
     
     ## Establish references between PATified fat jets and subjets using the BoostedJetMerger
-    setattr(process,"slimmedJetsAK8PFCHSSoftDropPacked", 
+    setattr(process,"slimmedJetsAK8PFCHSSoftDropPacked"+postfix, 
             cms.EDProducer("BoostedJetMerger",
                            jetSrc=cms.InputTag("selectedPatJetsAK8PFCHSSoftDrop"+postfix),
                            subjetSrc=cms.InputTag("slimmedJetsAK8PFCHSSoftDropSubjets"+postfix) 
@@ -279,7 +279,7 @@ def applySubstructure( process, postfix="" ) :
                 'SoftDropPuppi'
                 ),
             fixDaughters = cms.bool(True),
-            packedPFCandidates = cms.InputTag("packedPFCandidates"+postfix),
+            packedPFCandidates = cms.InputTag("packedPFCandidates"+postfix), #oldPFCandToPackedOrDiscarded #"packedPFCandidates"+postfix
     ) )
 
 

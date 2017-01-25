@@ -21,8 +21,7 @@ def makeRecoJetCollection(process,
         
         internalPfCandColl = "pfNoPileUpJME"+postfix
         jetColName+="CHS"
-        print "--->",internalPfCandColl,getattr(process,"pfNoPileUpJME"+postfix).bottomCollection
-
+ 
     setattr(process, jetColName+postfix, getattr(process,"ak4PFJets").clone(
             src = cms.InputTag(internalPfCandColl),
             rParam=cms.double(coneSize),
@@ -32,31 +31,6 @@ def makeRecoJetCollection(process,
 
 
 def backupUncorrectedJetCollection(process, jetCollection, tag):
-
-    print "--->> ", jetCollection, hasattr(process,jetCollection)
-    if not hasattr(process,jetCollection): 
-        raise RuntimeError, "This shouldn't happen"
-        #means that we go only to the patjet level
-        #and we have to go up to slimmed Jets before 
-        #reducing the collection
-        
-        #dummy name fix for central collection
-        inputName="selectedPatJets"+tag
-        inputColl="patJets"+tag+"BackupTmp"
-        #if tag=="AK4": 
-        #    inputName="selectedPatJets"
-        #inputColl="patJetsBackup"
-
-        setattr(process, "selectedPatJets"+tag+"BackupTmp",
-                getattr(process, inputName ).clone(
-                src = cms.InputTag(inputColl)
-                ) )
-        setattr(process, "slimmedJets"+tag+"BackupTmp",
-                getattr(process, "slimmedJets").clone( #+tag
-                 packedPFCandidates = cms.InputTag("packedPFCandidates"), #arg! #MM FIXME
-                 src = cms.InputTag("selectedPatJets"+tag+"BackupTmp")
-                ) )
-        jetCollection="slimmedJets"+tag+"BackupTmp"
 
     setattr(process,"slimmedJets"+tag+"Backup",
             cms.EDProducer("JetCollectionReducer",
@@ -68,63 +42,14 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
             )
     
 
-def backupJets(process, pfCandidateCollection="particleFlow", puppiCandidateCollection="puppiBackupTmp"):
+def backupJets(process):
     
-    backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
-    #backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
-    #backupUncorrectedJetCollection(process, "slimmedJetsAK8BackupTmp", "")
-    
-    #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackupTmp", "")
-    #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackupTmp", "")
-
-    #makeRecoJetCollection(process, 
-    #                      pfCandCollection=pfCandidateCollection,
-    #                      coneSize=0.8,
-    #                      useCHSAlgo=True,
-    #                      postfix="BackupTmp")
-    #makeRecoJetCollection(process, 
-    #                      pfCandCollection=puppiCandidateCollection, #not sure it exists
-    #                      coneSize=0.8,
-    #                      useCHSAlgo=False,
-    #                      postfix="PuppiBackupTmp")
-
-    makeRecoJetCollection(process, 
-                          pfCandCollection=pfCandidateCollection,
-                          coneSize=0.8,
-                          useCHSAlgo=True,
-                          postfix="BackupTmp")
-    makeRecoJetCollection(process, 
-                          pfCandCollection=puppiCandidateCollection, #not sure it exists
-                          coneSize=0.8,
-                          useCHSAlgo=False,
-                          postfix="BackupTmp")
-
     from PhysicsTools.PatAlgos.slimming.applySubstructure_cff import applySubstructure
     applySubstructure(process, "BackupTmp")
-
-    setattr(process,"slimmedJetsAK8Backup",
-            cms.EDProducer("JetCollectionReducer",
-                           jetCollection=cms.InputTag("slimmedJetsAK8BackupTmp"),
-                           triggeringCollections=cms.VInputTag(
-                cms.InputTag("cloneGlobalMuonTagger","bad"),
-                cms.InputTag("badGlobalMuonTagger","bad") )
-                           ) 
-            )
     
-    setattr(process,"slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackup",
-            cms.EDProducer("JetCollectionReducer",
-               jetCollection=cms.InputTag("slimmedJetsAK8PFCHSSoftDropPackedPuppiBackupTmp:SubJets"),
-               triggeringCollections=cms.VInputTag(
-                cms.InputTag("cloneGlobalMuonTagger","bad"),
-                cms.InputTag("badGlobalMuonTagger","bad") )
-                           ) 
-            )
-
-    setattr(process,"slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackup",
-            cms.EDProducer("JetCollectionReducer",
-               jetCollection=cms.InputTag("slimmedJetsAK8PFPuppiSoftDropPackedPuppiBackupTmp:SubJets"),
-               triggeringCollections=cms.VInputTag(
-                cms.InputTag("cloneGlobalMuonTagger","bad"),
-                cms.InputTag("badGlobalMuonTagger","bad") )
-                           ) 
-            )
+    backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
+    backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
+    backupUncorrectedJetCollection(process, "slimmedJetsAK8BackupTmp","AK8")
+    backupUncorrectedJetCollection(process, "slimmedJetsAK8PFCHSSoftDropPackedBackupTmp", "AK8PFCHSSoftDropPackedSubJets")
+    backupUncorrectedJetCollection(process, "slimmedJetsAK8PFPuppiSoftDropPackedBackupTmp", "AK8PFPuppiSoftDropPackedSubJets")
+    
