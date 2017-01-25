@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-from PhysicsTools.PatAlgos.tools.helpers import MassSearchReplaceAnyInputTagVisitor
+from PhysicsTools.PatAlgos.tools.helpers import MassSearchReplaceAnyInputTagVisitor, listDependencyChain, massSearchReplaceAnyInputTag, cloneProcessingSnippet
 
 def addBadMuonFilters(process):
     process.load("RecoMET.METFilters.badGlobalMuonTaggersAOD_cff")
@@ -22,6 +22,30 @@ def cleanPFCandidates(process, badMuons, verbose=False):
      
     #FIXME: particleBasedIsolation, the e/gamma GED map, needs to be fixed with the new PFCands
 
+
+def addKeepStatement(process, oldKeep, newKeeps, verbose=False):
+    for name,out in process.outputModules.iteritems():
+        if out.type_() == 'PoolOutputModule' and hasattr(out, "outputCommands"):
+            if oldKeep in out.outputCommands:
+                out.outputCommands += newKeeps
+            print "Adding the following keep statements to output module %s: " % name
+            for k in newKeeps: print "\t'%s'," % k
+
+def addDiscardedPFCandidates(process, inputCollection, verbose=False):
+    process.primaryVertexAssociationDiscardedCandidates = process.primaryVertexAssociation.clone(
+        particles = inputCollection,
+    )
+    process.packedPFCandidatesDiscarded = process.packedPFCandidates.clone(
+        inputCollection = inputCollection,
+        PuppiNoLepSrc = cms.InputTag(""),
+        PuppiSrc = cms.InputTag(""),
+        secondaryVerticesForWhiteList = cms.VInputTag(),
+        vertexAssociator = cms.InputTag("primaryVertexAssociationDiscardedCandidates","original")
+    )
+    addKeepStatement(process, "keep patPackedCandidates_packedPFCandidates_*_*",
+                             ["keep patPackedCandidates_packedPFCandidatesDiscarded_*_*"],
+                              verbose=verbose)
+
 def loadJetMETBTag(process):
     import RecoJets.Configuration.RecoPFJets_cff
     process.ak4PFJetsCHS = RecoJets.Configuration.RecoPFJets_cff.ak4PFJetsCHS.clone()
@@ -34,16 +58,29 @@ def loadJetMETBTag(process):
     process.load("RecoBTag.CTagging.cTagging_cff")
     process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
 
-def customizeAll(process):
+def customizeAll(process, verbose=False):
     process.load("RecoEgamma.EgammaTools.egammaGainSwitchFix_cff")
-
-    addBadMuonFilters(process)    
 
     loadJetMETBTag(process)
 
+    process.originalAK4JetSequence = listDependencyChain(process, process.slimmedJets, ('particleFlow', 'muons'))
+    backupAK4JetSequence = cloneProcessingSnippet(process, process.originalAK4JetSequence, "Backup")
+
+    addBadMuonFilters(process)    
+
+    # clean the muons and PF candidates, and make *everything* point to the new candidates
     cleanPFCandidates(process, 
                       [ cms.InputTag("badGlobalMuonTagger","bad"), cms.InputTag("cloneGlobalMuonTagger","bad") ],
-                      verbose=True) # FIXME set to False when no longer needed
+                      verbose=verbose) 
+
+    addDiscardedPFCandidates(process, cms.InputTag("pfCandidatesBadMuonsCleaned","discarded"), verbose=verbose)
+
+    # now make the backup sequences point to the right place
+    massSearchReplaceAnyInputTag(backupAK4JetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
+    massSearchReplaceAnyInputTag(backupAK4JetSequence, "muonsCleaned", "muons")
+    addKeepStatement(process, "keep *_slimmedJets_*_*",
+                             ["keep *_slimmedJetsBackup_*_*"],
+                              verbose=verbose)
 
     process.patMuons.embedCaloMETMuonCorrs = False # FIXME
 
