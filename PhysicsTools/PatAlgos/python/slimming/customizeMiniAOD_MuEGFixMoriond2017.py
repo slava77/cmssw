@@ -85,7 +85,7 @@ def customizeAll(process, verbose=False):
     addDiscardedPFCandidates(process, cms.InputTag("pfCandidatesBadMuonsCleaned","discarded"), verbose=verbose)
 
     # now make the backup sequences point to the right place
-    backupJetsSecondStep(process, backupJetSequences, verbose=verbose)
+    backupJetsSecondStep(process, backupJetSequences, badMuons, verbose=verbose)
 
     
     process.patMuons.embedCaloMETMuonCorrs = False # FIXME

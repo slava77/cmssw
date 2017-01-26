@@ -30,15 +30,25 @@ def makeRecoJetCollection(process,
     
 
 
-def backupUncorrectedJetCollection(process, jetCollection, tag):
+def reduceInputJetCollection(process, jetCollection, badMuons):
+    label = jetCollection.label()
+    setattr(process, label+"AllEvents", jetCollection.clone())
+    process.globalReplace(label,
+            cms.EDProducer("PFJetCollectionReducer",
+                           writeEmptyCollection = cms.bool(True),
+                           jetCollection = cms.InputTag(label+"AllEvents"),
+                           triggeringCollections=badMuons,
+                           )
+            )
 
-    setattr(process,"slimmedJets"+tag+"Backup",
+def reduceFinalJetCollection(process, jetCollection, badMuons):
+    label = jetCollection.label()
+    setattr(process, label+"AllEvents", jetCollection.clone())
+    process.globalReplace(label,
             cms.EDProducer("PATJetCollectionReducer",
                            writeEmptyCollection = cms.bool(False),
-                           jetCollection=cms.InputTag(jetCollection),
-                           triggeringCollections=cms.VInputTag(
-                              cms.InputTag("cloneGlobalMuonTagger","bad"),
-                              cms.InputTag("badGlobalMuonTagger","bad") )
+                           jetCollection = cms.InputTag(label+"AllEvents"),
+                           triggeringCollections=badMuons,
                            ) 
             )
     
@@ -46,34 +56,37 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
 def backupJetsFirstStep(process):
     """Take snapshots of the sequences before we change the PFCandidates"""
     process.originalAK4JetSequence = listDependencyChain(process, process.slimmedJets, ('particleFlow', 'muons'))
-    backupAK4JetSequence = cloneProcessingSnippet(process, process.originalAK4JetSequence, "BackupTmp")
+    backupAK4JetSequence = cloneProcessingSnippet(process, process.originalAK4JetSequence, "Backup")
     process.originalAK4PuppiJetSequence = listDependencyChain(process, process.slimmedJetsPuppi, ('particleFlow', 'muons'))
-    backupAK4PuppiJetSequence = cloneProcessingSnippet(process, process.originalAK4PuppiJetSequence, "BackupTmp")
+    backupAK4PuppiJetSequence = cloneProcessingSnippet(process, process.originalAK4PuppiJetSequence, "Backup")
     process.originalAK8JetSequence = listDependencyChain(process, process.slimmedJetsAK8, ('particleFlow', 'muons'))
     backupAK8JetSequence = cloneProcessingSnippet(process, process.originalAK8JetSequence, "Backup")
     return { 'AK4':backupAK4JetSequence, 'AK4Puppi':backupAK4PuppiJetSequence, 'AK8':backupAK8JetSequence }
 
     
-def backupJetsSecondStep(process, sequences, verbose=False):
+def backupJetsSecondStep(process, sequences, badMuons, verbose=False):
     """Deploy the snapshots after the change of PFCandidates"""
     # put back the old input tags
     for sequence in sequences.itervalues():
         massSearchReplaceAnyInputTag(sequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
         massSearchReplaceAnyInputTag(sequence, "muonsCleaned", "muons")
+    # gate the input collections to avoid re-running most of PAT on good events
+    reduceInputJetCollection(process, process.ak4PFJetsCHSBackup, badMuons)
+    reduceInputJetCollection(process, process.ak4PFJetsPuppiBackup, badMuons)
     # fix names in the valuemaps
-    process.patJetsBackupTmp.userData.userInts.labelPostfixesToStrip = cms.vstring("BackupTmp",)
-    process.patJetsBackupTmp.userData.userFloats.labelPostfixesToStrip = cms.vstring("BackupTmp",)
+    process.patJetsBackup.userData.userInts.labelPostfixesToStrip = cms.vstring("Backup",)
+    process.patJetsBackup.userData.userFloats.labelPostfixesToStrip = cms.vstring("Backup",)
     process.patJetsAK8Backup.userData.userFloats.labelPostfixesToStrip = cms.vstring("Backup",)
     process.patJetsAK8PuppiBackup.userData.userFloats.labelPostfixesToStrip = cms.vstring("Backup",)    
     #
     # now deal with daughter links
     # for these we can keep the daughters
-    process.slimmedJetsBackupTmp.mixedDaughters = True
-    process.slimmedJetsBackupTmp.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
+    process.slimmedJetsBackup.mixedDaughters = True
+    process.slimmedJetsBackup.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
     process.slimmedJetsAK8PFCHSSoftDropSubjetsBackup.mixedDaughters = True
     process.slimmedJetsAK8PFCHSSoftDropSubjetsBackup.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
     # for these we can't
-    process.slimmedJetsPuppiBackupTmp.dropDaughters = '1'
+    process.slimmedJetsPuppiBackup.dropDaughters = '1'
     process.slimmedJetsAK8PFPuppiSoftDropSubjetsBackup.dropDaughters = '1'
     # for these we do even if we wouldn't have done in the standard case, since we couldn't for the subjets
     process.packedPatJetsAK8Backup.fixDaughters = False
@@ -81,8 +94,9 @@ def backupJetsSecondStep(process, sequences, verbose=False):
     process.slimmedJetsAK8Backup.mixedDaughters = True
     process.slimmedJetsAK8Backup.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
     #
-    backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
-    backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
+    reduceFinalJetCollection(process, process.slimmedJetsBackup, badMuons)
+    reduceFinalJetCollection(process, process.slimmedJetsPuppiBackup, badMuons)
+    reduceFinalJetCollection(process, process.slimmedJetsAK8Backup, badMuons)
     #
     addKeepStatement(process,
                      "keep *_slimmedJets_*_*",
