@@ -5,29 +5,33 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
 
-class JetCollectionReducer : public edm::stream::EDProducer<> {
+template<typename T>
+class JetCollectionReducerT : public edm::stream::EDProducer<> {
 
 public:
-  explicit JetCollectionReducer(const edm::ParameterSet & iConfig);
-  virtual ~JetCollectionReducer();
+  explicit JetCollectionReducerT(const edm::ParameterSet & iConfig);
+  virtual ~JetCollectionReducerT() {}
 
   virtual void produce(edm::Event & iEvent, const edm::EventSetup & iSetup) override;
 
 private:
 
-  edm::EDGetTokenT<std::vector<pat::Jet>> jetColToken_;            
-
+  edm::EDGetTokenT<std::vector<T>> jetColToken_;            
+  bool writeEmptyCollection_;
   std::vector<edm::EDGetTokenT<edm::View<reco::Candidate> > > collections_;
   
 };
 
 
-JetCollectionReducer::JetCollectionReducer(const edm::ParameterSet& iConfig) :
-  jetColToken_(consumes<std::vector<pat::Jet> >( iConfig.getParameter<edm::InputTag>("jetCollection") ))
+template<typename T>
+JetCollectionReducerT<T>::JetCollectionReducerT(const edm::ParameterSet& iConfig) :
+  jetColToken_(consumes<std::vector<T> >( iConfig.getParameter<edm::InputTag>("jetCollection") )),
+  writeEmptyCollection_(iConfig.getParameter<bool>("writeEmptyCollection"))
 {
   
   std::vector<edm::InputTag> filtersDecTags = iConfig.getParameter<std::vector<edm::InputTag> >("triggeringCollections");
@@ -36,21 +40,17 @@ JetCollectionReducer::JetCollectionReducer(const edm::ParameterSet& iConfig) :
     collections_.push_back(consumes<edm::View<reco::Candidate> >(*inputTag));
   }
   
-  produces<std::vector<pat::Jet> >();
+  produces<std::vector<T> >();
 
 }
-
-
-JetCollectionReducer::~JetCollectionReducer() {
-}
-
 
 // ------------ method called to produce the data  ------------
+template<typename T>
 void
-JetCollectionReducer::produce(edm::Event& iEvent, const edm::EventSetup&)
+JetCollectionReducerT<T>::produce(edm::Event& iEvent, const edm::EventSetup&)
 {  
 
-  std::unique_ptr<std::vector<pat::Jet> > outJets(new std::vector<pat::Jet>());
+  std::unique_ptr<std::vector<T> > outJets(new std::vector<T>());
   
   bool filterDecision=false;
   edm::Handle<edm::View<reco::Candidate> > tmpCol;
@@ -64,11 +64,11 @@ JetCollectionReducer::produce(edm::Event& iEvent, const edm::EventSetup&)
   }
 
   if(!filterDecision) {
-    iEvent.put(std::move(outJets));
+    if (writeEmptyCollection_) iEvent.put(std::move(outJets));
     return;
   }
   
-  edm::Handle< std::vector<pat::Jet> > jetColHandle;
+  edm::Handle< std::vector<T> > jetColHandle;
   iEvent.getByToken( jetColToken_, jetColHandle );
   
   //MM: probably a better way to do it...
@@ -81,4 +81,7 @@ JetCollectionReducer::produce(edm::Event& iEvent, const edm::EventSetup&)
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(JetCollectionReducer);
+typedef JetCollectionReducerT<pat::Jet> PATJetCollectionReducer;
+typedef JetCollectionReducerT<reco::PFJet> PFJetCollectionReducer;
+DEFINE_FWK_MODULE(PATJetCollectionReducer);
+DEFINE_FWK_MODULE(PFJetCollectionReducer);

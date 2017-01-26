@@ -33,7 +33,8 @@ def makeRecoJetCollection(process,
 def backupUncorrectedJetCollection(process, jetCollection, tag):
 
     setattr(process,"slimmedJets"+tag+"Backup",
-            cms.EDProducer("JetCollectionReducer",
+            cms.EDProducer("PATJetCollectionReducer",
+                           writeEmptyCollection = cms.bool(False),
                            jetCollection=cms.InputTag(jetCollection),
                            triggeringCollections=cms.VInputTag(
                               cms.InputTag("cloneGlobalMuonTagger","bad"),
