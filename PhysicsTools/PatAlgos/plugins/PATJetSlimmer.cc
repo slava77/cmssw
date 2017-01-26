@@ -36,7 +36,7 @@ namespace pat {
       edm::EDGetTokenT<edm::ValueMap<reco::CandidatePtr>> pf2pcAny_;
       const edm::EDGetTokenT<edm::View<pat::Jet> >  jets_;
       const StringCutObjectSelector<pat::Jet> dropJetVars_,dropDaughters_,rekeyDaughters_,dropTrackRefs_,dropSpecific_,dropTagInfos_;
-      const bool modifyJet_, mixedDaughters_;
+      const bool modifyJet_, mayNeedDaughterMap_, mixedDaughters_;
       std::unique_ptr<pat::ObjectModifier<pat::Jet> > jetModifier_;
   };
 
@@ -52,12 +52,15 @@ pat::PATJetSlimmer::PATJetSlimmer(const edm::ParameterSet & iConfig) :
     dropSpecific_(iConfig.getParameter<std::string>("dropSpecific")),
     dropTagInfos_(iConfig.getParameter<std::string>("dropTagInfos")),
     modifyJet_(iConfig.getParameter<bool>("modifyJets")),
+    mayNeedDaughterMap_(iConfig.getParameter<std::string>("dropDaughters") != "1" && iConfig.getParameter<std::string>("rekeyDaughters") != "0"),
     mixedDaughters_(iConfig.getParameter<bool>("mixedDaughters"))
 {
-    if (mixedDaughters_) {
-        pf2pcAny_ = consumes<edm::ValueMap<reco::CandidatePtr> >(iConfig.getParameter<edm::InputTag>("packedPFCandidates"));
-    } else {
-        pf2pc_ = consumes<edm::Association<pat::PackedCandidateCollection> >(iConfig.getParameter<edm::InputTag>("packedPFCandidates"));
+    if (mayNeedDaughterMap_) {
+        if (mixedDaughters_) {
+            pf2pcAny_ = consumes<edm::ValueMap<reco::CandidatePtr> >(iConfig.getParameter<edm::InputTag>("packedPFCandidates"));
+        } else {
+            pf2pc_ = consumes<edm::Association<pat::PackedCandidateCollection> >(iConfig.getParameter<edm::InputTag>("packedPFCandidates"));
+        }
     }
     edm::ConsumesCollector sumes(consumesCollector());
     if( modifyJet_ ) {
@@ -84,10 +87,12 @@ pat::PATJetSlimmer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup)
     iEvent.getByToken(jets_, src);
     Handle<edm::Association<pat::PackedCandidateCollection> > pf2pc;
     Handle<edm::ValueMap<reco::CandidatePtr> > pf2pcAny;
-    if (mixedDaughters_) {
-        iEvent.getByToken(pf2pcAny_,pf2pcAny);
-    } else {
-        iEvent.getByToken(pf2pc_,pf2pc);
+    if (mayNeedDaughterMap_) {
+        if (mixedDaughters_) {
+            iEvent.getByToken(pf2pcAny_,pf2pcAny);
+        } else {
+            iEvent.getByToken(pf2pc_,pf2pc);
+        }
     }
 	
     auto_ptr<vector<pat::Jet> >  out(new vector<pat::Jet>());
