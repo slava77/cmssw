@@ -364,23 +364,23 @@ def listDependencyChain(process, module, sources, verbose=False):
                 fillDirectDepGraphs(depmodule,fwdepgraph,revdepgraph)
         return (fwdepgraph,revdepgraph)
     fwdepgraph, revdepgraph = fillDirectDepGraphs(module, {}, {})
-    def toDot(graph,outname):
-        ret = "digraph G { rankdir=\"LR\" \n"
-        alls = set(graph.iterkeys())
-        for vs in graph.itervalues(): alls.update(vs)
-        if module.label() in alls: ret += "\t%s[shape=rect style=filled fillcolor=red];\n" % module.label()
-        for s in sources:
-            if s in alls: ret += "\t%s[shape=rect style=filled fillcolor=green];\n" % s
-        alls.discard(module.label())
-        alls.difference_update(sources)
-        for a in alls:
-            ret += "\t%s[shape=rect style=filled fillcolor=%s];\n" % (a, "white" if hasattr(process,a) else "gray")
-        for k,vs in graph.iteritems():
-            for v in vs: ret += "\t%s -> %s" % (k,v)
-        ret += "}"
-        fout = open(outname, "w")
-        fout.write(ret)
-        fout.close()
+    #def toDot(graph,outname):
+    #   ret = "digraph G { rankdir=\"LR\" \n"
+    #   alls = set(graph.iterkeys())
+    #   for vs in graph.itervalues(): alls.update(vs)
+    #   if module.label() in alls: ret += "\t%s[shape=rect style=filled fillcolor=red];\n" % module.label()
+    #   for s in sources:
+    #       if s in alls: ret += "\t%s[shape=rect style=filled fillcolor=green];\n" % s
+    #   alls.discard(module.label())
+    #   alls.difference_update(sources)
+    #   for a in alls:
+    #       ret += "\t%s[shape=rect style=filled fillcolor=%s];\n" % (a, "white" if hasattr(process,a) else "gray")
+    #   for k,vs in graph.iteritems():
+    #       for v in vs: ret += "\t%s -> %s" % (k,v)
+    #   ret += "}"
+    #   fout = open(outname, "w")
+    #   fout.write(ret)
+    #   fout.close()
     #toDot(fwdepgraph,"fwd.dot")
     #toDot(revdepgraph,"rvd.dot")
     def flattenRevDeps(flatgraph, revdepgraph, tip):
@@ -423,6 +423,18 @@ def listDependencyChain(process, module, sources, verbose=False):
                 raise RuntimeError, "BAD ORDER %s BEFORE %s" % (m1,m2)
     modules = [ getattr(process,p) for p in modulelist ]
     return cms.Sequence(sum(modules[1:],modules[0]))
+
+def addKeepStatement(process, oldKeep, newKeeps, verbose=False):
+    """Add new keep statements to any PoolOutputModule of the process that has the old keep statements"""
+    for name,out in process.outputModules.iteritems():
+        if out.type_() == 'PoolOutputModule' and hasattr(out, "outputCommands"):
+            if oldKeep in out.outputCommands:
+                out.outputCommands += newKeeps
+            if verbose:
+                print "Adding the following keep statements to output module %s: " % name
+                for k in newKeeps: print "\t'%s'," % k
+
+
 
 if __name__=="__main__":
    import unittest
