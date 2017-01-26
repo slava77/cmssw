@@ -170,4 +170,8 @@ def customizeAll(process, verbose=False):
                      ["keep *_slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackup_*_*"],
                      verbose=verbose)
 
+    #redo the miniAOD data customization for new JEC modules created during the backup process
+    from PhysicsTools.PatAlgos.slimming.miniAOD_tools import miniAOD_customizeData
+    miniAOD_customizeData(process)
+
     return process
