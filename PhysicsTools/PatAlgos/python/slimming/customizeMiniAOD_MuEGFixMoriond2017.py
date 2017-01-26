@@ -8,6 +8,8 @@ def addBadMuonFilters(process):
 
 def cleanPFCandidates(process, badMuons, verbose=False):
     process.load("CommonTools.ParticleFlow.muonsCleaned_cfi")
+    process.patMuons.userData.userInts.src = [ cms.InputTag("muonsCleaned:oldPF") ]
+
     process.load("CommonTools.ParticleFlow.pfCandidatesBadMuonsCleaned_cfi")
     process.muonsCleaned.badmuons = badMuons[:]
     replaceMuons = MassSearchReplaceAnyInputTagVisitor("muons", "muonsCleaned", verbose=verbose)
@@ -83,11 +85,7 @@ def customizeAll(process, verbose=False):
     process.originalAK4PuppiJetSequence = listDependencyChain(process, process.slimmedJetsPuppi, ('particleFlow', 'muons'))
     backupAK4PuppiJetSequence = cloneProcessingSnippet(process, process.originalAK4PuppiJetSequence, "BackupTmp")
     process.originalAK8JetSequence = listDependencyChain(process, process.slimmedJetsAK8, ('particleFlow', 'muons'))
-    backupAK8JetSequence = cloneProcessingSnippet(process, process.originalAK8JetSequence, "BackupTmp")
-    process.originalAK8CHSSoftDropJetSequence = listDependencyChain(process, process.slimmedJetsAK8PFCHSSoftDropPacked, ('particleFlow', 'muons'))
-    backupAK8CHSSoftDropJetSequence = cloneProcessingSnippet(process, process.originalAK8CHSSoftDropJetSequence, "BackupTmp")
-    process.originalAK8PuppiSoftDropJetSequence = listDependencyChain(process, process.slimmedJetsAK8PFPuppiSoftDropPacked, ('particleFlow', 'muons'))
-    backupAK8PuppiSoftDropJetSequence = cloneProcessingSnippet(process, process.originalAK8PuppiSoftDropJetSequence, "BackupTmp")
+    backupAK8JetSequence = cloneProcessingSnippet(process, process.originalAK8JetSequence, "Backup")
 
     addBadMuonFilters(process)    
 
@@ -105,17 +103,23 @@ def customizeAll(process, verbose=False):
     massSearchReplaceAnyInputTag(backupAK4PuppiJetSequence, "muonsCleaned", "muons")
     massSearchReplaceAnyInputTag(backupAK8JetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
     massSearchReplaceAnyInputTag(backupAK8JetSequence, "muonsCleaned", "muons")
-    massSearchReplaceAnyInputTag(backupAK8CHSSoftDropJetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
-    massSearchReplaceAnyInputTag(backupAK8CHSSoftDropJetSequence, "muonsCleaned", "muons")
-    massSearchReplaceAnyInputTag(backupAK8PuppiSoftDropJetSequence, "pfCandidatesBadMuonsCleaned", "particleFlow")
-    massSearchReplaceAnyInputTag(backupAK8PuppiSoftDropJetSequence, "muonsCleaned", "muons")
+    # fix a few names
+    process.patJetsAK8Backup.userData.userFloats.labelPostfixesToStrip = cms.vstring("Backup",)
+    process.patJetsAK8PuppiBackup.userData.userFloats.labelPostfixesToStrip = cms.vstring("Backup",)
 
+    # for these we can keep the daughters
     process.slimmedJetsBackupTmp.mixedDaughters = True
     process.slimmedJetsBackupTmp.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
-    #process.slimmedJetsPuppiBackupTmp.mixedDaughters = True 
-    #process.slimmedJetsPuppiBackupTmp.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded") # MM clink seems broken when enabled, I don't understand why
-    process.slimmedJetsAK8BackupTmp.mixedDaughters = True
-    process.slimmedJetsAK8BackupTmp.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
+    process.slimmedJetsAK8PFCHSSoftDropSubjetsBackup.mixedDaughters = True
+    process.slimmedJetsAK8PFCHSSoftDropSubjetsBackup.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
+    # for these we can't
+    process.slimmedJetsPuppiBackupTmp.dropDaughters = '1'
+    process.slimmedJetsAK8PFPuppiSoftDropSubjetsBackup.dropDaughters = '1'
+    # for these we do even if we wouldn't have done in the standard case, since we couldn't for the subjets
+    process.packedPatJetsAK8Backup.fixDaughters = False
+    process.slimmedJetsAK8Backup.rekeyDaughters = '1'
+    process.slimmedJetsAK8Backup.mixedDaughters = True
+    process.slimmedJetsAK8Backup.packedPFCandidates = cms.InputTag("oldPFCandToPackedOrDiscarded")
     
     process.patMuons.embedCaloMETMuonCorrs = False # FIXME
     ##extra METs and MET corrections ===============================================================
@@ -164,10 +168,10 @@ def customizeAll(process, verbose=False):
                      ["keep *_slimmedJetsAK8Backup_*_*"],
                      verbose=verbose)
     addKeepStatement(process,"keep *_slimmedJetsAK8PFCHSSoftDropPacked_SubJets_*",
-                     ["keep *_slimmedJetsAK8PFCHSSoftDropPackedSubJetsBackup_*_*"],
+                     ["keep *_slimmedJetsAK8PFCHSSoftDropPackedBackup_SubJets_*"],
                      verbose=verbose)
     addKeepStatement(process,"keep *_slimmedJetsAK8PFPuppiSoftDropPacked_SubJets_*",
-                     ["keep *_slimmedJetsAK8PFPuppiSoftDropPackedSubJetsBackup_*_*"],
+                     ["keep *_slimmedJetsAK8PFPuppiSoftDropPackedBackup_SubJets_*"],
                      verbose=verbose)
 
     #redo the miniAOD data customization for new JEC modules created during the backup process

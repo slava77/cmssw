@@ -43,13 +43,12 @@ def backupUncorrectedJetCollection(process, jetCollection, tag):
     
 
 def backupJets(process):
-    
-    from PhysicsTools.PatAlgos.slimming.applySubstructure_cff import applySubstructure
-    applySubstructure(process, "BackupTmp")
+    #from PhysicsTools.PatAlgos.slimming.applySubstructure_cff import applySubstructure
+    #applySubstructure(process, "BackupTmp")
     
     backupUncorrectedJetCollection(process, "slimmedJetsBackupTmp", "")
     backupUncorrectedJetCollection(process, "slimmedJetsPuppiBackupTmp", "Puppi")
-    backupUncorrectedJetCollection(process, "slimmedJetsAK8BackupTmp","AK8")
-    backupUncorrectedJetCollection(process, "slimmedJetsAK8PFCHSSoftDropPackedBackupTmp", "AK8PFCHSSoftDropPackedSubJets")
-    backupUncorrectedJetCollection(process, "slimmedJetsAK8PFPuppiSoftDropPackedBackupTmp", "AK8PFPuppiSoftDropPackedSubJets")
+    #backupUncorrectedJetCollection(process, "slimmedJetsAK8BackupTmp","AK8")
+    #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFCHSSoftDropPackedBackupTmp", "AK8PFCHSSoftDropPackedSubJets")
+    #backupUncorrectedJetCollection(process, "slimmedJetsAK8PFPuppiSoftDropPackedBackupTmp", "AK8PFPuppiSoftDropPackedSubJets")
     
