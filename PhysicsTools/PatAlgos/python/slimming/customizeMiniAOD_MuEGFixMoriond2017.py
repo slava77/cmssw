@@ -67,10 +67,6 @@ def loadJetMETBTag(process):
     process.load("RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff")
 
 def customizeAll(process, verbose=False):
-
-    # MM first duplicate uncorrected sequences needed by JetMET
-    cloneProcessingSnippet(process, getattr(process,"makePatPhotons"),"UnClean")
-    cloneProcessingSnippet(process, getattr(process,"makePatElectrons"),"UnClean")
     
     process.load("RecoEgamma.EgammaTools.egammaGainSwitchFix_cff")
 
@@ -96,15 +92,15 @@ def customizeAll(process, verbose=False):
                            unCleanPFCandidateCollection="particleFlow",
                            cleanElectronCollection="slimmedElectrons",
                            cleanPhotonCollection="slimmedPhotons",
-                           unCleanElectronCollection="patElectronsUnClean",
-                           unCleanPhotonCollection="patPhotonsUnClean")
+                           unCleanElectronCollection="slimmedElectronsBeforeGSFix",
+                           unCleanPhotonCollection="slimmedPhotonsBeforeGSFix")
     addExtraPuppiMETCorrections(process,
                                 cleanPFCandidateCollection="particleFlow",
                                 unCleanPFCandidateCollection="pfCandidatesBadMuonsCleaned",
                                 cleanElectronCollection="slimmedElectrons",
                                 cleanPhotonCollection="slimmedPhotons",
-                                unCleanElectronCollection="patElectronsUnClean",
-                                unCleanPhotonCollection="patPhotonsUnClean")
+                                unCleanElectronCollection="slimmedElectronsBeforeGSFix",
+                                unCleanPhotonCollection="slimmedPhotonsBeforeGSFix")
 
     addKeepStatement(process,
                      "keep *_slimmedMETs_*_*",

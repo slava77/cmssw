@@ -114,6 +114,7 @@ def addExtraPuppiMETCorrections(process,
                         muCorrection=False,
                         eGCorrection=True,
                         runOnMiniAOD=False,
+                        eGPfCandMatching=True,
                         eGPFix="Puppi",
                         postfix="PuppiClean"
                         )
