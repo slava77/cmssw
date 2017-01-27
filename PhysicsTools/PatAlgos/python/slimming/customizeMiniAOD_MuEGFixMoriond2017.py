@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 from PhysicsTools.PatAlgos.tools.helpers import MassSearchReplaceAnyInputTagVisitor, cloneProcessingSnippet, addKeepStatement
 from PhysicsTools.PatAlgos.slimming.extraJets_MuEGFixMoriond2017 import backupJetsFirstStep, backupJetsSecondStep
+from RecoEgamma.EgammaTools.egammaGainSwitchFixToolsForPAT_cff import customizeGSFixForPAT
 
 def addBadMuonFilters(process):
     process.load("RecoMET.METFilters.badGlobalMuonTaggersAOD_cff")
@@ -31,6 +32,12 @@ def cleanPFCandidates(process, badMuons, verbose=False):
     process.pfEGammaToCandidateRemapper.pf2pf = cms.InputTag("pfCandidatesBadMuonsCleaned")
     process.reducedEgamma.gsfElectronsPFValMap = cms.InputTag("pfEGammaToCandidateRemapper","electrons")
     process.reducedEgamma.photonsPFValMap      = cms.InputTag("pfEGammaToCandidateRemapper","photons")
+    if hasattr(process,"gedGsfElectronsGSFixed"):
+        # also reconfigure pfEGammaToCandidateRemapper because of GS Fix
+        process.pfEGammaToCandidateRemapper.electrons = cms.InputTag("gedGsfElectronsGSFixed")
+        process.pfEGammaToCandidateRemapper.photons   = cms.InputTag("gedPhotonsGSFixed")
+        process.pfEGammaToCandidateRemapper.electron2pf = cms.InputTag("particleBasedIsolationGSFixed","gedGsfElectrons")
+        process.pfEGammaToCandidateRemapper.photon2pf   = cms.InputTag("particleBasedIsolationGSFixed","gedPhotons")
 
 
 def addDiscardedPFCandidates(process, inputCollection, verbose=False):
@@ -68,7 +75,7 @@ def loadJetMETBTag(process):
 
 def customizeAll(process, verbose=False):
     
-    process.load("RecoEgamma.EgammaTools.egammaGainSwitchFix_cff")
+    process = customizeGSFixForPAT(process)
 
     loadJetMETBTag(process)
     backupJetSequences = backupJetsFirstStep(process)
