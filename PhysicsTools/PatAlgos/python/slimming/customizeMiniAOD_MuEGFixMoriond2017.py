@@ -34,6 +34,11 @@ def cleanPFCandidates(process, badMuons, verbose=False):
     process.reducedEgamma.photonsPFValMap      = cms.InputTag("pfEGammaToCandidateRemapper","photons")
     if hasattr(process,"gedGsfElectronsGSFixed"):
         # also reconfigure pfEGammaToCandidateRemapper because of GS Fix
+        # first the old one
+        process.pfEGammaToCandidateRemapperBeforeGSFix = process.pfEGammaToCandidateRemapper.clone()
+        process.reducedEgammaBeforeGSFix.gsfElectronsPFValMap = cms.InputTag("pfEGammaToCandidateRemapperBeforeGSFix","electrons")
+        process.reducedEgammaBeforeGSFix.photonsPFValMap      = cms.InputTag("pfEGammaToCandidateRemapperBeforeGSFix","photons")
+        # then the new one
         process.pfEGammaToCandidateRemapper.electrons = cms.InputTag("gedGsfElectronsGSFixed")
         process.pfEGammaToCandidateRemapper.photons   = cms.InputTag("gedPhotonsGSFixed")
         process.pfEGammaToCandidateRemapper.electron2pf = cms.InputTag("particleBasedIsolationGSFixed","gedGsfElectrons")
@@ -60,6 +65,9 @@ def addDiscardedPFCandidates(process, inputCollection, verbose=False):
         pf2pf = cms.InputTag(inputCollection.moduleLabel),
         pf2packed = cms.VInputTag(cms.InputTag("packedPFCandidates"), cms.InputTag("packedPFCandidatesDiscarded"))
     )
+    # Fix slimmed muon keying
+    process.slimmedMuons.pfCandidates = cms.VInputTag(cms.InputTag(inputCollection.moduleLabel), inputCollection)
+    process.slimmedMuons.packedPFCandidates = cms.VInputTag(cms.InputTag("packedPFCandidates"), cms.InputTag("packedPFCandidatesDiscarded"))
 
 def loadJetMETBTag(process):
     import RecoJets.Configuration.RecoPFJets_cff
