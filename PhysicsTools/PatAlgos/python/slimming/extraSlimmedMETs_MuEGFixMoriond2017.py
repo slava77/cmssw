@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from PhysicsTools.PatAlgos.tools.helpers import listDependencyChain, massSearchReplaceAnyInputTag,cloneProcessingSnippet
 
 def addExtraMETCollections(process, unCleanPFCandidateCollection,
                            cleanElectronCollection,
@@ -11,12 +12,33 @@ def addExtraMETCollections(process, unCleanPFCandidateCollection,
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncForMiniAODProduction
     
     # uncorrected MET
+    cloneProcessingSnippet(process, getattr(process,"makePatJets"),"BackupAllEvents")
+    massSearchReplaceAnyInputTag(getattr(process,"makePatJetsBackupAllEvents"), "ak4PFJetsCHS", "ak4PFJetsCHSBackupAllEvents")
+    massSearchReplaceAnyInputTag(getattr(process,"makePatJetsBackupAllEvents"), "pfCandidatesBadMuonsCleaned", "particleFlow")
+    del process.patJetsBackupAllEvents.userData
+    process.patJetsBackupAllEvents.addAssociatedTracks = cms.bool(False)
+    process.patJetsBackupAllEvents.addBTagInfo = cms.bool(False)
+    process.patJetsBackupAllEvents.addDiscriminators = cms.bool(False)
+    process.patJetsBackupAllEvents.addGenJetMatch = cms.bool(False)
+    process.patJetsBackupAllEvents.addGenPartonMatch = cms.bool(False)
+    process.patJetsBackupAllEvents.addJetCharge = cms.bool(False)
+    process.patJetsBackupAllEvents.addJetCorrFactors = cms.bool(True)
+    process.patJetsBackupAllEvents.addJetFlavourInfo = cms.bool(False)
+    process.patJetsBackupAllEvents.addJetID = cms.bool(False)
+    process.patJetsBackupAllEvents.addPartonJetMatch = cms.bool(False)
+    process.patJetsBackupAllEvents.addResolutions = cms.bool(False)
+    process.patJetsBackupAllEvents.addTagInfos = cms.bool(False)
+    process.patJetsBackupAllEvents.discriminatorSources = cms.VInputTag()
+    process.patJetsBackupAllEvents.embedGenJetMatch = cms.bool(False)
+  
     runMetCorAndUncForMiniAODProduction(process,
                                         metType="PF",
                                         pfCandColl=cms.InputTag(unCleanPFCandidateCollection),
                                         recoMetFromPFCs=True,
+                                        jetCollUnskimmed="patJetsBackupAllEvents",
                                         postfix="Uncorrected"
                                         )
+
     if not hasattr(process, "slimmedMETs"):
         process.load('PhysicsTools.PatAlgos.slimming.slimmedMETs_cfi')
         
@@ -32,7 +54,7 @@ def addExtraMETCollections(process, unCleanPFCandidateCollection,
     process.slimmedMETsUncorrected.tXYUncForT1Smear = cms.InputTag("patPFMetT1SmearTxyUncorrected")
     process.slimmedMETsUncorrected.tXYUncForT01Smear = cms.InputTag("patPFMetT0pcT1SmearTxyUncorrected")
     del process.slimmedMETsUncorrected.caloMET
- 
+    
     # EG corrected MET
     corMETFromMuonAndEG(process,
                         pfCandCollection="", #not needed

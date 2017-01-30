@@ -240,8 +240,8 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
             self.jetConfiguration()
         
         #met reprocessing and jet reclustering
-        if recoMetFromPFCs:
-            self.setParameter('reclusterJets',True)
+        #if recoMetFromPFCs:
+        #    self.setParameter('reclusterJets',True)
         
         #ZD: puppi jet reclustering breaks the puppi jets
         #overwriting of jet reclustering parameter for puppi
