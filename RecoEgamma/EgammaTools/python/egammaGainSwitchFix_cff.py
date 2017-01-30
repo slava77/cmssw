@@ -1,10 +1,10 @@
 import FWCore.ParameterSet.Config as cms 
 
-#this module re-makes the rec-hits using the weights reco for hits saved in ecal selected digis 
-from RecoEgamma.EgammaTools.ecalWeightRecHitFromSelectedDigis_cff import *
+#this module re-makes the rec-hits using the global (weights+ratio) reco for hits saved in ecal selected digis 
+from RecoEgamma.EgammaTools.ecalGlobalRecHitFromSelectedDigis_cff import *
 #this module makes a new collection of barrel rechits where gain switched multifit crystals are swapped
 #with weights reco hits if availible
-from RecoEcal.EgammaClusterProducers.ecalMultiAndGSWeightRecHitEB_cfi import *
+from RecoEcal.EgammaClusterProducers.ecalMultiAndGSGlobalRecHitEB_cfi import *
 #this sequence re-runs PF clustering with "GSFixed" suffext
 from RecoEcal.EgammaClusterProducers.gsFixedSuperClustering_cff import *
 #this module remakes the refined EGamma superclusters although it has to approximate them as there is not
@@ -18,12 +18,10 @@ from RecoEgamma.EgammaElectronProducers.gsFixedGsfElectrons_cfi import *
 from RecoEgamma.EgammaPhotonProducers.gsFixedGEDPhotonCores_cfi import *
 #turns the cores into photons, again only modifying those which have a gs eb crystal
 from RecoEgamma.EgammaPhotonProducers.gsFixedGEDPhotons_cfi import *
-#replace the superclusters of allConversions
-from RecoEgamma.EgammaPhotonProducers.gsFixedConversions_cfi import *
 
 egammaGainSwitchLocalFixSequence = cms.Sequence(
-    ecalWeightLocalRecoFromSelectedDigis*
-    ecalMultiAndGSWeightRecHitEB
+    ecalGlobalLocalRecoFromSelectedDigis*
+    ecalMultiAndGSGlobalRecHitEB
 )
 
 egammaGainSwitchFixSequence = cms.Sequence(
@@ -32,15 +30,6 @@ egammaGainSwitchFixSequence = cms.Sequence(
     gsFixedRefinedSuperClusters*
     gsFixedGsfElectronCores*
     gsFixedGsfElectrons*
-    gsFixedConversions*
     gsFixedGEDPhotonCores*
     gsFixedGEDPhotons
     )
-
-from RecoEgamma.EgammaElectronProducers.gsSimpleFixedGsfElectrons_cfi import gsSimpleFixedGsfElectrons
-from RecoEgamma.EgammaElectronProducers.gsSimpleFixedPhotons_cfi import gsSimpleFixedPhotons
-
-egammaGainSwitchSimpleFixSequence = cms.Sequence(
-    egammaGainSwitchLocalFixSequence*
-    gsSimpleFixedGsfElectrons*
-    gsSimpleFixedPhotons)
