@@ -16,6 +16,7 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/Common/interface/Association.h"
 #include "DataFormats/Common/interface/RefToPtr.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 namespace pat {
   class PackedPFCandidateRefMixer : public edm::stream::EDProducer<> {
@@ -69,12 +70,12 @@ pat::PackedPFCandidateRefMixer::produce(edm::Event & iEvent, const edm::EventSet
             }
         }
         if (!found) {
-            std::cout << "oldpfRef: " << oldpfRef.id() << " / " << oldpfRef.key()<< std::endl;
-            std::cout << "newpfRef: " << newpfRef.id() << " / " << newpfRef.key()<< std::endl;
-            std::cout << "and I have " << pf2pcs.size() << " rekey maps." << std::endl;
+            edm::LogPrint("PackedPFCandidateRefMixer") << "oldpfRef: " << oldpfRef.id() << " / " << oldpfRef.key() << "\n";
+            edm::LogPrint("PackedPFCandidateRefMixer") << "newpfRef: " << newpfRef.id() << " / " << newpfRef.key() << "\n";
+            edm::LogPrint("PackedPFCandidateRefMixer") << "and I have " << pf2pcs.size() << " rekey maps." << "\n";
             for (const auto & pf2pc : pf2pcs) {
-                std::cout << "this map has keys in: " << std::endl;
-                for (const auto & pair : pf2pc->ids()) { std::cout << "\t" << pair.first << std::endl; }
+                edm::LogPrint("PackedPFCandidateRefMixer") << "this map has keys in: " << "\n";
+                for (const auto & pair : pf2pc->ids()) { edm::LogPrint("PackedPFCandidateRefMixer") << "\t" << pair.first << "\n"; }
             }
             throw cms::Exception("LogicError") << "A packed candidate has refs that we don't understand\n";
         }

@@ -1,5 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-from PhysicsTools.PatAlgos.tools.helpers import listDependencyChain, massSearchReplaceAnyInputTag,cloneProcessingSnippet
+from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag,cloneProcessingSnippet,addKeepStatement
 
 def addExtraMETCollections(process, unCleanPFCandidateCollection,
                            cleanElectronCollection,
@@ -108,9 +108,8 @@ def addExtraMETCollections(process, unCleanPFCandidateCollection,
     process.slimmedMETsMuEGClean.tXYUncForT01Smear = cms.InputTag("patPFMetT0pcT1SmearTxyMuEGClean")
     del process.slimmedMETsMuEGClean.caloMET
 
-    process.MINIAODoutput.outputCommands.extend(["keep *_slimmedMETsUncorrected_*_*",
-                                                 "keep *_slimmedMETsEGClean_*_*",
-                                                 "keep *_slimmedMETsMuEGClean_*_*"])
+    addKeepStatement(process, "keep *_slimmedMETs_*_*",
+                    ["keep *_slimmedMETsUncorrected_*_*", "keep *_slimmedMETsEGClean_*_*", "keep *_slimmedMETsMuEGClean_*_*"])
 
     
 
@@ -173,6 +172,5 @@ def addExtraPuppiMETCorrections(process,
                     corrections = cms.VInputTag(
                         cms.InputTag("puppiMuonCorrection") )
                                            )
-
-    process.MINIAODoutput.outputCommands.extend(["keep *_puppiMETEGCor_*_*",
-                                                 "keep *_puppiMETMuCor_*_*"])
+    addKeepStatement(process, "keep *_slimmedMETsPuppi_*_*",
+                    ["keep *_puppiMETEGCor_*_*", "keep *_puppiMETMuCor_*_*"])

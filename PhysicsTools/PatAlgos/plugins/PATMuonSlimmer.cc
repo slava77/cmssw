@@ -96,9 +96,11 @@ pat::PATMuonSlimmer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
         for (unsigned int ipfh = 0, npfh = pf_.size(); ipfh < npfh; ++ipfh) {
             iEvent.getByToken(pf_[ipfh], pf);
             iEvent.getByToken(pf2pc_[ipfh], pf2pc);
+            const auto & pfcoll = (*pf);
+            const auto & pfmap  = (*pf2pc);
             for (unsigned int i = 0, n = pf->size(); i < n; ++i) {
-                const reco::PFCandidate &p = (*pf)[i];
-                if (p.muonRef().isNonnull()) mu2pc[refToPtr(p.muonRef())] = (*pf2pc)[reco::PFCandidateRef(pf, i)];
+                const reco::PFCandidate &p = pfcoll[i];
+                if (p.muonRef().isNonnull()) mu2pc[refToPtr(p.muonRef())] = pfmap[reco::PFCandidateRef(pf, i)];
             }
         }
     }
