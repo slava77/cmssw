@@ -48,7 +48,19 @@ _patJets = cms.EDProducer("PATJetProducer",
         cms.InputTag("pfCombinedMVAV2BJetTags"),
         # CTagging
         cms.InputTag('pfCombinedCvsLJetTags'),
-        cms.InputTag('pfCombinedCvsBJetTags')
+        cms.InputTag('pfCombinedCvsBJetTags'),
+        # DeepFlavour
+        # cms.InputTag('pfDeepCSVJetTags:probb'),
+        # cms.InputTag('pfDeepCSVJetTags:probc'),
+        # cms.InputTag('pfDeepCSVJetTags:probudsg'),
+        # cms.InputTag('pfDeepCSVJetTags:probbb'),
+        # cms.InputTag('pfDeepCSVJetTags:probcc'),
+        # DeepCMVA
+        # cms.InputTag('pfDeepCMVAJetTags:probb'),
+        # cms.InputTag('pfDeepCMVAJetTags:probc'),
+        # cms.InputTag('pfDeepCMVAJetTags:probudsg'),
+        # cms.InputTag('pfDeepCMVAJetTags:probbb'),
+        # cms.InputTag('pfDeepCMVAJetTags:probcc'),
     ),
     # clone tag infos ATTENTION: these take lots of space!
     # usually the discriminators from the default algos
