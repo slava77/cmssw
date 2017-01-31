@@ -41,21 +41,6 @@ def miniAOD_addOrginalEGamma(process,suffix):
                       "photonIDValueMapProducer",
                       "photonRegressionValueMapProducer",
                       "photonMVAValueMapProducer",
-                      #"particleBasedIsolation",
-                      #"PhotonIDProdGED",
-                      #"eidLoose",
-                      #"eidRobustHighEnergy",
-                      #"eidRobustLoose",
-                      #"eidRobustTight",
-                      #"eidTight",
-                      #"photonEcalPFClusterIsolationProducer",
-                      #"photonHcalPFClusterIsolationProducer",
-                      #"phoEcalPFClusIso",
-                      #"phoHcalPFClusIso",
-                      #"electronEcalPFClusterIsolationProducer",
-                      #"electronHcalPFClusterIsolationProducer",
-                      #"eleEcalPFClusIso",
-                      #"eleHcalPFClusIso",
                       "phPFIsoDepositChargedPAT",
                       "phPFIsoDepositChargedAllPAT",
                       "phPFIsoDepositPUPAT",
@@ -104,6 +89,7 @@ def customizeGSFixForPAT(process):
     process.load("RecoParticleFlow.PFProducer.pfGSFixLinkerForPAT_cff")
     process.load("RecoEgamma.EgammaIsolationAlgos.pfClusterIsolationRemapForPAT_cff")
     process.load("RecoEgamma.ElectronIdentification.idExternalRemapForPAT_cff")
+    process.load("RecoEgamma.EgammaTools.egammaGainSwitchFlag_cff")
 
     #this clones all the modules before they were modified to run on the orginal collections
     miniAOD_addOrginalEGamma(process,"BeforeGSFix")
@@ -129,8 +115,8 @@ def customizeGSFixForPAT(process):
         cms.InputTag("eidTightGSFixed"),
         )
     process.reducedEgamma.photons = cms.InputTag("gedPhotonsGSFixed")
-    process.reducedEgamma.conversions = cms.InputTag("allConversionsGSFixed")
-    process.reducedEgamma.singleConversions = cms.InputTag("particleFlowEGammaGSFixed")
+    process.reducedEgamma.conversions = cms.InputTag("allConversions", processName=cms.InputTag.skipCurrentProcess())
+    process.reducedEgamma.singleConversions = cms.InputTag("particleFlowEGamma", processName=cms.InputTag.skipCurrentProcess())
     process.reducedEgamma.photonsPFValMap = cms.InputTag("particleBasedIsolationGSFixed","gedPhotons")
     process.reducedEgamma.photonPFClusterIsoSources = cms.VInputTag(
         cms.InputTag("photonEcalPFClusterIsolationProducerGSFixed"),
@@ -144,5 +130,13 @@ def customizeGSFixForPAT(process):
     process.reducedEgamma.barrelEcalHits = cms.InputTag("ecalMultiAndGSWeightRecHitEB")
     process.reducedEgamma.endcapEcalHits = cms.InputTag("reducedEcalRecHitsEE")
     process.reducedEgamma.preshowerEcalHits = cms.InputTag("reducedEcalRecHitsES")
+
+    for modification in process.slimmedPhotons.modifierConfig.modifications:
+        if modification.modifierName != 'EGExtraInfoModifierFromIntValueMaps': continue
+        modification.photon_config.hasGainSwitchFlag = cms.InputTag('PhotonGainSwitchFlagProducer:hasGainSwitchFlag')
+    for modification in process.slimmedElectrons.modifierConfig.modifications:
+        if modification.modifierName != 'EGExtraInfoModifierFromIntValueMaps': continue
+        modification.electron_config.hasGainSwitchFlag = cms.InputTag('ElectronGainSwitchFlagProducer:hasGainSwitchFlag')
+
 
     return process
