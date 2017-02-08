@@ -23,10 +23,10 @@ CTPPSDiamondRecHitProducerAlgorithm::build( const TotemRPGeometry* geom, const e
     const CTPPSDiamondDetId detid( vec->detId() );
 
     const DetGeomDesc* det = geom->GetDetector( detid );
-    const double x_pos = det->translation().x(),
-                 x_width = det->params().at( 0 ),
-                 y_pos = det->translation().y(),
-                 y_width = det->params().at( 1 );
+    const float x_pos = det->translation().x(),
+                x_width = det->params().at( 0 ),
+                y_pos = det->translation().y(),
+                y_width = det->params().at( 1 );
 
     edm::DetSet<CTPPSDiamondRecHit>& rec_hits = output.find_or_insert( detid );
 
@@ -38,8 +38,11 @@ CTPPSDiamondRecHitProducerAlgorithm::build( const TotemRPGeometry* geom, const e
       const int t0 = ( t-t_shift_ ) % 1024,
                 time_slice = ( t-t_shift_ ) / 1024;
 
-      const CTPPSDiamondRecHit rechit( x_pos, x_width, y_pos, y_width, ( t0 * ts_to_ns_ ), ( digi->getTrailingEdge()-t0 ) * ts_to_ns_, time_slice, digi->getHPTDCErrorFlags() );
-      rec_hits.push_back( rechit );
+      rec_hits.push_back( CTPPSDiamondRecHit( x_pos, x_width, y_pos, y_width, // spatial information
+                                              ( t0 * ts_to_ns_ ),
+                                              ( digi->getTrailingEdge()-t0 ) * ts_to_ns_,
+                                              time_slice,
+                                              digi->getHPTDCErrorFlags() ) );
     }
   }
 }
