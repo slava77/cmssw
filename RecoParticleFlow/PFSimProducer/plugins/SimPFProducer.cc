@@ -254,6 +254,8 @@ void SimPFProducer::produce(edm::StreamID, edm::Event& evt, const edm::EventSetu
     const auto& matches = assoc_tps->val;
     
     const auto absPdgId = std::abs(matches[0].first->pdgId());
+    // skip muons - muons are done by standard PFProducer
+    if (absPdgId == 13) continue;    
     const auto charge = tkRef->charge();
     const auto three_mom = tkRef->momentum();
     constexpr double mpion2 = 0.13957*0.13957;
@@ -329,6 +331,9 @@ void SimPFProducer::produce(edm::StreamID, edm::Event& evt, const edm::EventSetu
       reco::PFCandidate::ParticleType part_type;
       if( !usedSimCluster[ref.key()] ) {
 	auto absPdgId = std::abs(simtruth.pdgId());
+	// skip muons - muons are done by standard PFProducer
+	// not sure if this should be done on clusters, but without this produces too many neutral hadrons 
+	if (absPdgId == 13) continue;	
 	switch( absPdgId ) {
 	case 11:
 	case 22:
