@@ -467,6 +467,7 @@ private:
   std::string parametersDefinerName_;
   const bool includeSeeds_;
   const bool includeAllHits_;
+  const bool includeOOT_;
 
   HistoryBase tracer_;
 
@@ -784,7 +785,8 @@ TrackingNtuple::TrackingNtuple(const edm::ParameterSet& iConfig):
   builderName_(iConfig.getUntrackedParameter<std::string>("TTRHBuilder")),
   parametersDefinerName_(iConfig.getUntrackedParameter<std::string>("parametersDefiner")),
   includeSeeds_(iConfig.getUntrackedParameter<bool>("includeSeeds")),
-  includeAllHits_(iConfig.getUntrackedParameter<bool>("includeAllHits"))
+  includeAllHits_(iConfig.getUntrackedParameter<bool>("includeAllHits")),
+  includeOOT_(iConfig.getUntrackedParameter<bool>("includeOOT"))
 {
   if(includeSeeds_) {
     seedTokens_ = edm::vector_transform(iConfig.getUntrackedParameter<std::vector<edm::InputTag> >("seedTracks"), [&](const edm::InputTag& tag) {
@@ -1445,7 +1447,7 @@ void TrackingNtuple::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   TrackingVertexRefKeyToIndex tvKeyToIndex;
   for(size_t i=0; i<tvs.size(); ++i) {
     const TrackingVertex& v = tvs[i];
-    if(v.eventId().bunchCrossing() != 0) // Ignore OOTPU; would be better to not to hardcode?
+    if(!includeOOT_ && v.eventId().bunchCrossing() != 0) 
       continue;
     tvKeyToIndex[i] = tvRefs.size();
     tvRefs.push_back(TrackingVertexRef(htv, i));
@@ -1599,7 +1601,7 @@ TrackingNtuple::SimHitData TrackingNtuple::matchCluster(const OmniClusterRef& cl
       HitSimType type = HitSimType::OOTPileup;
       if(bx == 0) {
         type = (event == 0 ? HitSimType::Signal : HitSimType::ITPileup);
-      }
+      } else type = HitSimType::OOTPileup;
       ret.type = static_cast<HitSimType>(std::min(static_cast<int>(ret.type), static_cast<int>(type)));
 
       // Limit to only input TrackingParticles (usually signal+ITPU)
@@ -2779,6 +2781,7 @@ void TrackingNtuple::fillDescriptions(edm::ConfigurationDescriptions& descriptio
   desc.addUntracked<std::string>("parametersDefiner", "LhcParametersDefinerForTP");
   desc.addUntracked<bool>("includeSeeds", false);
   desc.addUntracked<bool>("includeAllHits", false);
+  desc.addUntracked<bool>("includeOOT", false);
   descriptions.add("trackingNtuple",desc);
 }
 
