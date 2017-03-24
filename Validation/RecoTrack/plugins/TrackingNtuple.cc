@@ -468,6 +468,7 @@ private:
   const bool includeSeeds_;
   const bool includeAllHits_;
   const bool includeOOT_;
+  const bool keepEleSimHits_;
 
   HistoryBase tracer_;
 
@@ -786,7 +787,8 @@ TrackingNtuple::TrackingNtuple(const edm::ParameterSet& iConfig):
   parametersDefinerName_(iConfig.getUntrackedParameter<std::string>("parametersDefiner")),
   includeSeeds_(iConfig.getUntrackedParameter<bool>("includeSeeds")),
   includeAllHits_(iConfig.getUntrackedParameter<bool>("includeAllHits")),
-  includeOOT_(iConfig.getUntrackedParameter<bool>("includeOOT"))
+  includeOOT_(iConfig.getUntrackedParameter<bool>("includeOOT")),
+  keepEleSimHits_(iConfig.getUntrackedParameter<bool>("keepEleSimHits"))
 {
   if(includeSeeds_) {
     seedTokens_ = edm::vector_transform(iConfig.getUntrackedParameter<std::vector<edm::InputTag> >("seedTracks"), [&](const edm::InputTag& tag) {
@@ -1623,7 +1625,7 @@ TrackingNtuple::SimHitData TrackingNtuple::matchCluster(const OmniClusterRef& cl
           // skip electron SimHits for non-electron TPs also here
           if(std::abs(TPhit->particleType()) == 11 && std::abs(trackingParticle->pdgId()) != 11) {
             foundElectron = true;
-            continue;
+            if (!keepEleSimHits_) continue;
           }
 
           simHitKey = TPhit.key();
@@ -1634,7 +1636,7 @@ TrackingNtuple::SimHitData TrackingNtuple::matchCluster(const OmniClusterRef& cl
       if(simHitKey < 0) {
         // In case we didn't find a simhit because of filtered-out
         // electron SimHit, just ignore the missing SimHit.
-        if(foundElectron)
+        if(foundElectron && !keepEleSimHits_)
           continue;
 
         auto ex = cms::Exception("LogicError") << "Did not find SimHit for reco hit DetId " << hitId.rawId()
@@ -1701,7 +1703,7 @@ void TrackingNtuple::fillSimHits(const TrackerGeometry& tracker,
     // need them later, let's add them as a separate "collection" of
     // hits of a TP
     const TrackingParticle& tp = *(assoc.first);
-    if(std::abs(simhit.particleType()) == 11 && std::abs(tp.pdgId()) != 11) continue;
+    if(!keepEleSimHits_ && std::abs(simhit.particleType()) == 11 && std::abs(tp.pdgId()) != 11) continue;
 
     auto simHitKey = std::make_pair(assoc.second.key(), assoc.second.id());
 
@@ -2781,6 +2783,7 @@ void TrackingNtuple::fillDescriptions(edm::ConfigurationDescriptions& descriptio
   desc.addUntracked<bool>("includeSeeds", false);
   desc.addUntracked<bool>("includeAllHits", false);
   desc.addUntracked<bool>("includeOOT", false);
+  desc.addUntracked<bool>("keepEleSimHits", false);
   descriptions.add("trackingNtuple",desc);
 }
 
