@@ -45,7 +45,7 @@ class FEDNumbering {
      MINTotemRPFEDID = 578,
      MAXTotemRPFEDID = 581,
      MINCTPPSDiamondFEDID=582,
-     MAXCTPPSDiamondFEDID=583,
+     MAXCTPPSDiamondFEDID=585,
      MINECALFEDID = 600,
      MAXECALFEDID = 670,
      MINCASTORFEDID = 690,
@@ -110,6 +110,10 @@ class FEDNumbering {
      MAXSiPixeluTCAFEDID = 1349,
      MINTriggerUpgradeFEDID = 1350,
      MAXTriggerUpgradeFEDID = 1409,
+     MINCTPPSPixelsFEDID = 1462,
+     MAXCTPPSPixelsFEDID = 1466,
+     MINGEMFEDID = 1467,
+     MAXGEMFEDID = 1472,
      MINDAQvFEDFEDID = 2815,
      MAXDAQvFEDFEDID = 4095
    };
