@@ -387,13 +387,13 @@ class PFRecHitQTestHOThreshold : public PFRecHitQTestBase {
 #include "DataFormats/DetId/interface/DetId.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
-class PFRecHitQTestECALThreshold : public PFRecHitQTestBase {
+class PFRecHitQTestECALMultiThreshold : public PFRecHitQTestBase {
  public:
-  PFRecHitQTestECALThreshold() {
+  PFRecHitQTestECALMultiThreshold() {
 
   }
 
-  PFRecHitQTestECALThreshold(const edm::ParameterSet& iConfig):
+  PFRecHitQTestECALMultiThreshold(const edm::ParameterSet& iConfig):
     PFRecHitQTestBase(iConfig)
     {
       thresholds_ = iConfig.getParameter<std::vector<double> >("thresholds");
@@ -439,13 +439,20 @@ class PFRecHitQTestECALThreshold : public PFRecHitQTestBase {
     bool pass(const reco::PFRecHit& hit){
       
       // this is to skip endcap ZS for Phase2 until there is a defined geometry
-      // apply the loosest ZS threshold, for the first eta-ring in EE
+      // apply the loosest ZS threshold, for the first eta-ring in EB
+      DetId detId(hit.detId());
       if(!endcapGeometrySet_) {
-        int firstEERing = 171;
-        return (hit.energy() > thresholds_[firstEERing]);
+
+        // there is only ECAL EB in Phase 2
+        if(detId.subdetId() != EcalBarrel) return true;
+
+        // 0-169: EB eta-rings
+        // 170-208: EE- eta rings
+        // 209-247: EE+ eta rings
+        int firstEBRing = 0;
+        return (hit.energy() > thresholds_[firstEBRing]);
       }
 
-      DetId detId(hit.detId());
       int iring = EcalRingCalibrationTools::getRingIndex(detId);
       if (  hit.energy() > thresholds_[iring] ) return true;
 
