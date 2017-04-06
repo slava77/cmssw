@@ -1,5 +1,5 @@
-#ifndef CTPPS_PIXEL_DIGI_H
-#define CTPPS_PIXEL_DIGI_H
+#ifndef CTPPS_CTPPSDigi_CTPPSPixelDigi_h
+#define CTPPS_CTPPSDigi_CTPPSPixelDigi_h
 /**
  * Persistent digi for CTPPS Pixels.
  * Author: F.Ferro ferro@ge.infn.it
@@ -24,9 +24,7 @@ public:
 
   CTPPSPixelDigi() : theData(0)  {}
 
-  void init( int row, int col, int adc) ;
-
-  // Access to digi information
+  /// Access to digi information
   int row() const     {return (theData >> row_shift) & row_mask;}
   int column() const  {return (theData >> column_shift) & column_mask;} 
   unsigned short adc() const  {return (theData >> adc_shift) & adc_mask;}
@@ -51,10 +49,12 @@ public:
   static const uint32_t max_row, max_column, max_adc;
 
  private:
+
+  void init( int row, int col, int adc) ;
   uint32_t theData;
 };  
 
-// Comparison operator
+/// Comparison operator
 
 inline bool operator<( const CTPPSPixelDigi& one, const CTPPSPixelDigi& other) {
   return (one.packedData()&CTPPSPixelDigi::rowcol_mask) < (other.packedData()&CTPPSPixelDigi::rowcol_mask);

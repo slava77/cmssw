@@ -1,5 +1,5 @@
-#ifndef CTPPSPixelDataFormatter_H
-#define CTPPSPixelDataFormatter_H
+#ifndef CTPPS_CTPPSRawToDigi_CTPPSPixelDataFormatter_h
+#define CTPPS_CTPPSRawToDigi_CTPPSPixelDataFormatter_h
 /** \class CTPPSPixelDataFormatter
  *
  *  Transform CTPPSPixel raw data of a given  FED to digi
@@ -36,10 +36,9 @@
 #include "CondFormats/CTPPSReadoutObjects/interface/CTPPSPixelDAQMapping.h" 
 #include "DataFormats/Common/interface/DetSetVector.h"
 
-#include "FWCore/Utilities/interface/typedefs.h"
-
 #include "EventFilter/CTPPSRawToDigi/interface/RPixErrorChecker.h"
 
+#include <cstdint>
 #include <vector>
 #include <map>
 
@@ -54,8 +53,8 @@ public:
   typedef std::map<int, FEDRawData> RawData;
   typedef std::vector<CTPPSPixelDigi> DetDigis;
 
-  typedef cms_uint32_t Word32;
-  typedef cms_uint64_t Word64;
+  typedef uint32_t Word32;
+  typedef uint64_t Word64;
 
   CTPPSPixelDataFormatter(std::map<CTPPSPixelFramePosition, CTPPSPixelROCInfo> const &mapping);
 
@@ -71,8 +70,8 @@ private:
 
   RPixErrorChecker errorcheck;
 
-  int ADC_shift, PXID_shift, DCOL_shift, ROC_shift, LINK_shift;
-  Word32 LINK_mask, ROC_mask, DCOL_mask, PXID_mask, ADC_mask;
+  int m_ADC_shift, m_PXID_shift, m_DCOL_shift, m_ROC_shift, m_LINK_shift;
+  Word32 m_LINK_mask, m_ROC_mask, m_DCOL_mask, m_PXID_mask, m_ADC_mask;
   int maxROCIndex;
   
 

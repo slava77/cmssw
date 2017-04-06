@@ -1,5 +1,5 @@
-#ifndef CTPPSPixelRawToDigi_H
-#define CTPPSPixelRawToDigi_H
+#ifndef CTPPS_CTPPSPixelRawToDigi_CTPPSPixelRawToDigi_h
+#define CTPPS_CTPPSPixelRawToDigi_CTPPSPixelRawToDigi_h
 
 /** \class CTPPSPixelRawToDigi_H
  *  Plug-in module that performs Raw data to digi conversion 
@@ -35,13 +35,12 @@ private:
 
   edm::ParameterSet config_;
 
-  edm::EDGetTokenT<FEDRawDataCollection> tFEDRawDataCollection; 
+  edm::EDGetTokenT<FEDRawDataCollection> FEDRawDataCollection_; 
 
-  std::set<unsigned int> fedIds;
+  std::set<unsigned int> fedIds_;
 
-
-  edm::InputTag label;
+  edm::InputTag label_;
  
-  std::string mappingLabel;
+  std::string mappingLabel_;
 };
 #endif

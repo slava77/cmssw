@@ -14,7 +14,6 @@ using namespace edm;
 
 namespace {
   constexpr int CRC_bits = 1;
-//  constexpr int LINK_bits = 6;
   constexpr int ROC_bits  = 5;
   constexpr int DCOL_bits = 5;
   constexpr int PXID_bits = 8;
@@ -26,13 +25,10 @@ namespace {
   constexpr int PXID_shift = ADC_shift + ADC_bits;
   constexpr int DCOL_shift = PXID_shift + PXID_bits;
   constexpr int ROC_shift  = DCOL_shift + DCOL_bits;
-//  constexpr int LINK_shift = ROC_shift + ROC_bits;
   constexpr int OMIT_ERR_shift = 20;
  
   constexpr RPixErrorChecker::Word64 CRC_mask = ~(~RPixErrorChecker::Word64(0) << CRC_bits);
   constexpr RPixErrorChecker::Word32 ERROR_mask = ~(~RPixErrorChecker::Word32(0) << ROC_bits);
-//  constexpr RPixErrorChecker::Word32 LINK_mask = ~(~RPixErrorChecker::Word32(0) << LINK_bits);
-//  constexpr RPixErrorChecker::Word32 ROC_mask  = ~(~RPixErrorChecker::Word32(0) << ROC_bits);
   constexpr RPixErrorChecker::Word32 OMIT_ERR_mask = ~(~RPixErrorChecker::Word32(0) << OMIT_ERR_bits);
 }  
 
@@ -40,7 +36,7 @@ RPixErrorChecker::RPixErrorChecker() {
 
 }
 
-bool RPixErrorChecker::checkCRC(bool& errorsInEvent, int fedId, const Word64* trailer)
+bool RPixErrorChecker::checkCRC(bool& errorsInEvent, int fedId, const Word64* trailer) const
 {
   int CRC_BIT = (*trailer >> CRC_shift) & CRC_mask;
   if (CRC_BIT == 0) return true;
@@ -50,7 +46,7 @@ bool RPixErrorChecker::checkCRC(bool& errorsInEvent, int fedId, const Word64* tr
   return false;
 }
 
-bool RPixErrorChecker::checkHeader(bool& errorsInEvent, int fedId, const Word64* header)
+bool RPixErrorChecker::checkHeader(bool& errorsInEvent, int fedId, const Word64* header) const
 {
   FEDHeader fedHeader( reinterpret_cast<const unsigned char*>(header));
   if ( !fedHeader.check() ) return false; // throw exception?
@@ -64,7 +60,7 @@ bool RPixErrorChecker::checkHeader(bool& errorsInEvent, int fedId, const Word64*
   return fedHeader.moreHeaders();
 }
 
-bool RPixErrorChecker::checkTrailer(bool& errorsInEvent, int fedId, int nWords, const Word64* trailer)
+bool RPixErrorChecker::checkTrailer(bool& errorsInEvent, int fedId, int nWords, const Word64* trailer) const
 {
   FEDTrailer fedTrailer(reinterpret_cast<const unsigned char*>(trailer));
   if ( !fedTrailer.check()) { 
@@ -82,7 +78,7 @@ bool RPixErrorChecker::checkTrailer(bool& errorsInEvent, int fedId, int nWords, 
   return fedTrailer.moreTrailers();
 }
 
-bool RPixErrorChecker::checkROC(bool& errorsInEvent, int fedId,  Word32& errorWord)
+bool RPixErrorChecker::checkROC(bool& errorsInEvent, int fedId,  Word32& errorWord) const
 {
   int errorType = (errorWord >> ROC_shift) & ERROR_mask;
   if likely(errorType<25) return true;

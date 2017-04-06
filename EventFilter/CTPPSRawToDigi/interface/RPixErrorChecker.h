@@ -1,11 +1,11 @@
-#ifndef RPixErrorChecker_H
-#define RPixErrorChecker_H
+#ifndef CTPPS_CTPPSRawToDigi_RPixErrorChecker_h
+#define CTPPS_CTPPSRawToDigi_RPixErrorChecker_h
 /** \class RPixErrorChecker
  *
  *  RPix == CTPPS Pixel detector (Roman Pot Pixels)
  */
 
-#include "FWCore/Utilities/interface/typedefs.h"
+#include <cstdint>
 
 #include <vector>
 #include <map>
@@ -16,20 +16,20 @@ class RPixErrorChecker {
 
 public:
 
-  typedef cms_uint32_t Word32;
-  typedef cms_uint64_t Word64;
+  typedef uint32_t Word32;
+  typedef uint64_t Word64;
 
 
 
   RPixErrorChecker();
 
-  bool checkCRC(bool& errorsInEvent, int fedId, const Word64* trailer);
+  bool checkCRC(bool& errorsInEvent, int fedId, const Word64* trailer) const;
 
-  bool checkHeader(bool& errorsInEvent, int fedId, const Word64* header);
+  bool checkHeader(bool& errorsInEvent, int fedId, const Word64* header) const;
 
-  bool checkTrailer(bool& errorsInEvent, int fedId, int nWords, const Word64* trailer);
+  bool checkTrailer(bool& errorsInEvent, int fedId, int nWords, const Word64* trailer) const;
 
-  bool checkROC(bool& errorsInEvent, int fedId, Word32& errorWord);
+  bool checkROC(bool& errorsInEvent, int fedId, Word32& errorWord) const;
 
 
 private:
