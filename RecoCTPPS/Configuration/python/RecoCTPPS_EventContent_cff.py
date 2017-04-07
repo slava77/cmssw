@@ -14,6 +14,9 @@ RecoCTPPSFEVT = cms.PSet(
     'keep TotemRPUVPatternedmDetSetVector_totemRPUVPatternFinder_*_*',
     'keep TotemRPLocalTrackedmDetSetVector_totemRPLocalTrackFitter_*_*',
 
+    # tracking pixel
+    'keep CTPPSPixelDigiedmDetSetVector_ctppsPixelDigis_*_*',
+
     # timing diamonds
     'keep TotemFEDInfos_ctppsDiamondRawToDigi_*_*',
     'keep CTPPSDiamondDigiedmDetSetVector_ctppsDiamondRawToDigi_*_*',
@@ -41,6 +44,9 @@ RecoCTPPSRECO = cms.PSet(
     'keep TotemRPUVPatternedmDetSetVector_totemRPUVPatternFinder_*_*',
     'keep TotemRPLocalTrackedmDetSetVector_totemRPLocalTrackFitter_*_*',
 
+    # tracking pixel
+    'keep CTPPSPixelDigiedmDetSetVector_ctppsPixelDigis_*_*',
+
     # timing diamonds
     'keep TotemFEDInfos_ctppsDiamondRawToDigi_*_*',
     'keep CTPPSDiamondDigiedmDetSetVector_ctppsDiamondRawToDigi_*_*',
@@ -67,6 +73,9 @@ RecoCTPPSAOD = cms.PSet(
     'keep TotemRPRecHitedmDetSetVector_totemRPRecHitProducer_*_*',
     'keep TotemRPUVPatternedmDetSetVector_totemRPUVPatternFinder_*_*',
     'keep TotemRPLocalTrackedmDetSetVector_totemRPLocalTrackFitter_*_*',
+
+    # tracking pixel
+    'keep CTPPSPixelDigiedmDetSetVector_ctppsPixelDigis_*_*',
 
     # timing diamonds
     'keep TotemFEDInfos_ctppsDiamondRawToDigi_*_*',
