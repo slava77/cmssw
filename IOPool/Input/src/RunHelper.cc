@@ -78,10 +78,10 @@ namespace edm {
 
   void
   SetRunHelper::overrideRunNumber(EventID& id, bool isRealData) {
-    if(isRealData) {
-      throw Exception(errors::Configuration, "SetRunHelper::overrideRunNumber()")
-        << "The 'setRunNumber' parameter of PoolSource cannot be used with real data.\n";
-    }
+//  if(isRealData) {
+//    throw Exception(errors::Configuration, "SetRunHelper::overrideRunNumber()")
+//      << "The 'setRunNumber' parameter of PoolSource cannot be used with real data.\n";
+//  }
     id = EventID(id.run() + forcedRunOffset_, id.luminosityBlock(), id.event());
     if(RunID(id.run()) < RunID::firstValidRun()) {
       id = EventID(RunID::firstValidRun().run(), LuminosityBlockID::firstValidLuminosityBlock().luminosityBlock(), id.event());
