@@ -6,7 +6,6 @@
 
 #include "DataFormats/PatCandidates/interface/liblogintpack.h"
 using namespace logintpack;
-//std::atomic<CovarianceParameterization*> pat::PackedCandidate::covarianceParameterization_(nullptr);
 
 CovarianceParameterization pat::PackedCandidate::covarianceParameterization_;
 std::once_flag pat::PackedCandidate::covariance_load_flag;
@@ -69,22 +68,6 @@ void pat::PackedCandidate::unpack() const {
     }
 }
 
-/*void pat::PackedCandidate::legacyCovarianceUnpacking() const {
-
-    m_(0,0)=unpack8log(packedCovarianceDptDpt_,-15,0)/pt()/pt(); //TODO: tune
-    m_(1,1)=unpack8log(packedCovarianceDetaDeta_,-20,-5);
-    m_(2,2)=unpack8log(packedCovarianceDphiDphi_,-15,0)/pt()/pt(); //TODO: tune
-    m_(2,3)=unpack8log(packedCovarianceDphiDxy_,-17,-4);
-    m_(3,2)=m_(2,3);
-    m_(4,1)=unpack8log(packedCovarianceDlambdaDz_,-17,-4);
-    m_(1,4)=m_(4,1);
-    m_(3,3)=MiniFloatConverter::float16to32(packedCovarianceDxyDxy_)/10000.;
-    m_(3,4)=MiniFloatConverter::float16to32(packedCovarianceDxyDz_)/10000.;
-    m_(4,3)=m_(3,4);
-    m_(4,4)=MiniFloatConverter::float16to32(packedCovarianceDzDz_)/10000.;
-
-}*/
-
 void pat::PackedCandidate::packCovariance(const reco::TrackBase::CovarianceMatrix &m, bool unpackAfterwards){
     packedCovariance_.dptdpt = packCovarianceElement(m,0,0);
     packedCovariance_.detadeta = packCovarianceElement(m,1,1);
@@ -121,7 +104,7 @@ void pat::PackedCandidate::unpackCovariance() const {
       }
 
     } else {
-  throw edm::Exception(edm::errors::UnimplementedFeature)
+     throw edm::Exception(edm::errors::UnimplementedFeature)
      << "You do not have a valid track parameters file loaded. "
      << "Please check that the release version is compatible with your input data"
      <<"or avoid accessing track parameter uncertainties. ";
