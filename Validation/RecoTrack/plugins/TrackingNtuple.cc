@@ -2225,8 +2225,15 @@ void TrackingNtuple::fillSeeds(const edm::Event& iEvent,
 
             std::vector<std::pair<int,int> >::const_iterator pos = find( monoStereoClusterList.begin(), monoStereoClusterList.end(), std::make_pair(monoIdx,stereoIdx) );
             const auto gluedIndex = std::distance(monoStereoClusterList.begin(), pos);
-            if(includeAllHits_) glu_seeIdx[gluedIndex].push_back(seedIndex);
-            hitIdx.push_back( gluedIndex );
+            if (gluedIndex < (int)monoStereoClusterList.size()){
+              if(includeAllHits_) glu_seeIdx[gluedIndex].push_back(seedIndex);
+              hitIdx.push_back( gluedIndex );
+            } else {
+              edm::LogWarning("BadMatch")<<"seed hit "<< hitIdx.size()+1<<" of "<<std::distance(seed.recHits().first, seed.recHits().second)
+                                         <<" says it is matched but no matching rechit exists: sh mono "<<monoIdx<<" stereo "<<stereoIdx<<" in subdet "<<subid
+                                         <<". SKIP AND USE INDEX -1 ";
+              hitIdx.push_back( -1 );
+            }
             hitType.push_back( static_cast<int>(HitType::Glued) );
 	  } else {
 	    const BaseTrackerRecHit* bhit = dynamic_cast<const BaseTrackerRecHit*>(&*recHit);
