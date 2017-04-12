@@ -467,6 +467,9 @@ private:
   std::string parametersDefinerName_;
   const bool includeSeeds_;
   const bool includeAllHits_;
+  const bool includeOOT_;
+  const bool keepEleSimHits_;
+  const bool saveSimHitsP3_;
 
   HistoryBase tracer_;
 
@@ -671,6 +674,9 @@ private:
   std::vector<float> simhit_x;
   std::vector<float> simhit_y;
   std::vector<float> simhit_z;
+  std::vector<float> simhit_px;
+  std::vector<float> simhit_py;
+  std::vector<float> simhit_pz;
   std::vector<int> simhit_particle;
   std::vector<short> simhit_process;
   std::vector<float> simhit_eloss;
@@ -784,7 +790,10 @@ TrackingNtuple::TrackingNtuple(const edm::ParameterSet& iConfig):
   builderName_(iConfig.getUntrackedParameter<std::string>("TTRHBuilder")),
   parametersDefinerName_(iConfig.getUntrackedParameter<std::string>("parametersDefiner")),
   includeSeeds_(iConfig.getUntrackedParameter<bool>("includeSeeds")),
-  includeAllHits_(iConfig.getUntrackedParameter<bool>("includeAllHits"))
+  includeAllHits_(iConfig.getUntrackedParameter<bool>("includeAllHits")),
+  includeOOT_(iConfig.getUntrackedParameter<bool>("includeOOT")),
+  keepEleSimHits_(iConfig.getUntrackedParameter<bool>("keepEleSimHits")),
+  saveSimHitsP3_(iConfig.getUntrackedParameter<bool>("saveSimHitsP3"))
 {
   if(includeSeeds_) {
     seedTokens_ = edm::vector_transform(iConfig.getUntrackedParameter<std::vector<edm::InputTag> >("seedTracks"), [&](const edm::InputTag& tag) {
@@ -931,7 +940,6 @@ TrackingNtuple::TrackingNtuple(const edm::ParameterSet& iConfig):
     t->Branch("pix_zx"    , &pix_zx   );
     t->Branch("pix_radL"  , &pix_radL );
     t->Branch("pix_bbxi"  , &pix_bbxi );
-    t->Branch("pix_bbxi"  , &pix_bbxi );
     //strips
     if(includeStripHits_){
       t->Branch("str_isBarrel"  , &str_isBarrel );
@@ -1017,6 +1025,11 @@ TrackingNtuple::TrackingNtuple(const edm::ParameterSet& iConfig):
     t->Branch("simhit_x"       ,  &simhit_x);
     t->Branch("simhit_y"       ,  &simhit_y);
     t->Branch("simhit_z"       ,  &simhit_z);
+    if (saveSimHitsP3_){
+      t->Branch("simhit_px"       ,  &simhit_px);
+      t->Branch("simhit_py"       ,  &simhit_py);
+      t->Branch("simhit_pz"       ,  &simhit_pz);
+    }
     t->Branch("simhit_particle",  &simhit_particle);
     t->Branch("simhit_process" ,  &simhit_process);
     t->Branch("simhit_eloss"   ,  &simhit_eloss);
@@ -1296,6 +1309,9 @@ void TrackingNtuple::clearVariables() {
   simhit_x.clear();
   simhit_y.clear();
   simhit_z.clear();
+  simhit_px.clear();
+  simhit_py.clear();
+  simhit_pz.clear();
   simhit_particle.clear();
   simhit_process.clear();
   simhit_eloss.clear();
@@ -1445,7 +1461,7 @@ void TrackingNtuple::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   TrackingVertexRefKeyToIndex tvKeyToIndex;
   for(size_t i=0; i<tvs.size(); ++i) {
     const TrackingVertex& v = tvs[i];
-    if(v.eventId().bunchCrossing() != 0) // Ignore OOTPU; would be better to not to hardcode?
+    if(!includeOOT_ && v.eventId().bunchCrossing() != 0) 
       continue;
     tvKeyToIndex[i] = tvRefs.size();
     tvRefs.push_back(TrackingVertexRef(htv, i));
@@ -1599,7 +1615,7 @@ TrackingNtuple::SimHitData TrackingNtuple::matchCluster(const OmniClusterRef& cl
       HitSimType type = HitSimType::OOTPileup;
       if(bx == 0) {
         type = (event == 0 ? HitSimType::Signal : HitSimType::ITPileup);
-      }
+      } else type = HitSimType::OOTPileup;
       ret.type = static_cast<HitSimType>(std::min(static_cast<int>(ret.type), static_cast<int>(type)));
 
       // Limit to only input TrackingParticles (usually signal+ITPU)
@@ -1622,7 +1638,7 @@ TrackingNtuple::SimHitData TrackingNtuple::matchCluster(const OmniClusterRef& cl
           // skip electron SimHits for non-electron TPs also here
           if(std::abs(TPhit->particleType()) == 11 && std::abs(trackingParticle->pdgId()) != 11) {
             foundElectron = true;
-            continue;
+            if (!keepEleSimHits_) continue;
           }
 
           simHitKey = TPhit.key();
@@ -1633,7 +1649,7 @@ TrackingNtuple::SimHitData TrackingNtuple::matchCluster(const OmniClusterRef& cl
       if(simHitKey < 0) {
         // In case we didn't find a simhit because of filtered-out
         // electron SimHit, just ignore the missing SimHit.
-        if(foundElectron)
+        if(foundElectron && !keepEleSimHits_)
           continue;
 
         auto ex = cms::Exception("LogicError") << "Did not find SimHit for reco hit DetId " << hitId.rawId()
@@ -1700,7 +1716,7 @@ void TrackingNtuple::fillSimHits(const TrackerGeometry& tracker,
     // need them later, let's add them as a separate "collection" of
     // hits of a TP
     const TrackingParticle& tp = *(assoc.first);
-    if(std::abs(simhit.particleType()) == 11 && std::abs(tp.pdgId()) != 11) continue;
+    if(!keepEleSimHits_ && std::abs(simhit.particleType()) == 11 && std::abs(tp.pdgId()) != 11) continue;
 
     auto simHitKey = std::make_pair(assoc.second.key(), assoc.second.id());
 
@@ -1754,6 +1770,12 @@ void TrackingNtuple::fillSimHits(const TrackerGeometry& tracker,
     simhit_x.push_back(pos.x());
     simhit_y.push_back(pos.y());
     simhit_z.push_back(pos.z());
+    if (saveSimHitsP3_){
+      const auto mom = det->surface().toGlobal(simhit.momentumAtEntry());
+      simhit_px.push_back(mom.x());
+      simhit_py.push_back(mom.y());
+      simhit_pz.push_back(mom.z());
+    }
     simhit_particle.push_back(simhit.particleType());
     simhit_process.push_back(simhit.processType());
     simhit_eloss.push_back(simhit.energyLoss());
@@ -1912,7 +1934,6 @@ void TrackingNtuple::fillStripRphiStereoHits(const edm::Event& iEvent,
         if(!simHitData.matchingSimHit.empty()) {
           const auto simHitIdx = simHitData.matchingSimHit[0];
           LogTrace("TrackingNtuple") << " firstMatchingSimHit=" << simHitIdx
-                                     << " simHitPos=" << GlobalPoint(simhit_x[simHitIdx], simhit_y[simHitIdx], simhit_z[simHitIdx])
                                      << " simHitPos=" << GlobalPoint(simhit_x[simHitIdx], simhit_y[simHitIdx], simhit_z[simHitIdx])
                                      << " energyLoss=" << simhit_eloss[simHitIdx]
                                      << " particleType=" << simhit_particle[simHitIdx]
@@ -2204,8 +2225,15 @@ void TrackingNtuple::fillSeeds(const edm::Event& iEvent,
 
             std::vector<std::pair<int,int> >::const_iterator pos = find( monoStereoClusterList.begin(), monoStereoClusterList.end(), std::make_pair(monoIdx,stereoIdx) );
             const auto gluedIndex = std::distance(monoStereoClusterList.begin(), pos);
-            if(includeAllHits_) glu_seeIdx[gluedIndex].push_back(seedIndex);
-            hitIdx.push_back( gluedIndex );
+            if (gluedIndex < (int)monoStereoClusterList.size()){
+              if(includeAllHits_) glu_seeIdx[gluedIndex].push_back(seedIndex);
+              hitIdx.push_back( gluedIndex );
+            } else {
+              edm::LogWarning("BadMatch")<<"seed hit "<< hitIdx.size()+1<<" of "<<std::distance(seed.recHits().first, seed.recHits().second)
+                                         <<" says it is matched but no matching rechit exists: sh mono "<<monoIdx<<" stereo "<<stereoIdx<<" in subdet "<<subid
+                                         <<". SKIP AND USE INDEX -1 ";
+              hitIdx.push_back( -1 );
+            }
             hitType.push_back( static_cast<int>(HitType::Glued) );
 	  } else {
 	    const BaseTrackerRecHit* bhit = dynamic_cast<const BaseTrackerRecHit*>(&*recHit);
@@ -2779,6 +2807,9 @@ void TrackingNtuple::fillDescriptions(edm::ConfigurationDescriptions& descriptio
   desc.addUntracked<std::string>("parametersDefiner", "LhcParametersDefinerForTP");
   desc.addUntracked<bool>("includeSeeds", false);
   desc.addUntracked<bool>("includeAllHits", false);
+  desc.addUntracked<bool>("includeOOT", false);
+  desc.addUntracked<bool>("keepEleSimHits", false);
+  desc.addUntracked<bool>("saveSimHitsP3", false);
   descriptions.add("trackingNtuple",desc);
 }
 
