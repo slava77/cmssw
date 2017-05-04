@@ -717,6 +717,12 @@ private:
   std::vector<float> see_stateTrajPx;
   std::vector<float> see_stateTrajPy;
   std::vector<float> see_stateTrajPz;
+  std::vector<float> see_stateTrajGlbX;
+  std::vector<float> see_stateTrajGlbY;
+  std::vector<float> see_stateTrajGlbZ;
+  std::vector<float> see_stateTrajGlbPx;
+  std::vector<float> see_stateTrajGlbPy;
+  std::vector<float> see_stateTrajGlbPz;
   std::vector<int> see_q       ;
   std::vector<unsigned int> see_nValid  ;
   std::vector<unsigned int> see_nPixel  ;
@@ -1069,6 +1075,12 @@ TrackingNtuple::TrackingNtuple(const edm::ParameterSet& iConfig):
     t->Branch("see_stateTrajPx", &see_stateTrajPx);
     t->Branch("see_stateTrajPy", &see_stateTrajPy);
     t->Branch("see_stateTrajPz", &see_stateTrajPz);
+    t->Branch("see_stateTrajGlbX", &see_stateTrajGlbX);
+    t->Branch("see_stateTrajGlbY", &see_stateTrajGlbY);
+    t->Branch("see_stateTrajGlbZ", &see_stateTrajGlbZ);
+    t->Branch("see_stateTrajGlbPx", &see_stateTrajGlbPx);
+    t->Branch("see_stateTrajGlbPy", &see_stateTrajGlbPy);
+    t->Branch("see_stateTrajGlbPz", &see_stateTrajGlbPz);
     t->Branch("see_q"        , &see_q       );
     t->Branch("see_nValid"   , &see_nValid  );
     t->Branch("see_nPixel"   , &see_nPixel  );
@@ -1349,6 +1361,12 @@ void TrackingNtuple::clearVariables() {
   see_stateTrajPx.clear();
   see_stateTrajPy.clear();
   see_stateTrajPz.clear();
+  see_stateTrajGlbX.clear();
+  see_stateTrajGlbY.clear();
+  see_stateTrajGlbZ.clear();
+  see_stateTrajGlbPx.clear();
+  see_stateTrajGlbPy.clear();
+  see_stateTrajGlbPz.clear();
   see_q       .clear();
   see_nValid  .clear();
   see_nPixel  .clear();
@@ -1654,6 +1672,8 @@ TrackingNtuple::SimHitData TrackingNtuple::matchCluster(const OmniClusterRef& cl
 
         auto ex = cms::Exception("LogicError") << "Did not find SimHit for reco hit DetId " << hitId.rawId()
                                                << " for TP " << trackingParticle.key() << " bx:event " << bx << ":" << event
+                                               << " PDGid " << trackingParticle->pdgId() << " q " << trackingParticle->charge()
+                                               << " p4 " << trackingParticle->p4() << " nG4 " << trackingParticle->g4Tracks().size()
                                                << ".\nFound SimHits from detectors ";
         for(auto ip = range.first; ip != range.second; ++ip) {
           TrackPSimHitRef TPhit = ip->second;
@@ -2180,21 +2200,20 @@ void TrackingNtuple::fillSeeds(const edm::Event& iEvent,
       see_stateTrajPy.push_back(mom.y());
       see_stateTrajPz.push_back(mom.z());
 
+      ///the following is useful for analysis in global coords at seed hit surface      
+      TransientTrackingRecHit::RecHitPointer lastRecHit = theTTRHBuilder.build(&*(seed.recHits().second-1));
+      TrajectoryStateOnSurface tsos = trajectoryStateTransform::transientState( seed.startingState(), lastRecHit->surface(), theMF);
+      auto const& stateGlobal = tsos.globalParameters();
+      see_stateTrajGlbX.push_back(stateGlobal.position().x());
+      see_stateTrajGlbY.push_back(stateGlobal.position().y());
+      see_stateTrajGlbZ.push_back(stateGlobal.position().z());
+      see_stateTrajGlbPx.push_back(stateGlobal.momentum().x());
+      see_stateTrajGlbPy.push_back(stateGlobal.momentum().y());
+      see_stateTrajGlbPz.push_back(stateGlobal.momentum().z());
+
       see_trkIdx  .push_back(-1); // to be set correctly in fillTracks
       see_shareFrac.push_back( sharedFraction );
       see_simTrkIdx.push_back( tpIdx );
-
-      /// Hmm, the following could make sense instead of plain failing if propagation to beam line fails
-      /*
-      TransientTrackingRecHit::RecHitPointer lastRecHit = theTTRHBuilder.build(&*(seed.recHits().second-1));
-      TrajectoryStateOnSurface state = trajectoryStateTransform::transientState( itSeed->startingState(), lastRecHit->surface(), theMF);
-      float pt  = state.globalParameters().momentum().perp();
-      float eta = state.globalParameters().momentum().eta();
-      float phi = state.globalParameters().momentum().phi();
-      see_px      .push_back( state.globalParameters().momentum().x() );
-      see_py      .push_back( state.globalParameters().momentum().y() );
-      see_pz      .push_back( state.globalParameters().momentum().z() );
-      */
 
       std::vector<int> hitIdx;
       std::vector<int> hitType;
