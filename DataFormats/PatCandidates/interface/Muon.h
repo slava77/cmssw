@@ -28,6 +28,8 @@
 #include "DataFormats/ParticleFlowCandidate/interface/IsolatedPFCandidateFwd.h"
 #include "DataFormats/ParticleFlowCandidate/interface/IsolatedPFCandidate.h"
 
+#include "PhysicsTools/PatUtils/interface/MiniIsolation.h"
+
 // Define typedefs for convenience
 namespace pat {
   class Muon;
@@ -209,7 +211,7 @@ namespace pat {
       /// not be set, but the "getters" will return the appropriate
       /// value. The exception is dB which requires the beamline
       //  as external input. 
-	
+
 	// ---- embed various impact parameters with errors ----
 	//
 	// example:
@@ -264,6 +266,14 @@ namespace pat {
 
       float pfEcalEnergy() const { return pfEcalEnergy_; }
       void setPfEcalEnergy(float pfEcalEnergy) { pfEcalEnergy_ = pfEcalEnergy; }
+
+      // mini-isolation quantities
+      MiniIsolation miniPFIsolation() const { return miniPFIsolation_; }
+      float chargedHadronMiniIso() const    { return miniPFIsolation_.chiso; }
+      float neutralHadronMiniIso() const    { return miniPFIsolation_.nhiso; }
+      float photonMiniIso() const           { return miniPFIsolation_.phiso; }
+      float puChargedHadronMiniIso() const  { return miniPFIsolation_.puiso; }
+      void setMiniPFIsolation(MiniIsolation mpfi) { miniPFIsolation_ = mpfi; }
 
     protected:
 
@@ -332,6 +342,8 @@ namespace pat {
       float puppiNoLeptonsPhotonIso_;
 
       float pfEcalEnergy_;
+
+      MiniIsolation miniPFIsolation_;
   };
 
 

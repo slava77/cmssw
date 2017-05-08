@@ -16,7 +16,8 @@
   <class name="pat::Lepton<reco::BaseTau>" />
 
   <!-- PAT Objects, and embedded data  -->
-  <class name="pat::Electron"  ClassVersion="35">
+  <class name="pat::Electron"  ClassVersion="36">
+   <version ClassVersion="36" checksum="3673817176"/>
    <version ClassVersion="35" checksum="482655666"/>
    <version ClassVersion="34" checksum="3720919820"/>
    <version ClassVersion="33" checksum="459924678"/>
@@ -58,7 +59,8 @@
   </ioread>
 
 
-  <class name="pat::Muon"  ClassVersion="20">
+  <class name="pat::Muon"  ClassVersion="21">
+   <version ClassVersion="21" checksum="2645981547"/>
    <version ClassVersion="20" checksum="357097717"/>
    <version ClassVersion="19" checksum="2754486523"/>
    <version ClassVersion="18" checksum="1163602263"/>
@@ -101,6 +103,11 @@
    <version ClassVersion="11" checksum="3100353428"/>
    <version ClassVersion="10" checksum="2244564938"/>
   </class>
+
+  <class name="pat::IsolatedTrack" ClassVersion="0">
+   <version ClassVersion="0" checksum="1532141478"/>
+  </class>
+
   <!--NOTE: the declaration of AtomicPtrCache are a temporary work around until ROOT 6 where they will not be needed -->
    <class name="edm::AtomicPtrCache<reco::TrackRefVector>">
      <field name="m_data" transient="true"/>
@@ -387,6 +394,7 @@
   <class name="edm::Ptr<pat::Jet>" />
   <class name="edm::Ptr<pat::MET>" />
   <class name="edm::Ptr<pat::Conversion>" />
+  <class name="edm::Ptr<pat::PackedCandidate>" />
 
   <class name="edm::FwdPtr<pat::PackedCandidate>" />
   <class name="std::vector<edm::FwdPtr<pat::PackedCandidate> >" />
@@ -409,6 +417,7 @@
   <class name="std::vector<pat::Hemisphere>" />
   <class name="std::vector<pat::Conversion>" />
   <class name="std::vector<pat::PackedCandidate>"/>
+  <class name="std::vector<pat::IsolatedTrack>"/>
   <class name="std::vector<pat::PackedGenParticle>"/>
 
   <!-- PAT Object Collection Iterators -->
@@ -443,6 +452,7 @@
   <class name="edm::Wrapper<std::vector<pat::Hemisphere> >" />
   <class name="edm::Wrapper<std::vector<pat::Conversion> >" />
   <class name="edm::Wrapper<std::vector<pat::PackedCandidate> >"/>
+  <class name="edm::Wrapper<std::vector<pat::IsolatedTrack> >"/>
   <class name="edm::Wrapper<std::vector<pat::PackedGenParticle> >"/>
 
   <!-- PAT Object References -->
