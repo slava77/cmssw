@@ -500,7 +500,7 @@ namespace pat {
         return nullptr;
     }
     /// Return true if a bestTrack can be extracted from this Candidate
-    bool hasTrackDetails() {return  (packedHits_!=0 || packedLayers_ !=0); }
+    bool hasTrackDetails() const {return  (packedHits_!=0 || packedLayers_ !=0); }
       
 
     /// true if the track had the highPurity quality bit
@@ -698,7 +698,8 @@ namespace pat {
         if(covarianceParameterization_.loadedVersion() != covarianceVersion_ )
         {
           throw edm::Exception(edm::errors::UnimplementedFeature)
-           << "Attempting to load multiple covariance version in same process. This is not supported.";
+	    << "Attempting to load multiple covariance version in same process. This is not supported."
+	    << " Loaded version "<<covarianceParameterization_.loadedVersion()<<" attempted version "<<covarianceVersion_;
         }
         return  covarianceParameterization_;
     }
