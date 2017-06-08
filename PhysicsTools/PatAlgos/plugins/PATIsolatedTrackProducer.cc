@@ -283,14 +283,13 @@ void pat::PATIsolatedTrackProducer::produce(edm::Event& iEvent, const edm::Event
         TrackDetMatchInfo trackDetInfo = getTrackDetMatchInfo(iEvent, iSetup, gentk);
 
         // fill ecal/hcal status vectors
-        std::vector<HcalChannelStatus> crossedHcalStatus;
+        std::vector<uint32_t> crossedHcalStatus;
         for(auto const & did : trackDetInfo.crossedHcalIds){
-            // create an HcalChannelStatus with DetId set to 0 to reduce size
-            crossedHcalStatus.push_back(HcalChannelStatus(0, hcalQ->getValues(did.rawId())->getValue()));
+            crossedHcalStatus.push_back(hcalQ->getValues(did.rawId())->getValue());
         }
-        std::vector<EcalChannelStatusCode> crossedEcalStatus;
+        std::vector<uint16_t> crossedEcalStatus;
         for(auto const & did : trackDetInfo.crossedEcalIds){
-            crossedEcalStatus.push_back(*(ecalS->find(did.rawId())));
+            crossedEcalStatus.push_back(ecalS->find(did.rawId())->getStatusCode());
         }
 
         int deltaEta = int((trackDetInfo.trkGlobPosAtEcal.eta() - gentk.eta())/0.5 * 250);
@@ -348,8 +347,13 @@ void pat::PATIsolatedTrackProducer::produce(edm::Event& iEvent, const edm::Event
         pdgId     = pfCand.pdgId();
         dz        = pfCand.dz();
         dxy       = pfCand.dxy();
-        dzError   = pfCand.dzError();
-        dxyError  = pfCand.dxyError();
+        if (pfCand.hasTrackDetails()){
+            dzError   = pfCand.dzError();
+            dxyError  = pfCand.dxyError();
+        } else {
+            dzError = 0;
+            dxyError = 0;
+        }
         fromPV    = pfCand.fromPV();
         refToCand = pcref;
 
@@ -360,8 +364,8 @@ void pat::PATIsolatedTrackProducer::produce(edm::Event& iEvent, const edm::Event
         reco::HitPattern hp;
         float dEdxPixel=-1, dEdxStrip=-1;
         int trackQuality=0;
-        std::vector<EcalChannelStatusCode> ecalStatus;
-        std::vector<HcalChannelStatus> hcalStatus;
+        std::vector<uint16_t> ecalStatus;
+        std::vector<uint32_t> hcalStatus;
         int deltaEta=0;
         int deltaPhi=0;
 
