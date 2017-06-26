@@ -7,7 +7,7 @@
  **  associated SuperClusters, CaloClusters and ecal RecHits
  **
  **  \author J.Bendavid (CERN)
- **
+ **  \edited: K. McDermott(Cornell) : refactored code + out of time photons
  ***/
 
 #include "FWCore/Framework/interface/stream/EDProducer.h"
@@ -53,8 +53,73 @@ class ReducedEGProducer : public edm::stream::EDProducer<> {
 
   virtual void produce(edm::Event& evt, const edm::EventSetup& es) override final;
 
- private: 
+ private:
+
+  template <typename T, typename U>
+  void linkCore(const T& core, U& cores, std::map<T, unsigned int>& coreMap);
+    
+  void linkSuperCluster(const reco::SuperClusterRef& superCluster, 
+			std::map<reco::SuperClusterRef, unsigned int>& superClusterMap,
+			reco::SuperClusterCollection& superClusters,
+			const bool relink,
+			std::unordered_set<unsigned int>& superClusterFullRelinkMap);
+
+  void linkConversions(const reco::ConversionRefVector& convrefs,
+		       reco::ConversionCollection& conversions, 
+		       std::map<reco::ConversionRef, unsigned int>& conversionMap);
+    
+  void linkConversionsByTrackRef(const edm::Handle<reco::ConversionCollection>& conversionHandle,
+				 const reco::GsfElectron& gsfElectron,
+				 reco::ConversionCollection& conversions, 
+				 std::map<reco::ConversionRef, unsigned int>& conversionMap);
+
+  void linkConversionsByTrackRef(const edm::Handle<reco::ConversionCollection>& conversionHandle,
+				 const reco::SuperCluster& superCluster,
+				 reco::ConversionCollection& conversions, 
+				 std::map<reco::ConversionRef, unsigned int>& conversionMap);
   
+  void linkConversion(const reco::ConversionRef& convref,
+		      reco::ConversionCollection& conversions, 
+		      std::map<reco::ConversionRef, unsigned int>& conversionMap);
+
+  void linkCaloCluster(const reco::CaloClusterPtr& caloCluster,
+		       reco::CaloClusterCollection& caloClusters,
+		       std::map<reco::CaloClusterPtr, unsigned int>& caloClusterMap);
+    
+  void linkCaloClusters(const reco::SuperCluster& superCluster, 
+			reco::CaloClusterCollection& ebeeClusters,
+			std::map<reco::CaloClusterPtr, unsigned int>& ebeeClusterMap,
+			std::unordered_set<DetId>& rechitMap,
+			const edm::Handle<EcalRecHitCollection>& barrelHitHandle,
+			const edm::Handle<EcalRecHitCollection>& endcapHitHandle,
+			const CaloTopology *caloTopology,
+			reco::CaloClusterCollection& esClusters,
+			std::map<reco::CaloClusterPtr, unsigned int>& esClusterMap);
+  
+  void relinkCaloClusters(reco::SuperCluster& superCluster, 
+			  const std::map<reco::CaloClusterPtr, unsigned int>& ebeeClusterMap, 
+			  const std::map<reco::CaloClusterPtr, unsigned int>& esClusterMap, 
+			  const edm::OrphanHandle<reco::CaloClusterCollection>& outEBEEClusterHandle, 
+			  const edm::OrphanHandle<reco::CaloClusterCollection>& outESClusterHandle);
+  
+  template <typename T> 
+  void relinkSuperCluster(T& core,
+			  const std::map<reco::SuperClusterRef, unsigned int>& superClusterMap, 
+			  const edm::OrphanHandle<reco::SuperClusterCollection>& outSuperClusterHandle);
+
+  void relinkConversions(reco::PhotonCore& photonCore, 
+			 const reco::ConversionRefVector& convrefs,
+			 const std::map<reco::ConversionRef, unsigned int>& conversionMap,
+			 const edm::OrphanHandle<reco::ConversionCollection> &outConversionHandle);
+
+  void relinkPhotonCore(reco::Photon& photon, 
+			const std::map<reco::PhotonCoreRef, unsigned int>& photonCoreMap, 
+			const edm::OrphanHandle<reco::PhotonCoreCollection>& outPhotonCoreHandle);
+
+  void relinkGsfElectronCore(reco::GsfElectron& gsfElectron, 
+			     const std::map<reco::GsfElectronCoreRef, unsigned int>& gsfElectronCoreMap, 
+			     const edm::OrphanHandle<reco::GsfElectronCoreCollection>& outGsfElectronCoreHandle);
+
  //tokens for input collections
  const edm::EDGetTokenT<reco::PhotonCollection> photonT_;
  const edm::EDGetTokenT<reco::PhotonCollection> ootPhotonT_;
