@@ -8,6 +8,9 @@ namespace {
   bool sortByKey(const EEPSPair& a, const EEPSPair& b) {
     return a.first < b.first;
   } 
+
+  double getOffset(const double lo, const double hi) { return lo + 0.5*(hi-lo); }
+  double getScale(const double lo, const double hi) { return 0.5*(hi-lo); }
 }
 
 PFClusterEMEnergyCorrector::PFClusterEMEnergyCorrector(const edm::ParameterSet& conf, edm::ConsumesCollector &&cc) :
@@ -20,6 +23,26 @@ PFClusterEMEnergyCorrector::PFClusterEMEnergyCorrector(const edm::ParameterSet& 
    maxPtForMVAEvaluation_ = conf.getParameter<double>("maxPtForMVAEvaluation");
      
    if (applyMVACorrections_) {
+
+     meanlimlowEB_ = -0.336;
+     meanlimhighEB_ = 0.916;
+     meanoffsetEB_ = getOffset(meanlimlowEB_, meanlimhighEB_);
+     meanscaleEB_ = getScale(meanlimlowEB_, meanlimhighEB_);
+
+     meanlimlowEE_ = -0.336;
+     meanlimhighEE_ = 0.916;
+     meanoffsetEE_ = getOffset(meanlimlowEE_, meanlimhighEE_);
+     meanscaleEE_ = getScale(meanlimlowEE_, meanlimhighEE_);
+     
+     sigmalimlowEB_ = 0.001;
+     sigmalimhighEB_ = 0.4;
+     sigmaoffsetEB_ = getOffset(sigmalimlowEB_, sigmalimhighEB_);
+     sigmascaleEB_ = getScale(sigmalimlowEB_, sigmalimhighEB_);
+     
+     sigmalimlowEE_ = 0.001;
+     sigmalimhighEE_ = 0.4;
+     sigmaoffsetEE_ = getOffset(sigmalimlowEE_, sigmalimhighEE_);
+     sigmascaleEE_ = getScale(sigmalimlowEE_, sigmalimhighEE_);
    
      recHitsEB_ = cc.consumes<EcalRecHitCollection>(conf.getParameter<edm::InputTag>("recHitsEBLabel"));
      recHitsEE_ = cc.consumes<EcalRecHitCollection>(conf.getParameter<edm::InputTag>("recHitsEELabel"));
@@ -78,6 +101,11 @@ PFClusterEMEnergyCorrector::PFClusterEMEnergyCorrector(const edm::ParameterSet& 
 
      if (srfAwareCorrection_) {
 
+       sigmalimlowEE_ = 0.001;
+       sigmalimhighEE_ = 0.1;
+       sigmaoffsetEE_ = getOffset(sigmalimlowEE_, sigmalimhighEE_);
+       sigmascaleEE_ = getScale(sigmalimlowEE_, sigmalimhighEE_);
+
        ebSrFlagToken_ = cc.consumes<EBSrFlagCollection>(conf.getParameter<edm::InputTag>("ebSrFlagLabel"));
        eeSrFlagToken_ = cc.consumes<EESrFlagCollection>(conf.getParameter<edm::InputTag>("eeSrFlagLabel"));
 
@@ -123,24 +151,12 @@ void PFClusterEMEnergyCorrector::correctEnergies(const edm::Event &evt,
     return;
   }
 
-  // Common defintion for SRF-aware and old style corrections
-
-  //magic numbers for MINUIT-like transformation of BDT output onto limited range
-  //(These should be stored inside the conditions object in the future as well)
-  const double meanlimlow = -0.336;
-  const double meanlimhigh = 0.916;
-  const double meanoffset = meanlimlow + 0.5*(meanlimhigh-meanlimlow);
-  const double meanscale = 0.5*(meanlimhigh-meanlimlow);
-  
-  const double sigmalimlow = 0.001;
-  const double sigmalimhigh = 0.4;
-  const double sigmaoffset = sigmalimlow + 0.5*(sigmalimhigh-sigmalimlow);
-  const double sigmascale = 0.5*(sigmalimhigh-sigmalimlow);  
-
+  // Common objects for SRF-aware and old style corrections
   EcalClusterLazyTools lazyTool(evt, es, recHitsEB_, recHitsEE_);
   EcalReadoutTools readoutTool(evt, es);
 
   if (!srfAwareCorrection_) {
+
     int bunchspacing = 450;  
     if (autoDetectBunchSpacing_) {
       edm::Handle<unsigned int> bunchSpacingH;
@@ -222,8 +238,8 @@ void PFClusterEMEnergyCorrector::correctEnergies(const edm::Event &evt,
       double rawsigma = sigmaforest.GetResponse(eval.data());
       
       //apply transformation to limited output range (matching the training)
-      double mean = meanoffset + meanscale*vdt::fast_sin(rawmean);
-      double sigma = sigmaoffset + sigmascale*vdt::fast_sin(rawsigma);
+      double mean = iseb ? meanoffsetEB_ + meanscaleEB_*vdt::fast_sin(rawmean) : meanoffsetEE_ + meanscaleEE_*vdt::fast_sin(rawmean);
+      double sigma = iseb ? sigmaoffsetEB_ + sigmascaleEB_*vdt::fast_sin(rawsigma) : sigmaoffsetEE_ + sigmascaleEE_*vdt::fast_sin(rawsigma);
       
       //regression target is ln(Etrue/Eraw)
       //so corrected energy is ecor=exp(mean)*e, uncertainty is exp(mean)*eraw*sigma=ecor*sigma
@@ -360,8 +376,10 @@ void PFClusterEMEnergyCorrector::correctEnergies(const edm::Event &evt,
     }
 
     //apply transformation to limited output range (matching the training)
-    double mean = meanoffset + meanscale*vdt::fast_sin(rawmean);
-    double sigma = sigmaoffset + sigmascale*vdt::fast_sin(rawsigma);
+    //the training was done with different transformations for EB and EE (width only)
+    //makes a the code a bit more cumbersome, but it is not a problem per se
+    double mean = iseb ? meanoffsetEB_ + meanscaleEB_*vdt::fast_sin(rawmean) : meanoffsetEE_ + meanscaleEE_*vdt::fast_sin(rawmean);
+    double sigma = iseb ? sigmaoffsetEB_ + sigmascaleEB_*vdt::fast_sin(rawsigma) : sigmaoffsetEE_ + sigmascaleEE_*vdt::fast_sin(rawsigma);
     
     //regression target is ln(Etrue/Eraw)
     //so corrected energy is ecor=exp(mean)*e, uncertainty is exp(mean)*eraw*sigma=ecor*sigma
