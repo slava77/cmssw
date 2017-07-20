@@ -199,6 +199,16 @@ def customiseFor19181_pixel_phase1(process):
         producer.ClusterThreshold_L1 = cms.int32(2000)
     return process
 
+def customiseFor19824_PCSF_phase0(process):
+    for producer in esproducers_by_type(process, "ClusterShapeHitFilterESProducer"):
+        producer.PixelShapeFileL1= cms.string('RecoPixelVertexing/PixelLowPtUtilities/data/pixelShapePhase0.par')
+    return process
+def customiseFor19824_PCSF_phase1(process):
+    for producer in esproducers_by_type(process, "ClusterShapeHitFilterESProducer"):
+        producer.PixelShapeFileL1= cms.string('RecoPixelVertexing/PixelLowPtUtilities/data/pixelShapePhase1_all.par')
+    return process
+
+
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
 
@@ -217,8 +227,11 @@ def customizeHLTforCMSSW(process, menuType="GRun"):
 
     if (menuType == "GRun2016"):
         process = customiseFor19181_pixel_phase0(process)
+        process = customiseFor19824_PCSF_phase0(process)
     else:
         process = customiseFor19181_pixel_phase1(process)
+        process = customiseFor19824_PCSF_phase1(process)
+
     process = customiseFor19029(process)
 
     return process
