@@ -76,13 +76,10 @@ MicroEventContent = cms.PSet(
         'keep CTPPSLocalTrackLites_ctppsLocalTrackLiteProducer_*_*'
     )
 )
-MicroEventContentMC = cms.PSet(
-    outputCommands = cms.untracked.vstring(MicroEventContent.outputCommands)
-)
-MicroEventContentMC.outputCommands += [
-        #'keep *_slimmedGenJets*_*_*',
-        'keep *_slimmedGenJets_*_*',
-        'keep *_slimmedGenJetsAK8_*_*',
+
+MicroEventContentGEN = cms.PSet(
+    outputCommands = cms.untracked.vstring(
+        'keep *_slimmedGenJets*_*_*',
         'keep patPackedGenParticles_packedGenParticles_*_*',
         'keep recoGenParticles_prunedGenParticles_*_*',
         'keep LHEEventProduct_*_*_*',
@@ -95,4 +92,11 @@ MicroEventContentMC.outputCommands += [
         'keep LHERunInfoProduct_*_*_*',
         'keep GenRunInfoProduct_*_*_*',
         'keep L1GtTriggerMenuLite_l1GtTriggerMenuLite__*',
-]
+    )
+)
+
+MicroEventContentMC = cms.PSet(
+    outputCommands = cms.untracked.vstring(MicroEventContent.outputCommands)
+)
+MicroEventContentMC.outputCommands += MicroEventContentGEN.outputCommands
+
