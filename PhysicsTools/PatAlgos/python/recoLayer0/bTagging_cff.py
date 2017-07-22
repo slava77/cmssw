@@ -172,4 +172,10 @@ supportedBtagDiscr = {
     # ChargeTagging
   , 'pfChargeBJetTags'                                      : [["pfImpactParameterTagInfos", "pfInclusiveSecondaryVertexFinderTagInfos", "softPFMuonsTagInfos", "softPFElectronsTagInfos"]]
   , 'pfDeepFlavourJetTags:probb'                                      : [["pfDeepFlavourTagInfos"], ['pfDeepCSVTagInfos']]
-  }
+  , 'pfDeepFlavourJetTags:probbb'                                      : [["pfDeepFlavourTagInfos"], ['pfDeepCSVTagInfos']]
+   , 'pfDeepFlavourJetTags:problepb'                                      : [["pfDeepFlavourTagInfos"], ['pfDeepCSVTagInfos']]
+    , 'pfDeepFlavourJetTags:probc'                                      : [["pfDeepFlavourTagInfos"], ['pfDeepCSVTagInfos']]
+    , 'pfDeepFlavourJetTags:probuds'                                      : [["pfDeepFlavourTagInfos"], ['pfDeepCSVTagInfos']]
+     , 'pfDeepFlavourJetTags:probg'                                      : [["pfDeepFlavourTagInfos"], ['pfDeepCSVTagInfos']]
+}
+
