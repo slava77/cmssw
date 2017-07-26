@@ -365,7 +365,6 @@ def miniAOD_customizeMC(process):
     #also jet flavour must be switched
     process.patJetFlavourAssociation.rParam = 0.4
 
-
 def miniAOD_customizeOutput(out):
     out.dropMetaData = cms.untracked.string('ALL')
     out.fastCloning= cms.untracked.bool(False)
