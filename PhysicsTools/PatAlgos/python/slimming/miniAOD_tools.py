@@ -366,9 +366,6 @@ def miniAOD_customizeMC(process):
     process.patJetFlavourAssociation.rParam = 0.4
 
 
-def miniAOD_customizeGEN(process):
-    process.tauGenJets.GenParticles = "prunedGenParticles"
-
 def miniAOD_customizeOutput(out):
     out.dropMetaData = cms.untracked.string('ALL')
     out.fastCloning= cms.untracked.bool(False)
