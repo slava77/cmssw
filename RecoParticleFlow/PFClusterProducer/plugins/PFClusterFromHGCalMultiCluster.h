@@ -10,24 +10,24 @@ class PFClusterFromHGCalMultiCluster : public InitialClusteringStepBase {
   PFClusterFromHGCalMultiCluster(const edm::ParameterSet& conf,
                                  edm::ConsumesCollector& sumes)
       : InitialClusteringStepBase(conf, sumes) {
-    _clusterToken = sumes.consumes<std::vector<reco::HGCalMultiCluster> >(
+    clusterToken_ = sumes.consumes<std::vector<reco::HGCalMultiCluster> >(
         conf.getParameter<edm::InputTag>("clusterSrc"));
   }
-  virtual ~PFClusterFromHGCalMultiCluster() {}
+  ~PFClusterFromHGCalMultiCluster() override {}
   PFClusterFromHGCalMultiCluster(const PFClusterFromHGCalMultiCluster&) =
       delete;
   PFClusterFromHGCalMultiCluster& operator=(
       const PFClusterFromHGCalMultiCluster&) = delete;
 
-  virtual void updateEvent(const edm::Event&) override final;
+  void updateEvent(const edm::Event&) final;
 
   void buildClusters(const edm::Handle<reco::PFRecHitCollection>&,
                      const std::vector<bool>&, const std::vector<bool>&,
                      reco::PFClusterCollection&) override;
 
  private:
-  edm::EDGetTokenT<std::vector<reco::HGCalMultiCluster> > _clusterToken;
-  edm::Handle<std::vector<reco::HGCalMultiCluster> > _clusterH;
+  edm::EDGetTokenT<std::vector<reco::HGCalMultiCluster> > clusterToken_;
+  edm::Handle<std::vector<reco::HGCalMultiCluster> > clusterH_;
 };
 
 DEFINE_EDM_PLUGIN(InitialClusteringStepFactory, PFClusterFromHGCalMultiCluster,

@@ -6,7 +6,7 @@
 #include "DataFormats/ForwardDetId/interface/HGCalDetId.h"
 
 void PFClusterFromHGCalMultiCluster::updateEvent(const edm::Event& ev) {
-  ev.getByToken(_clusterToken, _clusterH);
+  ev.getByToken(clusterToken_, clusterH_);
 }
 
 void PFClusterFromHGCalMultiCluster::buildClusters(
@@ -14,7 +14,7 @@ void PFClusterFromHGCalMultiCluster::buildClusters(
     const std::vector<bool>& rechitMask, const std::vector<bool>& seedable,
     reco::PFClusterCollection& output) {
 
-  const auto& hgcalMultiClusters = *_clusterH;
+  const auto& hgcalMultiClusters = *clusterH_;
   auto const& hits = *input;
 
   // for quick indexing back to hit energy
@@ -54,7 +54,7 @@ void PFClusterFromHGCalMultiCluster::buildClusters(
       output.pop_back();
       continue;
     }
-    if (back.hitsAndFractions().size() != 0) {
+    if (!back.hitsAndFractions().empty()) {
       back.setSeed(seed);
       back.setEnergy(energy);
       back.setCorrectedEnergy(energy);
