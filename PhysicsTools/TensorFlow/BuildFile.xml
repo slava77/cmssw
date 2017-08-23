@@ -1,0 +1,7 @@
+<use name="FWCore/Framework" />
+
+<use name="tensorflow-c" />
+
+<export>
+    <lib name="1" />
+</export>
