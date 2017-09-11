@@ -84,7 +84,7 @@ _vertexAnalysisSequenceTrackingOnly_trackingLowPU += (
 )
 trackingLowPU.toReplaceWith(vertexAnalysisSequenceTrackingOnly, _vertexAnalysisSequenceTrackingOnly_trackingLowPU)
 
-from Configuration.Eras.Modifier_phase2_timing_layer_cff import phase2_timing_layer
+from Configuration.Eras.Modifier_phase2_timing_cff import phase2_timing
 _vertexRecoCollectionsTiming = cms.VInputTag("offlinePrimaryVertices",
                                              "offlinePrimaryVerticesWithBS",
                                              "selectedOfflinePrimaryVertices",
@@ -97,8 +97,8 @@ selectedOfflinePrimaryVertices4D = selectedOfflinePrimaryVertices.clone(src = cm
 _vertexAnalysisSelectionTiming = vertexAnalysisSelection.copy()
 _vertexAnalysisSelectionTiming += selectedOfflinePrimaryVertices4D
 
-phase2_timing_layer.toModify( vertexAnalysis, 
+phase2_timing.toModify( vertexAnalysis, 
                               vertexRecoCollections = _vertexRecoCollectionsTiming
                               )
-phase2_timing_layer.toReplaceWith( vertexAnalysisSelection,
+phase2_timing.toReplaceWith( vertexAnalysisSelection,
                                    _vertexAnalysisSelectionTiming )
