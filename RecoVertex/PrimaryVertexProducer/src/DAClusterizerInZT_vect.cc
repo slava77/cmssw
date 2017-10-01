@@ -11,6 +11,7 @@
 #include "vdt/vdtMath.h"
 
 using namespace std;
+#define VI_DEBUG
 
 DAClusterizerInZT_vect::DAClusterizerInZT_vect(const edm::ParameterSet& conf) {
 
@@ -25,9 +26,9 @@ DAClusterizerInZT_vect::DAClusterizerInZT_vect(const edm::ParameterSet& conf) {
   zdumpwidth_ = conf.getUntrackedParameter<double> ("zdumpwidth", 20.);
   
   // configurable parameters
-  double minT = conf.getParameter<double> ("Tmin")*std::sqrt(2.0);
-  double purgeT = conf.getParameter<double> ("Tpurge")*std::sqrt(2.0);
-  double stopT = conf.getParameter<double> ("Tstop")*std::sqrt(2.0);
+  double minT = conf.getParameter<double> ("Tmin");
+  double purgeT = conf.getParameter<double> ("Tpurge");
+  double stopT = conf.getParameter<double> ("Tstop");
   vertexSize_ = conf.getParameter<double> ("vertexSize");
   vertexSizeTime_ = conf.getParameter<double> ("vertexSizeTime");
   coolingFactor_ = conf.getParameter<double> ("coolingFactor");
@@ -36,7 +37,6 @@ DAClusterizerInZT_vect::DAClusterizerInZT_vect(const edm::ParameterSet& conf) {
     coolingFactor_=-coolingFactor_; 
     useTc_=false;
   }
-  coolingFactor_ = std::sqrt(coolingFactor_);
   d0CutOff_ = conf.getParameter<double> ("d0CutOff");
   dzCutOff_ = conf.getParameter<double> ("dzCutOff");
   dtCutOff_ = conf.getParameter<double> ("dtCutOff");
@@ -211,30 +211,42 @@ double DAClusterizerInZT_vect::update(double beta, track_t & gtracks,
 						  vertex_t & y_vec ) {
     auto tmp_trk_pi = tks_vec.pi_[track_num];
     auto o_trk_Z_sum = 1./tks_vec.Z_sum_[track_num];
-    auto o_trk_err_sum = tks_vec.errsum_[track_num];
+    auto o_trk_err_z = tks_vec.dz2_[track_num];
+    auto o_trk_err_t = tks_vec.dt2_[track_num];
     auto tmp_trk_z = tks_vec.z_[track_num];
     auto tmp_trk_t = tks_vec.t_[track_num];
-    auto obeta =  -1./beta;
-    
+
+
     // auto-vectorized
     for (unsigned int k = 0; k < nv; ++k) {
       // parens are important for numerical stability
       y_vec.se_[k] +=  tmp_trk_pi*( y_vec.ei_[k] * o_trk_Z_sum );      
-      const auto w = tmp_trk_pi * (y_vec.pk_[k] * y_vec.ei_[k] * o_trk_Z_sum) * o_trk_err_sum; 
-      y_vec.sw_[k]  += w;
-      y_vec.swz_[k] += w * tmp_trk_z;
-      y_vec.swt_[k] += w * tmp_trk_t;
-      y_vec.swE_[k] += w * y_vec.ei_cache_[k]*obeta;
+      const auto w = tmp_trk_pi * (y_vec.pk_[k] * y_vec.ei_[k] * o_trk_Z_sum);  // p_{ik}
+      const auto wz = w * o_trk_err_z; 
+      const auto wt = w * o_trk_err_t; 
+      y_vec.nuz_[k] += wz;
+      y_vec.nut_[k] += wt;
+      y_vec.swz_[k] += wz * tmp_trk_z;
+      y_vec.swt_[k] += wt * tmp_trk_t;
+      /* this is really only needed when we want to get Tc too, mayb better to do it elsewhere? */
+      const auto dsz = (tmp_trk_z - y_vec.z[k]) * o_trk_err_z;
+      const auto dst = (tmp_trk_t - y_vec.t[k]) * o_trk_err_t;
+      y_vec.szz_[k] += w * dsz * dsz;
+      y_vec.stt_[k] += w * dst * dst;
+      y_vec.szt_[k] += w * dsz * dst;
     }
   };
   
   
   for (auto ivertex = 0U; ivertex < nv; ++ivertex) {
     gvertices.se_[ivertex] = 0.0;
-    gvertices.sw_[ivertex] = 0.0;
+    gvertices.nuz_[ivertex] = 0.0;
+    gvertices.nut_[ivertex] = 0.0;
     gvertices.swz_[ivertex] = 0.0;
     gvertices.swt_[ivertex] = 0.0;
-    gvertices.swE_[ivertex] = 0.0;
+    gvertices.szz_[ivertex] = 0.0;
+    gvertices.stt_[ivertex] = 0.0;
+    gvertices.szt_[ivertex] = 0.0;
   }
   
    
@@ -257,24 +269,30 @@ double DAClusterizerInZT_vect::update(double beta, track_t & gtracks,
   auto kernel_calc_zt = [  sumpi, nv, this, useRho0 ] (vertex_t & vertices ) -> double {
     
     double delta=0;
+
     // does not vectorizes
     for (unsigned int ivertex = 0; ivertex < nv; ++ ivertex ) {
-      if (vertices.sw_[ivertex] > 0.) {
-	auto znew = vertices.swz_[ ivertex ] / vertices.sw_[ ivertex ];
+
+      if (vertices.nuz_[ivertex] > 0.) {
+	auto znew = vertices.swz_[ ivertex ] / vertices.nuz_[ ivertex ];
 	// prevents from vectorizing if 
 	delta += std::pow( vertices.z_[ ivertex ] - znew, 2 );
 	vertices.z_[ ivertex ] = znew;
-        auto tnew = vertices.swt_[ ivertex ] / vertices.sw_[ ivertex ];
+      }
+
+      if(vertices.nut_[ivertex] > 0.) {
+        auto tnew = vertices.swt_[ ivertex ] / vertices.nut_[ ivertex ];
 	// prevents from vectorizing if 
 	delta += std::pow( vertices.t_[ ivertex ] - tnew, 2 );
         vertices.t_[ ivertex ] = tnew;
       }         
+
 #ifdef VI_DEBUG
       else {
-	edm::LogInfo("sumw") << "invalid sum of weights in fit: " << vertices.sw_[ivertex] << endl;
+	edm::LogInfo("sumw") << "invalid sum of weights in fit: " << endl;//vertices.sw_[ivertex] << endl;
 	if (this->verbose_) {
 	  std::cout  << " a cluster melted away ?  pk=" << vertices.pk_[ ivertex ] << " sumw="
-		     << vertices.sw_[ivertex] << endl;
+		     << /*vertices.sw_[ivertex] << */ endl;
 	}
       }
 #endif
@@ -300,6 +318,7 @@ double DAClusterizerInZT_vect::update(double beta, track_t & gtracks,
 bool DAClusterizerInZT_vect::merge(vertex_t & y, double & beta)const{
   // merge clusters that collapsed or never separated,
   // only merge if the estimated critical temperature of the merged vertex is below the current temperature
+  // FIXME / TODO  : don't have an estimate yet for the critical temperature after 2d merging, currently not tested
   // return true if vertices were merged, false otherwise
   const unsigned int nv = y.getSize();
 
@@ -313,7 +332,7 @@ bool DAClusterizerInZT_vect::merge(vertex_t & y, double & beta)const{
          std::fabs(y.t_[k + 1] - y.t_[k]) < tmerge_    ) {
       auto dt2 = std::pow(y.t_[k + 1] - y.t_[k],2);
       auto dz2 = std::pow(y.z_[k + 1] - y.z_[k],2);
-      critical.push_back( make_pair( dz2 + dt2, k ) );
+      critical.push_back( make_pair( dz2 + dt2, k ) );  // better use different scales for z/t ?
     }
   }
   if (critical.empty()) return false;
@@ -324,12 +343,10 @@ bool DAClusterizerInZT_vect::merge(vertex_t & y, double & beta)const{
   for (unsigned int ik=0; ik < critical.size(); ik++){
     unsigned int k = critical[ik].second;
     double rho = y.pk_[k]+y.pk_[k+1];
-    double swE = y.swE_[k]+y.swE_[k+1]-y.pk_[k]*y.pk_[k+1] / rho*( std::pow(y.z_[k+1]-y.z_[k],2) + std::pow(y.t_[k+1]-y.t_[k],2) );
-    double Tc = 2*swE / (y.sw_[k]+y.sw_[k+1]);
-
-    if(Tc*beta < 1){
+    double Tc  = 0;
+    //if(Tc*beta < 1){
 #ifdef VI_DEBUG
-      if(verbose_){ std::cout << "merging (" << y.z_[k + 1] << ',' << y.t_[k + 1] << ") and (" <<  y.z_[k] << ',' << y.t_[k] << ")  Tc = " << Tc <<  "  sw = "  << y.sw_[k]+y.sw_[k+1]  <<std::endl;}
+    if(verbose_){ std::cout << "merging (" << y.z_[k + 1] << ',' << y.t_[k + 1] << ") and (" <<  y.z_[k] << ',' << y.t_[k] << ")  Tc = " << Tc <<  /*"  sw = "  << y.sw_[k]+y.sw_[k+1]  <<*/ std::endl;}
 #endif
       if(rho > 0){
 	y.z_[k] = (y.pk_[k]*y.z_[k] + y.pk_[k+1]*y.z_[k + 1])/rho;
@@ -339,11 +356,14 @@ bool DAClusterizerInZT_vect::merge(vertex_t & y, double & beta)const{
         y.t_[k] = 0.5 * (y.t_[k] + y.t_[k + 1]);
       }
       y.pk_[k] = rho;
-      y.sw_[k] += y.sw_[k+1];
-      y.swE_[k] = swE;
+      y.nuz_[k] += y.nuz_[k+1];
+      y.nut_[k] += y.nut_[k+1];
+      y.szz_[k] += y.szz_[k+1];
+      y.stt_[k] += y.stt_[k+1];
+      y.szt_[k] += y.szt_[k+1];
       y.removeItem(k+1);
       return true;
-    }
+      // }
   }
 
   return false;
@@ -442,26 +462,43 @@ DAClusterizerInZT_vect::beta0(double betamax, track_t const  & tks, vertex_t con
     // vertex fit at T=inf
     double sumwz = 0;
     double sumwt = 0;
-    double sumw = 0;
+    double sumw_z = 0;
+    double sumw_t = 0;
     for (unsigned int i = 0; i < nt; i++) {
-      double w = tks.pi_[i] * tks.errsum_[i];
-      sumwz += w * tks.z_[i];
-      sumwt += w * tks.t_[i];
-      sumw += w;
+      double w_z = tks.pi_[i] * tks.dz2_[i];
+      double w_t = tks.pi_[i] * tks.dt2_[i];
+      sumwz += w_z * tks.z_[i];
+      sumwt += w_t * tks.t_[i];
+      sumw_z += w_z;
+      sumw_t += w_t;
     }
-    y.z_[k] = sumwz / sumw;
-    y.t_[k] = sumwt / sumw;
+    y.z_[k] = sumwz / sumw_z;
+    y.t_[k] = sumwt / sumw_t;
     
-    // estimate Tcrit, eventually do this in the same loop
-    double a = 0, b = 0;
+    // estimate Tc, eventually do this in the same loop
+    double szz = 0, stt = 0, szt = 0;
+    double nuz = 0, nut = 0;
     for (unsigned int i = 0; i < nt; i++) {
-      double dx = tks.z_[i] - y.z_[k];
-      double dt = tks.t_[i] - y.t_[k];
-      double w = tks.pi_[i] * tks.errsum_[i];
-      a += w * std::pow(dx, 2) * tks.dz2_[i] + std::pow(dt,2) * tks.dt2_[i];
-      b += w;
+      double dz = (tks.z_[i] - y.z_[k]) * tks.dz2_[i];
+      double dt = (tks.t_[i] - y.t_[k]) * tks.dt2_[i];
+      double w = tks.pi_[i];
+      szz += w * dz * dz;
+      stt += w * dt * dt;
+      szt += w * dz * dt;
+      nuz += w * tks.dz2_[i];
+      nut += w * tks.dt2_[i];
     }
-    double Tc = 2. * a / b; // the critical temperature of this vertex
+    double Tz = szz/nuz;
+    double Tt = stt/nut;
+    double Tc = Tz + Tt + sqrt( pow(Tz - Tt, 2) + 4 * szt * szt / nuz / nut);
+
+    if (verbose_){
+      cout << "beta0 " << endl;
+      cout << "szz=" << scientific << szz << "   stt=" << stt << "   szt=" << szt << endl;
+      cout << "nuz=" << scientific << nuz << "   nut=" << nut << endl;
+      cout << "Tz=" << scientific << 2*Tz << "   Tt=" << 2*Tt << endl;
+    }
+
     if (Tc > T0) T0 = Tc;
   }// vertex loop (normally there should be only one vertex at beta=0)
   
@@ -482,7 +519,18 @@ DAClusterizerInZT_vect::beta0(double betamax, track_t const  & tks, vertex_t con
   }
 }
 
-
+double DAClusterizerInZT_vect::get_Tc(const vertex_t & y, int k)const{
+  double Tz = y.szz_[k]/y.nuz_[k];  // actually 0.5*Tc(z)
+  double Tt = y.stt_[k]/y.nut_[k];
+  double mx = y.szt_[k]/y.nuz_[k]*y.szt_[k]/y.nut_[k];
+  /*
+  cout << "get_Tc " << endl;
+  cout << "szz=" << scientific << y.szz[k] << "   stt=" << y.stt_[k] << "   szt=" << y.szt_[k] << endl;
+  cout << "nuz=" << scientific << y.nuz[k] << "   nut=" << y.nut_[k] << endl;
+  cout << "Tz=" << scientific << 2*Tz << "   Tt=" << 2*Tt << endl;
+  */
+  return Tz + Tt + sqrt(pow(Tz - Tt, 2) + 4 * mx);
+}
   
 bool 
 DAClusterizerInZT_vect::split(const double beta,  track_t &tks, vertex_t & y, double threshold ) const{
@@ -493,12 +541,13 @@ DAClusterizerInZT_vect::split(const double beta,  track_t &tks, vertex_t & y, do
   constexpr double epsilonz=1e-3;      // minimum split size z
   constexpr double epsilont=1e-2;      // minimum split size t
   unsigned int nv = y.getSize();
+  const double twoBeta = 2.0*beta;
   
   // avoid left-right biases by splitting highest Tc first
   
   std::vector<std::pair<double, unsigned int> > critical;
   for(unsigned int k=0; k<nv; k++){    
-    double Tc= 2*y.swE_[k]/y.sw_[k];
+    double Tc= get_Tc(y, k);                                                                                         
     if (beta*Tc > threshold){
       critical.push_back( make_pair(Tc, k));
     }
@@ -515,45 +564,71 @@ DAClusterizerInZT_vect::split(const double beta,  track_t &tks, vertex_t & y, do
   for(unsigned int ic=0; ic<critical.size(); ic++){
     unsigned int k=critical[ic].second;
 
+    // split direction in the (z,t)-plane
+    
+    double Mzz = y.nuz_[k] - twoBeta*y.szz_[k];
+    double Mtt = y.nut_[k] - twoBeta*y.stt_[k];
+    double Mzt =           - twoBeta*y.szt_[k];
+    const double twoMzt = 2.0*Mzt;
+    double D = sqrt( pow(Mtt-Mzz, 2) + twoMzt*twoMzt);
+    double l1 = 0.5*(-Mzz-Mtt+D);
+    double l2 = 0.5*(-Mzz-Mtt-D);
+    double q1 = atan2(-Mtt+Mzz+D, -twoMzt);
+    double q2 = atan2(-Mtt+Mzz-D, -twoMzt);
+#ifdef VI_DEBUG
+    if(verbose_){
+      cout << "split matrix  l1=" <<  scientific << l1 << "  l2="<< l2 << "  q1=" << q1 << "  q2= "<< q2 << endl;
+    }
+#endif
+
+    double qsplit = q1;
+    double cq = cos(qsplit);
+    double sq = sin(qsplit);
+    if(cq < 0){ cq=-cq; sq=-sq; } // prefer cq>0 to keep z-ordering
+
     // estimate subcluster positions and weight
-    double p1=0, z1=0, t1=0, w1=0;
-    double p2=0, z2=0, t2=0, w2=0;
+    double p1=0, z1=0, t1=0, wz1=0, wt1=0;
+    double p2=0, z2=0, t2=0, wz2=0, wt2=0;
     for(unsigned int i=0; i<nt; ++i){
       if (tks.Z_sum_[i] > 1.e-100) {
+	double lr = (tks.z_[i]-y.z_[k]) * cq + (tks.t[i] - y.t_[k]) * sq;
 	// winner-takes-all, usually overestimates splitting
-	double tl = tks.z_[i] < y.z_[k] ? 1.: 0.;
+	double tl = lr < 0 ? 1.: 0.;
 	double tr = 1. - tl;
 
-	// soften it, especially at low T
-	/*
-	double arg = ( tks.z_[i] - y.z_[k] ) * sqrt(beta * tks.dz2_[i]); // + std::fabs(tks.t_[i] - y.t_[k])
-	std::cout << arg << std::endl;
-	if(std::fabs(arg) < 20){
+	// soften it, especially at low T	
+	double arg = lr * std::sqrt(beta * ( cq*cq*tks.dz2_[i] + sq*sq*tks.dt2_[i] ) ); 
+	if(std::abs(arg) < 20){
 	  double t = local_exp(-arg);
 	  tl = t/(t+1.);
 	  tr = 1/(t+1.);
 	}
-	*/
+	
+
 
 	double p = y.pk_[k] * tks.pi_[i] * local_exp(-beta * Eik(tks.z_[i], y.z_[k], tks.dz2_[i], 
                                                                  tks.t_[i], y.t_[k], tks.dt2_[i])) / tks.Z_sum_[i];
-	double w = p*tks.errsum_[i];
-	p1 += p*tl;  z1 += w*tl*tks.z_[i]; t1 += w*tl*tks.t_[i]; w1 += w*tl;
-	p2 += p*tr;  z2 += w*tr*tks.z_[i]; t2 += w*tr*tks.t_[i]; w2 += w*tr;
+	double wz = p*tks.dz2_[i];
+	double wt = p*tks.dt2_[i];
+	p1 += p*tl;  z1 += wz*tl*tks.z_[i]; t1 += wt*tl*tks.t_[i]; wz1 += wz*tl; wt1 += wt*tl;
+	p2 += p*tr;  z2 += wz*tr*tks.z_[i]; t2 += wt*tr*tks.t_[i]; wz2 += wz*tr; wt2 += wt*tr;
       }
     }
 
-    if(w1>0){z1 = z1/w1; t1 = t1/w1;} else {z1=y.z_[k]-epsilonz; t1=y.t_[k]-epsilont;}
-    if(w2>0){z2 = z2/w2; t2 = t2/w2;} else {z2=y.z_[k]+epsilonz; t2=y.t_[k]+epsilont;}
+    if(wz1 > 0){z1 /= wz1;} else {z1 = y.z_[k] - epsilonz;}
+    if(wt1 > 0){t1 /= wt1;} else {t1 = y.t_[k] - epsilont;}
+    if(wz2 > 0){z2 /= wz2;} else {z2 = y.z_[k] + epsilonz;}
+    if(wt2 > 0){t2 /= wt2;} else {t2 = y.t_[k] + epsilont;}
+
     
     // reduce split size if there is not enough room
     if( ( k   > 0 ) && ( z1 < (0.6*y.z_[k] + 0.4*y.z_[k-1])) ){ 
-      z1 = 0.5*y.z_[k] + 0.5*y.z_[k-1]; 
-      t1 = 0.5*y.t_[k] + 0.5*y.t_[k-1]; 
+      z1 = 0.6*y.z_[k] + 0.4*y.z_[k-1]; 
+      t1 = 0.6*y.t_[k] + 0.4*y.t_[k-1]; 
     }
     if( ( k+1 < nv) && ( z2 > (0.6*y.z_[k] + 0.4*y.z_[k+1])) ){ 
-      z2 = 0.5*y.z_[k] + 0.5*y.z_[k+1]; 
-      t2 = 0.5*y.t_[k] + 0.5*y.t_[k+1]; 
+      z2 = 0.6*y.z_[k] + 0.4*y.z_[k+1]; 
+      t2 = 0.6*y.t_[k] + 0.4*y.t_[k+1]; 
     }
     
 #ifdef VI_DEBUG
@@ -561,7 +636,8 @@ DAClusterizerInZT_vect::split(const double beta,  track_t &tks, vertex_t & y, do
       if (std::fabs(y.z_[k] - zdumpcenter_) < zdumpwidth_){
 	std::cout << " T= " << std::setw(8) << 1./beta 
 		  << " Tc= " << critical[ic].first 
-		  << "    splitting " << std::fixed << std::setprecision(4) << y.z_[k] 
+	          << " direction =" << qsplit
+		  << "    splitting (" << std::fixed << std::setprecision(4) << y.z_[k] <<"," << y.t_[k] << ")"
 		  << " --> (" << z1 << ',' << t1<< "),(" << z2 << ',' << t2 
 		  << ")     [" << p1 << "," << p2 << "]" ;
 	if (std::fabs(z2-z1) > epsilonz || std::fabs(t2-t1) > epsilont){
@@ -608,7 +684,7 @@ void DAClusterizerInZT_vect::splitAll( vertex_t & y) const {
 #ifdef VI_DEBUG
   if (verbose_) {
     std::cout << "Before Split "<< std::endl;
-    y.DebugOut();
+    y.debugOut();
   }
 #endif
 
@@ -651,7 +727,7 @@ void DAClusterizerInZT_vect::splitAll( vertex_t & y) const {
 #ifdef VI_DEBUG
   if (verbose_) {
     std::cout << "After split " << std::endl;
-    y.DebugOut();
+    y.debugOut();
   }
 #endif
 }
@@ -782,7 +858,7 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
   // eliminate insigificant vertices, this is more restrictive at higher T
   while (purge(y, tks, rho0, beta)) {
     niter = 0;
-    while (( update(beta, tks, y, true, rho0) >  2.5e-7 * y.getSize() ) && (niter++ < maxIterations_)) {
+    while (( update(beta, tks, y, true, rho0) >  1.e-6 ) && (niter++ < maxIterations_)) {
     }
   }
 
@@ -922,12 +998,23 @@ void DAClusterizerInZT_vect::dump(const double beta, const vertex_t & y,
 		std::cout  << setw(8) << fixed << y.z_[ivertex];
 	  }
 	}
-	std::cout  << endl << "T=" << setw(15) << 1. / beta
+	std::cout  << endl;
+
+	std::cout  << "                                                                t= ";
+	std::cout  << setprecision(4);
+	for (unsigned int ivertex = 0; ivertex < nv; ++ ivertex) {
+	  if (std::fabs(y.z_[ivertex]-zdumpcenter_) < zdumpwidth_){
+		std::cout  << setw(8) << fixed << y.t_[ivertex];
+	  }
+	}
+	std::cout  << endl;
+
+	std::cout  << "T=" << setw(15) << 1. / beta
 		   << " Tmin =" << setw(10) << 1./betamax_
 			<< "                             Tc= ";
 	for (unsigned int ivertex = 0; ivertex < nv; ++ ivertex) {
 	  if (std::fabs(y.z_[ivertex]-zdumpcenter_) < zdumpwidth_){
-	    double Tc = 2*y.swE_[ivertex]/y.sw_[ivertex];
+	    double Tc = get_Tc(y, ivertex);
 	    std::cout  << setw(8) << fixed << setprecision(1) <<  Tc;
 	  }
 	}
@@ -954,7 +1041,7 @@ void DAClusterizerInZT_vect::dump(const double beta, const vertex_t & y,
 		double E = 0, F = 0;
 		std::cout  << endl;
 		std::cout 
-		<< "----        z +/- dz                ip +/-dip       pt    phi  eta    weights  ----"
+		<< "----        z +/- dz         t +/- dt                ip +/-dip       pt    phi  eta    weights  ----"
 		<< endl;
 		std::cout  << setprecision(4);
 		for (unsigned int i0 = 0; i0 < nt; i0++) {
@@ -967,6 +1054,8 @@ void DAClusterizerInZT_vect::dump(const double beta, const vertex_t & y,
 			if( std::fabs(tz - zdumpcenter_) > zdumpwidth_) continue;
 			std::cout  << setw(4) << i << ")" << setw(8) << fixed << setprecision(4)
 			 << tz << " +/-" << setw(6) << sqrt(1./tks.dz2_[i]);
+			std::cout  <<  setw(8) << fixed << setprecision(4)
+			 << tks.t_[i] << " +/-" << setw(6) << sqrt(1./tks.dt2_[i]);
 
 			if (tks.tt[i]->track().quality(reco::TrackBase::highPurity)) {
 				std::cout  << " *";
