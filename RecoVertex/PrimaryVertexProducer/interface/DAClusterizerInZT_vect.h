@@ -32,7 +32,6 @@ public:
       t.push_back( new_t );
       dz2.push_back( new_dz2 );
       dt2.push_back( new_dt2 );
-      //errsum.push_back( 1./(1./new_dz2 + 1./new_dt2) ); obsolete
       tt.push_back( new_tt );
       
       pi.push_back( new_pi ); // track weight
@@ -51,7 +50,6 @@ public:
       t_ = &t.front();
       dz2_ = &dz2.front();
       dt2_ = &dt2.front();
-      //errsum_ = &errsum.front();
       Z_sum_ = &Z_sum.front();
       pi_ = &pi.front();
     }
@@ -227,6 +225,7 @@ public:
 
   void dump(const double beta, const vertex_t & y,
 	    const track_t & tks, const int verbosity = 0) const;
+  void zorder(vertex_t & y)const;
   bool merge(vertex_t & y, double & beta)const;
   bool purge(vertex_t &, track_t &, double &,
 	     const double) const;

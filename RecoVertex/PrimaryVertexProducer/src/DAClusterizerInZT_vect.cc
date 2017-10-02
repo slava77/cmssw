@@ -313,6 +313,31 @@ double DAClusterizerInZT_vect::update(double beta, track_t & gtracks,
 
 
 
+void DAClusterizerInZT_vect::zorder(vertex_t & y)const{
+  const unsigned int nv = y.getSize();
+
+  if (nv < 2) return;
+
+
+  bool reordering = true;
+  bool modified = false;
+
+  while(reordering){
+    reordering = false;
+    for (unsigned int k = 0; (k + 1) < nv; k++) {
+      if ( y.z[k + 1] < y.z[k] ) {
+	auto ztemp =  y.z[k];   y.z[k] = y.z[k+1];    y.z[k+1] = ztemp;
+	auto ttemp =  y.t[k];   y.t[k] = y.t[k+1];    y.t[k+1] = ttemp;
+	auto ptemp =  y.pk[k];  y.pk[k] = y.pk[k+1];  y.pk[k+1] = ptemp;
+	reordering = true;
+      }
+    }
+    modified |= reordering;
+  }
+  
+  if( modified ) y.extractRaw();
+}
+
 
 
 bool DAClusterizerInZT_vect::merge(vertex_t & y, double & beta)const{
@@ -770,6 +795,7 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
   while (beta < betafreeze) {
     if(useTc_){
       update(beta, tks,y, false, rho0);
+      zorder(y);
       while(merge(y, beta)){update(beta, tks, y, false, rho0);}
       split(beta, tks, y);
       beta=beta/coolingFactor_;
@@ -793,12 +819,14 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
     if(verbose_){ std::cout << "last spliting at " << 1./beta << std::endl; }
 #endif
     update(beta, tks,y, false, rho0);// make sure Tc is up-to-date
+    zorder(y);
     while(merge(y,beta)){update(beta, tks,y, false, rho0);}
     unsigned int ntry=0;
     double threshold = 1.0;
     while( split(beta, tks, y, threshold) && (ntry++<10) ){
       niter=0; 
       while((update(beta, tks,y, false, rho0)>1.e-6)  && (niter++ < maxIterations_)){}
+      zorder(y);
       while(merge(y,beta)){update(beta, tks,y, false, rho0);}
 #ifdef VI_DEBUG
       if(verbose_){ 
@@ -839,6 +867,7 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
 #endif
 
   // merge again  (some cluster split by outliers collapse here)
+  zorder(y);
   while (merge(y, beta)) {update(beta, tks, y, true, rho0); }
 #ifdef VI_DEBUG
   if (verbose_) {
@@ -859,6 +888,7 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
   while (purge(y, tks, rho0, beta)) {
     niter = 0;
     while (( update(beta, tks, y, true, rho0) >  1.e-6 ) && (niter++ < maxIterations_)) {
+      zorder(y);
     }
   }
 
@@ -875,6 +905,7 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
     beta = min( beta/coolingFactor_, betastop_);
     niter =0;
     while ((update(beta, tks, y, true, rho0) > 1.e-8) && (niter++ < maxIterations_)) {}
+    zorder(y);
   }
 
 #ifdef VI_DEBUG
@@ -917,7 +948,7 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
 	}
       }
     }
-    TransientVertex v(pos, dummyError, vertexTracks, 0);
+    TransientVertex v(pos, y.t_[k], dummyError, vertexTracks, 0);
     clusters.push_back(v);
   }
 
@@ -954,7 +985,8 @@ vector<vector<reco::TransientTrack> > DAClusterizerInZT_vect::clusterize(
   vector<reco::TransientTrack> aCluster = pv.begin()->originalTracks();
   
   for (auto k = pv.begin() + 1; k != pv.end(); k++) {
-    if ( std::abs(k->position().z() - (k - 1)->position().z()) > (2 * vertexSize_)) {
+    if (  (std::abs(k->position().z() - (k - 1)->position().z()) > (2 * vertexSize_))
+	  ||(std::abs(k->time() - (k - 1)->time() ) > (2 * vertexSizeTime_)) ){ // still not perfect
       // close a cluster
       if (aCluster.size()>1){
 	clusters.push_back(aCluster);
