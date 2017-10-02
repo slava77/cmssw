@@ -548,13 +548,13 @@ double DAClusterizerInZT_vect::get_Tc(const vertex_t & y, int k)const{
   double Tz = y.szz_[k]/y.nuz_[k];  // actually 0.5*Tc(z)
   double Tt = y.stt_[k]/y.nut_[k];
   double mx = y.szt_[k]/y.nuz_[k]*y.szt_[k]/y.nut_[k];
-  /*
+#ifdef VI_DEBUG
   cout << "get_Tc " << endl;
   cout << "szz=" << scientific << y.szz[k] << "   stt=" << y.stt_[k] << "   szt=" << y.szt_[k] << endl;
   cout << "nuz=" << scientific << y.nuz[k] << "   nut=" << y.nut_[k] << endl;
   cout << "Tz=" << scientific << 2*Tz << "   Tt=" << 2*Tt << endl;
-  */
-  return Tz + Tt + sqrt(pow(Tz - Tt, 2) + 4 * mx);
+#endif
+  return Tz + Tt + std::sqrt(pow(Tz - Tt, 2) + 4 * mx);
 }
   
 bool 
