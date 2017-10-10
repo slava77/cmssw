@@ -793,13 +793,14 @@ DAClusterizerInZT_vect::split(const double beta,  track_t &tks, vertex_t & y, do
 #endif
 
     if(z1>z2){
-      cout << "warning   swapping z in split  qsplit=" << qsplit << "   cq=" << cq << "  sq=" << sq << endl;
+      edm::LogInfo("DAClusterizerInZT") << "warning   swapping z in split  qsplit=" << qsplit << "   cq=" << cq << "  sq=" << sq << endl;
       auto ztemp = z1;
       auto ttemp = t1;
       auto ptemp = p1;
       z1 = z2; t1=t2; p1=p2;
       z2 = ztemp; t2=ttemp; p2=ptemp; 
     }
+
 
 
 
@@ -971,7 +972,6 @@ DAClusterizerInZT_vect::vertices(const vector<reco::TransientTrack> & tracks, co
     while( split(beta, tks, y, threshold) && (ntry++<10) ){
       niter=0; 
       while((update(beta, tks,y, false, rho0)>1.e-6)  && (niter++ < maxIterations_)){}
-      cout << " updated with " << niter << " iterations" <<endl;
       zorder(y);
       if(verbose_) dump(beta, y, tks, 2); 
 
