@@ -536,6 +536,19 @@ def setupBTagging(process, jetSource, pfCandidates, explicitJTA, pvSource, svSou
                 addToProcessAndTask(btagPrefix+btagInfo+labelName+postfix,
                                     btag.softPFElectronsTagInfos.clone(jets = jetSource, primaryVertex=pvSource, electrons=elSource),
                                     process, task)
+
+            if btagInfo == 'pfDeepFlavourTagInfos':
+                addToProcessAndTask(btagPrefix+btagInfo+labelName+postfix,
+                                    btag.pfDeepFlavourTagInfos.clone(
+                                      jets = jetSource,
+                                      vertices=pvSource,
+                                      secondary_vertices=svSource,
+                                      shallow_tag_infos = cms.InputTag(btagPrefix+'pfDeepCSVTagInfos'+labelName+postfix),
+                                      puppi_value_map = "", # so it is not used
+                                      vertex_associator = "", # so it is not used
+                                      ),
+                                    process, task)
+
             acceptedTagInfos.append(btagInfo)
         elif hasattr(toptag, btagInfo) :
             acceptedTagInfos.append(btagInfo)

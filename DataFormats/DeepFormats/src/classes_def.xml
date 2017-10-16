@@ -1,0 +1,30 @@
+<lcgdict>
+
+  <class name="btagbtvdeep::JetFeatures" ClassVersion="10">
+    <version ClassVersion="10" checksum="1410252760"/>
+  </class>
+  <class name="btagbtvdeep::SecondaryVertexFeatures" ClassVersion="10">
+    <version ClassVersion="10" checksum="31497587"/>
+  </class>
+  <class name="btagbtvdeep::ShallowTagInfoFeatures" ClassVersion="10">
+    <version ClassVersion="10" checksum="3873970568"/>
+  </class>
+  <class name="btagbtvdeep::NeutralCandidateFeatures" ClassVersion="10">
+    <version ClassVersion="10" checksum="399104112"/>
+  </class>
+  <class name="btagbtvdeep::ChargedCandidateFeatures" ClassVersion="10">
+    <version ClassVersion="10" checksum="2941521977"/>
+  </class>
+  <class name="btagbtvdeep::DeepFlavourFeatures" ClassVersion="10">
+    <version ClassVersion="10" checksum="2487956635"/>
+  </class>
+
+  <class name="reco::DeepFlavourTagInfo"/>
+  <class name="reco::DeepFlavourTagInfoCollection"/>
+  <class name="reco::DeepFlavourTagInfoRef"/>
+  <class name="reco::DeepFlavourTagInfoFwdRef"/>
+  <class name="reco::DeepFlavourTagInfoRefProd"/>
+  <class name="reco::DeepFlavourTagInfoRefVector"/>
+  <class name="edm::Wrapper<reco::DeepFlavourTagInfoCollection>"/>
+
+</lcgdict>
