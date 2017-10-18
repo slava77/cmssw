@@ -1162,11 +1162,11 @@ steps['DIGIPRMXUP15_PU25']=merge([digiPremixUp2015Defaults25ns])
 steps['DIGIPRMXUP15_PU50']=merge([digiPremixUp2015Defaults50ns])
 steps['DIGIPRMXUP17_PU25']=merge([digiPremixUp2017Defaults25ns])
 
-premixProd25ns = {'-s'             : 'DIGIPREMIX_S2,DATAMIX,L1,DIGI2RAW,HLT:@relval2016',
+premixProd25ns = {'-s'             : 'DIGIPREMIX_S2:pdigi_valid,DATAMIX,L1,DIGI2RAW,HLT:@relval2016',
                  '--eventcontent' : 'PREMIXRAW',
                  '--datatier'     : 'PREMIXRAW'}
-premixProd50ns = merge([{'-s':'DIGIPREMIX_S2,DATAMIX,L1,DIGI2RAW,HLT:@relval50ns'},premixProd25ns])
-premixProd25ns2017 = merge([{'-s':'DIGIPREMIX_S2,DATAMIX,L1,DIGI2RAW,HLT:@relval2017'},premixProd25ns])
+premixProd50ns = merge([{'-s':'DIGIPREMIX_S2:pdigi_valid,DATAMIX,L1,DIGI2RAW,HLT:@relval50ns'},premixProd25ns])
+premixProd25ns2017 = merge([{'-s':'DIGIPREMIX_S2:pdigi_valid,DATAMIX,L1,DIGI2RAW,HLT:@relval2017'},premixProd25ns])
 
 steps['DIGIPRMXUP15_PROD_PU25']=merge([premixProd25ns,digiPremixUp2015Defaults25ns])
 steps['DIGIPRMXUP15_PROD_PU50']=merge([premixProd50ns,digiPremixUp2015Defaults50ns])
@@ -1345,7 +1345,7 @@ steps['Pyquen_ZeemumuJets_pt10_2760GeV']=gen2018HiMix('Pyquen_ZeemumuJets_pt10_2
 
 # step3
 step3Defaults = {
-                  '-s'            : 'RAW2DIGI,L1Reco,RECO,EI,PAT,VALIDATION:@standardValidationNoHLT+@miniAODValidation,DQM:@standardDQMFakeHLT+@miniAODDQM',
+                  '-s'            : 'RAW2DIGI,L1Reco,RECO,RECOSIM,EI,PAT,VALIDATION:@standardValidationNoHLT+@miniAODValidation,DQM:@standardDQMFakeHLT+@miniAODDQM',
                   '--runUnscheduled':'',
                   '--conditions'  : 'auto:run1_mc',
                   '--no_exec'     : '',
@@ -1359,7 +1359,7 @@ steps['DIGIPU']=merge([{'--process':'REDIGI'},steps['DIGIPU1']])
 #for 2015
 step3Up2015Defaults = {
     #'-s':'RAW2DIGI,L1Reco,RECO,EI,VALIDATION,DQM',
-    '-s':'RAW2DIGI,L1Reco,RECO,EI,PAT,VALIDATION:@standardValidation+@miniAODValidation,DQM:@standardDQM+@miniAODDQM',
+    '-s':'RAW2DIGI,L1Reco,RECO,RECOSIM,EI,PAT,VALIDATION:@standardValidation+@miniAODValidation,DQM:@standardDQM+@miniAODDQM',
     '--runUnscheduled':'',
     '--conditions':'auto:run2_mc',
     '-n':'10',
@@ -1529,7 +1529,7 @@ steps['RECOPRMXUP17_PU25']=merge([
 
 recoPremixUp15prod = merge([
         #{'-s':'RAW2DIGI,L1Reco,RECO,EI'}, # tmp
-        {'-s':'RAW2DIGI,L1Reco,RECO,EI,PAT,DQM:DQMOfflinePOGMC'},
+        {'-s':'RAW2DIGI,L1Reco,RECO,RECOSIM,EI,PAT,DQM:DQMOfflinePOGMC'},
         {'--datatier' : 'AODSIM,MINIAODSIM,DQMIO'},
         {'--eventcontent' : 'AODSIM,MINIAODSIM,DQMIO'},
         {'--era':'Run2_2016'}, # temporary replacement for premix; to be brought back to customisePostLS1
@@ -1543,7 +1543,7 @@ steps['RECOPRMXUP15PROD_PU50']=merge([
         recoPremixUp15prod])
 
 recoPremixUp17prod = merge([
-        {'-s':'RAW2DIGI,L1Reco,RECO,EI,PAT'},
+        {'-s':'RAW2DIGI,L1Reco,RECO,RECOSIM,EI,PAT'},
         {'--datatier' : 'AODSIM,MINIAODSIM'},
         {'--eventcontent' : 'AODSIM,MINIAODSIM'},
         {'--era':'Run2_2017'},
