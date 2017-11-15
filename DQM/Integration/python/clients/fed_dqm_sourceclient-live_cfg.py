@@ -1,12 +1,7 @@
 import FWCore.ParameterSet.Config as cms
-import sys
 
 # Process initialization
 process = cms.Process('FED')
-
-unitTest = False
-if 'unitTest=True' in sys.argv:
-    unitTest=True
 
 # Logging:
 process.MessageLogger = cms.Service(
@@ -23,18 +18,10 @@ process.load('DQM.Integration.config.environment_cfi')
 # Global tag:
 process.load('DQM.Integration.config.FrontierCondition_GT_cfi')
 # Input:
-if unitTest:
-    process.load("DQM.Integration.config.unittestinputsource_cfi")
-    from DQM.Integration.config.unittestinputsource_cfi import options
-else:
-    process.load('DQM.Integration.config.inputsource_cfi')
-    from DQM.Integration.config.inputsource_cfi import options
+process.load('DQM.Integration.config.inputsource_cfi')
 # Output:
 process.dqmEnv.subSystemFolder = 'FED'
 process.dqmSaver.tag = 'FED'
-process.dqmSaver.runNumber = options.runNumber
-process.dqmSaverPB.tag = 'FED'
-process.dqmSaverPB.runNumber = options.runNumber
 
 # Subsystem sequences
 
@@ -42,9 +29,9 @@ process.dqmSaverPB.runNumber = options.runNumber
 folder_name = 'FEDIntegrity_EvF'
 
 # L1T sequence:
-process.load('DQM.L1TMonitor.L1TStage2FED_cff') # stage2 L1T
+process.load('DQM.L1TMonitor.L1TFED_cfi')
 path = 'L1T/%s/' % folder_name
-process.l1tStage2Fed.FEDDirName = cms.untracked.string(path)
+process.l1tfed.FEDDirName = cms.untracked.string(path)
 # Pixel sequence:
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('EventFilter.SiPixelRawToDigi.SiPixelRawToDigi_cfi')
@@ -75,10 +62,12 @@ process.ecalFEDMonitor.folderName = cms.untracked.string(folder_name)
 process.load('EventFilter.HcalRawToDigi.HcalRawToDigi_cfi')
 # DT sequence:
 process.load('DQM.DTMonitorModule.dtDataIntegrityTask_EvF_cff')
-process.dtDataIntegrityTask.processingMode = 'SM'
+process.DTDataIntegrityTask.processingMode = 'SM'
 path = 'DT/%s/' % folder_name
-process.dtDataIntegrityTask.fedIntegrityFolder = path
-process.dtDataIntegrityTask.dtFEDlabel     = 'dtunpacker'
+process.DTDataIntegrityTask.fedIntegrityFolder = path
+process.dtunpacker.fedbyType = cms.bool(True)
+process.dtunpacker.useStandardFEDid = cms.bool(True)
+process.dtunpacker.dqmOnly = cms.bool(True)
 # RPC sequence:
 process.load('EventFilter.RPCRawToDigi.rpcUnpacker_cfi')
 process.load('DQM.RPCMonitorClient.RPCFEDIntegrity_cfi')
@@ -91,7 +80,7 @@ process.cscDQMEvF.EventProcessor.FOLDER_EMU = cms.untracked.string(path)
 
 # Setting raw data collection label for all subsytem modules, depending on run type:
 if (process.runType.getRunType() == process.runType.hi_run):
-    process.l1tStage2Fed.rawTag = cms.InputTag('rawDataRepacker')
+    process.l1tfed.rawTag = cms.InputTag('rawDataRepacker')
     process.siPixelDigis.InputLabel = cms.InputTag('rawDataRepacker')
     process.SiPixelHLTSource.RawInput = cms.InputTag('rawDataRepacker')
     process.siStripFEDCheck.RawDataTag = cms.InputTag('rawDataRepacker')
@@ -104,7 +93,7 @@ if (process.runType.getRunType() == process.runType.hi_run):
     process.rpcunpacker.InputLabel = cms.InputTag('rawDataRepacker')
     process.cscDQMEvF.InputObjects = cms.untracked.InputTag('rawDataRepacker')
 else:
-    process.l1tStage2Fed.rawTag = cms.InputTag('rawDataCollector')
+    process.l1tfed.rawTag = cms.InputTag('rawDataCollector')
     process.siPixelDigis.InputLabel = cms.InputTag('rawDataCollector')
     process.SiPixelHLTSource.RawInput = cms.InputTag('rawDataCollector')
     process.siStripFEDCheck.RawDataTag = cms.InputTag('rawDataCollector')
@@ -125,7 +114,7 @@ process.dqmFEDIntegrity.fedFolderName = cms.untracked.string(folder_name)
 
 # Modules for the FED
 process.FEDModulesPath = cms.Path(
-			                        process.l1tStage2Fed
+			                        process.l1tfed
  			                      + process.siPixelDigis
                                   + process.SiPixelHLTSource
                                   + process.siStripFEDCheck
@@ -136,7 +125,7 @@ process.FEDModulesPath = cms.Path(
 			                      + process.hcalDigis
                                   + process.cscDQMEvF
  			                      + process.dtunpacker
-                                  + process.dtDataIntegrityTask
+                                  + process.DTDataIntegrityTask
 			                      + process.rpcunpacker
                                   + process.rpcFEDIntegrity
 
@@ -147,7 +136,6 @@ process.FEDModulesPath = cms.Path(
 process.DQMmodulesPath = cms.Path(
                                     process.dqmEnv
                                   + process.dqmSaver
-                                  + process.dqmSaverPB
                                  )
 
 process.schedule = cms.Schedule(

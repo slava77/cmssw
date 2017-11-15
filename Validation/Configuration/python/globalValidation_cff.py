@@ -33,7 +33,6 @@ from Validation.RecoParticleFlow.PFMETValidation_cff import *
 from Validation.RecoParticleFlow.PFMuonValidation_cff import *
 from Validation.RecoParticleFlow.PFElectronValidation_cff import *
 from Validation.RecoParticleFlow.PFJetResValidation_cff import *
-from Validation.RecoParticleFlow.PFClusterValidation_cff import *
 from Validation.RPCRecHits.rpcRecHitValidation_cfi import *
 from Validation.DTRecHits.DTRecHitQuality_cfi import *
 from Validation.RecoTau.DQMMCValidation_cfi import *
@@ -42,10 +41,6 @@ from Validation.SiPixelPhase1ConfigV.SiPixelPhase1OfflineDQM_sourceV_cff import 
 from DQMOffline.RecoB.dqmAnalyzer_cff import *
 from Validation.RecoB.BDHadronTrackValidation_cff import *
 from Validation.Configuration.hgcalSimValid_cff import *
-from Validation.Configuration.mtdSimValid_cff import *
-from Validation.SiOuterTrackerV.OuterTrackerSourceConfigV_cff import *
-from Validation.Configuration.ecalSimValid_cff import *
-from Validation.SiTrackerPhase2V.Phase2TrackerValidationFirstStep_cff import *
 
 # filter/producer "pre-" sequence for globalValidation
 globalPrevalidationTracking = cms.Sequence(
@@ -65,26 +60,28 @@ preprodPrevalidation = cms.Sequence(
     tracksPreValidation
 )
 
-globalValidation = cms.Sequence(   trackerHitsValidation
-                                 + trackerDigisValidation
-                                 + trackerRecHitsValidation
-                                 + trackingTruthValid
-                                 + trackingRecHitsValid
-                                 + ecalSimHitsValidationSequence
-                                 + ecalDigisValidationSequence
-                                 + ecalRecHitsValidationSequence
+globalValidation = cms.Sequence(   trackerHitsValidation 
+                                 + trackerDigisValidation 
+                                 + trackerRecHitsValidation 
+                                 + trackingTruthValid 
+                                 + trackingRecHitsValid 
+                                 + ecalSimHitsValidationSequence 
+                                 + ecalDigisValidationSequence 
+                                 + ecalRecHitsValidationSequence 
                                  + ecalClustersValidationSequence
                                  + hcalSimHitsValidationSequence
                                  + hcaldigisValidationSequence
                                  + hcalSimHitStudy
-                                 + validSimHit+muondtdigianalyzer
+                                 + hcalRecHitsValidationSequence
+                                 + calotowersValidationSequence
+                                 + validSimHit+muondtdigianalyzer 
                                  + cscDigiValidation
-                                 + validationMuonRPCDigis
-                                 + recoMuonValidation
-                                 + muIsoVal_seq
-                                 + muonIdValDQMSeq
-                                 + mixCollectionValidation
-                                 + JetValidation
+                                 + validationMuonRPCDigis 
+                                 + recoMuonValidation 
+                                 + muIsoVal_seq 
+                                 + muonIdValDQMSeq 
+                                 + mixCollectionValidation 
+                                 + JetValidation 
                                  + METValidation
                                  + egammaValidation
                                  + pfJetValidationSequence
@@ -92,7 +89,6 @@ globalValidation = cms.Sequence(   trackerHitsValidation
                                  + pfElectronValidationSequence
                                  + pfJetResValidationSequence
                                  + pfMuonValidationSequence
-                                 + pfClusterValidationSequence
                                  + rpcRecHitValidation_step
                                  + dtLocalRecoValidation_no2D
                                  + pfTauRunDQMValidation
@@ -132,7 +128,6 @@ globalPrevalidationTrackingOnly = cms.Sequence(
     + vertexValidationTrackingOnly
 )
 globalValidationTrackingOnly = cms.Sequence()
-
 # Pixel tracking only validation
 globalPrevalidationPixelTrackingOnly = cms.Sequence(
       simHitTPAssocProducer
@@ -142,65 +137,26 @@ globalPrevalidationPixelTrackingOnly = cms.Sequence(
 globalValidationPixelTrackingOnly = cms.Sequence()
 
 globalValidationJetMETonly = cms.Sequence(
-      JetValidation
-    + METValidation
+                                   JetValidation 
+                                 + METValidation
 )
 
 globalPrevalidationJetMETOnly = cms.Sequence(
-      jetPreValidSeq
-    + metPreValidSeq
+				   jetPreValidSeq
+				  +metPreValidSeq
 )
 
-# ECAL local reconstruction
-globalPrevalidationECAL = cms.Sequence()
-globalPrevalidationECALOnly = cms.Sequence(
-      baseCommonPreValidation
-    + globalPrevalidationECAL
-)
-
-globalValidationECAL = cms.Sequence(
-      ecalSimHitsValidationSequence
-    + ecalDigisValidationSequence
-    + ecalRecHitsValidationSequence
-    + ecalClustersValidationSequence
-)
-globalValidationECALOnly = cms.Sequence(
-      ecalSimHitsValidationSequence
-    + ecalDigisValidationSequence
-    + ecalRecHitsValidationSequence
-    + pfClusterCaloOnlyValidationSequence
-)
-
-# HCAL local reconstruction
 globalPrevalidationHCAL = cms.Sequence()
-
-globalPrevalidationHCALOnly = cms.Sequence(
-      baseCommonPreValidation
-    + globalPrevalidationHCAL
-)
-
-hcalRecHitsOnlyValidationSequence = hcalRecHitsValidationSequence.copyAndExclude([NoiseRatesValidation])
 
 globalValidationHCAL = cms.Sequence(
       hcalSimHitsValidationSequence
     + hcaldigisValidationSequence
     + hcalSimHitStudy
-)
-
-globalValidationHCALOnly = cms.Sequence(
-      hcalSimHitsValidationSequence
-    + hcaldigisValidationSequence
-    + hcalSimHitStudy
-    + hcalRecHitsOnlyValidationSequence
-    + pfClusterCaloOnlyValidationSequence
+    + hcalRecHitsValidationSequence
+    + calotowersValidationSequence
 )
 
 globalValidationHGCal = cms.Sequence(hgcalValidation)
-globalPrevalidationHGCal = cms.Sequence(hgcalAssociators)
-
-globalValidationMTD = cms.Sequence()
-
-globalValidationOuterTracker = cms.Sequence(OuterTrackerSourceV)
 
 globalPrevalidationMuons = cms.Sequence(
       gemSimValid
@@ -220,28 +176,18 @@ globalValidationMuons = cms.Sequence()
 _phase_1_globalValidation = globalValidation.copy()
 _phase_1_globalValidation += siPixelPhase1OfflineDQM_sourceV
 from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
-(phase1Pixel & ~fastSim).toReplaceWith( globalValidation, _phase_1_globalValidation ) #module siPixelPhase1OfflineDQM_sourceV can't run in FastSim since siPixelClusters of type edmNew::DetSetVector are not produced
+phase1Pixel.toReplaceWith( globalValidation, _phase_1_globalValidation )
 
 _run3_globalValidation = globalValidation.copy()
 _run3_globalValidation += gemSimValid
 
 _phase2_globalValidation = _run3_globalValidation.copy()
-_phase2_globalValidation += trackerphase2ValidationSource
 _phase2_globalValidation += me0SimValid
 
-_phase2_ge0_globalValidation = _run3_globalValidation.copy()
-_phase2_ge0_globalValidation += trackerphase2ValidationSource
 
-from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
-run2_GEM_2017.toReplaceWith( globalValidation, _run3_globalValidation )
+from Configuration.Eras.Modifier_run2_GEM_2017_MCTest_cff import run2_GEM_2017_MCTest
+run2_GEM_2017_MCTest.toReplaceWith( globalValidation, _run3_globalValidation )
 from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
 run3_GEM.toReplaceWith( globalValidation, _run3_globalValidation )
 from Configuration.Eras.Modifier_phase2_muon_cff import phase2_muon
 phase2_muon.toReplaceWith( globalValidation, _phase2_globalValidation )
-from Configuration.Eras.Modifier_phase2_GE0_cff import phase2_GE0
-phase2_GE0.toReplaceWith( globalValidation, _phase2_ge0_globalValidation )
-phase2_GE0.toReplaceWith( globalPrevalidationMuons, globalPrevalidationMuons.copyAndExclude([me0SimValid]) )
-from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
-pp_on_AA_2018.toReplaceWith(globalValidation, globalValidation.copyAndExclude([pfTauRunDQMValidation]))
-from Configuration.Eras.Modifier_phase2_timing_layer_cff import phase2_timing_layer
-phase2_timing_layer.toReplaceWith(globalValidationMTD, cms.Sequence(mtdSimValid+mtdDigiValid+mtdRecoValid))

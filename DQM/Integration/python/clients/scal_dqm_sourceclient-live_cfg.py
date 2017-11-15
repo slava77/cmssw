@@ -1,27 +1,15 @@
 import FWCore.ParameterSet.Config as cms
-import sys
 
 process = cms.Process("DQM")
-
-unitTest = False
-if 'unitTest=True' in sys.argv:
-    unitTest=True
 
 #----------------------------
 #### Event Source
 #----------------------------
-
-if unitTest:
-    process.load("DQM.Integration.config.unittestinputsource_cfi")
-    from DQM.Integration.config.unittestinputsource_cfi import options
-else:
-    # for live online DQM in P5
-    process.load("DQM.Integration.config.inputsource_cfi")
-    from DQM.Integration.config.inputsource_cfi import options
+# for live online DQM in P5
+process.load("DQM.Integration.config.inputsource_cfi")
 
 # for testing in lxplus
 #process.load("DQM.Integration.config.fileinputsource_cfi")
-#from DQM.Integration.config.fileinputsource_cfi import options
 
 #----------------------------
 #### DQM Environment
@@ -29,9 +17,6 @@ else:
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'Scal'
 process.dqmSaver.tag = 'Scal'
-process.dqmSaver.runNumber = options.runNumber
-process.dqmSaverPB.tag = 'Scal'
-process.dqmSaverPB.runNumber = options.runNumber
 #-----------------------------
 process.load("DQMServices.Components.DQMScalInfo_cfi")
 
@@ -53,7 +38,7 @@ gtDigis = EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi.l1GtUnpack.clone()
 import EventFilter.L1GlobalTriggerRawToDigi.l1GtEvmUnpack_cfi
 gtEvmDigis = EventFilter.L1GlobalTriggerRawToDigi.l1GtEvmUnpack_cfi.l1GtEvmUnpack.clone()
 
-if (process.runType.getRunType() == process.runType.pp_run and not unitTest):
+if (process.runType.getRunType() == process.runType.pp_run):
     process.source.SelectEvents = cms.untracked.vstring('HLT_ZeroBias*')
 
 process.physicsBitSelector = cms.EDFilter("PhysDecl",
@@ -74,7 +59,7 @@ process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
 process.dump = cms.EDAnalyzer('EventContentAnalyzer')
 
 # DQM Modules
-process.dqmmodules = cms.Sequence(process.dqmEnv + process.dqmSaver + process.dqmSaverPB)
+process.dqmmodules = cms.Sequence(process.dqmEnv + process.dqmSaver)
 process.evfDQMmodulesPath = cms.Path(
                               process.l1GtUnpack*
 			      process.gtDigis*

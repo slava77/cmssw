@@ -1,4 +1,3 @@
-from __future__ import print_function
 # L1 Trigger DQM sequence (L1T)
 #
 #   authors previous versions - see CVS
@@ -16,11 +15,9 @@ process = cms.Process("DQM")
 #
 # for live online DQM in P5
 process.load("DQM.Integration.config.inputsource_cfi")
-from DQM.Integration.config.inputsource_cfi import options
 #
 # for testing in lxplus
 #process.load("DQM.Integration.config.fileinputsource_cfi")
-#from DQM.Integration.config.fileinputsource_cfi import options
 
 #----------------------------
 # DQM Environment
@@ -28,12 +25,10 @@ from DQM.Integration.config.inputsource_cfi import options
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'L1T'
 process.dqmSaver.tag = 'L1T'
-process.dqmSaver.runNumber = options.runNumber
-process.dqmSaverPB.tag = 'L1T'
-process.dqmSaverPB.runNumber = options.runNumber
 
 #
 # references needed
+process.DQMStore.referenceFileName = "/dqmdata/dqm/reference/l1t_reference.root"
 
 # Condition for P5 cluster
 process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
@@ -101,8 +96,7 @@ process.l1tMonitorClientEndPath = cms.EndPath(process.l1tMonitorClientEndPathSeq
 #
 process.dqmEndPath = cms.EndPath(
                                  process.dqmEnv *
-                                 process.dqmSaver *
-                                 process.dqmSaverPB
+                                 process.dqmSaver
                                  )
 
 #
@@ -168,7 +162,7 @@ process.schedule.remove(process.l1tSyncPath)
 # Heavy Ion Specific Fed Raw Data Collection Label
 #--------------------------------------------------
 
-print("Running with run type = ", process.runType.getRunType())
+print "Running with run type = ", process.runType.getRunType()
 process.castorDigis.InputLabel = cms.InputTag("rawDataCollector")
 process.csctfDigis.producer = cms.InputTag("rawDataCollector")
 process.dttfDigis.DTTF_FED_Source = cms.InputTag("rawDataCollector")
