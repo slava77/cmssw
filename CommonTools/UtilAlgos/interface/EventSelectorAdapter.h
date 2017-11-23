@@ -17,6 +17,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescriptionFiller.h" 
 
 template<typename T>
 class EventSelectorAdapter : public edm::global::EDFilter<>
@@ -30,6 +31,10 @@ class EventSelectorAdapter : public edm::global::EDFilter<>
   // destructor
   ~EventSelectorAdapter() override {}
 
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+    edm::fillDetails::DoFillAsUnknown<void> filler;
+    filler(descriptions);
+  }
  private:
   bool filter(edm::StreamID, edm::Event& evt, const edm::EventSetup& es) const override { return eventSelector_(evt, es); }
 

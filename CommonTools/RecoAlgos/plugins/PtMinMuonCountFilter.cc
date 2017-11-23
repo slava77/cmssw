@@ -17,4 +17,13 @@ typedef ObjectCountFilter<
           PtMinSelector
         >::type PtMinMuonCountFilter;
 
+template<>
+void PtMinMuonCountFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("src", edm::InputTag("muons"));
+  desc.add<double>("ptMin", 0.);
+  descriptions.add("ptMinMuonCountFilter", desc);
+}
+
+
 DEFINE_FWK_MODULE( PtMinMuonCountFilter );
