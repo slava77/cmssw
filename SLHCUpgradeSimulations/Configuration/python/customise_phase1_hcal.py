@@ -92,8 +92,8 @@ def customise(process):
     process.ecalRecHit.recoverEBFE = cms.bool(False)
     process.ecalRecHit.recoverEEFE = cms.bool(False)
 
-    process.load("RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_ho_cfi")
-    process.load("RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hf_cfi")
+    import RecoLocalCalo.HcalRecProducers.hfsimplereco_cfi
+    import RecoLocalCalo.HcalRecProducers.hosimplereco_cfi
 
     process.hosimplereco.digiLabel = "simHcalUnsuppressedDigis"
     process.hfsimplereco.digiLabel = "simHcalUnsuppressedDigis"

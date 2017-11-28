@@ -15,8 +15,8 @@ hcalminbiasHLT =  HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
 
 import RecoLocalCalo.HcalRecProducers.HBHEPhase1Reconstructor_cfi
 
-import RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hf_cfi
-hfrecoMBNZS = RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hf_cfi.hfsimplereco.clone()
+import RecoLocalCalo.HcalRecProducers.hfsimplereco_cfi
+hfrecoMBNZS = RecoLocalCalo.HcalRecProducers.hfsimplereco_cfi.hfsimplereco.clone()
 
 hfrecoMBNZS.firstSample = 2
 hfrecoMBNZS.samplesToAdd = 2
@@ -24,7 +24,7 @@ hfrecoMBNZS.digiLabel = 'hcalDigiAlCaMB'
 hfrecoMBNZS.tsFromDB = cms.bool(False)
 hfrecoMBNZS.dropZSmarkedPassed = cms.bool(False)
 
-import RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_ho_cfi
+import RecoLocalCalo.HcalRecProducers.hosimplereco_cfi
 
 seqALCARECOHcalCalMinBiasDigi = cms.Sequence(hcalminbiasHLT*hcalDigiAlCaMB*gtDigisAlCaMB)
 seqALCARECOHcalCalMinBias = cms.Sequence(hbherecoNoise*hfrecoNoise*hfrecoMBNZS*horecoNoise)
