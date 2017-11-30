@@ -12,6 +12,7 @@
 
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/DocFormatHelper.h"
+#include "FWCore/ParameterSet/interface/defaultModuleLabel.h"
 #include "FWCore/Utilities/interface/Algorithms.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 
@@ -176,18 +177,22 @@ namespace edm {
         << "plugin name = \"" << pluginName << "\"  label name = \"" << labelAndDesc.first << "\"\n";
     }
 
-    std::string cfi_filename;
+    std::string label;
     if (0 == strcmp(baseType.c_str(),kSource)) {
-      cfi_filename = pluginName + "_cfi.py";
+      label = pluginName;
+    }
+    else if("@module_type" == labelAndDesc.first) {
+      label = defaultModuleLabel(pluginName);
     }
     else {
-      cfi_filename = labelAndDesc.first + "_cfi.py";
+      label = labelAndDesc.first;
     }
+    std::string cfi_filename = label + "_cfi.py";
     if (!usedCfiFileNames.insert(cfi_filename).second) {
       edm::Exception ex(edm::errors::LogicError,
                         "Two cfi files are being generated with the same name in the same directory.\n");
       ex << "The cfi file name is '" << cfi_filename << "' and\n"
-         << "the module label is \'" << labelAndDesc.first << "\'.\n"
+         << "the module label is \'" << label << "\'.\n"
          << "This error is probably caused by an error in one or more fillDescriptions functions\n"
          << "where duplicate module labels are being passed to the ConfigurationDescriptions::add\n"
          << "function. All such module labels must be unique within a package.\n"
@@ -210,7 +215,7 @@ namespace edm {
     std::ofstream outFile(cfi_filename.c_str());
 
     outFile << "import FWCore.ParameterSet.Config as cms\n\n";
-    outFile << labelAndDesc.first << " = cms." << baseType << "('" << pluginName << "'";
+    outFile << label << " = cms." << baseType << "('" << pluginName << "'";
 
     bool startWithComma = true;
     int indentation = 2;
@@ -220,12 +225,7 @@ namespace edm {
   
     outFile.close();
 
-    if (0 == strcmp(baseType.c_str(),kSource)) {
-      std::cout << pluginName << "\n";
-    }
-    else {
-      std::cout << labelAndDesc.first << "\n";
-    }
+    std::cout << label << "\n";
   }
 
   void ConfigurationDescriptions::print(std::ostream & os,
