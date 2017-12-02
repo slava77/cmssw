@@ -48,6 +48,7 @@ namespace edm {
 
     void add(std::string const& label, ParameterSetDescription const& psetDescription);
     void add(char const* label, ParameterSetDescription const& psetDescription);
+    void addWithDefaultLabel(ParameterSetDescription const& psetDescription);
 
     void addDefault(ParameterSetDescription const& psetDescription);
 

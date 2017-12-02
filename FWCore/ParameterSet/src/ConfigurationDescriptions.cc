@@ -35,6 +35,7 @@ namespace {
 static const char* const kSource ="Source";
 static const char* const kService = "Service";
 static const char* const k_source = "source";
+static const char* const kDefaultModuleLabel = "@module_type";
 
 namespace edm {
 
@@ -92,6 +93,11 @@ namespace edm {
     pair.first = label;
     pair.second = psetDescription;
     
+  }
+
+  void
+  ConfigurationDescriptions::addWithDefaultLabel(ParameterSetDescription const& psetDescription) {
+    add(kDefaultModuleLabel, psetDescription);
   }
 
   void
@@ -181,7 +187,7 @@ namespace edm {
     if (0 == strcmp(baseType.c_str(),kSource)) {
       label = pluginName;
     }
-    else if("@module_type" == labelAndDesc.first) {
+    else if(kDefaultModuleLabel == labelAndDesc.first) {
       label = defaultModuleLabel(pluginName);
     }
     else {
