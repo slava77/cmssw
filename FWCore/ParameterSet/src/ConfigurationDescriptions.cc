@@ -39,8 +39,9 @@ static const char* const kDefaultModuleLabel = "@module_type";
 
 namespace edm {
 
-  ConfigurationDescriptions::ConfigurationDescriptions(std::string const& baseType) :
+  ConfigurationDescriptions::ConfigurationDescriptions(std::string const& baseType, std::string const& pluginName) :
     baseType_(baseType),
+    pluginName_(pluginName),
     defaultDescDefined_(false)
   { }
 
@@ -97,7 +98,17 @@ namespace edm {
 
   void
   ConfigurationDescriptions::addWithDefaultLabel(ParameterSetDescription const& psetDescription) {
-    add(kDefaultModuleLabel, psetDescription);
+    std::string label;
+    if(kService == baseType_) {
+      label = pluginName_;
+    }
+    else if(kSource == baseType_) {
+      label = "source";
+    }
+    else {
+      label = defaultModuleLabel(pluginName_);
+    }
+    add(label, psetDescription);
   }
 
   void

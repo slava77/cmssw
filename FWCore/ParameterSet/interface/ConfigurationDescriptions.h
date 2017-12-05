@@ -33,7 +33,7 @@ namespace edm {
     //NOTE: This does not take ownership of the PreValidatorBase instance so
     // this instance must remain valid for as long as the ConfigurationDescriptions
     // is being modified
-    ConfigurationDescriptions(std::string const& baseType);
+    ConfigurationDescriptions(std::string const& baseType, std::string const& pluginName);
 
     ~ConfigurationDescriptions();
 
@@ -111,6 +111,7 @@ namespace edm {
                        DescriptionCounter & counter) const;
 
     std::string baseType_;
+    std::string pluginName_;
 
     std::vector<std::pair<std::string, ParameterSetDescription> > descriptions_;
 
