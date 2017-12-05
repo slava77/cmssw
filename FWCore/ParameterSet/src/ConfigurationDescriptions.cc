@@ -194,10 +194,7 @@ namespace edm {
     }
 
     std::string label;
-    if (0 == strcmp(baseType.c_str(),kSource)) {
-      label = pluginName;
-    }
-    else if("@module_type" == labelAndDesc.first) {
+    if("@module_type" == labelAndDesc.first) {
       label = defaultModuleLabel(pluginName);
     }
     else {
