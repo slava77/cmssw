@@ -187,9 +187,7 @@ namespace edm {
                                               std::string const& pluginName,
                                               std::set<std::string>& usedCfiFileNames)
   {
-    const bool isService = (kService == baseType);
-
-    if (isService && labelAndDesc.first != pluginName && labelAndDesc.first != kDefaultModuleLabel) {
+    if (0 == strcmp(baseType.c_str(),kService) && labelAndDesc.first != pluginName) {
       throw edm::Exception(edm::errors::LogicError,
         "ConfigurationDescriptions::writeCfiForLabel\nFor a service the label and the plugin name must be the same.\n")
         << "This error is probably caused by an incorrect label being passed\nto the ConfigurationDescriptions::add function earlier.\n"
@@ -201,12 +199,7 @@ namespace edm {
       label = pluginName;
     }
     else if(kDefaultModuleLabel == labelAndDesc.first) {
-      if(isService) {
-        label = pluginName;
-      }
-      else {
-        label = defaultModuleLabel(pluginName);
-      }
+      label = defaultModuleLabel(pluginName);
     }
     else {
       label = labelAndDesc.first;
