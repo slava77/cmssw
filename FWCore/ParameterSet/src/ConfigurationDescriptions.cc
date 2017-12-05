@@ -193,19 +193,18 @@ namespace edm {
         << "plugin name = \"" << pluginName << "\"  label name = \"" << labelAndDesc.first << "\"\n";
     }
 
-    std::string label;
-    if("@module_type" == labelAndDesc.first) {
-      label = defaultModuleLabel(pluginName);
+    std::string cfi_filename;
+    if (0 == strcmp(baseType.c_str(),kSource)) {
+      cfi_filename = pluginName + "_cfi.py";
     }
     else {
-      label = labelAndDesc.first;
+      cfi_filename = labelAndDesc.first + "_cfi.py";
     }
-    std::string cfi_filename = label + "_cfi.py";
     if (!usedCfiFileNames.insert(cfi_filename).second) {
       edm::Exception ex(edm::errors::LogicError,
                         "Two cfi files are being generated with the same name in the same directory.\n");
       ex << "The cfi file name is '" << cfi_filename << "' and\n"
-         << "the module label is \'" << label << "\'.\n"
+         << "the module label is \'" << labelAndDesc.first << "\'.\n"
          << "This error is probably caused by an error in one or more fillDescriptions functions\n"
          << "where duplicate module labels are being passed to the ConfigurationDescriptions::add\n"
          << "function. All such module labels must be unique within a package.\n"
@@ -228,7 +227,7 @@ namespace edm {
     std::ofstream outFile(cfi_filename.c_str());
 
     outFile << "import FWCore.ParameterSet.Config as cms\n\n";
-    outFile << label << " = cms." << baseType << "('" << pluginName << "'";
+    outFile << labelAndDesc.first << " = cms." << baseType << "('" << pluginName << "'";
 
     bool startWithComma = true;
     int indentation = 2;
@@ -238,7 +237,12 @@ namespace edm {
   
     outFile.close();
 
-    std::cout << label << "\n";
+    if (0 == strcmp(baseType.c_str(),kSource)) {
+      std::cout << pluginName << "\n";
+    }
+    else {
+      std::cout << labelAndDesc.first << "\n";
+    }
   }
 
   void ConfigurationDescriptions::print(std::ostream & os,
