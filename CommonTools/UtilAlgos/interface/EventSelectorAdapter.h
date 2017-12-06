@@ -35,7 +35,7 @@ class EventSelectorAdapter : public edm::global::EDFilter<>
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
     T::fillPSetDescription(desc);
-    descriptions.add("@module_type", desc);
+    descriptions.addWithDefaultLabel(desc);
   }
 
  private:

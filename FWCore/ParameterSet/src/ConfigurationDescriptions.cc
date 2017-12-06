@@ -38,8 +38,9 @@ static const char* const k_source = "source";
 
 namespace edm {
 
-  ConfigurationDescriptions::ConfigurationDescriptions(std::string const& baseType) :
+  ConfigurationDescriptions::ConfigurationDescriptions(std::string const& baseType, std::string const& pluginName) :
     baseType_(baseType),
+    pluginName_(pluginName),
     defaultDescDefined_(false)
   { }
 
@@ -92,6 +93,21 @@ namespace edm {
     pair.first = label;
     pair.second = psetDescription;
     
+  }
+
+  void
+  ConfigurationDescriptions::addWithDefaultLabel(ParameterSetDescription const& psetDescription) {
+    std::string label;
+    if(kService == baseType_) {
+      label = pluginName_;
+    }
+    else if(kSource == baseType_) {
+      label = "source";
+    }
+    else {
+      label = defaultModuleLabel(pluginName_);
+    }
+    add(label, psetDescription);
   }
 
   void
@@ -152,14 +168,12 @@ namespace edm {
   }
 
   void
-  ConfigurationDescriptions::writeCfis(std::string const& baseType,
-                                       std::string const& pluginName,
-                                       std::set<std::string>& usedCfiFileNames) const {
+  ConfigurationDescriptions::writeCfis(std::set<std::string>& usedCfiFileNames) const {
 
     for_all(descriptions_, std::bind(&ConfigurationDescriptions::writeCfiForLabel,
                                        std::placeholders::_1,
-                                       std::cref(baseType),
-                                       std::cref(pluginName),
+                                       std::cref(baseType_),
+                                       std::cref(pluginName_),
                                        std::ref(usedCfiFileNames)));
   }
 
@@ -177,22 +191,18 @@ namespace edm {
         << "plugin name = \"" << pluginName << "\"  label name = \"" << labelAndDesc.first << "\"\n";
     }
 
-    std::string label;
+    std::string cfi_filename;
     if (0 == strcmp(baseType.c_str(),kSource)) {
-      label = pluginName;
-    }
-    else if("@module_type" == labelAndDesc.first) {
-      label = defaultModuleLabel(pluginName);
+      cfi_filename = pluginName + "_cfi.py";
     }
     else {
-      label = labelAndDesc.first;
+      cfi_filename = labelAndDesc.first + "_cfi.py";
     }
-    std::string cfi_filename = label + "_cfi.py";
     if (!usedCfiFileNames.insert(cfi_filename).second) {
       edm::Exception ex(edm::errors::LogicError,
                         "Two cfi files are being generated with the same name in the same directory.\n");
       ex << "The cfi file name is '" << cfi_filename << "' and\n"
-         << "the module label is \'" << label << "\'.\n"
+         << "the module label is \'" << labelAndDesc.first << "\'.\n"
          << "This error is probably caused by an error in one or more fillDescriptions functions\n"
          << "where duplicate module labels are being passed to the ConfigurationDescriptions::add\n"
          << "function. All such module labels must be unique within a package.\n"
@@ -215,7 +225,7 @@ namespace edm {
     std::ofstream outFile(cfi_filename.c_str());
 
     outFile << "import FWCore.ParameterSet.Config as cms\n\n";
-    outFile << label << " = cms." << baseType << "('" << pluginName << "'";
+    outFile << labelAndDesc.first << " = cms." << baseType << "('" << pluginName << "'";
 
     bool startWithComma = true;
     int indentation = 2;
@@ -225,7 +235,12 @@ namespace edm {
   
     outFile.close();
 
-    std::cout << label << "\n";
+    if (0 == strcmp(baseType.c_str(),kSource)) {
+      std::cout << pluginName << "\n";
+    }
+    else {
+      std::cout << labelAndDesc.first << "\n";
+    }
   }
 
   void ConfigurationDescriptions::print(std::ostream & os,
