@@ -21,7 +21,7 @@ namespace spr{
 
     const CaloSubdetectorGeometry *barrelGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalBarrel));
     const CaloSubdetectorGeometry *endcapGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalEndcap));
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB =        (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
     reco::TrackBase::TrackQuality trackQuality_=reco::TrackBase::qualityByName(theTrackQuality);
     std::vector<spr::propagatedTrackID> vdets;
 
@@ -144,7 +144,7 @@ namespace spr{
 
     const CaloSubdetectorGeometry *barrelGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalBarrel));
     const CaloSubdetectorGeometry *endcapGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalEndcap));
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB        = (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
     reco::TrackBase::TrackQuality trackQuality_=reco::TrackBase::qualityByName(theTrackQuality);
 
     unsigned int indx;
@@ -217,7 +217,7 @@ namespace spr{
 
     const CaloSubdetectorGeometry *barrelGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalBarrel));
     const CaloSubdetectorGeometry *endcapGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalEndcap));
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB =        (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
     reco::TrackBase::TrackQuality trackQuality_=reco::TrackBase::qualityByName(theTrackQuality);
 
     unsigned int indx;
@@ -289,7 +289,7 @@ namespace spr{
 
     const CaloSubdetectorGeometry *barrelGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalBarrel));
     const CaloSubdetectorGeometry *endcapGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalEndcap));
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB =        (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
 
     spr::propagatedTrackID vdet;
     vdet.ok        = true;
@@ -342,7 +342,7 @@ namespace spr{
 
     const CaloSubdetectorGeometry *barrelGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalBarrel));
     const CaloSubdetectorGeometry *endcapGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalEndcap));
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB =        (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
 
     std::vector<spr::propagatedGenTrackID> trkDir;
     unsigned int indx;
@@ -424,7 +424,7 @@ namespace spr{
 
     const CaloSubdetectorGeometry *barrelGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalBarrel));
     const CaloSubdetectorGeometry *endcapGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalEndcap));
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB =        (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
 
     std::vector<spr::propagatedGenParticleID> trkDir;
     unsigned int indx;
@@ -504,7 +504,7 @@ namespace spr{
 
     const CaloSubdetectorGeometry *barrelGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalBarrel));
     const CaloSubdetectorGeometry *endcapGeom = (geo->getSubdetectorGeometry(DetId::Ecal,EcalEndcap));
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB =        (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
 
     spr::trackAtOrigin   trk = spr::simTrackAtOrigin(thisTrk, SimTk, SimVtx, debug);
     spr::propagatedTrackDirection trkD;
@@ -567,7 +567,7 @@ namespace spr{
 
   spr::propagatedTrackDirection propagateHCALBack(unsigned int thisTrk, edm::Handle<edm::SimTrackContainer>& SimTk, edm::Handle<edm::SimVertexContainer>& SimVtx, const CaloGeometry* geo, const MagneticField* bField, bool debug) {
 
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB = (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
     spr::trackAtOrigin   trk = spr::simTrackAtOrigin(thisTrk, SimTk, SimVtx, debug);
     spr::propagatedTrackDirection trkD;
     trkD.ok     = trk.ok;
@@ -601,7 +601,7 @@ namespace spr{
 
 
   std::pair<bool,HcalDetId> propagateHCALBack(const reco::Track* track, const CaloGeometry* geo, const MagneticField* bField, bool debug) {
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB = (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
     const GlobalPoint  vertex (track->vx(), track->vy(), track->vz());
     const GlobalVector momentum (track->px(), track->py(), track->pz());
     int charge (track->charge());
@@ -639,7 +639,7 @@ namespace spr{
 
   std::pair<DetId,bool> propagateIdECAL(const HcalDetId& id, const CaloGeometry* geo, const MagneticField* bField, bool debug) {
 
-    const HcalGeometry* gHB = (const HcalGeometry*)(geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
+    const HcalGeometry* gHB = dynamic_cast<const HcalGeometry*>(geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
     const GlobalPoint vertex(0,0,0);
     const GlobalPoint hit(gHB->getPosition(id));
     const GlobalVector momentum = GlobalVector(hit.x(),hit.y(),hit.z());
@@ -905,7 +905,7 @@ namespace spr{
 #ifdef EDM_ML_DEBUG
     if (debug) std::cout << "propagateCalo:: Vertex " << vertex << " Momentum " << momentum << " Charge " << charge << " R/Z " << rz.first << " : " << rz.second << " Type " << typeRZ << std::endl;
 #endif
-    const CaloSubdetectorGeometry* gHB = geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel);
+    const CaloSubdetectorGeometry* gHB = (geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
     FreeTrajectoryState fts (vertex, momentum, charge, bField);
     AnalyticalPropagator myAP (bField, alongMomentum, 2*M_PI);
     

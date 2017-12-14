@@ -293,9 +293,9 @@ ValidIsoTrkCalib::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   edm::ESHandle<CaloGeometry> pG;
   iSetup.get<CaloGeometryRecord>().get(pG);
-  geo = pG.product();
+  geo = (pG.product());
   
-  HcalGeometry* gHcal = (HcalGeometry*)(geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
+  const HcalGeometry* gHcal = dynamic_cast<const HcalGeometry*>(geo->getSubdetectorGeometry(DetId::Hcal,HcalBarrel));
   //Note: even though it says HcalBarrel, we actually get the whole Hcal detector geometry!
 
   // Lumi_n=iEvent.luminosityBlock();

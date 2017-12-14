@@ -98,7 +98,7 @@ EcalPreshowerGeometry::initializeParms()
    for( unsigned int i ( 0 ) ; i != esDetIds.size() ; ++i )
    {
       const ESDetId esid ( esDetIds[i] ) ;
-      const CaloCellGeometry* cell ( getGeometry( esid ) ) ;
+      auto cell = getGeometry( esid ) ;
       if( nullptr != cell )
       {
 	 const CCGFloat zz ( cell->getPosition().z() ) ; 
@@ -217,7 +217,7 @@ EcalPreshowerGeometry::getClosestCellInPlane( const GlobalPoint& point,
 	    if( ESDetId::validDetId( jstrip, jx, jy, plane, jz ) )
 	    {
 	       const ESDetId esId ( jstrip, jx, jy, plane, jz ) ;
-	       const CaloCellGeometry* cell ( getGeometry( esId ) ) ;
+	       auto cell = getGeometry( esId );
 	       if( nullptr != cell )
 	       {
 		  const GlobalPoint& p ( cell->getPosition() ) ;
@@ -256,11 +256,10 @@ EcalPreshowerGeometry::newCell( const GlobalPoint& f1 ,
    addValidID( detId ) ;
 }
 
-const CaloCellGeometry* 
-EcalPreshowerGeometry::cellGeomPtr( uint32_t index ) const
-{
-   if (index >= m_cellVec.size()) return nullptr; // needed only if called with detId=0
-   const CaloCellGeometry* cell ( &m_cellVec[ index ] ) ;
-   //assert( cell->param() );
-   return cell; 
+std::shared_ptr<const CaloCellGeometry>  
+EcalPreshowerGeometry::cellGeomPtr( uint32_t index ) const {
+  if (index >= m_cellVec.size()) return nullptr; // needed only if called with detId=0
+  static const auto do_not_delete = [](const void*){};
+  auto cell = std::shared_ptr<const CaloCellGeometry>(&m_cellVec[index],do_not_delete);
+  return cell; 
 }

@@ -81,7 +81,10 @@ public:
 
   
   /// Returns the position of reference for this cell 
-  virtual const GlobalPoint& getPosition() const {return m_refPoint;}
+  virtual const GlobalPoint& getPosition()            const {return m_refPoint;}
+  virtual       GlobalPoint getPosition( CCGFloat)    const {return m_refPoint;}
+  virtual       GlobalPoint getPosition( const Pt3D&) const {return m_refPoint;}
+
   const GlobalPoint& getBackPoint() const {return m_backPoint;} 
 
   RhoEtaPhi const & repPos() const { return m_rep;}
@@ -139,7 +142,13 @@ protected:
   }
 
   virtual void initCorners(CornersVec&) = 0;
+
+  void setRefPoint  (const GlobalPoint& pos) {m_refPoint  = pos;}
+  void setBackPoint (const GlobalPoint& pos) {m_backPoint = pos;}
+  void setCornerVec (const CornersVec&  cor) {m_corners   = cor;} 
+
 private:
+
  void initBack() {
     // from CaloTower code
     CornersVec const & cv = getCorners();
@@ -155,7 +164,7 @@ private:
 
   GlobalPoint         m_refPoint ;
   GlobalPoint         m_backPoint ;
-  CornersVec  m_corners  ;
+  CornersVec          m_corners  ;
   const CCGFloat*     m_parms    ;
   RhoEtaPhi m_rep;
   float m_dEta;

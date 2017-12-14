@@ -34,19 +34,17 @@ CastorGeometry::~CastorGeometry()
 DetId 
 CastorGeometry::getClosestCell(const GlobalPoint& r) const
 {
-   DetId returnId ( 0 ) ;
-   const std::vector<DetId>& detIds ( getValidDetIds() ) ;
-   for(auto detId : detIds)
-   {
-      const CaloCellGeometry* cell ( getGeometry( detId ) ) ;
-      if( nullptr != cell &&
-	  cell->inside( r ) )
-      {
-	 returnId = detId ;
-	 break ;
-      }
-   }
-   return returnId ;
+  DetId returnId ( 0 ) ;
+  const std::vector<DetId>& detIds ( getValidDetIds() ) ;
+  for(auto detId : detIds)  {
+    auto cell = ( getGeometry( detId ) ) ;
+    if( nullptr != cell &&
+	cell->inside( r ) ) {
+      returnId = detId ;
+      break ;
+    }
+  }
+  return returnId ;
 }
 
 
@@ -93,10 +91,10 @@ CastorGeometry::newCell( const GlobalPoint& f1 ,
    addValidID( detId ) ;
 }
 
-const CaloCellGeometry* 
-CastorGeometry::cellGeomPtr( uint32_t index ) const
-{
-   const CaloCellGeometry* cell ( &m_cellVec[ index ] ) ;
-   return ( m_cellVec.size() < index ||
-	    nullptr == cell->param() ? nullptr : cell ) ;
+std::shared_ptr<const CaloCellGeometry>
+CastorGeometry::cellGeomPtr( uint32_t index ) const {
+  if (m_cellVec.size() < index) return nullptr;
+  static const auto do_not_delete = [](const void*){};
+  auto cell = std::shared_ptr<const CaloCellGeometry>(&m_cellVec[index],do_not_delete);
+  return ((nullptr == cell->param()) ? nullptr : cell) ;
 }

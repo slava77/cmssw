@@ -44,22 +44,23 @@ public:
 					
 protected:
 
-  const CaloCellGeometry* cellGeomPtr( uint32_t index ) const override ;
+  //const CaloCellGeometry*  cellGeomPtr( uint32_t index ) const override ;
+  std::shared_ptr<const CaloCellGeometry> cellGeomPtr( uint32_t index ) const override ;
 
 private:
 
   void newCellImpl( const GlobalPoint& f1 ,
-			const GlobalPoint& f2 ,
-			const GlobalPoint& f3 ,
-			const CCGFloat*    parm,
-			const DetId&       detId     ) ;
+		    const GlobalPoint& f2 ,
+		    const GlobalPoint& f3 ,
+		    const CCGFloat*    parm,
+		    const DetId&       detId     ) ;
 
   //can only be used by friend classes, to ensure sorting is done at the end					
   void newCellFast( const GlobalPoint& f1 ,
-			const GlobalPoint& f2 ,
-			const GlobalPoint& f3 ,
-			const CCGFloat*    parm,
-			const DetId&       detId     ) ;
+		    const GlobalPoint& f2 ,
+		    const GlobalPoint& f3 ,
+		    const CCGFloat*    parm,
+		    const DetId&       detId     ) ;
 
   void increaseReserve(unsigned int extra);
   void sortValidIds();
