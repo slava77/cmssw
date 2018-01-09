@@ -45,10 +45,10 @@ namespace {
       inputs["trk_pt"] = trk.pt();
       inputs["trk_eta"] = trk.eta();
       inputs["trk_lambda"] = trk.lambda();
-      inputs["trk_dxy"] = trk.dxy(beamSpot.position()); // is the training with abs() or not?
-      inputs["trk_dz"] = trk.dz(beamSpot.position()); // is the training with abs() or not?
-      inputs["trk_dxyClosestPV"] = trk.dxy(bestVertex); // is the training with abs() or not?
-      inputs["trk_dzClosestPV"] = trk.dz(bestVertex); // is the training with abs() or not?
+      inputs["trk_dxy"] = trk.dxy(beamSpot.position()); // Training done without taking absolute value
+      inputs["trk_dz"] = trk.dz(beamSpot.position()); // Training done without taking absolute value
+      inputs["trk_dxyClosestPV"] = trk.dxy(bestVertex); // Training done without taking absolute value
+      inputs["trk_dzClosestPV"] = trk.dz(bestVertex); // Training done without taking absolute value
       inputs["trk_ptErr"] = trk.ptError();
       inputs["trk_etaErr"] = trk.etaError();
       inputs["trk_lambdaErr"] = trk.lambdaError();
