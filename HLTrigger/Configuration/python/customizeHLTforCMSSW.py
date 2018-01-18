@@ -80,7 +80,6 @@ def customiseFor21845(process):
     return process
 
 
-<<<<<<< HEAD
 # Add mahi to HCAL local reconstruction 
 def customiseFor21664(process):
     from RecoLocalCalo.HcalRecProducers.HBHEPhase1Reconstructor_cfi import hbheprereco
