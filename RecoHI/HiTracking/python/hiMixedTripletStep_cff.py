@@ -33,13 +33,7 @@ mixedTripletStepSeedLayersA.TEC.skipClusters = cms.InputTag('hiMixedTripletStepC
 # TrackingRegion
 from RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cfi import globalTrackingRegionWithVertices as _globalTrackingRegionWithVertices
 hiMixedTripletStepTrackingRegionsA = _globalTrackingRegionWithVertices.clone(RegionPSet=dict(
-     precise = True,
-     useMultipleScattering = False,
-     beamSpot = "offlineBeamSpot",
-     useFoundVertices = True,
-     useFakeVertices       = False,
      VertexCollection = "hiSelectedPixelVertex",
-     useFixedError = True,
      fixedError = 3.75,#15.0
      ptMin = 0.4,
      originRadius = 1.5,
@@ -57,30 +51,12 @@ hiMixedTripletStepTrackingRegionsA = _globalTrackingRegionWithVertices.clone(Reg
 mixedTripletStepHitDoubletsA.clusterCheck = ""
 mixedTripletStepHitDoubletsA.trackingRegions = "hiMixedTripletStepTrackingRegionsA"
 
-
 # SEEDING LAYERS
 mixedTripletStepSeedLayersB.BPix.skipClusters = cms.InputTag('hiMixedTripletStepClusters')
 mixedTripletStepSeedLayersB.TIB.skipClusters = cms.InputTag('hiMixedTripletStepClusters')
 
-hiMixedTripletStepTrackingRegionsB = _globalTrackingRegionWithVertices.clone(RegionPSet=dict(
-     precise = True,
-     useMultipleScattering = False,
-     beamSpot = "offlineBeamSpot",
-     useFoundVertices = True,
-     useFakeVertices       = False,
-     VertexCollection = "hiSelectedPixelVertex",
-     useFixedError = True,
-     fixedError = 3.75,#15.0
-     ptMin = 0.4,
+hiMixedTripletStepTrackingRegionsB = hiMixedTripletStepTrackingRegionsA.clone(RegionPSet=dict(
      originRadius = 1.0,
-     originRScaling4BigEvts = cms.bool(True),
-     halfLengthScaling4BigEvts = cms.bool(False),
-     ptMinScaling4BigEvts = cms.bool(True),
-     minOriginR = 0,
-     minHalfLength = 0,
-     maxPtMin = 0.7,
-     scalingStartNPix = 20000,
-     scalingEndNPix = 35000     
 ))
 
 
@@ -89,17 +65,17 @@ mixedTripletStepHitDoubletsB.clusterCheck = ""
 mixedTripletStepHitDoubletsB.trackingRegions = "hiMixedTripletStepTrackingRegionsB"
 
 # QUALITY CUTS DURING TRACK BUILDING
-from RecoTracker.IterativeTracking.MixedTripletStep_cff import _mixedTripletStepTrajectoryFilterBase
-_mixedTripletStepTrajectoryFilterBase.minimumNumberOfHits = 5
-_mixedTripletStepTrajectoryFilterBase.minPt = 0.4
+from RecoTracker.IterativeTracking.MixedTripletStep_cff import mixedTripletStepTrajectoryFilter
+mixedTripletStepTrajectoryFilter.minimumNumberOfHits = 5
+mixedTripletStepTrajectoryFilter.minPt = 0.4
 mixedTripletStepPropagator.ptMin = 0.4
 mixedTripletStepPropagatorOpposite.ptMin = 0.4
-# TRACK BUILDING
-hiMixedTripletStepTracks = mixedTripletStepTracks.clone()
 
 # MAKING OF TRACK CANDIDATES
 mixedTripletStepTrackCandidates.clustersToSkip = cms.InputTag('hiMixedTripletStepClusters')
+
 # TRACK FITTING
+hiMixedTripletStepTracks = mixedTripletStepTracks.clone()
 
 # Final selection
 import RecoHI.HiTracking.hiMultiTrackSelector_cfi
@@ -157,3 +133,4 @@ hiMixedTripletStep = cms.Sequence(
                                 hiMixedTripletStepTracks*
                                 hiMixedTripletStepSelector*
                                 hiMixedTripletStepQual)
+
