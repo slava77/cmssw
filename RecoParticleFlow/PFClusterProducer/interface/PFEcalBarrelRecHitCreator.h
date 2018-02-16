@@ -64,7 +64,7 @@ class PFEcalBarrelRecHitCreator :  public  PFRecHitCreatorBase {
       const DetId& detid = erh.detid();
       auto energy = erh.energy();
       auto time = erh.time();
-      bool hi = (useSrF ? isHighInterest(detid) : true);
+      bool hi = (useSrF ? isHighInterest(detid) : false);//useSrF=false should treat hits most generally (not from HI region)
 
       const auto thisCell= ecalGeo->getGeometry(detid);
   
