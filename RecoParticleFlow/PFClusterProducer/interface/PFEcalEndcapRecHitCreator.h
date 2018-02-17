@@ -67,7 +67,7 @@ class PFEcalEndcapRecHitCreator :  public  PFRecHitCreatorBase {
       auto energy = erh.energy();
       auto time = erh.time();
 
-      bool hi = (useSrF ? isHighInterest(detid) : true);
+      bool hi = (useSrF ? isHighInterest(detid) : false);//useSrF=false doesn't use hi flag
         
       std::shared_ptr<const CaloCellGeometry> thisCell= ecalGeo->getGeometry(detid);
   
@@ -86,7 +86,8 @@ class PFEcalEndcapRecHitCreator :  public  PFRecHitCreatorBase {
 
       //Apply Q tests
       for( const auto& qtest : qualityTests_ ) {
-        if (!qtest->test(rh,erh,rcleaned,hi)) {
+        if ((useSrF && !qtest->test(rh,erh,rcleaned,hi))
+            || (!useSrF && !qtest->test(rh,erh,rcleaned))) {
           keep = false;	    
         }
       }

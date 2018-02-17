@@ -28,6 +28,9 @@ public:
     bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
       return fullReadOut or pass(hit);
     }
+    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
+      return pass(hit);
+    }
     bool test(reco::PFRecHit& hit, const HBHERecHit& rh, bool& clean) override{
       return pass(hit);
     }
@@ -114,7 +117,7 @@ public:
       hcalSevLvlComputer_  =  hcalSevLvlComputerHndl.product();
     }
 
-    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
+    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
       return true;
     }
     bool test(reco::PFRecHit& hit, const HBHERecHit& rh, bool& clean) override{
@@ -199,7 +202,7 @@ public:
     void beginEvent(const edm::Event& event, const edm::EventSetup& iSetup) override {
     }
 
-    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
+    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
       return true;
     }
     bool test(reco::PFRecHit& hit, const HBHERecHit& rh, bool& clean) override{
@@ -272,7 +275,7 @@ public:
     void beginEvent(const edm::Event& event, const edm::EventSetup& iSetup) override {
     }
 
-    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
+    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
       return true;
     }
     bool test(reco::PFRecHit& hit, const HBHERecHit& rh, bool& clean) override{
@@ -341,7 +344,7 @@ public:
   void beginEvent(const edm::Event& event, const edm::EventSetup& iSetup) override {
   }
 
-  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
+  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
     return true;
   }
 
@@ -412,6 +415,9 @@ public:
   bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
     return fullReadOut or pass(hit);
   }
+  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
+    return pass(hit);
+  }
   bool test(reco::PFRecHit& hit, const HBHERecHit& rh, bool& clean) override{
     return true;
   }
@@ -481,7 +487,7 @@ class PFRecHitQTestECAL : public PFRecHitQTestBase {
     void beginEvent(const edm::Event& event, const edm::EventSetup& iSetup) override {
     }
 
-  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
+  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
     if (skipTTRecoveredHits_ and rh.checkFlag(EcalRecHit::kTowerRecovered))
     {
       clean=true;
@@ -554,7 +560,7 @@ public:
   void beginEvent(const edm::Event& event, const edm::EventSetup& iSetup) override {
   }
 
-  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override {
+  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override {
 
     if ( rh.energy() < thresholdCleaning_ ) {
       clean=false;
@@ -623,7 +629,7 @@ public:
   void beginEvent(const edm::Event& event, const edm::EventSetup& iSetup) override {
   }
 
-  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override{
+  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override{
     return true;
   }
   bool test(reco::PFRecHit& hit, const HBHERecHit& rh, bool& clean) override{
@@ -677,7 +683,7 @@ public:
   void beginEvent(const edm::Event& event, const edm::EventSetup& iSetup) override {
   }
 
-  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override {
+  bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override {
     throw cms::Exception("WrongDetector")
       << "PFRecHitQTestThresholdInMIPs only works for HGCAL!";
     return false;
@@ -749,7 +755,7 @@ class PFRecHitQTestThresholdInThicknessNormalizedMIPs : public PFRecHitQTestBase
       ddd_ = &(geoHandle->topology().dddConstants());
     }
 
-    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override {
+    bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override {
       throw cms::Exception("WrongDetector")
         << "PFRecHitQTestThresholdInMIPs only works for HGCAL!";
       return false;
@@ -817,7 +823,7 @@ class PFRecHitQTestHGCalThresholdSNR: public PFRecHitQTestBase
         {
         }
 
-        bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean, bool fullReadOut) override
+        bool test(reco::PFRecHit& hit, const EcalRecHit& rh, bool& clean) override
         {
             throw cms::Exception("WrongDetector")
                     << "PFRecHitQTestHGCalThresholdSNR only works for HGCAL!";
