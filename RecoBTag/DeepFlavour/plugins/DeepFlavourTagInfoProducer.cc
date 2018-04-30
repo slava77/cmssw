@@ -19,14 +19,19 @@
 #include "DataFormats/BTauReco/interface/DeepFlavourTagInfo.h"
 #include "DataFormats/BTauReco/interface/DeepFlavourFeatures.h"
 
-#include "JetConverter.h"
-#include "BTagConverter.h"
-#include "SVConverter.h"
-#include "NeutralCandidateConverter.h"
-#include "ChargedCandidateConverter.h"
+#include "RecoBTag/DeepFlavour/interface/JetConverter.h"
+#include "RecoBTag/DeepFlavour/interface/BTagConverter.h"
+#include "RecoBTag/DeepFlavour/interface/SVConverter.h"
+#include "RecoBTag/DeepFlavour/interface/NeutralCandidateConverter.h"
+#include "RecoBTag/DeepFlavour/interface/ChargedCandidateConverter.h"
 
-#include "TrackInfoBuilder.h"
-#include "sorting_modules.h"
+#include "RecoBTag/DeepFlavour/interface/TrackInfoBuilder.h"
+#include "RecoBTag/DeepFlavour/interface/sorting_modules.h"
+
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+
+#include "RecoBTag/DeepFlavour/interface/deep_helpers.h"
 
 
 
@@ -194,7 +199,7 @@ void DeepFlavourTagInfoProducer::produce(edm::Event& iEvent, const edm::EventSet
 
     // fill features from ShallowTagInfo
     const auto & tag_info_vars = tag_info.taggingVariables();
-    btagbtvdeep::BTagConverter::BTagToFeatures(tag_info_vars, features.tag_info_features);
+    btagbtvdeep::BTagToFeatures(tag_info_vars, features.tag_info_features);
 
     // copy which will be sorted
     auto svs_sorted = *svs;
@@ -209,7 +214,7 @@ void DeepFlavourTagInfoProducer::produce(edm::Event& iEvent, const edm::EventSet
         features.sv_features.emplace_back();
         // in C++17 could just get from emplace_back output
         auto & sv_features = features.sv_features.back();
-        btagbtvdeep::SVConverter::SVToFeatures(sv, pv, jet, sv_features);
+        btagbtvdeep::SVToFeatures(sv, pv, jet, sv_features);
       }
     }
 
@@ -304,8 +309,8 @@ void DeepFlavourTagInfoProducer::produce(edm::Event& iEvent, const edm::EventSet
       auto & c_pf_features = features.c_pf_features.at(entry);
       // fill feature structure
       if (packed_cand) {
-        btagbtvdeep::ChargedCandidateConverter::PackedCandidateToFeatures(packed_cand, jet, trackinfo,
-                                                                          drminpfcandsv, c_pf_features);
+        btagbtvdeep::PackedCandidateToFeatures(packed_cand, jet, trackinfo, 
+					       drminpfcandsv, jet_radius_, c_pf_features);
       } else if (reco_cand) {
         // get vertex association quality
         int pv_ass_quality = 0; // fallback value
@@ -330,10 +335,9 @@ void DeepFlavourTagInfoProducer::produce(edm::Event& iEvent, const edm::EventSet
           const reco::VertexRef & PV_orig = (*pvas)[reco_ptr];
           if(PV_orig.isNonnull()) PV = reco::VertexRef(vtxs, PV_orig.key());
         }
-        btagbtvdeep::ChargedCandidateConverter::RecoCandidateToFeatures(
-            reco_cand, jet, trackinfo,
-            drminpfcandsv, puppiw, pv_ass_quality,
-            PV, c_pf_features);
+        btagbtvdeep::RecoCandidateToFeatures(reco_cand, jet, trackinfo, 
+					     drminpfcandsv, jet_radius_, puppiw,
+					     pv_ass_quality, PV, c_pf_features);
       }
     } else {
       // is neutral candidate
@@ -342,11 +346,10 @@ void DeepFlavourTagInfoProducer::produce(edm::Event& iEvent, const edm::EventSet
       auto & n_pf_features = features.n_pf_features.at(entry);
       // fill feature structure
       if (packed_cand) {
-        btagbtvdeep::NeutralCandidateConverter::PackedCandidateToFeatures(packed_cand, jet, drminpfcandsv,
+        btagbtvdeep::PackedCandidateToFeatures(packed_cand, jet, drminpfcandsv, jet_radius_,
                                                                           n_pf_features);
       } else if (reco_cand) {
-        btagbtvdeep::NeutralCandidateConverter::RecoCandidateToFeatures(reco_cand, jet,
-                                                                        drminpfcandsv, puppiw,
+        btagbtvdeep::RecoCandidateToFeatures(reco_cand, jet, drminpfcandsv, jet_radius_, puppiw,
                                                                         n_pf_features);
       }
     }
