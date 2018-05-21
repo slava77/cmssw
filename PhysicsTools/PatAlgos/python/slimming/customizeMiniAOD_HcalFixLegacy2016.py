@@ -99,7 +99,7 @@ def customizeAll(process, verbose=False):
 
     loadJetMETBTag(process)
 
-    cleanPfCandidates(process, verbose)
-    addDiscardedPFCandidates(process, cms.InputTag("pfCandidateRecalibrator","discarded"), verbose=verbose)
+#    cleanPfCandidates(process, verbose)
+#    addDiscardedPFCandidates(process, cms.InputTag("pfCandidateRecalibrator","discarded"), verbose=verbose)
 
     return process
