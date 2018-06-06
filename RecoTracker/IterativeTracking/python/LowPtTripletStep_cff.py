@@ -62,10 +62,10 @@ from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
 from RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cff import globalTrackingRegionWithVertices as _globalTrackingRegionWithVertices
 for e in [pp_on_XeXe_2017, pp_on_AA_2018]:
     e.toReplaceWith(lowPtTripletStepTrackingRegions, 
-                    _globalTrackingRegionWithVertices.clone(RegionPSet=dict(
-                fixedError = 0.2,
-                ptMin = 0.25,
-                originRadius = 0.02
+                _globalTrackingRegionWithVertices.clone(RegionPSet=dict(
+                    useFixedError = False,
+                    ptMin = 0.3,
+                    originRadius = 0.02
                 )
                                                                       )
 )
