@@ -93,8 +93,8 @@ mixedTripletStepTrackingRegionsA = _mixedTripletStepTrackingRegionsCommon.clone(
 from Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017
 from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
 from RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cff import globalTrackingRegionWithVertices as _globalTrackingRegionWithVertices
-(pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(mixedTripletStepTrackingRegionsA, 
-                _globalTrackingRegionWithVertices.clone(RegionPSet=dict(
+_mixedTripletStepTrackingRegionsCommon_pp_on_HI = _globalTrackingRegionWithVertices.clone(
+                RegionPSet=dict(
                     fixedError = 3.75,
                     ptMin = 0.4,
                     originRadius = 1.5,
@@ -103,10 +103,10 @@ from RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cff import g
                     minOriginR = 0.,
                     maxPtMin = 0.7,
                     scalingStartNPix = 20000,
-                    scalingEndNPix = 35000  
+                    scalingEndNPix = 35000
                 )
-                                                                      )
 )
+(pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(mixedTripletStepTrackingRegionsA,_mixedTripletStepTrackingRegionsCommon_pp_on_HI)
 
 # seeding
 from RecoPixelVertexing.PixelLowPtUtilities.ClusterShapeHitFilterESProducer_cfi import ClusterShapeHitFilterESProducer as _ClusterShapeHitFilterESProducer
@@ -178,7 +178,7 @@ trackingPhase1.toModify(mixedTripletStepSeedLayersB, layerList = ['BPix3+BPix4+T
 # TrackingRegion
 mixedTripletStepTrackingRegionsB = _mixedTripletStepTrackingRegionsCommon.clone(RegionPSet = dict(ptMin=0.6, originHalfLength=10.0))
 (pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(mixedTripletStepTrackingRegionsB, 
-                mixedTripletStepTrackingRegionsA.clone(RegionPSet=dict(
+                _mixedTripletStepTrackingRegionsCommon_pp_on_HI.clone(RegionPSet=dict(
                     fixedError = 2.5,
                     ptMin = 0.6,
                 )

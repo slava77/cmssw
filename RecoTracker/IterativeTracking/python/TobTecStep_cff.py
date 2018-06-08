@@ -49,9 +49,9 @@ tobTecStepTrackingRegionsTripl = _globalTrackingRegionFromBeamSpotFixedZ.clone(R
 
 from Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017
 from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
-from RecoTracker.IterativeTracking.MixedTripletStep_cff import mixedTripletStepTrackingRegionsA as _mixedTripletStepTrackingRegionsA
+from RecoTracker.IterativeTracking.MixedTripletStep_cff import _mixedTripletStepTrackingRegionsCommon_pp_on_HI
 (pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(tobTecStepTrackingRegionsTripl, 
-                _mixedTripletStepTrackingRegionsA.clone(RegionPSet=dict(
+                _mixedTripletStepTrackingRegionsCommon_pp_on_HI.clone(RegionPSet=dict(
                     ptMinScaling4BigEvts= False,
                     fixedError = 5.0,
                     ptMin = 2.0,
@@ -144,7 +144,7 @@ tobTecStepTrackingRegionsPair = _globalTrackingRegionFromBeamSpotFixedZ.clone(Re
 ))
 
 (pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(tobTecStepTrackingRegionsPair, 
-                _mixedTripletStepTrackingRegionsA.clone(RegionPSet=dict(
+                _mixedTripletStepTrackingRegionsCommon_pp_on_HI.clone(RegionPSet=dict(
                     ptMinScaling4BigEvts= False,
                     fixedError = 7.5,
                     ptMin = 2.0,

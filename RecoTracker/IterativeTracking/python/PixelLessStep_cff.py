@@ -116,9 +116,9 @@ trackingLowPU.toModify(pixelLessStepTrackingRegions, RegionPSet = dict(
 
 from Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017
 from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
-from RecoTracker.IterativeTracking.MixedTripletStep_cff import mixedTripletStepTrackingRegionsA as _mixedTripletStepTrackingRegionsA
+from RecoTracker.IterativeTracking.MixedTripletStep_cff import _mixedTripletStepTrackingRegionsCommon_pp_on_HI
 (pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(pixelLessStepTrackingRegions, 
-                _mixedTripletStepTrackingRegionsA.clone(RegionPSet=dict(
+                _mixedTripletStepTrackingRegionsCommon_pp_on_HI.clone(RegionPSet=dict(
                     ptMinScaling4BigEvts= False,
                     fixedError = 3.0,
                     ptMin = 2.0,
