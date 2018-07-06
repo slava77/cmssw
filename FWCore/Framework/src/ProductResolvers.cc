@@ -194,6 +194,11 @@ namespace edm {
               }
               if ( not productResolved()) {
                 //another thread could have finished this while we were waiting
+                auto const& bd = branchDescription();
+                edm::LogWarning("MYDEBUG")        << "className = " << bd.className() << "\n"
+                                                  << "moduleLabel = " << bd.moduleLabel() << "\n"
+                                                  << "instance = " << bd.productInstanceName() << "\n"
+                                                  << "process = " << bd.processName() << "\n";
                 putProduct( reader->getProduct(BranchKey(branchDescription()), &principal, mcc));
               }
             }

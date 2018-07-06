@@ -286,7 +286,7 @@ namespace {
   // but let the OS deal with the signal in the usual way.
     if (die && (el_location != std::string("@SUB=TUnixSystem::DispatchSignals"))) {
        std::ostringstream sstr;
-       sstr << "Fatal Root Error: " << el_location << "\n" << el_message << '\n';
+       sstr << "Fatal Root Error here: " << el_location << "\n" << el_message << '\n';
        edm::Exception except(edm::errors::FatalRootError, sstr.str());
        except.addAdditionalInfo(except.message());
        except.clearMessage();
