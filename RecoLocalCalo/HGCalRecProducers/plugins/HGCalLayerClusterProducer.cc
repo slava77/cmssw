@@ -86,6 +86,7 @@ HGCalLayerClusterProducer::HGCalLayerClusterProducer(const edm::ParameterSet &ps
   algo.reset(HGCalLayerClusterAlgoFactory::get()->create(pluginPSet.getParameter<std::string>("type"), pluginPSet));
   algo->setAlgoId(algoId);
 
+  produces<std::vector<bool> >("InitialLayerClustersMask");
   produces<std::vector<reco::BasicCluster> >();
   produces<std::vector<reco::BasicCluster> >("sharing");
   //density
@@ -206,6 +207,9 @@ void HGCalLayerClusterProducer::produce(edm::Event& evt,
     }
     times.push_back(timeCl);
   }
+  std::unique_ptr<std::vector<bool> > layerClustersMask(new std::vector<bool>);
+  layerClustersMask->resize(clusterHandle->size(),true);
+  evt.put(std::move(layerClustersMask),"InitialLayerClustersMask");
 
   auto timeCl = std::make_unique<edm::ValueMap<float>>();
   edm::ValueMap<float>::Filler filler(*timeCl);
