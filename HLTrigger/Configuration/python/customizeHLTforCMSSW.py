@@ -203,9 +203,28 @@ def customiseFor24212(process):
             pf.goodPixelTrackDeadHcal_maxLost4Hit = cms.int32(1) # max missing outer hits for a track with >= 4 valid pixel layers
             pf.goodPixelTrackDeadHcal_dxy = cms.double(0.02)     # [cm] abs(trackRef->dxy(primaryVertex_.position())) < X
             pf.goodPixelTrackDeadHcal_dz  = cms.double(0.05)     # [cm] abs(trackRef->dz(primaryVertex_.position())) < X
-
-
     return process
+
+def customizeHLTForL3OIPR23988(process):
+   for seedproducer in producers_by_type(process, "TSGForOI"):
+           seedproducer.hitsToTry = cms.int32( 1 )
+           seedproducer.propagatorName = cms.string("PropagatorWithMaterialParabolicMf")
+           seedproducer.fixedErrorRescaleFactorForHits = cms.double( 1.0 )
+           seedproducer.maxSeeds = cms.uint32( 20 )
+           seedproducer.layersToTry = cms.int32( 2 )
+           seedproducer.fixedErrorRescaleFactorForHitless = cms.double( 2.0 )
+           seedproducer.adjustErrorsDynamicallyForHits = cms.bool( False )
+           if hasattr(seedproducer, "tsosDiff"):
+              del seedproducer.tsosDiff
+           seedproducer.eta1 = cms.double( 0.2 )
+           seedproducer.eta2 = cms.double( 0.3 )
+           if hasattr(seedproducer, "UseStereoLayersInTEC"):
+              del seedproducer.UseStereoLayersInTEC
+   for trackproducer in producers_by_type(process, "CkfTrackCandidateMaker"):
+       if "hltIterL3OITrackCandidates" in trackproducer.label():
+           trackproducer.reverseTrajectories  =cms.bool(True) 
+
+
 
 
 # CMSSW version specific customizations
@@ -215,4 +234,5 @@ def customizeHLTforCMSSW(process, menuType="GRun"):
     # process = customiseFor12718(process)
     process = customiseFor24212(process)
 
+    customizeHLTForL3OIPR23988(process)
     return process
