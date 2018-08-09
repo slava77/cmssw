@@ -70,12 +70,22 @@ particleFlowTmp = cms.EDProducer("PFProducer",
     maxEeleOverPout = cms.double(0.2),
     maxDPhiIN = cms.double(0.1)    
     ),
+    electron_protectionsForBadHcal = cms.PSet(
+    full5x5_sigmaIetaIeta = cms.vdouble(0.0126, 0.0457), # EB, EE
+    eInvPInv = cms.vdouble(0.209, 0.132),
+    dEta = cms.vdouble(0.01, 0.02),
+    dPhi = cms.vdouble(0.148, 0.19),
+    ),
     # New photon selection cuts for CMSSW_700
     photon_MinEt = cms.double(10.),
     photon_combIso = cms.double(10.),
     photon_HoE =  cms.double(0.05),
     photon_SigmaiEtaiEta_barrel = cms.double(0.0125),
     photon_SigmaiEtaiEta_endcap = cms.double(0.034),                             
+    photon_protectionsForBadHcal = cms.PSet(
+        solidConeTrkIsoOffset = cms.double(10.),
+        solidConeTrkIsoSlope  = cms.double(0.3),
+    ),
 
     # sumPtTrackIso, sumPtTrackIsoSlope                          
     photon_protectionsForJetMET = cms.PSet(
@@ -186,6 +196,23 @@ particleFlowTmp = cms.EDProducer("PFProducer",
     # Factors to be applied in the four and fifth steps to the pt error
     factors_45 = cms.vdouble(10.,100.),
 
+    # Treatment of tracks in region of bad HCal
+    goodTrackDeadHcal_ptErrRel = cms.double(0.2), # trackRef->ptError()/trackRef->pt() < X
+    goodTrackDeadHcal_chi2n = cms.double(5),      # trackRef->normalizedChi2() < X
+    goodTrackDeadHcal_layers = cms.uint32(4),     # trackRef->hitPattern().trackerLayersWithMeasurement() >= X
+    goodTrackDeadHcal_validFr = cms.double(0.5),  # trackRef->validFraction() > X
+    goodTrackDeadHcal_dxy = cms.double(0.5),      # [cm] abs(trackRef->dxy(primaryVertex_.position())) < X
+
+    goodPixelTrackDeadHcal_minEta = cms.double(2.3),   # abs(trackRef->eta()) > X
+    goodPixelTrackDeadHcal_maxPt  = cms.double(50.),   # trackRef->ptError()/trackRef->pt() < X
+    goodPixelTrackDeadHcal_ptErrRel = cms.double(1.0), # trackRef->ptError()/trackRef->pt() < X
+    goodPixelTrackDeadHcal_chi2n = cms.double(2),      # trackRef->normalizedChi2() < X
+    goodPixelTrackDeadHcal_maxLost3Hit = cms.int32(0), # max missing outer hits for a track with 3 valid pixel layers (can set to -1 to reject all these tracks)
+    goodPixelTrackDeadHcal_maxLost4Hit = cms.int32(1), # max missing outer hits for a track with >= 4 valid pixel layers
+    goodPixelTrackDeadHcal_dxy = cms.double(0.02),     # [cm] abs(trackRef->dxy(primaryVertex_.position())) < X
+    goodPixelTrackDeadHcal_dz  = cms.double(0.05),     # [cm] abs(trackRef->dz(primaryVertex_.position())) < X
+
+ 
     # Post HF cleaning
     postHFCleaning = cms.bool(False),
     # Clean only objects with pt larger than this value
