@@ -76,8 +76,7 @@ RawToDigi_noTk = cms.Sequence(L1TRawToDigi
 RawToDigi_pixelOnly = cms.Sequence(siPixelDigis)
 
 scalersRawToDigi.scalersInputTag = 'rawDataCollector'
-from Configuration.ProcessModifiers.gpu_cff import gpu
-(~gpu).toModify(siPixelDigis, InputLabel = 'rawDataCollector')
+siPixelDigis.InputLabel = 'rawDataCollector'
 #false by default anyways ecalDigis.DoRegional = False
 ecalDigis.InputLabel = 'rawDataCollector'
 ecalPreshowerDigis.sourceTag = 'rawDataCollector'
