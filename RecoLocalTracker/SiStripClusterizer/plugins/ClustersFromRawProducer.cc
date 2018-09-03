@@ -52,28 +52,28 @@ namespace {
     
     // Check on FEDRawData pointer
     if UNLIKELY( !rawData.data() ) {
-	if (edm::isDebugEnabled()) {
-	  edm::LogWarning(sistrip::mlRawToCluster_)
-	    << "[ClustersFromRawProducer::" 
-	    << __func__ 
-	    << "]"
-	    << " NULL pointer to FEDRawData for FED id " 
-	    << fedId;
-	}
-	return buffer;
-      }	
+      if (edm::isDebugEnabled()) {
+        edm::LogWarning(sistrip::mlRawToCluster_)
+          << "[ClustersFromRawProducer::" 
+          << __func__ 
+          << "]"
+          << " NULL pointer to FEDRawData for FED id " 
+          << fedId;
+      }
+      return buffer;
+    }	
     
     // Check on FEDRawData size
     if UNLIKELY( !rawData.size() ) {
-	if (edm::isDebugEnabled()) {
-	  edm::LogWarning(sistrip::mlRawToCluster_)
-	    << "[ClustersFromRawProducer::" 
-	    << __func__ << "]"
-	    << " FEDRawData has zero size for FED id " 
-	    << fedId;
-	}
-	return buffer;
+      if (edm::isDebugEnabled()) {
+        edm::LogWarning(sistrip::mlRawToCluster_)
+	  << "[ClustersFromRawProducer::" 
+	  << __func__ << "]"
+	  << " FEDRawData has zero size for FED id " 
+	  << fedId;
       }
+      return buffer;
+    }
     
     // construct FEDBuffer
     try {
@@ -105,18 +105,18 @@ namespace {
   
   class ClusterFiller final : public StripClusterizerAlgorithm::output_t::Getter {
   public:
-    ClusterFiller(const FEDRawDataCollection& irawColl,
-		  StripClusterizerAlgorithm & iclusterizer,
-		  SiStripRawProcessingAlgorithms & irawAlgos,
-		  bool idoAPVEmulatorCheck,
+    ClusterFiller(const FEDRawDataCollection& irawColl, 
+                  StripClusterizerAlgorithm & iclusterizer, 
+                  SiStripRawProcessingAlgorithms & irawAlgos, 
+                  bool idoAPVEmulatorCheck, 
                   bool hybridZeroSuppressed):
       rawColl(irawColl),
       clusterizer(iclusterizer),
       rawAlgos(irawAlgos),
       doAPVEmulatorCheck(idoAPVEmulatorCheck),
       hybridZeroSuppressed_(hybridZeroSuppressed){
-	incTot(clusterizer.allDetIds().size());
-	for (auto & d : done) d=nullptr;
+        incTot(clusterizer.allDetIds().size());
+        for (auto & d : done) d=nullptr;
       }
     
     
@@ -450,9 +450,9 @@ try { // edmNew::CapacityExaustedException
           edm::DetSet<SiStripDigi> unpDigis{id}; unpDigis.reserve(256);
           unpackZS(buffer->channel(fedCh), mode, ipair*256, std::back_inserter(unpDigis));
           SiStripRawProcessingAlgorithms::digivector_t workRawDigis;
-          rawAlgos.ConvertHybridDigiToRawDigiVector(unpDigis, workRawDigis);
+          rawAlgos.convertHybridDigiToRawDigiVector(unpDigis, workRawDigis);
           edm::DetSet<SiStripDigi> suppDigis{id};
-          rawAlgos.SuppressHybridData(id, ipair*2, workRawDigis, suppDigis);
+          rawAlgos.suppressHybridData(id, ipair*2, workRawDigis, suppDigis);
           std::copy(std::begin(suppDigis), std::end(suppDigis), perStripAdder);
         }
       } catch (edmNew::CapacityExaustedException) {
@@ -495,7 +495,7 @@ try { // edmNew::CapacityExaustedException
       //rawAlgos_->subtractorCMN->subtract( id, digis);
       //rawAlgos_->suppressor->suppress( digis, zsdigis);
       uint16_t firstAPV = ipair*2;
-      rawAlgos.SuppressVirginRawData(id, firstAPV,digis, zsdigis);
+      rawAlgos.suppressVirginRawData(id, firstAPV,digis, zsdigis);
       for ( const auto digi : zsdigis ) {
         clusterizer.stripByStripAdd(state, digi.strip(), digi.adc(), record);
       }
@@ -518,7 +518,7 @@ try { // edmNew::CapacityExaustedException
       //rawAlgos_->subtractorCMN->subtract( id, digis);
       //rawAlgos_->suppressor->suppress( digis, zsdigis);
       uint16_t firstAPV = ipair*2;
-      rawAlgos.SuppressProcessedRawData(id, firstAPV,digis, zsdigis);
+      rawAlgos.suppressProcessedRawData(id, firstAPV,digis, zsdigis);
       for( edm::DetSet<SiStripDigi>::const_iterator it = zsdigis.begin(); it!=zsdigis.end(); it++) {
         clusterizer.stripByStripAdd(state, it->strip(), it->adc(), record);
       }
