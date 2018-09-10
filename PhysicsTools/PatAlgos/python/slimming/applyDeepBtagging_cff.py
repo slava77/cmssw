@@ -42,7 +42,7 @@ def applyDeepBtagging( process, postfix="" ) :
     # delete module not used anymore (slimmedJets substitutes)
     delattr(process, 'selectedUpdatedPatJetsSlimmedDeepFlavour'+postfix)
 
-
+    from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll as pfDeepBoostedJetTagsAll
 
     # update slimmed jets to include particle-based deep taggers (keep same name)
     # make clone for DeepTags-less slimmed AK8 jets, so output name is preserved
@@ -62,54 +62,7 @@ def applyDeepBtagging( process, postfix="" ) :
        btagDiscriminators = [
           'pfDeepDoubleBJetTags:probQ',
           'pfDeepDoubleBJetTags:probH',
-
-           # DeepBoostedJet (Nominal)
-          'pfDeepBoostedJetTags:probTbcq',
-          'pfDeepBoostedJetTags:probTbqq',
-          'pfDeepBoostedJetTags:probTbc',
-          'pfDeepBoostedJetTags:probTbq',
-          'pfDeepBoostedJetTags:probWcq',
-          'pfDeepBoostedJetTags:probWqq',
-          'pfDeepBoostedJetTags:probZbb',
-          'pfDeepBoostedJetTags:probZcc',
-          'pfDeepBoostedJetTags:probZqq',
-          'pfDeepBoostedJetTags:probHbb',
-          'pfDeepBoostedJetTags:probHcc',
-          'pfDeepBoostedJetTags:probHqqqq',
-          'pfDeepBoostedJetTags:probQCDbb',
-          'pfDeepBoostedJetTags:probQCDcc',
-          'pfDeepBoostedJetTags:probQCDb',
-          'pfDeepBoostedJetTags:probQCDc',
-          'pfDeepBoostedJetTags:probQCDothers',
-           # meta taggers
-          'pfDeepBoostedDiscriminatorsJetTags:TvsQCD',
-          'pfDeepBoostedDiscriminatorsJetTags:WvsQCD',
-
-           # DeepBoostedJet (mass decorrelated)
-          'pfMassDecorrelatedDeepBoostedJetTags:probTbcq',
-          'pfMassDecorrelatedDeepBoostedJetTags:probTbqq',
-          'pfMassDecorrelatedDeepBoostedJetTags:probTbc',
-          'pfMassDecorrelatedDeepBoostedJetTags:probTbq',
-          'pfMassDecorrelatedDeepBoostedJetTags:probWcq',
-          'pfMassDecorrelatedDeepBoostedJetTags:probWqq',
-          'pfMassDecorrelatedDeepBoostedJetTags:probZbb',
-          'pfMassDecorrelatedDeepBoostedJetTags:probZcc',
-          'pfMassDecorrelatedDeepBoostedJetTags:probZqq',
-          'pfMassDecorrelatedDeepBoostedJetTags:probHbb',
-          'pfMassDecorrelatedDeepBoostedJetTags:probHcc',
-          'pfMassDecorrelatedDeepBoostedJetTags:probHqqqq',
-          'pfMassDecorrelatedDeepBoostedJetTags:probQCDbb',
-          'pfMassDecorrelatedDeepBoostedJetTags:probQCDcc',
-          'pfMassDecorrelatedDeepBoostedJetTags:probQCDb',
-          'pfMassDecorrelatedDeepBoostedJetTags:probQCDc',
-          'pfMassDecorrelatedDeepBoostedJetTags:probQCDothers',
-           # meta taggers
-          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD',
-          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD',
-          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsQCD',
-          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD',
-
-       ],
+       ] + pfDeepBoostedJetTagsAll,
        postfix = 'SlimmedAK8DeepTags'+postfix,
        printWarning = False
     )
