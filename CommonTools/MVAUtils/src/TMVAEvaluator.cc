@@ -1,10 +1,10 @@
-#include "CommonTools/Utils/interface/TMVAEvaluator.h"
+#include "CommonTools/MVAUtils/interface/GBRForestTools.h"
+#include "CommonTools/MVAUtils/interface/TMVAEvaluator.h"
+#include "CommonTools/MVAUtils/interface/TMVAZipReader.h"
 
-#include "CommonTools/Utils/interface/TMVAZipReader.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "CondFormats/DataRecord/interface/GBRWrapperRcd.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-#include "TMVA/MethodBDT.h"
 
 
 TMVAEvaluator::TMVAEvaluator() :
@@ -39,7 +39,7 @@ void TMVAEvaluator::initialize(const std::string & options, const std::string & 
 
   if (useGBRForest)
   {
-    mGBRForest.reset( new GBRForest( dynamic_cast<TMVA::MethodBDT*>( mReader->FindMVA(mMethod.c_str()) ) ) );
+    mGBRForest = createGBRForest(weightFile);
 
     // now can free some memory
     mReader.reset(nullptr);
