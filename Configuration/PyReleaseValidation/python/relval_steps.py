@@ -1569,7 +1569,7 @@ steps['HYBRIDRepackHI2015VR']={'--eventcontent':'RAW',
                                '--era':'Run2_HI',
                                '--customise':'RecoLocalTracker/SiStripZeroSuppression/customiseHybrid.addHybridEmulationBeforeRepack',
                                '--processName':'EMULATEHYBRID',    
-                               '--outputCommands':'\'drop FEDRawDataCollection_*__HLT.\'',
+                               '--outputCommands':'"drop FEDRawDataCollection_*__HLT","drop FEDRawDataCollection_*__LHC"',
                                '-n':100
                                }
 
