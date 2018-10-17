@@ -1,11 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-from Configuration.StandardSequences.RawToDigi_cff import *
+from Configuration.StandardSequences.RawToDigi_Data_cff import *
 
-RawToDigi.insert(0, rawDataRemapperByLabel)
-RawToDigi_noTk.insert(0, rawDataRemapperByLabel)
-RawToDigi_pixelOnly.insert(0, rawDataRemapperByLabel)
+from EventFilter.RawDataCollector.rawDataMapperByLabel_cfi import rawDataMapperByLabel
 
-ecalDigis.DoRegional = False
-#False by default ecalDigis.DoRegional = False
+RawToDigi.insert(0, rawDataMapperByLabel)
+
 
