@@ -12,7 +12,7 @@
 
 #include "DataFormats/BTauReco/interface/JetTag.h"
 
-#include "DataFormats/BTauReco/interface/DeepDoubleBTagInfo.h"
+#include "DataFormats/BTauReco/interface/DeepDoubleXTagInfo.h"
 
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 
@@ -26,23 +26,23 @@
 // make use of a cache struct that can be extended in the future if nedded. In addition, the graph
 // is protected via std::atomic, which should not affect the performance as it is only accessed in
 // the module constructor and not in the actual produce loop.
-struct DeepDoubleBTFCache {
-  DeepDoubleBTFCache() : graphDef(nullptr) {
+struct DeepDoubleXTFCache {
+  DeepDoubleXTFCache() : graphDef(nullptr) {
   }
 
   std::atomic<tensorflow::GraphDef*> graphDef;
 };
 
-class DeepDoubleBTFJetTagsProducer : public edm::stream::EDProducer<edm::GlobalCache<DeepDoubleBTFCache>> {
+class DeepDoubleXTFJetTagsProducer : public edm::stream::EDProducer<edm::GlobalCache<DeepDoubleXTFCache>> {
 
   public:
-    explicit DeepDoubleBTFJetTagsProducer(const edm::ParameterSet&, const DeepDoubleBTFCache*);
-    ~DeepDoubleBTFJetTagsProducer() override;
+    explicit DeepDoubleXTFJetTagsProducer(const edm::ParameterSet&, const DeepDoubleXTFCache*);
+    ~DeepDoubleXTFJetTagsProducer() override;
 
     static void fillDescriptions(edm::ConfigurationDescriptions&);
 
-    static std::unique_ptr<DeepDoubleBTFCache> initializeGlobalCache(const edm::ParameterSet&);
-    static void globalEndJob(const DeepDoubleBTFCache*);
+    static std::unique_ptr<DeepDoubleXTFCache> initializeGlobalCache(const edm::ParameterSet&);
+    static void globalEndJob(const DeepDoubleXTFCache*);
 
     enum InputIndexes {
       kGlobal = 0,
@@ -55,7 +55,7 @@ class DeepDoubleBTFJetTagsProducer : public edm::stream::EDProducer<edm::GlobalC
     };
 
   private:
-    typedef std::vector<reco::DeepDoubleBTagInfo> TagInfoCollection;
+    typedef std::vector<reco::DeepDoubleXTagInfo> TagInfoCollection;
     typedef reco::JetTagCollection JetTagCollection;
 
     void beginStream(edm::StreamID) override {}
@@ -76,8 +76,8 @@ class DeepDoubleBTFJetTagsProducer : public edm::stream::EDProducer<edm::GlobalC
     bool batch_eval_;
 };
 
-DeepDoubleBTFJetTagsProducer::DeepDoubleBTFJetTagsProducer(const edm::ParameterSet& iConfig,
-  const DeepDoubleBTFCache* cache) :
+DeepDoubleXTFJetTagsProducer::DeepDoubleXTFJetTagsProducer(const edm::ParameterSet& iConfig,
+  const DeepDoubleXTFCache* cache) :
   src_(consumes<TagInfoCollection>(iConfig.getParameter<edm::InputTag>("src"))),
   input_names_(iConfig.getParameter<std::vector<std::string>>("input_names")),
   output_names_(iConfig.getParameter<std::vector<std::string>>("output_names")),
@@ -116,7 +116,7 @@ DeepDoubleBTFJetTagsProducer::DeepDoubleBTFJetTagsProducer(const edm::ParameterS
   }
 }
 
-DeepDoubleBTFJetTagsProducer::~DeepDoubleBTFJetTagsProducer()
+DeepDoubleXTFJetTagsProducer::~DeepDoubleXTFJetTagsProducer()
 {
   // close and delete the session
   if (session_ != nullptr) {
@@ -124,25 +124,40 @@ DeepDoubleBTFJetTagsProducer::~DeepDoubleBTFJetTagsProducer()
   }
 }
 
-void DeepDoubleBTFJetTagsProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+void DeepDoubleXTFJetTagsProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
 
-  // pfDeepDoubleBJetTags
+  // pfDeepDoubleBvLJetTags
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("src", edm::InputTag("pfDeepDoubleBTagInfos"));
+  desc.add<edm::InputTag>("src", edm::InputTag("pfDeepDoubleXTagInfos"));
   desc.add<std::vector<std::string>>("input_names", 
     { "input_1", "input_2", "input_3" });
-  desc.add<edm::FileInPath>("graph_path",
-    edm::FileInPath("RecoBTag/Combined/data/DeepDoubleB/V01/constant_graph_PtCut_MassSculptPen.pb"));
   desc.add<std::vector<std::string>>("lp_names",
     { "db_input_batchnorm/keras_learning_phase" });
   desc.add<std::vector<std::string>>("output_names",
     { "ID_pred/Softmax" });
+
   {
-    edm::ParameterSetDescription psd0;
-    psd0.add<std::vector<unsigned int>>("probQ", {0});
-    psd0.add<std::vector<unsigned int>>("probH", {1});
-    desc.add<edm::ParameterSetDescription>("flav_table", psd0);
+  edm::ParameterSetDescription psBvL;
+  psBvL.add<std::vector<unsigned int>>("probQCD", {0});
+  psBvL.add<std::vector<unsigned int>>("probHbb", {1});
+
+  edm::ParameterSetDescription psCvL;
+  psCvL.add<std::vector<unsigned int>>("probQCD", {0});
+  psCvL.add<std::vector<unsigned int>>("probHcc", {1});
+
+  edm::ParameterSetDescription psCvB;
+  psCvB.add<std::vector<unsigned int>>("probHbb", {0});
+  psCvB.add<std::vector<unsigned int>>("probHcc", {1});
+
+  desc.ifValue( edm::ParameterDescription<std::string>("flavor", "BvL", true),
+    "BvL" >> (edm::ParameterDescription<edm::ParameterSetDescription>("flav_table", psBvL, true) and 
+		edm::ParameterDescription<edm::FileInPath>("graph_path",  edm::FileInPath("RecoBTag/Combined/data/DeepDoubleB/V01/constant_graph_PtCut_MassSculptPen.pb"), true)) or
+    "CvL" >> (edm::ParameterDescription<edm::ParameterSetDescription>("flav_table", psCvL, true) and 
+		edm::ParameterDescription<edm::FileInPath>("graph_path",  edm::FileInPath("RecoBTag/Combined/data/DeepDoubleX/94X/V01/DDC.pb"), true) ) or
+    "CvB" >> (edm::ParameterDescription<edm::ParameterSetDescription>("flav_table", psCvB, true) and 
+		edm::ParameterDescription<edm::FileInPath>("graph_path",  edm::FileInPath("RecoBTag/Combined/data/DeepDoubleX/94X/V01/DDCvB.pb"), true)) 
+    );
   }
 
   desc.add<bool>("batch_eval", false);
@@ -150,10 +165,11 @@ void DeepDoubleBTFJetTagsProducer::fillDescriptions(edm::ConfigurationDescriptio
   desc.add<unsigned int>("nThreads", 1);
   desc.add<std::string>("singleThreadPool", "no_threads");
 
-  descriptions.add("pfDeepDoubleBJetTags", desc);
+  descriptions.add("pfDeepDoubleBvLJetTags", desc);
+
 }
 
-std::unique_ptr<DeepDoubleBTFCache> DeepDoubleBTFJetTagsProducer::initializeGlobalCache(
+std::unique_ptr<DeepDoubleXTFCache> DeepDoubleXTFJetTagsProducer::initializeGlobalCache(
   const edm::ParameterSet& iConfig)
 {
   // set the tensorflow log level to error
@@ -163,20 +179,20 @@ std::unique_ptr<DeepDoubleBTFCache> DeepDoubleBTFJetTagsProducer::initializeGlob
   std::string pbFile = iConfig.getParameter<edm::FileInPath>("graph_path").fullPath();
 
   // load the graph def and save it in the cache
-  DeepDoubleBTFCache* cache = new DeepDoubleBTFCache();
+  DeepDoubleXTFCache* cache = new DeepDoubleXTFCache();
   cache->graphDef = tensorflow::loadGraphDef(pbFile);
 
-  return std::unique_ptr<DeepDoubleBTFCache>(cache);
+  return std::unique_ptr<DeepDoubleXTFCache>(cache);
 }
 
-void DeepDoubleBTFJetTagsProducer::globalEndJob(const DeepDoubleBTFCache* cache)
+void DeepDoubleXTFJetTagsProducer::globalEndJob(const DeepDoubleXTFCache* cache)
 {
   if (cache->graphDef != nullptr) {
     delete cache->graphDef;
   }
 }
 
-void DeepDoubleBTFJetTagsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+void DeepDoubleXTFJetTagsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
   edm::Handle<TagInfoCollection> tag_infos;
@@ -289,4 +305,4 @@ void DeepDoubleBTFJetTagsProducer::produce(edm::Event& iEvent, const edm::EventS
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(DeepDoubleBTFJetTagsProducer);
+DEFINE_FWK_MODULE(DeepDoubleXTFJetTagsProducer);

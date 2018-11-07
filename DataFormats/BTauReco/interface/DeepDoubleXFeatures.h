@@ -1,5 +1,5 @@
-#ifndef DataFormats_BTauReco_DeepDoubleBFeatures_h
-#define DataFormats_BTauReco_DeepDoubleBFeatures_h
+#ifndef DataFormats_BTauReco_DeepDoubleXFeatures_h
+#define DataFormats_BTauReco_DeepDoubleXFeatures_h
 
 #include <vector>
 
@@ -10,7 +10,7 @@
 
 namespace btagbtvdeep {
 
-class DeepDoubleBFeatures {
+class DeepDoubleXFeatures {
 
   public:
     JetFeatures jet_features;
@@ -26,4 +26,4 @@ class DeepDoubleBFeatures {
 
 }  
 
-#endif //DataFormats_BTauReco_DeepDoubleBFeatures_h
+#endif //DataFormats_BTauReco_DeepDoubleXFeatures_h
