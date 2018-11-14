@@ -1,3 +1,4 @@
+from __future__ import print_function
 import FWCore.ParameterSet.Config as cms
 from Configuration.StandardSequences.Eras import eras
 
@@ -91,7 +92,7 @@ process.pixelTracksTrackingRegions.RegionPSet.originZPos       = cms.double(0.)
 if (process.runType.getRunType() == process.runType.pp_run or process.runType.getRunType() == process.runType.pp_run_stage1 or 
     process.runType.getRunType() == process.runType.cosmic_run or process.runType.getRunType() == process.runType.cosmic_run_stage1 or 
     process.runType.getRunType() == process.runType.hpu_run):
-    print "[beampixel_dqm_sourceclient-live_cfg]::running pp"
+    print("[beampixel_dqm_sourceclient-live_cfg]::running pp")
 
 
     #----------------------------
@@ -112,7 +113,7 @@ if (process.runType.getRunType() == process.runType.pp_run or process.runType.ge
     process.siPixelDigis.InputLabel          = cms.InputTag("rawDataCollector")
     process.siStripDigis.ProductLabel        = cms.InputTag("rawDataCollector")
 
-
+    
     #----------------------------
     # pixelVertexDQM Config
     #----------------------------
@@ -144,7 +145,7 @@ if (process.runType.getRunType() == process.runType.pp_run or process.runType.ge
 # Heavy Ion Specific Section
 #----------------------------
 if (process.runType.getRunType() == process.runType.hi_run):
-    print "[beampixel_dqm_sourceclient-live_cfg]::running HI"
+    print("[beampixel_dqm_sourceclient-live_cfg]::running HI")
 
 
     #----------------------------
@@ -200,7 +201,7 @@ if process.dqmRunConfig.type.value() is "production":
     process.pixelVertexDQM.fileName = cms.string("/nfshome0/dqmpro/BeamMonitorDQM/BeamPixelResults.txt")
 else:
     process.pixelVertexDQM.fileName = cms.string("/nfshome0/dqmdev/BeamMonitorDQM/BeamPixelResults.txt")
-print "[beampixel_dqm_sourceclient-live_cfg]::saving DIP file into " + str(process.pixelVertexDQM.fileName)
+print("[beampixel_dqm_sourceclient-live_cfg]::saving DIP file into " + str(process.pixelVertexDQM.fileName))
 
 
 #----------------------------
