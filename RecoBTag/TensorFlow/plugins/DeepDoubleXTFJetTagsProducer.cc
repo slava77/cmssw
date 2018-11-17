@@ -127,7 +127,7 @@ DeepDoubleXTFJetTagsProducer::~DeepDoubleXTFJetTagsProducer()
 void DeepDoubleXTFJetTagsProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
 
-  // pfDeepDoubleBvLJetTags
+  //fill the common parameters first
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("src", edm::InputTag("pfDeepDoubleXTagInfos"));
   desc.add<std::vector<std::string>>("input_names", 
@@ -136,6 +136,12 @@ void DeepDoubleXTFJetTagsProducer::fillDescriptions(edm::ConfigurationDescriptio
     { "db_input_batchnorm/keras_learning_phase" });
   desc.add<std::vector<std::string>>("output_names",
     { "ID_pred/Softmax" });
+
+  desc.add<bool>("batch_eval", false);
+
+  desc.add<unsigned int>("nThreads", 1);
+  desc.add<std::string>("singleThreadPool", "no_threads");
+  //done with common params so far
 
   edm::ParameterSetDescription psBvL;
   psBvL.add<std::vector<unsigned int>>("probQCD", {0});
@@ -149,21 +155,29 @@ void DeepDoubleXTFJetTagsProducer::fillDescriptions(edm::ConfigurationDescriptio
   psCvB.add<std::vector<unsigned int>>("probHbb", {0});
   psCvB.add<std::vector<unsigned int>>("probHcc", {1});
 
-  desc.ifValue( edm::ParameterDescription<std::string>("flavor", "BvL", true),
-    "BvL" >> (edm::ParameterDescription<edm::ParameterSetDescription>("flav_table", psBvL, true) and 
-		edm::ParameterDescription<edm::FileInPath>("graph_path",  edm::FileInPath("RecoBTag/Combined/data/DeepDoubleB/V01/constant_graph_PtCut_MassSculptPen.pb"), true)) or
-    "CvL" >> (edm::ParameterDescription<edm::ParameterSetDescription>("flav_table", psCvL, true) and 
-		edm::ParameterDescription<edm::FileInPath>("graph_path",  edm::FileInPath("RecoBTag/Combined/data/DeepDoubleX/94X/V01/DDC.pb"), true) ) or
-    "CvB" >> (edm::ParameterDescription<edm::ParameterSetDescription>("flav_table", psCvB, true) and 
-		edm::ParameterDescription<edm::FileInPath>("graph_path",  edm::FileInPath("RecoBTag/Combined/data/DeepDoubleX/94X/V01/DDCvB.pb"), true)) 
-    );
+  using FIP = edm::FileInPath;
+  using PDFIP = edm::ParameterDescription<edm::FileInPath>;
+  using PDPSD = edm::ParameterDescription<edm::ParameterSetDescription>;
+  using PDCases = edm::ParameterDescriptionCases<std::string>;
+  auto flavorCases = [&](){ return
+    "BvL" >> (PDPSD("flav_table", psBvL, true) and 
+              PDFIP("graph_path",  FIP("RecoBTag/Combined/data/DeepDoubleB/V01/constant_graph_PtCut_MassSculptPen.pb"), true)) or
+    "CvL" >> (PDPSD("flav_table", psCvL, true) and 
+              PDFIP("graph_path",  FIP("RecoBTag/Combined/data/DeepDoubleX/94X/V01/DDC.pb"), true) ) or
+    "CvB" >> (PDPSD("flav_table", psCvB, true) and 
+              PDFIP("graph_path",  FIP("RecoBTag/Combined/data/DeepDoubleX/94X/V01/DDCvB.pb"), true)); 
+  };
+  auto descBvL(desc);
+  descBvL.ifValue( edm::ParameterDescription<std::string>("flavor", "BvL", true), flavorCases());
+  descriptions.add("pfDeepDoubleBvLJetTags", descBvL);
 
-  desc.add<bool>("batch_eval", false);
+  auto descCvL(desc);
+  descCvL.ifValue( edm::ParameterDescription<std::string>("flavor", "CvL", true), flavorCases());
+  descriptions.add("pfDeepDoubleCvLJetTags", descCvL);
 
-  desc.add<unsigned int>("nThreads", 1);
-  desc.add<std::string>("singleThreadPool", "no_threads");
-
-  descriptions.add("pfDeepDoubleBvLJetTags", desc);
+  auto descCvB(desc);
+  descCvB.ifValue( edm::ParameterDescription<std::string>("flavor", "CvB", true), flavorCases());
+  descriptions.add("pfDeepDoubleCvBJetTags", descCvB);
 
 }
 
