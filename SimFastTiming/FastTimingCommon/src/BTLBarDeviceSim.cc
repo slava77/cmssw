@@ -24,13 +24,16 @@ BTLBarDeviceSim::BTLBarDeviceSim(const edm::ParameterSet& pset) :
 void BTLBarDeviceSim::getEventSetup(const edm::EventSetup& evs) {
  
   edm::ESHandle<MTDGeometry> geom;
-  evs.get<MTDDigiGeometryRecord>().get(geom);
-  geom_ = geom.product();
 
+  if( geomwatcher_.check(evs) || geom_ == nullptr ) {
+    evs.get<MTDDigiGeometryRecord>().get(geom);
+    geom_ = geom.product();
+  }
   edm::ESHandle<MTDTopology> mtdTopo;
-  evs.get<MTDTopologyRcd>().get(mtdTopo);
-  topo_ = mtdTopo.product();
-
+  if ( topowatcher_.check(evs) || topo_ == nullptr ) {
+    evs.get<MTDTopologyRcd>().get(mtdTopo);
+    topo_ = mtdTopo.product();
+  }
 }
 
 void BTLBarDeviceSim::getHitsResponse(const std::vector<std::tuple<int,uint32_t,float> > &hitRefs, 
@@ -52,7 +55,9 @@ void BTLBarDeviceSim::getHitsResponse(const std::vector<std::tuple<int,uint32_t,
     if(id==0) continue; // to be ignored at RECO level                                                              
 
     BTLDetId btlid(detId);
-    int boundRef = BTLDetId::kTypeBoundariesBarZflat[1];
+    const int boundRef = ( topo_->getMTDTopologyMode() == (int ) BTLDetId::CrysLayout::barzflat ?
+			   BTLDetId::kTypeBoundariesBarZflat[1]   :
+			   BTLDetId::kTypeBoundariesReference[1] );
     DetId geoId = BTLDetId(btlid.mtdSide(),btlid.mtdRR(),btlid.module()+boundRef*(btlid.modType()-1),0,1);
     const MTDGeomDet* thedet = geom_->idToDet(geoId);
 
@@ -89,7 +94,7 @@ void BTLBarDeviceSim::getHitsResponse(const std::vector<std::tuple<int,uint32_t,
     float Npe = 1000.*hit.energyLoss()*LightYield_*LightCollEff_*PDE_;
 
     // --- Get the simHit time of arrival
-    float toa = std::get<2>(hitRef);
+    float toa = std::get<2>(hitRefs[ihit]);
 
     if ( toa > bxTime_ || toa < 0 ) //just consider BX==0
       continue;
@@ -118,7 +123,7 @@ void BTLBarDeviceSim::getHitsResponse(const std::vector<std::tuple<int,uint32_t,
     
     if ( (simHitIt->second).hit_info[1][1] == 0 
 	 || tL < (simHitIt->second).hit_info[1][1] )
-      (simHitIt->second).hit_info[1][1] = tL;
+      (simHitIt->second).hit_info[1][1] = tL;y
 
   } // hitRef loop
 
