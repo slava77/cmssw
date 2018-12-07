@@ -30,7 +30,7 @@ void BTLBarDeviceSim::getEventSetup(const edm::EventSetup& evs) {
     geom_ = geom.product();
   }
   edm::ESHandle<MTDTopology> mtdTopo;
-  if ( topowatcher_.check(evs) || topo_ == nullptr ) {
+  if ( topo_ == nullptr ) {
     evs.get<MTDTopologyRcd>().get(mtdTopo);
     topo_ = mtdTopo.product();
   }
@@ -124,7 +124,7 @@ void BTLBarDeviceSim::getHitsResponse(const std::vector<std::tuple<int,uint32_t,
     if ( (simHitIt->second).hit_info[1][1] == 0 
 	 || tL < (simHitIt->second).hit_info[1][1] )
       (simHitIt->second).hit_info[1][1] = tL;y
-
+      
   } // hitRef loop
 
 }
