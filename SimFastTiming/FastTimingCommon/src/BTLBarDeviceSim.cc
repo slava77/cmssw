@@ -91,7 +91,7 @@ void BTLBarDeviceSim::getHitsResponse(const std::vector<std::tuple<int,uint32_t,
     float Npe = 1000.*hit.energyLoss()*LightYield_*LightCollEff_*PDE_;
 
     // --- Get the simHit time of arrival
-    float toa = std::get<2>(hitRefs[ihit]);
+    float toa = std::get<2>(hitRef);
 
     if ( toa > bxTime_ || toa < 0 ) //just consider BX==0
       continue;
