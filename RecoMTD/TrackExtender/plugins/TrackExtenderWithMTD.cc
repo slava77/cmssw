@@ -318,10 +318,8 @@ namespace {
 			 const TransientTrackingRecHitBuilder& hitbuilder,
 			 TransientTrackingRecHit::ConstRecHitContainer& output) {
     pair<bool, TrajectoryStateOnSurface> comp = layer->compatible(tsos,*prop,theEstimator);
-    std::cout << "comp.first: " << comp.first << std::endl;
     if( comp.first ) {    
       vector<DetLayer::DetWithState> compDets = layer->compatibleDets(tsos,*prop,theEstimator);
-      std::cout << "compDets.size(): " << compDets.size() << std::endl;
       if (!compDets.empty()) {
 	for( const auto& detWithState : compDets ) {	
 	  auto range = hits.equal_range(detWithState.first->geographicalId(),cmp);	  
@@ -361,7 +359,6 @@ TrackExtenderWithMTDT<TrackCollection>::tryBTLLayers(const TrackType& track,
   for (const DetLayer* ilay : layers) {
     // get the outermost trajectory point on the track    
     TrajectoryStateOnSurface tsos = tTrack.outermostMeasurementState();
-    std::cout << "BTL" << std::endl;
     find_hits_in_dets(hits,ilay,tsos,trkProp.get(),*theEstimator,*hitbuilder,output);
   }
   return output;
@@ -388,7 +385,6 @@ TrackExtenderWithMTDT<TrackCollection>::tryETLLayers(const TrackType& track,
     // get the outermost trajectory point on the track    
     TrajectoryStateOnSurface tsos = tTrack.outermostMeasurementState();
     if( tsos.globalPosition().z() * diskZ < 0 ) continue; // only propagate to the disk that's on the same side
-    std::cout << "ETL" << std::endl;
     find_hits_in_dets(hits,ilay,tsos,trkProp.get(),*theEstimator,*hitbuilder,output);    
   }
   return output;
