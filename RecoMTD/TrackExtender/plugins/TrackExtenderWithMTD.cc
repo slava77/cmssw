@@ -500,7 +500,6 @@ reco::Track TrackExtenderWithMTDT<TrackCollection>::buildTrack(const reco::Track
       t0 = thit - dt;
       covt0t0 = thiterror*thiterror;
       beta = betaOut;
-      //printf("Propagation to MTD with pathlength1 = %5f, pathlength2 = %5f, path length = %5f, beta = %5f, thit = %5f, dt = %5f, t0 = %5f\n", pathlength1, pathlength2,pathlength,beta,thit,dt,t0);
     }
   }
   
@@ -521,7 +520,7 @@ reco::TrackExtra TrackExtenderWithMTDT<TrackCollection>::buildTrackExtra(const T
   // put the collection of TrackingRecHit in the event
   
   // sets the outermost and innermost TSOSs
-  // FIXME: check it!
+  // ToDo: validation for track states with MTD
   TrajectoryStateOnSurface outerTSOS;
   TrajectoryStateOnSurface innerTSOS;
   unsigned int innerId=0, outerId=0;
