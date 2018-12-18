@@ -15,7 +15,6 @@
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
-#include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 #include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h"
 
 #include "DataFormats/TrackerRecHit2D/interface/MTDTrackingRecHit.h"
@@ -56,15 +55,16 @@
 using namespace std;
 using namespace edm;
 
-constexpr char pathLengthName[] = "pathLength";
-constexpr char pathLengthOrigTrkName[] = "generalTrackPathLength";
-constexpr char betaOrigTrkName[] = "generalTrackBeta";
-constexpr char t0OrigTrkName[] = "generalTrackt0";
-constexpr char covt0t0OrigTrkName[] = "generalTrackcovt0t0";
+
 
 
 template<class TrackCollection>
 class TrackExtenderWithMTDT : public edm::stream::EDProducer<> {  
+  static constexpr char pathLengthName[] = "pathLength";
+  static constexpr char pathLengthOrigTrkName[] = "generalTrackPathLength";
+  static constexpr char betaOrigTrkName[] = "generalTrackBeta";
+  static constexpr char t0OrigTrkName[] = "generalTrackt0";
+  static constexpr char covt0t0OrigTrkName[] = "generalTrackcovt0t0";
  public:
   typedef typename TrackCollection:: value_type TrackType;
   typedef edm::View<TrackType> InputCollection;
@@ -98,7 +98,7 @@ class TrackExtenderWithMTDT : public edm::stream::EDProducer<> {
       if(rFirst < rLast) return RefitDirection::insideOut;
       if(rFirst > rLast) return RefitDirection::outsideIn;
     }
-    LogDebug("Reco|TrackingTools|TrackTransformer") << "Impossible to determine the rechits order" <<endl;
+    LogDebug("TrackExtenderWithMTD") << "Impossible to determine the rechits order" <<endl;
     return RefitDirection::undetermined;
   }
 
@@ -124,22 +124,21 @@ class TrackExtenderWithMTDT : public edm::stream::EDProducer<> {
 
 template<class TrackCollection>  
 TrackExtenderWithMTDT<TrackCollection>::TrackExtenderWithMTDT(const ParameterSet& iConfig) :
+  tracksToken_(consumes<InputCollection>(iConfig.getParameter<edm::InputTag>("tracksSrc"))),
+  hitsToken_(consumes<MTDTrackingDetSetVector>(iConfig.getParameter<edm::InputTag>("hitsSrc"))),
+  bsToken_(consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpotSrc"))),
   updateTraj_(iConfig.getParameter<bool>("updateTrackTrajectory")),
   updateExtra_(iConfig.getParameter<bool>("updateTrackExtra")),
   updatePattern_(iConfig.getParameter<bool>("updateTrackHitPattern")),
   mtdRecHitBuilder_(iConfig.getParameter<std::string>("MTDRecHitBuilder")),
   propagator_(iConfig.getParameter<std::string>("Propagator")),
   transientTrackBuilder_(iConfig.getParameter<std::string>("TransientTrackBuilder")) {
-  float theMaxChi2=25.;
-  float theNSigma=3.;
-  theEstimator = std::make_unique<Chi2MeasurementEstimator>(theMaxChi2,theNSigma);
+  float maxChi2=25.;
+  float nSigma=3.;
+  theEstimator = std::make_unique<Chi2MeasurementEstimator>(maxChi2,nSigma);
   
   theTransformer = std::make_unique<TrackTransformer>(iConfig.getParameterSet("TrackTransformer"));
-
-  tracksToken_ = consumes<InputCollection>(iConfig.getParameter<edm::InputTag>("tracksSrc"));
-  hitsToken_ = consumes<MTDTrackingDetSetVector>(iConfig.getParameter<edm::InputTag>("hitsSrc"));
-  bsToken_ = consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpotSrc"));
-
+  
   produces<edm::ValueMap<float> >(pathLengthOrigTrkName);
   produces<edm::ValueMap<float> >(betaOrigTrkName);
   produces<edm::ValueMap<float> >(t0OrigTrkName);
@@ -312,37 +311,36 @@ void TrackExtenderWithMTDT<TrackCollection>::produce( edm::Event& ev,
 
 namespace {
   auto cmp = [](const unsigned one, const unsigned two) -> bool { return one < two; };
-}
-
-
-void find_hits_in_dets(const MTDTrackingDetSetVector& hits, const DetLayer* layer,
-		       const TrajectoryStateOnSurface& tsos, const Propagator* prop,
-		       const MeasurementEstimator& theEstimator,		       
-		       const TransientTrackingRecHitBuilder& hitbuilder,
-		       TransientTrackingRecHit::ConstRecHitContainer& output) {
-  pair<bool, TrajectoryStateOnSurface> comp = layer->compatible(tsos,*prop,theEstimator);
-  std::cout << "comp.first: " << comp.first << std::endl;
-  if( comp.first ) {    
-    vector<DetLayer::DetWithState> compDets = layer->compatibleDets(tsos,*prop,theEstimator);
-    std::cout << "compDets.size(): " << compDets.size() << std::endl;
-    if (!compDets.empty()) {
-      for( const auto& detWithState : compDets ) {	
-	auto range = hits.equal_range(detWithState.first->geographicalId(),cmp);	  
-	for( auto detitr = range.first; detitr != range.second; ++detitr ) {
-	  auto best = detitr->end();
-	  double best_chi2 = std::numeric_limits<double>::max();
-	  for( auto itr = detitr->begin(); itr != detitr->end(); ++itr ) {
-	    auto est =  theEstimator.estimate(detWithState.second,*itr);
-	    if( est.first && est.second < best_chi2 ) { // just take the best chi2
-	      best = itr;
-	      best_chi2 = est.second;
+  
+  void find_hits_in_dets(const MTDTrackingDetSetVector& hits, const DetLayer* layer,
+			 const TrajectoryStateOnSurface& tsos, const Propagator* prop,
+			 const MeasurementEstimator& theEstimator,		       
+			 const TransientTrackingRecHitBuilder& hitbuilder,
+			 TransientTrackingRecHit::ConstRecHitContainer& output) {
+    pair<bool, TrajectoryStateOnSurface> comp = layer->compatible(tsos,*prop,theEstimator);
+    std::cout << "comp.first: " << comp.first << std::endl;
+    if( comp.first ) {    
+      vector<DetLayer::DetWithState> compDets = layer->compatibleDets(tsos,*prop,theEstimator);
+      std::cout << "compDets.size(): " << compDets.size() << std::endl;
+      if (!compDets.empty()) {
+	for( const auto& detWithState : compDets ) {	
+	  auto range = hits.equal_range(detWithState.first->geographicalId(),cmp);	  
+	  for( auto detitr = range.first; detitr != range.second; ++detitr ) {
+	    auto best = detitr->end();
+	    double best_chi2 = std::numeric_limits<double>::max();
+	    for( auto itr = detitr->begin(); itr != detitr->end(); ++itr ) {
+	      auto est =  theEstimator.estimate(detWithState.second,*itr);
+	      if( est.first && est.second < best_chi2 ) { // just take the best chi2
+		best = itr;
+		best_chi2 = est.second;
+	      }
 	    }
-	  }
-	  if( best != detitr->end() ) {
-	    output.push_back(hitbuilder.build(&*best));
-	  }
-	}	  	  
-      }      
+	    if( best != detitr->end() ) {
+	      output.push_back(hitbuilder.build(&*best));
+	    }
+	  }	  	  
+	}      
+      }
     }
   }
 }
@@ -407,7 +405,7 @@ reco::Track TrackExtenderWithMTDT<TrackCollection>::buildTrack(const reco::Track
 							       const MagneticField* field,
 							       const Propagator* thePropagator,
 							       bool hasMTD,
-							       float& pathLength) const {  
+							       float& pathLengthOut) const {  
   std::unique_ptr<Propagator> trkProp(thePropagator->clone());
 
   // get the state closest to the beamline
@@ -440,7 +438,7 @@ reco::Track TrackExtenderWithMTDT<TrackCollection>::buildTrack(const reco::Track
   
   double t0 = 0.;
   double covt0t0 = -1.;
-  pathLength = -1.f; // if there is no MTD flag the pathlength with -1
+  pathLengthOut = -1.f; // if there is no MTD flag the pathlength with -1
   double betaOut = 0.;
 
   //compute path length for time backpropagation, using first MTD hit for the momentum
@@ -505,7 +503,7 @@ reco::Track TrackExtenderWithMTDT<TrackCollection>::buildTrack(const reco::Track
       double gammasq = 1. + magp*magp/mpi/mpi;
       double beta = std::sqrt(1.-1./gammasq);
       double dt = pathlength/beta/c;
-      pathLength = pathlength; // set path length if we've got a timing hit
+      pathLengthOut = pathlength; // set path length if we've got a timing hit
       t0 = thit - dt;
       covt0t0 = thiterror*thiterror;
       beta = betaOut;
@@ -522,7 +520,7 @@ reco::Track TrackExtenderWithMTDT<TrackCollection>::buildTrack(const reco::Track
 template<class TrackCollection>
 reco::TrackExtra TrackExtenderWithMTDT<TrackCollection>::buildTrackExtra(const Trajectory& trajectory) const {
 
-  static const string metname = "MTD|RecoMTD|TrackExtenderWithMTD";
+  static const string metname = "TrackExtenderWithMTD";
 
   const Trajectory::RecHitContainer transRecHits = trajectory.recHits();
   
@@ -564,7 +562,9 @@ reco::TrackExtra TrackExtenderWithMTDT<TrackCollection>::buildTrackExtra(const T
   GlobalPoint hitPos = (outerRecHit->isValid()) ? outerRecHit->globalPosition() :  outerTSOS.globalParameters().position() ;
   
   if(!inside) {
-    LogTrace(metname)<<"The Global Muon outerMostMeasurementState is not compatible with the recHit detector! Setting outerMost postition to recHit position if recHit isValid: " << outerRecHit->isValid();
+    LogTrace(metname)
+      << "The Global Muon outerMostMeasurementState is not compatible with the recHit detector!"
+      << " Setting outerMost postition to recHit position if recHit isValid: " << outerRecHit->isValid();
     LogTrace(metname)<<"From " << outerTSOSPos << " to " <<  hitPos;
   }
   
