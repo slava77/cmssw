@@ -355,7 +355,6 @@ TrackExtenderWithMTDT<TrackCollection>::tryBTLLayers(const TrackType& track,
 						     const MagneticField* field,
 						     const Propagator* prop) const {
   std::unique_ptr<Propagator> trkProp(prop->clone());
-  //trkProp->setPropagationDirection(track.seedRef()->direction());
   
   TransientTrackingRecHit::ConstRecHitContainer output;
   const vector<const DetLayer*>& layers = geo->allBTLLayers();
@@ -378,7 +377,6 @@ TrackExtenderWithMTDT<TrackCollection>::tryETLLayers(const TrackType& track,
 						     const MagneticField* field,
 						     const Propagator* prop) const {
   std::unique_ptr<Propagator> trkProp(prop->clone());
-  //trkProp->setPropagationDirection(track.seedRef()->direction());
 
   TransientTrackingRecHit::ConstRecHitContainer output;
   const vector<const DetLayer*>& layers = geo->allETLLayers();
@@ -411,7 +409,6 @@ reco::Track TrackExtenderWithMTDT<TrackCollection>::buildTrack(const reco::Track
 							       bool hasMTD,
 							       float& pathLength) const {  
   std::unique_ptr<Propagator> trkProp(thePropagator->clone());
-  //trkProp->setPropagationDirection(orig.seedRef()->direction());
 
   // get the state closest to the beamline
   TrajectoryStateOnSurface stateForProjectionToBeamLineOnSurface = 
