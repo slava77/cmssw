@@ -77,12 +77,6 @@ MTDCPEBase::setTheClu( DetParam const & dp, ClusterParam & cp ) const
 {   
 }
 
-std::unique_ptr<MTDCPEBase::ClusterParam> MTDCPEBase::createClusterParam(const FTLCluster & cl) const
-{
-  return std::unique_ptr<ClusterParam>(new ClusterParam(cl));
-}
-
-
 //------------------------------------------------------------------------
 MTDCPEBase::DetParam const & MTDCPEBase::detParam(const GeomDetUnit & det) const 
 {
