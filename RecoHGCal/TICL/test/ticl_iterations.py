@@ -39,7 +39,7 @@ def TICL_iterations_withReco(process):
   process.FilteredLayerClusters = FilteredLayerClusters.clone()
   process.FilteredLayerClusters.algo_number = 8
   process.FilteredLayerClusters.iteration_label = "algo8"
-  process.FilteredLayerClusters.LayerClustersInputMask = cms.InputTag("TrackstersMIP", "TrackstersByCA")
+  process.FilteredLayerClusters.LayerClustersInputMask = cms.InputTag("TrackstersMIP")
   process.Tracksters = Tracksters.clone()
   process.Tracksters.original_layerclusters_mask = cms.InputTag("TrackstersMIP")
   process.Tracksters.filtered_layerclusters_mask = cms.InputTag("FilteredLayerClusters", "algo8")
