@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
 
 class HGCDoublet {
@@ -79,7 +80,7 @@ class HGCDoublet {
       for (int j = 0; j < vs; ++j) {
         ok[j] = areAligned(xi[j], yi[j], zi[j], xo, yo, zo, minCosTheta, minCosPointing, debug);
         if (debug) {
-          std::cout << "Are aligned for InnerDoubletId: " << i + j << " is " << ok[j] << std::endl;
+          LogDebug("HGCDoublet") << "Are aligned for InnerDoubletId: " << i + j << " is " << ok[j] << std::endl;
         }
       }
       for (int j = 0; j < vs; ++j) {
@@ -96,7 +97,7 @@ class HGCDoublet {
     loop(lim, nDoublets - lim);
 
     if (debug) {
-      std::cout << "Found " << theInnerNeighbors_.size() << " compatible doublets out of "
+      LogDebug("HGCDoublet") << "Found " << theInnerNeighbors_.size() << " compatible doublets out of "
                 << nDoublets << " considered" << std::endl;
     }
     return theInnerNeighbors_.empty();
@@ -120,7 +121,7 @@ class HGCDoublet {
     // angle between the vectors
     auto cosTheta = dot / (mag1 * mag2);
     if (debug) {
-      std::cout << "dot: " << dot << " mag1: " << mag1 << " mag2: " << mag2
+      LogDebug("HGCDoublet") << "dot: " << dot << " mag1: " << mag1 << " mag2: " << mag2
                 << " cosTheta: " << cosTheta << " isWithinLimits: " << (cosTheta > minCosTheta)
                 << std::endl;
     }
@@ -134,7 +135,7 @@ class HGCDoublet {
     auto mag_pointing = std::sqrt(xi * xi + yi * yi + zi * zi);
     auto cosTheta_pointing = dot_pointing / (mag2 * mag_pointing);
     if (debug) {
-      std::cout << "dot_pointing: " << dot_pointing << " mag_pointing: " << mag_pointing
+      LogDebug("HGCDoublet") << "dot_pointing: " << dot_pointing << " mag_pointing: " << mag_pointing
                 << " mag2: " << mag2 << " cosTheta_pointing: " << cosTheta_pointing
                 << " isWithinLimits: " << (cosTheta_pointing < minCosPointing) << std::endl;
     }
