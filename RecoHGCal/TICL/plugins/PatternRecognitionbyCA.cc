@@ -21,7 +21,7 @@ void PatternRecognitionbyCA::fillHistogram(
     // getting the layer Id from the detId of the first hit of the layerCluster
     const auto firstHitDetId = lc.hitsAndFractions()[0].first;
     int layer = rhtools_.getLayerWithOffset(firstHitDetId) +
-                ticlConstants::maxNumberOfLayers * ((rhtools_.zside(firstHitDetId) + 1) >> 1) - 1;
+                rhtools_.lastLayerFH() * ((rhtools_.zside(firstHitDetId) + 1) >> 1) - 1;
     assert(layer >= 0);
     auto etaBin = getEtaBin(lc.eta());
     auto phiBin = getPhiBin(lc.phi());
@@ -49,7 +49,8 @@ void PatternRecognitionbyCA::makeTracksters(const edm::Event &ev, const edm::Eve
   std::vector<HGCDoublet::HGCntuplet> foundNtuplets;
   fillHistogram(layerClusters, mask);
   theGraph_.makeAndConnectDoublets(histogram_, nEtaBins_, nPhiBins_, layerClusters, 2, 2,
-                                   min_cos_theta_, min_cos_pointing_, missing_layers_);
+                                   min_cos_theta_, min_cos_pointing_, missing_layers_,
+                                   rhtools_.lastLayerFH());
   theGraph_.findNtuplets(foundNtuplets, min_clusters_per_ntuplet_);
   //#ifdef FP_DEBUG
   const auto &doublets = theGraph_.getAllDoublets();

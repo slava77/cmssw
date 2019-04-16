@@ -11,17 +11,17 @@ void HGCGraph::makeAndConnectDoublets(const std::vector<std::vector<std::vector<
                                       int nEtaBins, int nPhiBins,
                                       const std::vector<reco::CaloCluster> &layerClusters,
                                       int deltaIEta, int deltaIPhi, float minCosTheta,
-                                      float minCosPointing, int missing_layers) {
+                                      float minCosPointing, int missing_layers, int maxNumberOfLayers) {
   isOuterClusterOfDoublets_.clear();
   isOuterClusterOfDoublets_.resize(layerClusters.size());
   allDoublets_.clear();
   theRootDoublets_.clear();
   for (int zSide = 0; zSide < 2; ++zSide) {
-    for (int il = 0; il < ticlConstants::maxNumberOfLayers - 1; ++il) {
+    for (int il = 0; il < maxNumberOfLayers - 1; ++il) {
       for (int outer_layer = 0;
-           outer_layer < std::min(1 + missing_layers, ticlConstants::maxNumberOfLayers - 1 - il);
+           outer_layer < std::min(1 + missing_layers, maxNumberOfLayers - 1 - il);
            ++outer_layer) {
-        int currentInnerLayerId = il + ticlConstants::maxNumberOfLayers * zSide;
+        int currentInnerLayerId = il + maxNumberOfLayers * zSide;
         int currentOuterLayerId = currentInnerLayerId + 1 + outer_layer;
         auto &outerLayerHisto = h[currentOuterLayerId];
         auto &innerLayerHisto = h[currentInnerLayerId];
