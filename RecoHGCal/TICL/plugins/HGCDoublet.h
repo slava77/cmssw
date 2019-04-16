@@ -19,41 +19,41 @@ class HGCDoublet {
              const std::vector<reco::CaloCluster> *layerClusters)
       : layerClusters_(layerClusters),
         theDoubletId_(doubletId),
-        theInnerClusterId_(innerClusterId),
-        theOuterClusterId_(outerClusterId),
-        theInnerR_((*layerClusters)[innerClusterId].position().r()),
-        theOuterR_((*layerClusters)[outerClusterId].position().r()),
-        theInnerX_((*layerClusters)[innerClusterId].x()),
-        theOuterX_((*layerClusters)[outerClusterId].x()),
-        theInnerY_((*layerClusters)[innerClusterId].y()),
-        theOuterY_((*layerClusters)[outerClusterId].y()),
-        theInnerZ_((*layerClusters)[innerClusterId].z()),
-        theOuterZ_((*layerClusters)[outerClusterId].z()),
+        innerClusterId_(innerClusterId),
+        outerClusterId_(outerClusterId),
+        innerR_((*layerClusters)[innerClusterId].position().r()),
+        outerR_((*layerClusters)[outerClusterId].position().r()),
+        innerX_((*layerClusters)[innerClusterId].x()),
+        outerX_((*layerClusters)[outerClusterId].x()),
+        innerY_((*layerClusters)[innerClusterId].y()),
+        outerY_((*layerClusters)[outerClusterId].y()),
+        innerZ_((*layerClusters)[innerClusterId].z()),
+        outerZ_((*layerClusters)[outerClusterId].z()),
         alreadyVisited_(false) {}
 
-  double getInnerX() const { return theInnerX_; }
+  double getInnerX() const { return innerX_; }
 
-  double getOuterX() const { return theOuterX_; }
+  double getOuterX() const { return outerX_; }
 
-  double getInnerY() const { return theInnerY_; }
+  double getInnerY() const { return innerY_; }
 
-  double getOuterY() const { return theOuterY_; }
+  double getOuterY() const { return outerY_; }
 
-  double getInnerZ() const { return theInnerZ_; }
+  double getInnerZ() const { return innerZ_; }
 
-  double getOuterZ() const { return theOuterZ_; }
+  double getOuterZ() const { return outerZ_; }
 
-  double getInnerR() const { return theInnerR_; }
+  double getInnerR() const { return innerR_; }
 
-  double getOuterR() const { return theOuterZ_; }
+  double getOuterR() const { return outerZ_; }
 
-  int getInnerClusterId() const { return theInnerClusterId_; }
+  int getInnerClusterId() const { return innerClusterId_; }
 
-  int getOuterClusterId() const { return theOuterClusterId_; }
+  int getOuterClusterId() const { return outerClusterId_; }
 
-  void tagAsOuterNeighbor(unsigned int otherDoublet) { theOuterNeighbors_.push_back(otherDoublet); }
+  void tagAsOuterNeighbor(unsigned int otherDoublet) { outerNeighbors_.push_back(otherDoublet); }
 
-  void tagAsInnerNeighbor(unsigned int otherDoublet) { theInnerNeighbors_.push_back(otherDoublet); }
+  void tagAsInnerNeighbor(unsigned int otherDoublet) { innerNeighbors_.push_back(otherDoublet); }
 
   bool checkCompatibilityAndTag(std::vector<HGCDoublet> &allDoublets,
                                 const std::vector<int> &innerDoublets, float minCosTheta,
@@ -97,14 +97,14 @@ class HGCDoublet {
     loop(lim, nDoublets - lim);
 
     if (debug) {
-      LogDebug("HGCDoublet") << "Found " << theInnerNeighbors_.size() << " compatible doublets out of "
+      LogDebug("HGCDoublet") << "Found " << innerNeighbors_.size() << " compatible doublets out of "
                 << nDoublets << " considered" << std::endl;
     }
-    return theInnerNeighbors_.empty();
+    return innerNeighbors_.empty();
   }
 
   int areAligned(double xi, double yi, double zi, double xo, double yo, double zo,
-                 float minCosTheta, float minCosPointing, bool debug = false) {
+                 float minCosTheta, float minCosPointing, bool debug = false) const {
     auto dx1 = xo - xi;
     auto dy1 = yo - yi;
     auto dz1 = zo - zi;
@@ -147,30 +147,30 @@ class HGCDoublet {
     if (!alreadyVisited_) {
       alreadyVisited_ = true;
       tmpNtuplet.push_back(theDoubletId_);
-      unsigned int numberOfOuterNeighbors = theOuterNeighbors_.size();
+      unsigned int numberOfOuterNeighbors = outerNeighbors_.size();
       for (unsigned int i = 0; i < numberOfOuterNeighbors; ++i) {
-        allDoublets[theOuterNeighbors_[i]].findNtuplets(allDoublets, tmpNtuplet);
+        allDoublets[outerNeighbors_[i]].findNtuplets(allDoublets, tmpNtuplet);
       }
     }
   }
 
  private:
   const std::vector<reco::CaloCluster> *layerClusters_;
-  std::vector<int> theOuterNeighbors_;
-  std::vector<int> theInnerNeighbors_;
+  std::vector<int> outerNeighbors_;
+  std::vector<int> innerNeighbors_;
 
   const int theDoubletId_;
-  const int theInnerClusterId_;
-  const int theOuterClusterId_;
+  const int innerClusterId_;
+  const int outerClusterId_;
 
-  const double theInnerR_;
-  const double theOuterR_;
-  const double theInnerX_;
-  const double theOuterX_;
-  const double theInnerY_;
-  const double theOuterY_;
-  const double theInnerZ_;
-  const double theOuterZ_;
+  const double innerR_;
+  const double outerR_;
+  const double innerX_;
+  const double outerX_;
+  const double innerY_;
+  const double outerY_;
+  const double innerZ_;
+  const double outerZ_;
   bool alreadyVisited_;
 };
 
