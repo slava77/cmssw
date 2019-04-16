@@ -32,11 +32,9 @@ class TrackstersToMultiClusterProducer : public edm::stream::EDProducer<> {
 DEFINE_FWK_MODULE(TrackstersToMultiClusterProducer);
 
 TrackstersToMultiClusterProducer::TrackstersToMultiClusterProducer(const edm::ParameterSet& ps)
-    : label_(ps.getParameter<std::string>("label")) {
-  layer_clusters_token_ =
-      consumes<std::vector<reco::CaloCluster>>(ps.getParameter<edm::InputTag>("LayerClusters"));
-  tracksters_token_ =
-      consumes<std::vector<Trackster>>(ps.getParameter<edm::InputTag>("Tracksters"));
+    : label_(ps.getParameter<std::string>("label")),
+  layer_clusters_token_(consumes<std::vector<reco::CaloCluster>>(ps.getParameter<edm::InputTag>("LayerClusters"))),
+  tracksters_token_(consumes<std::vector<Trackster>>(ps.getParameter<edm::InputTag>("Tracksters"))) {
   produces<std::vector<reco::HGCalMultiCluster>>(label_);
 }
 
