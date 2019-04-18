@@ -245,3 +245,12 @@ float GsfElectron::p4Error( P4Kind kind ) const
    }
  }
 
+float GsfElectron::closestTrackChi2() const
+ { 
+   return  closestTrackValid() ? closestCtfTrackRef()->normalizedChi2() : 0. ; 
+ }
+ 
+int GsfElectron::closestTrackNHits() const
+ { 
+   return closestTrackValid() ? closestCtfTrackRef()->hitPattern().trackerLayersWithMeasurement() : -1 ;  
+ }
