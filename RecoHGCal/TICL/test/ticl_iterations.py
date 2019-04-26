@@ -11,9 +11,9 @@ from RecoLocalCalo.HGCalRecProducers.hgcalLayerClusters_cff import hgcalLayerClu
 from RecoLocalCalo.HGCalRecProducers.hgcalMultiClusters_cfi import hgcalMultiClusters
 
 
-from RecoHGCal.TICL.Tracksters_cfi import tracksters
+from RecoHGCal.TICL.tracksters_cfi import tracksters
 from RecoHGCal.TICL.FilteredLayerClusters_cfi import FilteredLayerClusters
-from RecoHGCal.TICL.MultiClustersFromTracksters_cfi import multiClustersFromTracksters
+from RecoHGCal.TICL.multiClustersFromTracksters_cfi import multiClustersFromTracksters
 
 
 def TICL_iterations_withReco(process):
