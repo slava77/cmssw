@@ -13,6 +13,18 @@ def applyDeepBtagging( process, postfix="" ) :
     # update slimmed jets to include DeepFlavour (keep same name)
     # make clone for DeepFlavour-less slimmed jets, so output name is preserved
     addToProcessAndTask('slimmedJetsNoDeepFlavour', process.slimmedJets.clone(), process, task)
+    _btagDiscriminators = cms.PSet( names = cms.vstring(
+          'pfDeepFlavourJetTags:probb',
+          'pfDeepFlavourJetTags:probbb',
+          'pfDeepFlavourJetTags:problepb',
+          'pfDeepFlavourJetTags:probc',
+          'pfDeepFlavourJetTags:probuds',
+          'pfDeepFlavourJetTags:probg'
+    )
+    )
+    from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
+    run2_miniAOD_devel.toModify(_btagDiscriminators, names = _btagDiscriminators.names + ["pfDeepVertexJetTags:probb"])
+
     updateJetCollection(
        process,
        jetSource = cms.InputTag('slimmedJetsNoDeepFlavour'),
@@ -24,14 +36,7 @@ def applyDeepBtagging( process, postfix="" ) :
        muSource = cms.InputTag('slimmedMuons'),
        elSource = cms.InputTag('slimmedElectrons'),
        jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None'),
-       btagDiscriminators = [
-          'pfDeepFlavourJetTags:probb',
-          'pfDeepFlavourJetTags:probbb',
-          'pfDeepFlavourJetTags:problepb',
-          'pfDeepFlavourJetTags:probc',
-          'pfDeepFlavourJetTags:probuds',
-          'pfDeepFlavourJetTags:probg',
-       ],
+       btagDiscriminators = _btagDiscriminators.names.value(),
        postfix = 'SlimmedDeepFlavour'+postfix,
        printWarning = False
     )
