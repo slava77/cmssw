@@ -69,7 +69,7 @@ def TICL_iterations_withReco(process):
       process.FilteredLayerClusters,
       process.Tracksters,
       process.MultiClustersFromTracksters)
-  process.TICL = cms.Path(process.TICL_Task)
+  process.schedule.associate(process.TICL_Task)
   return process
 
 def TICL_iterations(process):
@@ -129,6 +129,7 @@ def TICL_iterations(process):
       process.Tracksters,
       process.MultiClustersFromTracksters,
       process.hgcalMultiClusters)
-  process.TICL = cms.Path(process.TICL_Task)
+  process.schedule = cms.Schedule(process.raw2digi_step,process.FEVTDEBUGHLToutput_step)
+  process.schedule.associate(process.TICL_Task)
   return process
 
