@@ -18,7 +18,6 @@
 
 #include "RecoBTag/FeatureTools/interface/SeedingTracksConverter.h"
 
-
 namespace btagbtvdeep {
     
         void seedingTracksToFeatures(edm::Handle<edm::View<reco::Candidate> > tracks,
@@ -30,7 +29,7 @@ namespace btagbtvdeep {
                                         std::vector<btagbtvdeep::SeedingTrackFeatures> & seedingT_features_vector
                                         ) 
         {
-            
+ 
             GlobalVector jetdirection(jet.px(),jet.py(),jet.pz());
             GlobalPoint pvp(pv.x(),pv.y(),pv.z());
                         
@@ -74,7 +73,6 @@ namespace btagbtvdeep {
                 if (reco::deltaR(it.track(), jet) > 0.4) continue;
                 
                 std::pair<bool,Measurement1D> ip = IPTools::absoluteImpactParameter3D(it, pv);
-                std::pair<bool,Measurement1D> ip2d = IPTools::absoluteTransverseImpactParameter(it, pv);
                 std::pair<double, Measurement1D> jet_dist =IPTools::jetTrackDistance(it, jetdirection, pv); 
                 TrajectoryStateOnSurface closest = IPTools::closestApproachToJet(it.impactPointState(),pv, jetdirection,it.field());
                 float length=999;
@@ -94,7 +92,7 @@ namespace btagbtvdeep {
                 
                 
                 btagbtvdeep::SeedingTrackInfoBuilder seedInfo;
-                seedInfo.buildSeedingTrackInfo(&(it), pv, jet, masses[selTrackCount-1], probabilityEstimator, computeProbabilities);
+                seedInfo.buildSeedingTrackInfo(&(it), pv, jet, masses[selTrackCount-1], ip, jet_dist.second.value(), length, probabilityEstimator, computeProbabilities);
 
                 unsigned int neighbourTrackCount=0;
                 
@@ -102,11 +100,14 @@ namespace btagbtvdeep {
                     
                     neighbourTrackCount+=1;
 
-                    if(tt==it) continue;
+                    if(neighbourTrackCount==selTrackCount) continue;
                     if(std::fabs(pv.z()-tt.track().vz())>0.1) continue;
 
+                    std::pair<bool,Measurement1D> t_ip = IPTools::absoluteImpactParameter3D(tt,pv);
+                    std::pair<bool,Measurement1D> t_ip2d = IPTools::absoluteTransverseImpactParameter(tt,pv);
+
                     btagbtvdeep::TrackPairInfoBuilder trackPairInfo;
-                    trackPairInfo.buildTrackPairInfo(&(it),&(tt),pv,masses[neighbourTrackCount-1],jetdirection);
+                    trackPairInfo.buildTrackPairInfo(&(it),&(tt),pv,masses[neighbourTrackCount-1],jetdirection, t_ip, t_ip2d);
                     sortedNeighboursMap.insert(std::make_pair(trackPairInfo.pca_distance(), trackPairInfo));
                     
                 }
@@ -118,15 +119,14 @@ namespace btagbtvdeep {
                     if(max_counter>=20) break;
                     btagbtvdeep::TrackPairFeatures tp_features;
                     
-                    int logOffset=0;
                     auto const& tp = im.second;
                     
                     tp_features.pt=(tp.track_pt()==0) ? 0: 1.0/tp.track_pt();
                     tp_features.eta=tp.track_eta();
                     tp_features.phi=tp.track_phi();
                     tp_features.mass=tp.track_candMass();
-                    tp_features.dz=(logOffset+log(fabs(tp.track_dz())))*((tp.track_dz() < 0) ? -1 : (tp.track_dz() > 0));
-                    tp_features.dxy=(logOffset+log(fabs(tp.track_dxy())))*((tp.track_dxy() < 0) ? -1 : (tp.track_dxy() > 0));
+                    tp_features.dz=logWithOffset(tp.track_dz());
+                    tp_features.dxy=logWithOffset(tp.track_dxy());
                     tp_features.ip3D=log(tp.track_ip3d());
                     tp_features.sip3D=log(tp.track_ip3dSig());
                     tp_features.ip2D=log(tp.track_ip2d());
@@ -177,8 +177,7 @@ namespace btagbtvdeep {
                 if(max_counter_seed>=10) break;
                 
                 btagbtvdeep::SeedingTrackFeatures seed_features;            
-                
-                int logOffset=0;
+
                 auto const& seed = im.second.first;
                 
                 seed_features.nearTracks=im.second.second;
@@ -186,16 +185,16 @@ namespace btagbtvdeep {
                 seed_features.eta=seed.eta();
                 seed_features.phi=seed.phi();
                 seed_features.mass=seed.mass();
-                seed_features.dz=(logOffset+log(fabs(seed.dz())))*((seed.dz() < 0) ? -1 : (seed.dz() > 0));
-                seed_features.dxy=(logOffset+log(fabs(seed.dxy())))*((seed.dxy() < 0) ? -1 : (seed.dxy() > 0));
+                seed_features.dz=logWithOffset(seed.dz());
+                seed_features.dxy=logWithOffset(seed.dxy());
                 seed_features.ip3D=log(seed.ip3d());
                 seed_features.sip3D=log(seed.sip3d());
                 seed_features.ip2D=log(seed.ip2d());
                 seed_features.sip2D=log(seed.sip2d());
-                seed_features.signedIp3D=(logOffset+log(fabs(seed.ip3d_Signed())))*((seed.ip3d_Signed() < 0) ? -1 : (seed.ip3d_Signed() > 0));
-                seed_features.signedSip3D=(logOffset+log(fabs(seed.sip3d_Signed())))*((seed.sip3d_Signed() < 0) ? -1 : (seed.sip3d_Signed() > 0));
-                seed_features.signedIp2D=(logOffset+log(fabs(seed.ip2d_Signed())))*((seed.ip2d_Signed() < 0) ? -1 : (seed.ip2d_Signed() > 0));
-                seed_features.signedSip2D=(logOffset+log(fabs(seed.sip2d_Signed())))*((seed.sip2d_Signed() < 0) ? -1 : (seed.sip2d_Signed() > 0));
+                seed_features.signedIp3D=logWithOffset(seed.ip3d_Signed());
+                seed_features.signedSip3D=logWithOffset(seed.sip3d_Signed());
+                seed_features.signedIp2D=logWithOffset(seed.ip2d_Signed());
+                seed_features.signedSip2D=logWithOffset(seed.sip2d_Signed());
                 seed_features.trackProbability3D=seed.trackProbability3D();
                 seed_features.trackProbability2D=seed.trackProbability2D();
                 seed_features.chi2reduced=seed.chi2reduced();
