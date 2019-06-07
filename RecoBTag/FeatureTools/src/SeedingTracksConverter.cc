@@ -19,41 +19,21 @@
 #include "RecoBTag/FeatureTools/interface/SeedingTracksConverter.h"
 
 namespace btagbtvdeep {
-    
-        void seedingTracksToFeatures(edm::Handle<edm::View<reco::Candidate> > tracks,
-                                        const reco::Jet & jet,
-                                        const reco::Vertex & pv,                                            
-                                        edm::ESHandle<TransientTrackBuilder> & track_builder,
-                                        HistogramProbabilityEstimator* probabilityEstimator,
-                                        bool computeProbabilities,
-                                        std::vector<btagbtvdeep::SeedingTrackFeatures> & seedingT_features_vector
-                                        ) 
+
+        void seedingTracksToFeatures(  const std::vector<reco::TransientTrack> & selectedTracks,
+                                       const std::vector<float> & masses,
+                                       const reco::Jet & jet,
+                                       const reco::Vertex & pv,
+                                       HistogramProbabilityEstimator* probabilityEstimator,
+                                       bool computeProbabilities,
+                                       std::vector<btagbtvdeep::SeedingTrackFeatures> & seedingT_features_vector
+                                    ) 
+
         {
  
             GlobalVector jetdirection(jet.px(),jet.py(),jet.pz());
             GlobalPoint pvp(pv.x(),pv.y(),pv.z());
-                        
-            std::vector<reco::TransientTrack> selectedTracks;          
-            std::vector<float> masses;
-                
-            for(typename edm::View<reco::Candidate>::const_iterator track = tracks->begin(); track != tracks->end(); ++track) {
-                
-                unsigned int k = track - tracks->begin();
-                
-                if(track->bestTrack() != nullptr && track->pt()>0.5) 
-                { 
 
-                    if (std::fabs(track->vz()-pv.z())<0.5)
-                    {
-                        selectedTracks.push_back(track_builder->build(tracks->ptrAt(k)));
-                        masses.push_back(track->mass());
-                                                
-                    }
-                    
-                }
-                
-            }
-                
             std::multimap<double,std::pair<btagbtvdeep::SeedingTrackInfoBuilder,std::vector<btagbtvdeep::TrackPairFeatures>>> sortedSeedsMap;
             std::multimap<double,btagbtvdeep::TrackPairInfoBuilder> sortedNeighboursMap;
             
@@ -62,6 +42,11 @@ namespace btagbtvdeep {
             sortedSeedsMap.clear();
             seedingT_features_vector.clear();
             
+            std::vector<std::pair<bool,Measurement1D>> absIP3D(selectedTracks.size()); 
+            std::vector<std::pair<bool,Measurement1D>> absIP2D(selectedTracks.size());
+            std::vector<bool> absIP3D_filled(selectedTracks.size(), false);
+            std::vector<bool> absIP2D_filled(selectedTracks.size(), false);
+
             unsigned int selTrackCount=0;
 
             for(auto const& it : selectedTracks){
@@ -73,6 +58,10 @@ namespace btagbtvdeep {
                 if (reco::deltaR(it.track(), jet) > 0.4) continue;
                 
                 std::pair<bool,Measurement1D> ip = IPTools::absoluteImpactParameter3D(it, pv);
+
+                absIP3D[selTrackCount-1]=ip;
+                absIP3D_filled[selTrackCount-1]=true;
+
                 std::pair<double, Measurement1D> jet_dist =IPTools::jetTrackDistance(it, jetdirection, pv); 
                 TrajectoryStateOnSurface closest = IPTools::closestApproachToJet(it.impactPointState(),pv, jetdirection,it.field());
                 float length=999;
@@ -90,9 +79,13 @@ namespace btagbtvdeep {
                       length<5. )) 
                     continue;                
                 
+                std::pair<bool,Measurement1D> ip2d = IPTools::absoluteTransverseImpactParameter(it, pv);
+
+                absIP2D[selTrackCount-1]=ip2d;
+                absIP2D_filled[selTrackCount-1]=true;
                 
                 btagbtvdeep::SeedingTrackInfoBuilder seedInfo;
-                seedInfo.buildSeedingTrackInfo(&(it), pv, jet, masses[selTrackCount-1], ip, jet_dist.second.value(), length, probabilityEstimator, computeProbabilities);
+                seedInfo.buildSeedingTrackInfo(&(it), pv, jet, masses[selTrackCount-1], ip, ip2d, jet_dist.second.value(), length, probabilityEstimator, computeProbabilities);
 
                 unsigned int neighbourTrackCount=0;
                 
@@ -103,8 +96,21 @@ namespace btagbtvdeep {
                     if(neighbourTrackCount==selTrackCount) continue;
                     if(std::fabs(pv.z()-tt.track().vz())>0.1) continue;
 
-                    std::pair<bool,Measurement1D> t_ip = IPTools::absoluteImpactParameter3D(tt,pv);
-                    std::pair<bool,Measurement1D> t_ip2d = IPTools::absoluteTransverseImpactParameter(tt,pv);
+                    //avoid calling IPs twice
+                    if(!absIP2D_filled[neighbourTrackCount-1])
+                    {
+                        absIP2D[neighbourTrackCount-1]=IPTools::absoluteTransverseImpactParameter(tt,pv);
+                        absIP2D_filled[neighbourTrackCount-1]=true;
+                    }
+
+                    if(!absIP3D_filled[neighbourTrackCount-1])
+                    {
+                        absIP3D[neighbourTrackCount-1]= IPTools::absoluteImpactParameter3D(tt,pv); 
+                        absIP3D_filled[neighbourTrackCount-1]=true;
+                    }
+
+                    std::pair<bool,Measurement1D> t_ip = absIP3D[neighbourTrackCount-1];
+                    std::pair<bool,Measurement1D> t_ip2d = absIP2D[neighbourTrackCount-1];
 
                     btagbtvdeep::TrackPairInfoBuilder trackPairInfo;
                     trackPairInfo.buildTrackPairInfo(&(it),&(tt),pv,masses[neighbourTrackCount-1],jetdirection, t_ip, t_ip2d);
