@@ -34,8 +34,7 @@ namespace Rfit {
 
 class HelixFitOnGPU {
 public:
-  using HitsOnGPU = TrackingRecHit2DSOAView;
-  using HitsOnCPU = TrackingRecHit2DCUDA;
+  using HitsView = TrackingRecHit2DSOAView;
 
   using Tuples = pixelTrack::HitContainer;
   using OutputSoA = pixelTrack::TrackSoA;
@@ -46,18 +45,19 @@ public:
   ~HelixFitOnGPU() { deallocateOnGPU(); }
 
   void setBField(double bField) { bField_ = bField; }
-  void launchRiemannKernels(HitsOnCPU const &hh,
+  void launchRiemannKernels(HitsView const *hv,
                             uint32_t nhits,
                             uint32_t maxNumberOfTuples,
                             cuda::stream_t<> &cudaStream);
-  void launchBrokenLineKernels(HitsOnCPU const &hh,
+  void launchBrokenLineKernels(HitsView const *hv,
                                uint32_t nhits,
                                uint32_t maxNumberOfTuples,
                                cuda::stream_t<> &cudaStream);
 
-  void allocateOnGPU(Tuples const *tuples,
-                     TupleMultiplicity const *tupleMultiplicity,
-                     OutputSoA * outputSoA);
+  void launchRiemannKernelsOnCPU(HitsView const *hv, uint32_t nhits, uint32_t maxNumberOfTuples);
+  void launchBrokenLineKernelsOnCPU(HitsView const *hv, uint32_t nhits, uint32_t maxNumberOfTuples);
+
+  void allocateOnGPU(Tuples const *tuples, TupleMultiplicity const *tupleMultiplicity, OutputSoA *outputSoA);
   void deallocateOnGPU();
 
 private:
@@ -66,7 +66,7 @@ private:
   // fowarded
   Tuples const *tuples_d = nullptr;
   TupleMultiplicity const *tupleMultiplicity_d = nullptr;
-  OutputSoA * outputSoa_d;
+  OutputSoA *outputSoa_d;
   float bField_;
 
   const bool fit5as4_;

@@ -17,10 +17,6 @@
 
 namespace gpuPixelDoubletsAlgos {
 
-  constexpr uint32_t MaxNumOfDoublets = CAConstants::maxNumberOfDoublets();  // not really relevant
-
-  constexpr uint32_t MaxNumOfActiveDoublets = CAConstants::maxNumOfActiveDoublets();
-
   using CellNeighbors = CAConstants::CellNeighbors;
   using CellTracks = CAConstants::CellTracks;
   using CellNeighborsVector = CAConstants::CellNeighborsVector;
@@ -41,7 +37,8 @@ namespace gpuPixelDoubletsAlgos {
                                                     bool ideal_cond,
                                                     bool doClusterCut,
                                                     bool doZCut,
-                                                    bool doPhiCut) {
+                                                    bool doPhiCut,
+                                                    uint32_t maxNumOfDoublets) {
     // ysize cuts (z in the barrel)  times 8
     // these are used if doClusterCut is true
     constexpr int minYsizeB1 = 36;
@@ -49,9 +46,8 @@ namespace gpuPixelDoubletsAlgos {
     constexpr int maxDYsize12 = 28;
     constexpr int maxDYsize = 20;
     constexpr int maxDYPred = 20;
-    constexpr float dzdrFact = 8*0.0285/0.015;  // from dz/dr to "DY"
+    constexpr float dzdrFact = 8 * 0.0285 / 0.015;  // from dz/dr to "DY"
 
-    int16_t mes;
     bool isOuterLadder = ideal_cond;
 
     using Hist = TrackingRecHit2DSOAView::Hist;
@@ -82,8 +78,9 @@ namespace gpuPixelDoubletsAlgos {
     auto idy = blockIdx.y * blockDim.y + threadIdx.y;
     auto first = threadIdx.x;
     auto stride = blockDim.x;
+
+    uint32_t pairLayerId = 0;  // cannot go backward
     for (auto j = idy; j < ntot; j += blockDim.y * gridDim.y) {
-      uint32_t pairLayerId = 0;
       while (j >= innerLayerCumulativeSize[pairLayerId++])
         ;
       --pairLayerId;  // move to lower_bound ??
@@ -107,14 +104,18 @@ namespace gpuPixelDoubletsAlgos {
       assert(i < offsets[inner + 1]);
 
       // found hit corresponding to our cuda thread, now do the job
+      auto mi = hh.detectorIndex(i);
+      if (mi > 2000)
+        continue;  // invalid
+
       auto mez = hh.zGlobal(i);
 
       if (doZCut && (mez < minz[pairLayerId] || mez > maxz[pairLayerId]))
         continue;
 
+      int16_t mes = -1;  // make compiler happy
       if (doClusterCut) {
         // if ideal treat inner ladder as outer
-        auto mi = hh.detectorIndex(i);
         if (inner == 0)
           assert(mi < 96);
         isOuterLadder = ideal_cond ? true : 0 == (mi / 8) % 2;  // only for B1/B2/B3 B4 is opposite, FPIX:noclue...
@@ -122,7 +123,7 @@ namespace gpuPixelDoubletsAlgos {
         // in any case we always test mes>0 ...
         mes = inner > 0 || isOuterLadder ? hh.clusterSizeY(i) : -1;
 
-        if (inner == 0 && outer > 3 )  // B1 and F1
+        if (inner == 0 && outer > 3)  // B1 and F1
           if (mes > 0 && mes < minYsizeB1)
             continue;                 // only long cluster  (5*8)
         if (inner == 1 && outer > 3)  // B2 and F1
@@ -156,16 +157,15 @@ namespace gpuPixelDoubletsAlgos {
       auto zsizeCut = [&](int j) {
         auto onlyBarrel = outer < 4;
         auto so = hh.clusterSizeY(j);
-        auto dy = inner == 0 ? maxDYsize12  : maxDYsize;
+        auto dy = inner == 0 ? maxDYsize12 : maxDYsize;
         // in the barrel cut on difference in size
         // in the endcap on the prediction on the first layer (actually in the barrel only: happen to be safe for endcap as well)
         // FIXME move pred cut to z0cutoff to optmize loading of and computaiton ...
         auto zo = hh.zGlobal(j);
         auto ro = hh.rGlobal(j);
-        return onlyBarrel ?
-                     mes > 0 && so > 0 && std::abs(so - mes) > dy :
-                     (inner<4) && mes>0 
-                     && std::abs(mes - int(std::abs((mez-zo)/(mer-ro))*dzdrFact+0.5f)) > maxDYPred;
+        return onlyBarrel ? mes > 0 && so > 0 && std::abs(so - mes) > dy
+                          : (inner < 4) && mes > 0 &&
+                                std::abs(mes - int(std::abs((mez - zo) / (mer - ro)) * dzdrFact + 0.5f)) > maxDYPred;
       };
 
       auto iphicut = phicuts[pairLayerId];
@@ -194,17 +194,20 @@ namespace gpuPixelDoubletsAlgos {
           auto oi = __ldg(p);
           assert(oi >= offsets[outer]);
           assert(oi < offsets[outer + 1]);
+          auto mo = hh.detectorIndex(oi);
+          if (mo > 2000)
+            continue;  //    invalid
           auto mop = hh.iphi(oi);
           if (std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop))) > iphicut)
             continue;
           if (doPhiCut) {
             if (doClusterCut && zsizeCut(oi))
               continue;
-            if (z0cutoff(oi) || ptcut(oi,mop))
+            if (z0cutoff(oi) || ptcut(oi, mop))
               continue;
           }
           auto ind = atomicAdd(nCells, 1);
-          if (ind >= MaxNumOfDoublets) {
+          if (ind >= maxNumOfDoublets) {
             atomicSub(nCells, 1);
             break;
           }  // move to SimpleVector??
