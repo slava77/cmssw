@@ -126,11 +126,11 @@ addJetCollection(
 )
 process.patJetsAK4PF.addTagInfos = True
 
-# uncomment the following lines to add ak8PFJetsCHS with new b-tags to your PAT output
+# uncomment the following lines to add ak8PFJetsPuppi with new b-tags to your PAT output
 addJetCollection(
    process,
    labelName = 'AK8PFCHS',
-   jetSource = cms.InputTag('ak8PFJetsCHS'),
+   jetSource = cms.InputTag('ak8PFJetsPuppi'),
    jetCorrections = ('AK8PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'Type-2'),
    algo = 'AK',
    rParam = 0.8,
@@ -138,19 +138,19 @@ addJetCollection(
 )
 process.patJetsAK8PFCHS.addTagInfos = True
 
-# uncomment the following lines to add subjets of ak8PFJetsCHSSoftDrop with new b-tags to your PAT output
+# uncomment the following lines to add subjets of ak8PFJetsPuppiSoftDrop with new b-tags to your PAT output
 from pdb import set_trace
 addJetCollection(
    process,
    labelName = 'AK8PFCHSSoftDropSubjets',
-   jetSource = cms.InputTag('ak8PFJetsCHSSoftDrop','SubJets'),
+   jetSource = cms.InputTag('ak8PFJetsPuppiSoftDrop','SubJets'),
    jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'Type-2'), # Using AK4 JECs for subjets which might not be completely appropriate
    algo = 'AK',  # needed for subjet flavor clustering
    btagDiscriminators = btagDiscriminators,
    explicitJTA = True,  # needed for subjet b tagging
    svClustering = True, # needed for subjet b tagging
-   fatJets = cms.InputTag("ak8PFJetsCHS"),               # needed for subjet flavor clustering
-   groomedFatJets = cms.InputTag("ak8PFJetsCHSSoftDrop"), # needed for subjet flavor clustering
+   fatJets = cms.InputTag("ak8PFJetsPuppi"),               # needed for subjet flavor clustering
+   groomedFatJets = cms.InputTag("ak8PFJetsPuppiSoftDrop"), # needed for subjet flavor clustering
    rParam = 0.8, # needed for subjet flavor clustering
 )
 process.patJetsAK8PFCHSSoftDropSubjets.addTagInfos = True
