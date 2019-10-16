@@ -50,12 +50,12 @@ switchJetCollection(
    )
 process.out.outputCommands.append( 'drop *_selectedPatJets_caloTowers_*' )
 
-# uncomment the following lines to add ak8PFJetsCHSSoftDrop to your PAT output
+# uncomment the following lines to add ak8PFJetsPuppiSoftDrop to your PAT output
 labelAK8PFCHSSoftDrop = 'AK8PFCHSSoftDrop'
 addJetCollection(
    process,
    labelName = labelAK8PFCHSSoftDrop,
-   jetSource = cms.InputTag('ak8PFJetsCHSSoftDrop',''),
+   jetSource = cms.InputTag('ak8PFJetsPuppiSoftDrop',''),
    algo = 'AK',
    rParam = 0.8,
    genJetCollection = cms.InputTag('ak8GenJets'),
