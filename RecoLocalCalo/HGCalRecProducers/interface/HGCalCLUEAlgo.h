@@ -16,6 +16,7 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 
 #include "RecoLocalCalo/HGCalRecProducers/interface/HGCalLayerTiles.h"
+#include "RecoLocalCalo/HGCalRecProducers/interface/HFNoseLayerTiles.h"
 
 #include "RecoLocalCalo/HGCalRecAlgos/interface/RecHitTools.h"
 
@@ -211,6 +212,7 @@ private:
 };
 
 using HGCalCLUEAlgo = HGCalCLUEAlgoT<HGCalLayerTiles>;
+using HFNoseCLUEAlgo = HGCalCLUEAlgoT<HFNoseLayerTiles>;
 
 
 #endif
