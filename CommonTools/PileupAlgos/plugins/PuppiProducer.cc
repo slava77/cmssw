@@ -42,21 +42,23 @@ PuppiProducer::PuppiProducer(const edm::ParameterSet& iConfig) {
   tokenPFCandidates_ = consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("candName"));
   tokenVertices_ = consumes<VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexName"));
 
-  produces<edm::ValueMap<float>>();
-  produces<edm::ValueMap<LorentzVector>>();
-  produces<edm::ValueMap<reco::CandidatePtr>>();
+  ptokenPupOut_ = produces<edm::ValueMap<float>>();
+  ptokenP4PupOut_ = produces<edm::ValueMap<LorentzVector>>();
+  ptokenValues_ = produces<edm::ValueMap<reco::CandidatePtr>>();
 
   if (fUseExistingWeights || fClonePackedCands)
-    produces<pat::PackedCandidateCollection>();
-  else
-    produces<reco::PFCandidateCollection>();
+    ptokenPackedPuppiCandidates_ = produces<pat::PackedCandidateCollection>();
+  else {
+    ptokenPuppiCandidates_ = produces<reco::PFCandidateCollection>();
+    ptokenPuppiCandidatesWeighted_ = produces<reco::PFCandidateCollection>("p4scaled");
+  }
 
   if (fPuppiDiagnostics) {
-    produces<double>("PuppiNAlgos");
-    produces<std::vector<double>>("PuppiRawAlphas");
-    produces<std::vector<double>>("PuppiAlphas");
-    produces<std::vector<double>>("PuppiAlphasMed");
-    produces<std::vector<double>>("PuppiAlphasRms");
+    ptokenNalgos_ = produces<double>("PuppiNAlgos");
+    ptokenRawAlphas_ = produces<std::vector<double>>("PuppiRawAlphas");
+    ptokenAlphas_ = produces<std::vector<double>>("PuppiAlphas");
+    ptokenAlphasMed_ = produces<std::vector<double>>("PuppiAlphasMed");
+    ptokenAlphasRms_ = produces<std::vector<double>>("PuppiAlphasRms");
   }
 }
 // ------------------------------------------------------------------------------------------
@@ -235,8 +237,8 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   }
 
   //Fill it into the event
-  std::unique_ptr<edm::ValueMap<float>> lPupOut(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler lPupFiller(*lPupOut);
+  edm::ValueMap<float> lPupOut;
+  edm::ValueMap<float>::Filler lPupFiller(lPupOut);
   lPupFiller.insert(hPFProduct, lWeights.begin(), lWeights.end());
   lPupFiller.fill();
 
@@ -249,9 +251,10 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // Since the size of the ValueMap must be equal to the input collection, we need
   // to search the "puppi" particles to find a match for each input. If none is found,
   // the input is set to have a four-vector of 0,0,0,0
-  fPuppiCandidates.reset(new PFOutputCollection);
-  fPackedPuppiCandidates.reset(new PackedOutputCollection);
-  std::unique_ptr<edm::ValueMap<LorentzVector>> p4PupOut(new edm::ValueMap<LorentzVector>());
+  fPuppiCandidates.clear();
+  fPuppiCandidatesWeighted.clear();
+  fPackedPuppiCandidates.clear();
+  edm::ValueMap<LorentzVector> p4PupOut;
   LorentzVectorCollection puppiP4s;
   std::vector<reco::CandidatePtr> values(hPFProduct->size());
 
@@ -260,6 +263,8 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     ++iCand;
     std::unique_ptr<pat::PackedCandidate> pCand;
     std::unique_ptr<reco::PFCandidate> pfCand;
+    std::unique_ptr<reco::PFCandidate> pfCandWeighted;
+
     if (fUseExistingWeights || fClonePackedCands) {
       const pat::PackedCandidate* cand = dynamic_cast<const pat::PackedCandidate*>(&aCand);
       if (!cand)
@@ -269,8 +274,10 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       auto id = dummySinceTranslateIsNotStatic.translatePdgIdToType(aCand.pdgId());
       const reco::PFCandidate* cand = dynamic_cast<const reco::PFCandidate*>(&aCand);
       pfCand.reset(new reco::PFCandidate(cand ? *cand : reco::PFCandidate(aCand.charge(), aCand.p4(), id)));
+      pfCandWeighted.reset(new reco::PFCandidate(*pfCand));
     }
 
+    // Here, we are using new weights computed and putting them in the packed candidates.
     if (fClonePackedCands && (!fUseExistingWeights)) {
       if (fPuppiForLeptons)
         pCand->setPuppiWeight(pCand->puppiWeight(), lWeights[iCand]);
@@ -283,58 +290,81 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
                           lWeights[iCand] * aCand.pz(),
                           lWeights[iCand] * aCand.energy());
 
+    // Here, we are using existing weights, or we're using packed candidates.
+    // That is, whether or not we recomputed the weights, we store the
+    // source candidate appropriately, and set the p4 of the packed candidate.
     if (fUseExistingWeights || fClonePackedCands) {
       pCand->setP4(puppiP4s.back());
       pCand->setSourceCandidatePtr(aCand.sourceCandidatePtr(0));
-      fPackedPuppiCandidates->push_back(*pCand);
+      fPackedPuppiCandidates.push_back(*pCand);
     } else {
-      pfCand->setP4(puppiP4s.back());
+      // Here, we are not using packed candidates. That is, this is MINIAOD
+      // and we are computing puppi for the PFCandidates themselves.
+      // We have TWO collections to write here. The first is the "weighted"
+      // version that weights the p4 by the puppi weight. The second
+      // is the standard version, where we just set the internal weight
+      // and do not adjust the p4. Only the second is persistified in
+      // AOD. The other can be used by user modules to have their own
+      // PFCandidate collection, and as a check for the weighting procedure.
+      pfCandWeighted->setP4(puppiP4s.back());
+      pfCandWeighted->setSourceCandidatePtr(aCand.sourceCandidatePtr(0));
+      pfCand->setP4(aCand.p4());
       pfCand->setSourceCandidatePtr(aCand.sourceCandidatePtr(0));
-      fPuppiCandidates->push_back(*pfCand);
+      if (fPuppiForLeptons) {
+        pfCandWeighted->setPuppiWeight(1.0, lWeights[iCand]);
+        pfCand->setPuppiWeight(1.0, lWeights[iCand]);
+      } else {
+        pfCandWeighted->setPuppiWeight(lWeights[iCand]);
+        pfCand->setPuppiWeight(lWeights[iCand]);
+      }
+      fPuppiCandidates.push_back(*pfCand);
+      fPuppiCandidatesWeighted.push_back(*pfCandWeighted);
     }
   }
 
   //Compute the modified p4s
-  edm::ValueMap<LorentzVector>::Filler p4PupFiller(*p4PupOut);
+  edm::ValueMap<LorentzVector>::Filler p4PupFiller(p4PupOut);
   p4PupFiller.insert(hPFProduct, puppiP4s.begin(), puppiP4s.end());
   p4PupFiller.fill();
 
-  iEvent.put(std::move(lPupOut));
-  iEvent.put(std::move(p4PupOut));
+  iEvent.emplace(ptokenPupOut_, lPupOut);
+  iEvent.emplace(ptokenP4PupOut_, p4PupOut);
   if (fUseExistingWeights || fClonePackedCands) {
-    edm::OrphanHandle<pat::PackedCandidateCollection> oh = iEvent.put(std::move(fPackedPuppiCandidates));
+    edm::OrphanHandle<pat::PackedCandidateCollection> oh =
+        iEvent.emplace(ptokenPackedPuppiCandidates_, fPackedPuppiCandidates);
     for (unsigned int ic = 0, nc = oh->size(); ic < nc; ++ic) {
       reco::CandidatePtr pkref(oh, ic);
       values[ic] = pkref;
     }
   } else {
-    edm::OrphanHandle<reco::PFCandidateCollection> oh = iEvent.put(std::move(fPuppiCandidates));
+    iEvent.emplace(ptokenPuppiCandidatesWeighted_, fPuppiCandidatesWeighted);
+    edm::OrphanHandle<reco::PFCandidateCollection> oh = iEvent.emplace(ptokenPuppiCandidates_, fPuppiCandidates);
     for (unsigned int ic = 0, nc = oh->size(); ic < nc; ++ic) {
       reco::CandidatePtr pkref(oh, ic);
       values[ic] = pkref;
     }
   }
-  std::unique_ptr<edm::ValueMap<reco::CandidatePtr>> pfMap_p(new edm::ValueMap<reco::CandidatePtr>());
-  edm::ValueMap<reco::CandidatePtr>::Filler filler(*pfMap_p);
+  edm::ValueMap<reco::CandidatePtr> pfMap_p;
+  edm::ValueMap<reco::CandidatePtr>::Filler filler(pfMap_p);
   filler.insert(hPFProduct, values.begin(), values.end());
   filler.fill();
-  iEvent.put(std::move(pfMap_p));
+  iEvent.emplace(ptokenValues_, pfMap_p);
 
   //////////////////////////////////////////////
   if (fPuppiDiagnostics && !fUseExistingWeights) {
     // all the different alphas per particle
     // THE alpha per particle
-    std::unique_ptr<std::vector<double>> theAlphas(new std::vector<double>(fPuppiContainer->puppiAlphas()));
-    std::unique_ptr<std::vector<double>> theAlphasMed(new std::vector<double>(fPuppiContainer->puppiAlphasMed()));
-    std::unique_ptr<std::vector<double>> theAlphasRms(new std::vector<double>(fPuppiContainer->puppiAlphasRMS()));
-    std::unique_ptr<std::vector<double>> alphas(new std::vector<double>(fPuppiContainer->puppiRawAlphas()));
-    std::unique_ptr<double> nalgos(new double(fPuppiContainer->puppiNAlgos()));
+    std::vector<double> theAlphas(fPuppiContainer->puppiAlphas());
+    std::vector<double> theAlphasMed(fPuppiContainer->puppiAlphasMed());
+    std::vector<double> theAlphasRms(fPuppiContainer->puppiAlphasRMS());
+    std::vector<double> alphas(fPuppiContainer->puppiRawAlphas());
+    double nalgos(fPuppiContainer->puppiNAlgos());
 
-    iEvent.put(std::move(alphas), "PuppiRawAlphas");
-    iEvent.put(std::move(nalgos), "PuppiNAlgos");
-    iEvent.put(std::move(theAlphas), "PuppiAlphas");
-    iEvent.put(std::move(theAlphasMed), "PuppiAlphasMed");
-    iEvent.put(std::move(theAlphasRms), "PuppiAlphasRms");
+    iEvent.emplace(ptokenRawAlphas_, alphas);
+    iEvent.emplace(ptokenNalgos_, nalgos);
+    iEvent.emplace(ptokenAlphas_, theAlphas);
+    iEvent.emplace(ptokenAlphasMed_, theAlphasMed);
+    iEvent.emplace(ptokenAlphasRms_, theAlphasRms);
   }
 }
 

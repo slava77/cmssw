@@ -22,6 +22,9 @@ from RecoEgamma.EgammaIsolationAlgos.particleBasedIsoProducer_cff import *
 from RecoParticleFlow.PFProducer.chargedHadronPFTrackIsolation_cfi import *
 
 from RecoJets.JetProducers.fixedGridRhoProducerFastjet_cfi import *
+
+from CommonTools.PileupAlgos.Puppi_cff import puppi
+
 fixedGridRhoFastjetAllTmp = fixedGridRhoFastjetAll.clone(pfCandidatesTag = cms.InputTag("particleFlowTmp"))
 
 particleFlowTmpTask = cms.Task(particleFlowTmp)
@@ -39,7 +42,10 @@ particleFlowRecoTask = cms.Task( particleFlowTrackWithDisplacedVertexTask,
                                  pfParticleSelectionTask )
 particleFlowReco = cms.Sequence(particleFlowRecoTask)
 
-particleFlowLinksTask = cms.Task( particleFlow, particleFlowPtrs, chargedHadronPFTrackIsolation, particleBasedIsolationTask)
+# SRR 17-Dec-2019: Add puppi weights by default to PF
+particleFlow = puppi.clone(candName='particleFlowPrePuppi')
+
+particleFlowLinksTask = cms.Task( particleFlowPrePuppi, particleFlow, particleFlowPtrs, chargedHadronPFTrackIsolation, particleBasedIsolationTask)
 particleFlowLinks = cms.Sequence(particleFlowLinksTask)
 
 from RecoParticleFlow.PFTracking.hgcalTrackCollection_cfi import *
