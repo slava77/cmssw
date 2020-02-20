@@ -164,10 +164,16 @@ def customiseFor2017DtUnpacking(process):
 
     return process
 
+def customizeForTauDiscriminatorDataFormatChanges(process):
+    for x in filters_by_type(process, "PFTauSelector"):
+        x.discriminatorContainers = cms.VPSet()
+    return process
+
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
 
     # add call to action function in proper order: newest last!
     # process = customiseFor12718(process)
+    process = customizeForTauDiscriminatorDataFormatChanges(process)
 
     return process
