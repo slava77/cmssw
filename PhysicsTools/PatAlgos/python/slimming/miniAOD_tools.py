@@ -371,7 +371,8 @@ def miniAOD_customizeCommon(process):
         process.makePatTausTask, _makePatTausTaskWithTauReReco
         )
     
-    # Adding puppi jets
+    # puppi jets : Updated 2019 by S. Rappoccio. PUPPI now being placed into RECO.
+    # If this is a RE-MINIAOD or otherwise, this will pick up the later PUPPI, including tunes. 
     if not hasattr(process, 'ak4PFJetsPuppi'): #MM: avoid confilct with substructure call
         process.load('RecoJets.JetProducers.ak4PFJetsPuppi_cfi')
         task.add(process.ak4PFJets)
@@ -406,24 +407,9 @@ def miniAOD_customizeCommon(process):
     from PhysicsTools.PatAlgos.slimming.applyDeepBtagging_cff import applyDeepBtagging
     applyDeepBtagging( process )
 
-    addToProcessAndTask('slimmedJetsPuppiNoMultiplicities', process.slimmedJetsNoDeepFlavour.clone(), process, task)
-    process.slimmedJetsPuppiNoMultiplicities.src = cms.InputTag("selectedPatJetsPuppi")
-    process.slimmedJetsPuppiNoMultiplicities.packedPFCandidates = cms.InputTag("packedPFCandidates")
-
-    from PhysicsTools.PatAlgos.patPuppiJetSpecificProducer_cfi import patPuppiJetSpecificProducer
-    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-    process.patPuppiJetSpecificProducer = patPuppiJetSpecificProducer.clone(
-      src=cms.InputTag("slimmedJetsPuppiNoMultiplicities"),
-    )
-    task.add(process.patPuppiJetSpecificProducer)
-    updateJetCollection(
-       process,
-       labelName = 'PuppiJetSpecific',
-       jetSource = cms.InputTag('slimmedJetsPuppiNoMultiplicities'),
-    )
-    process.updatedPatJetsPuppiJetSpecific.userData.userFloats.src = ['patPuppiJetSpecificProducer:puppiMultiplicity', 'patPuppiJetSpecificProducer:neutralPuppiMultiplicity', 'patPuppiJetSpecificProducer:neutralHadronPuppiMultiplicity', 'patPuppiJetSpecificProducer:photonPuppiMultiplicity', 'patPuppiJetSpecificProducer:HFHadronPuppiMultiplicity', 'patPuppiJetSpecificProducer:HFEMPuppiMultiplicity' ]
-    process.slimmedJetsPuppi = process.selectedUpdatedPatJetsPuppiJetSpecific.clone()
-    delattr(process, 'selectedUpdatedPatJetsPuppiJetSpecific')
+    addToProcessAndTask('slimmedJetsPuppi', process.slimmedJetsNoDeepFlavour.clone(), process, task)
+    process.slimmedJetsPuppi.src = cms.InputTag("selectedPatJetsPuppi")
+    process.slimmedJetsPuppi.packedPFCandidates = cms.InputTag("packedPFCandidates")
 
     task.add(process.slimmedJetsPuppi)
 
@@ -520,7 +506,7 @@ def miniAOD_customizeMC(process):
     process.patJetPartonMatch.matched = "prunedGenParticles"
     process.patJetPartonMatch.mcStatus = [ 3, 23 ]
     process.patJetGenJetMatch.matched = "slimmedGenJets"
-    process.patJetGenJetMatchAK8.matched =  "slimmedGenJetsAK8"
+    process.patJetGenJetMatchAK8Puppi.matched =  "slimmedGenJetsAK8"
     process.patMuons.embedGenMatch = False
     process.patElectrons.embedGenMatch = False
     process.patPhotons.embedGenMatch = False

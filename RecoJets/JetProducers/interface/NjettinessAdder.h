@@ -10,6 +10,7 @@
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "fastjet/contrib/Njettiness.hh"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
 class NjettinessAdder : public edm::stream::EDProducer<> {
 public:
@@ -44,6 +45,7 @@ public:
   ~NjettinessAdder() override {}
 
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
+  void addFJParticle(std::vector<fastjet::PseudoJet>& FJparticles, const reco::CandidatePtr& dp) const;
   float getTau(unsigned num, const edm::Ptr<reco::Jet>& object) const;
 
 private:
@@ -61,6 +63,11 @@ private:
   unsigned axesDefinition_;
   int nPass_;
   double akAxesR0_;
+
+  bool applyWeight_;
+  edm::InputTag srcWeights_;
+  edm::EDGetTokenT<edm::ValueMap<float>> input_weights_token_;
+  edm::Handle<edm::ValueMap<float>> weightsHandle_;
 
   std::unique_ptr<fastjet::contrib::Njettiness> routine_;
 };
