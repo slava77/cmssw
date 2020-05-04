@@ -76,6 +76,12 @@ def synchronizeHCALHLTofflineRun3on2018data(process):
         producer.setNoiseFlagsQIE8 = cms.bool( True )
         producer.setPulseShapeFlagsQIE8 = cms.bool( True )
 
+    #----------------------------------------------------------
+    # Use 1+8p fit (PR29617) and apply HB- correction (PR26177)
+    for producer in producers_by_type(process, "HBHEPhase1Reconstructor"):
+        producer.algorithm.applyLegacyHBMCorrection = cms.bool( True )
+        producer.algorithm.chiSqSwitch = cms.double(15.0)
+
     return process
 
 def synchronizeHCALHLTofflineRun2(process):
@@ -181,6 +187,13 @@ def customiseFor29512(process):
                     old_value = old_parameter.pythonValue()[1:-1]
                     setattr(matcherConfig, parameter_name, cms.ESInputTag("", old_value))
 
+    return process
+
+# Use 8p fit (PR29617) and don't apply HB- correction (PR26177)
+def customiseFor29617(process):
+    for producer in producers_by_type(process, "HBHEPhase1Reconstructor"):
+        producer.algorithm.chiSqSwitch = cms.double(-1.0)
+        producer.algorithm.applyLegacyHBMCorrection = cms.bool( False )
     return process
 
 # CMSSW version specific customizations
