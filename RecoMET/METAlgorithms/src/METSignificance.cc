@@ -59,7 +59,7 @@ metsig::METSignificance::getCovariance(const edm::View<reco::Jet>& jets,
 				       double& sumPtUnclustered) {
 
   //pfcandidates
-  const edm::View<reco::Candidate>* pfCandidates=pfCandidatesH.product();
+  const edm::View<reco::Candidate>& pfCandidates = *pfCandidatesH;
 
    // metsig covariance
    double cov_xx = 0;
@@ -78,11 +78,17 @@ metsig::METSignificance::getCovariance(const edm::View<reco::Jet>& jets,
      }
     }
    }
+
+   std::vector<bool> cleanedJets(jets.size(), false);
+   std::transform(jets.begin(), jets.end(), cleanedJets.begin(), [this, &leptons](auto const& jet) -> bool {
+     return cleanJet(jet, leptons);
+   });
    // subtract jets out of sumPtUnclustered
+   auto iCleaned = cleanedJets.begin();
    for(const auto& jet : jets) {
 
      // disambiguate jets and leptons
-     if(!cleanJet(jet, leptons) ) continue;
+     if (!(*iCleaned++)) continue;
      for( unsigned int n=0; n < jet.numberOfSourceCandidatePtrs(); n++){
       footprint.insert(jet.sourceCandidatePtr(n));
      }
@@ -90,35 +96,36 @@ metsig::METSignificance::getCovariance(const edm::View<reco::Jet>& jets,
    }
 
    // calculate sumPtUnclustered
-   for(size_t i = 0; i< pfCandidates->size();  ++i) {
+   for(size_t i = 0; i< pfCandidates.size();  ++i) {
      
      // check if candidate exists in a lepton or jet
      bool cleancand = true;
-     if(footprint.find( pfCandidates->ptrAt(i) )==footprint.end()) {
+     if(footprint.find( pfCandidates.ptrAt(i) )==footprint.end()) {
 
        //dP4 recovery
        for( const auto& it : footprint) {
 	 // Special treatment for PUPPI with dR, since jet candidates (puppi) and MET candidates (puppiForMet)
 	 // can't be matched through the sourceCandidatePtrs and may have different energy, but same direction.
 	 if((it.isNonnull()) && (it.isAvailable()) &&
-            (((!useDeltaRforFootprint_) && ((it->p4()-(*pfCandidates)[i].p4()).Et2()<0.000025)) ||
-	     (( useDeltaRforFootprint_) && (reco::deltaR2(it->p4(),(*pfCandidates)[i].p4())<0.00000025)))){
+            (((!useDeltaRforFootprint_) && ((it->p4()-pfCandidates[i].p4()).Et2()<0.000025)) ||
+	     (( useDeltaRforFootprint_) && (reco::deltaR2(*it,pfCandidates[i])<0.00000025)))){
 	   cleancand = false;
 	   break;
 	 }
        }
        // if not, add to sumPtUnclustered
        if( cleancand ){
-	 sumPtUnclustered += (*pfCandidates)[i].pt();
+	 sumPtUnclustered += pfCandidates[i].pt();
        }
      }
    }
 
    // add jets to metsig covariance matrix and subtract them from sumPtUnclustered
+   iCleaned = cleanedJets.begin();
    for(const auto& jet : jets) {
      
      // disambiguate jets and leptons
-     if(!cleanJet(jet, leptons) ) continue;
+     if (!(*iCleaned++)) continue;
 
       double jpt  = jet.pt();
       double jeta = jet.eta();
