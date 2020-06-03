@@ -16,7 +16,6 @@
 
 #include "RecoLocalFastTime/Records/interface/MTDCPERecord.h"
 #include "RecoLocalFastTime/FTLClusterizer/interface/MTDClusterParameterEstimator.h"
-#include "RecoLocalFastTime/FTLClusterizer/interface/MTDCPEBase.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
@@ -67,7 +66,7 @@ void MTDTrackingRecHitProducer::produce(edm::Event& evt, const edm::EventSetup& 
   geom_ = geom.product();
 
   edm::ESHandle<MTDClusterParameterEstimator> cpe;
-  es.get<MTDCPERecord>().get("MTDCPEBase", cpe);
+  es.get<MTDCPERecord>().get("MTDCPESiPMTimeBTLGenericETL", cpe);
   cpe_ = cpe.product();
 
   edm::Handle<FTLClusterCollection> inputBarrel;
