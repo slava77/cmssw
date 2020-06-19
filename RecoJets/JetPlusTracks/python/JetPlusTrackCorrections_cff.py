@@ -11,15 +11,30 @@ ak4JetTracksAssociatorAtVertexJPT.pvSrc = cms.InputTag("offlinePrimaryVertices")
 from RecoEgamma.ElectronIdentification.electronIdSequence_cff import eidTight
 JPTeidTight = eidTight.clone()
 
+# ---------- Seeds from TrackJets
+
+JetPlusTrackAddonSeedReco = cms.EDProducer(
+    "JetPlusTrackAddonSeedProducer",
+    srcCaloJets = cms.InputTag("ak4CaloJets"),
+    srcTrackJets = cms.InputTag("ak4TrackJets"),
+    srcPVs = cms.InputTag('offlinePrimaryVertices'),
+    ptCUT = cms.double(15.),
+    dRcone = cms.double(0.4),
+    PFCandidates = cms.InputTag('packedPFCandidates'),
+    towerMaker = cms.InputTag('towerMaker'),
+    UsePAT = cms.bool(False)
+)
 
 # ---------- Module definition
 from RecoJets.JetPlusTracks.JetPlusTrackCorrections_cfi import *
-
 
 JetPlusTrackZSPCorJetAntiKt4 = cms.EDProducer(
     "JetPlusTrackProducer",
     cms.PSet(JPTZSPCorrectorAntiKt4),
     src = cms.InputTag("ak4CaloJets"),
+    srcTrackJets = cms.InputTag("ak4TrackJets"),
+    srcAddCaloJets = cms.InputTag('JetPlusTrackAddonSeedReco:ak4CaloJetsJPTSeed'),
+    extrapolations = cms.InputTag("trackExtrapolator"),
     tagName = cms.vstring('ZSP_CMSSW390_Akt_05_PU0'),
     tagNameOffset = cms.vstring(),
     PU = cms.int32(-1),
@@ -27,7 +42,8 @@ JetPlusTrackZSPCorJetAntiKt4 = cms.EDProducer(
     UseZSP = cms.bool(False),
     srcPVs = cms.InputTag('offlinePrimaryVertices'),    
     alias = cms.untracked.string('JetPlusTrackZSPCorJetAntiKt4'),
-    ptCUT = cms.double(15.)
+    ptCUT = cms.double(15.),
+    dRcone = cms.double(0.4)
     )
 
 JetPlusTrackZSPCorJetAntiKt4.JetTracksAssociationAtVertex = cms.InputTag("ak4JetTracksAssociatorAtVertexJPT")
@@ -40,6 +56,7 @@ JetPlusTrackZSPCorJetAntiKt4.JetSplitMerge = cms.int32(2)
 
 JetPlusTrackCorrectionsAntiKt4Task = cms.Task(
     JPTeidTight,
+    JetPlusTrackAddonSeedReco,
     ak4JetTracksAssociatorAtVertexJPT,
     ak4JetTracksAssociatorAtCaloFace,
     JetPlusTrackZSPCorJetAntiKt4
