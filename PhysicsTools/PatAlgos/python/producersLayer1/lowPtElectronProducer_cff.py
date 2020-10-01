@@ -15,11 +15,11 @@ patLowPtElectrons = patElectrons.clone(
     electronSource = sourceElectrons,
     genParticleMatch = cms.InputTag("lowPtElectronMatch"),
     # overrides
-    addElectronID = cms.bool(False),
+    addElectronID = cms.bool(True),
     addGenMatch = cms.bool(True),
     addMVAVariables = cms.bool(False),
     addPFClusterIso = cms.bool(False),
-    electronIDSources = cms.PSet(),
+    electronIDSources = cms.PSet(lowPtGsfElectronID = cms.InputTag("lowPtGsfElectronID")),
     computeMiniIso = cms.bool(False),
     isoDeposits = cms.PSet(),
     isolationValues = cms.PSet(),
@@ -46,14 +46,14 @@ patLowPtElectrons = patElectrons.clone(
 
 # Rerun IDProducer on pat::Electrons
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronID_cfi import *
-patLowPtGsfElectronID = lowPtGsfElectronID.clone(electrons='patLowPtElectrons',
-                                                 rho='fixedGridRhoFastjetAll')
 
 makePatLowPtElectronsTask = cms.Task(
     lowPtElectronMatch,
-    patLowPtElectrons,
-    patLowPtGsfElectronID
+    patLowPtElectrons
     )
+
+from Configuration.ProcessModifiers.run2_miniAOD_UL_cff import run2_miniAOD_UL
+run2_miniAOD_UL.toReplaceWith(makePatLowPtElectronsTask, cms.Task(makePatLowPtElectronsTask.copy(),lowPtGsfElectronID))
 
 makePatLowPtElectrons = cms.Sequence(makePatLowPtElectronsTask)
 
