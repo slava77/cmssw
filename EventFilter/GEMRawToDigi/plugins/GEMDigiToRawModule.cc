@@ -101,7 +101,7 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event& iEvent, edm::Eve
   amc13Events.reserve(FEDNumbering::MAXGEMFEDID - FEDNumbering::MINGEMFEDID + 1);
 
   int LV1_id = iEvent.id().event();
-  int BX_id = iEvent.bunchCrossing();
+  uint8_t BX_id(iEvent.bunchCrossing());
   int OrN = iEvent.orbitNumber();
 
   // making map of bx GEMDigiCollection
@@ -130,7 +130,6 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event& iEvent, edm::Eve
     for (uint8_t amcNum = 0; amcNum < GEMeMap::maxAMCs_; ++amcNum) {
       uint32_t amcSize = 0;
       std::unique_ptr<AMCdata> amcData = std::make_unique<AMCdata>();
-      amcData->setAMCheader1(amcSize, BX_id, LV1_id, amcNum);
 
       for (uint8_t gebId = 0; gebId < GEMeMap::maxGEBs_; ++gebId) {
         std::unique_ptr<GEBdata> gebData = std::make_unique<GEBdata>();
@@ -173,9 +172,10 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event& iEvent, edm::Eve
               else
                 msData |= 1UL << (chMap.chNum - 64);
 
-              LogDebug("") << " fed: " << fedId << " amc:" << int(amcNum) << " geb:" << int(gebId)
-                           << " vfat:" << vfat_dc.localPhi << ",type: " << vfat_dc.vfatType << " id:" << gemId
-                           << " ch:" << chMap.chNum << " st:" << digi.strip() << " bx:" << digi.bx();
+              LogDebug("GEMDigiToRawModule")
+                  << " fed: " << fedId << " amc:" << int(amcNum) << " geb:" << int(gebId)
+                  << " vfat:" << vfat_dc.localPhi << ",type: " << vfat_dc.vfatType << " id:" << gemId
+                  << " ch:" << chMap.chNum << " st:" << digi.strip() << " bx:" << digi.bx();
             }
 
             if (!hasDigi)
@@ -266,7 +266,7 @@ void GEMDigiToRawModule::produce(edm::StreamID iID, edm::Event& iEvent, edm::Eve
     for (const auto& word : words) {
       *(w++) = word;
     }
-    LogDebug("") << " words " << words.size();
+    LogDebug("GEMDigiToRawModule") << " words " << words.size();
   }
 
   iEvent.put(std::move(fedRawDataCol));
