@@ -10,6 +10,7 @@
 #include "FWCore/Framework/interface/global/EDProducer.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "CommonTools/MVAUtils/interface/GBRForestTools.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
@@ -34,7 +35,7 @@ public:
 private:
   double eval(const std::string& name, const edm::Ptr<reco::GsfElectron>&, double rho, float unbiased) const;
 
-  const edm::EDGetTokenT<edm::View<reco::GsfElectron> > gsfElectrons_;
+  const edm::EDGetTokenT<edm::View<reco::GsfElectron> > electrons_;
   const edm::EDGetTokenT<double> rho_;
   const edm::EDGetTokenT<edm::ValueMap<float> > unbiased_;
   const std::vector<std::string> names_;
@@ -49,7 +50,7 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 //
 LowPtGsfElectronIDProducer::LowPtGsfElectronIDProducer(const edm::ParameterSet& conf)
-    : gsfElectrons_(consumes<edm::View<reco::GsfElectron> >(conf.getParameter<edm::InputTag>("electrons"))),
+    : electrons_(consumes<edm::View<reco::GsfElectron> >(conf.getParameter<edm::InputTag>("electrons"))),
       rho_(consumes<double>(conf.getParameter<edm::InputTag>("rho"))),
       unbiased_(consumes<edm::ValueMap<float> >(conf.getParameter<edm::InputTag>("unbiased"))),
       names_(conf.getParameter<std::vector<std::string> >("ModelNames")),
@@ -91,11 +92,11 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
   }
 
   // Retrieve GsfElectrons from Event
-  edm::Handle<edm::View<reco::GsfElectron> > gsfElectrons;
-  event.getByToken(gsfElectrons_, gsfElectrons);
-  if (!gsfElectrons.isValid()) {
+  edm::Handle<edm::View<reco::GsfElectron> > electrons;
+  event.getByToken(electrons_, electrons);
+  if (!electrons.isValid()) {
     std::ostringstream os;
-    os << "Problem accessing low-pT gsfElectrons collection" << std::endl;
+    os << "Problem accessing low-pT electrons collection" << std::endl;
     edm::LogError("InvalidHandle") << os.str();
     throw cms::Exception("InvalidHandle", os.str());
   }
@@ -103,20 +104,14 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
   // ElectronSeed unbiased BDT
   edm::Handle<edm::ValueMap<float> > unbiasedH;
   event.getByToken(unbiased_, unbiasedH);
-  if (!unbiasedH.isValid()) {
-    std::ostringstream os;
-    os << "Problem accessing low-pT 'unbiased' ElectronSeed collection" << std::endl;
-    edm::LogError("InvalidHandle") << os.str();
-    throw cms::Exception("InvalidHandle", os.str());
-  }
 
   // Iterate through Electrons, evaluate BDT, and store result
   std::vector<std::vector<float> > output;
   for (unsigned int iname = 0; iname < names_.size(); ++iname) {
-    output.emplace_back(gsfElectrons->size(), -999.);
+    output.emplace_back(electrons->size(), -999.);
   }
-  for (unsigned int iele = 0; iele < gsfElectrons->size(); iele++) {
-    edm::Ptr<reco::GsfElectron> ele(gsfElectrons, iele);
+  for (unsigned int iele = 0; iele < electrons->size(); iele++) {
+    edm::Ptr<reco::GsfElectron> ele(electrons, iele);
 
     if (ele->core().isNull()) {
       continue;
@@ -151,7 +146,7 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
   for (unsigned int iname = 0; iname < names_.size(); ++iname) {
     auto ptr = std::make_unique<edm::ValueMap<float> >(edm::ValueMap<float>());
     edm::ValueMap<float>::Filler filler(*ptr);
-    filler.insert(gsfElectrons, output[iname].begin(), output[iname].end());
+    filler.insert(electrons, output[iname].begin(), output[iname].end());
     filler.fill();
     event.put(std::move(ptr), names_[iname]);
   }
