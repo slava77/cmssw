@@ -38,18 +38,18 @@ patLowPtElectrons = patElectrons.clone(
     ),
 
     # Embedding of RECO/AOD items
-    embedGsfElectronCore        = cms.bool(False),
-    embedPFCandidate            = cms.bool(False),
-    embedGsfTrack               = cms.bool(False),
     embedTrack                  = cms.bool(True),
-    embedSuperCluster           = cms.bool(False),
-    embedSeedCluster            = cms.bool(False),
-    embedBasicClusters          = cms.bool(False),
+    embedGsfElectronCore        = cms.bool(True),
+    embedGsfTrack               = cms.bool(True),
+    embedSuperCluster           = cms.bool(True),
+    embedSeedCluster            = cms.bool(True),
+    embedBasicClusters          = cms.bool(True),
     embedPreshowerClusters      = cms.bool(False),
     embedRecHits                = cms.bool(False),
     embedPflowSuperCluster      = cms.bool(False),
     embedPflowBasicClusters     = cms.bool(False),
     embedPflowPreshowerClusters = cms.bool(False),
+    embedPFCandidate            = cms.bool(False),
 
     # Miscellaneous flags
     useParticleFlow         = cms.bool(False),
