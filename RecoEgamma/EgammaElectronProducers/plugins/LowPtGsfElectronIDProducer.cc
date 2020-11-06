@@ -11,6 +11,7 @@
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "CommonTools/MVAUtils/interface/GBRForestTools.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "DataFormats/TrackReco/interface/Track.h"
