@@ -161,7 +161,7 @@ void LowPtGSFToPackedCandidateLinker::produce(edm::StreamID, edm::Event& iEvent,
   //map Electron-->pat::PFCandidatePtr via Electron-->GsfTrack-->Track and Track-->pat::PFCandidatePtr
   for (unsigned int iele = 0; iele < nele; ++iele) {
     edm::Ptr<pat::Electron> ele_ptr(electrons, iele);
-    reco::GsfTrackRef gsf_ref = ele_ptr->gsfTrack();
+    reco::GsfTrackRef gsf_ref = ele_ptr->core()->gsfTrack();
     reco::TrackRef trk_ref = (*gsf2trk)[gsf_ref];
     if (trk_ref.id() != tracks.id()) {
       throw cms::Exception(
