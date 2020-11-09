@@ -122,17 +122,19 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
 
     // Attempt to obtained ElectronSeed unbiased BDT score
     float unbiased = -10.;
-    if ( unbiasedH.isValid() ) { unbiased = (*unbiasedH)[gsf]; }
-    else {
+    if (unbiasedH.isValid()) {
+      unbiased = (*unbiasedH)[gsf];
+    } else {
       pat::Electron const* casted = dynamic_cast<pat::Electron const*>(ele.get());
-      if ( casted == nullptr ) {
-	std::ostringstream os;
-	os << "Problem accessing low-pT 'unbiased' ElectronSeed collection"
-	   << " and a problem to dynamic_cast<pat::Electron*>(reco::GsfElectron*)!"
-	   << std::endl;
-	edm::LogError("InvalidHandle") << os.str();
-	throw cms::Exception("InvalidHandle", os.str());
-      } else { unbiased = casted->hasUserFloat("unbiased") ? casted->userFloat("unbiased") : -10.; }
+      if (casted == nullptr) {
+        std::ostringstream os;
+        os << "Problem accessing low-pT 'unbiased' ElectronSeed collection"
+           << " and a problem to dynamic_cast<pat::Electron*>(reco::GsfElectron*)!" << std::endl;
+        edm::LogError("InvalidHandle") << os.str();
+        throw cms::Exception("InvalidHandle", os.str());
+      } else {
+        unbiased = casted->hasUserFloat("unbiased") ? casted->userFloat("unbiased") : -10.;
+      }
     }
 
     //if ( !passThrough_ && ( ele->pt() < minPtThreshold_ ) ) { continue; }
