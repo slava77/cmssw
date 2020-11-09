@@ -63,7 +63,16 @@ slimmingTask = cms.Task(
 
 from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
 from Configuration.Eras.Modifier_pp_on_PbPb_run3_cff import pp_on_PbPb_run3
-(pp_on_AA_2018 | pp_on_PbPb_run3).toReplaceWith(slimmingTask, slimmingTask.copyAndExclude([slimmedOOTPhotons]))
+(pp_on_AA_2018 | pp_on_PbPb_run3).toReplaceWith(slimmingTask,
+                                                slimmingTask.copyAndExclude([slimmedOOTPhotons]))
+
+from Configuration.Eras.Modifier_run2_miniAOD_94XFall17_cff import run2_miniAOD_94XFall17
+from Configuration.Eras.Modifier_run2_miniAOD_80XLegacy_cff import run2_miniAOD_80XLegacy
+HI = (pp_on_AA_2018 | pp_on_PbPb_run3)
+mAOD = (run2_miniAOD_94XFall17 | run2_miniAOD_80XLegacy)
+(HI | mAOD).toReplaceWith(slimmingTask,
+                          slimmingTask.copyAndExclude([slimmedLowPtElectronsTask]))
+
 from PhysicsTools.PatAlgos.slimming.hiPixelTracks_cfi import hiPixelTracks
 from RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi import hiEvtPlane
 from RecoHI.HiEvtPlaneAlgos.hiEvtPlaneFlat_cfi import hiEvtPlaneFlat

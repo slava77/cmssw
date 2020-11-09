@@ -25,6 +25,7 @@ patLowPtElectrons = patElectrons.clone(
     electronIDSources = cms.PSet(
         unbiased = cms.InputTag("rekeyLowPtGsfElectronSeedValueMaps:unbiased"),
         ptbiased = cms.InputTag("rekeyLowPtGsfElectronSeedValueMaps:ptbiased"),
+        ID       = cms.InputTag("lowPtGsfElectronID"),
     ),
 
     # User data to add
@@ -38,18 +39,18 @@ patLowPtElectrons = patElectrons.clone(
     ),
 
     # Embedding of RECO/AOD items
-    embedGsfElectronCore        = cms.bool(False),
-    embedPFCandidate            = cms.bool(False),
-    embedGsfTrack               = cms.bool(False),
     embedTrack                  = cms.bool(True),
-    embedSuperCluster           = cms.bool(False),
-    embedSeedCluster            = cms.bool(False),
-    embedBasicClusters          = cms.bool(False),
+    embedGsfElectronCore        = cms.bool(True),
+    embedGsfTrack               = cms.bool(True),
+    embedSuperCluster           = cms.bool(True),
+    embedSeedCluster            = cms.bool(True),
+    embedBasicClusters          = cms.bool(True),
     embedPreshowerClusters      = cms.bool(False),
     embedRecHits                = cms.bool(False),
     embedPflowSuperCluster      = cms.bool(False),
     embedPflowBasicClusters     = cms.bool(False),
     embedPflowPreshowerClusters = cms.bool(False),
+    embedPFCandidate            = cms.bool(False),
 
     # Miscellaneous flags
     useParticleFlow         = cms.bool(False),
@@ -88,5 +89,8 @@ from Configuration.Eras.Modifier_run2_miniAOD_94XFall17_cff import run2_miniAOD_
 # Schedule rekeying of seed BDT ValueMaps by reco::GsfElectron for run2_miniAOD_UL
 from Configuration.ProcessModifiers.run2_miniAOD_UL_cff import run2_miniAOD_UL
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSeedValueMaps_cff import rekeyLowPtGsfElectronSeedValueMaps
-makePatLowPtElectronsTask_ = cms.Task(makePatLowPtElectronsTask.copy(),rekeyLowPtGsfElectronSeedValueMaps)
+from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronID_cfi import lowPtGsfElectronID
+makePatLowPtElectronsTask_ = makePatLowPtElectronsTask.copy()
+makePatLowPtElectronsTask_.add(rekeyLowPtGsfElectronSeedValueMaps)
+makePatLowPtElectronsTask_.add(lowPtGsfElectronID)
 run2_miniAOD_UL.toReplaceWith(makePatLowPtElectronsTask,makePatLowPtElectronsTask_)
