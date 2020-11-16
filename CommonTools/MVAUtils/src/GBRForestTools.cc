@@ -10,7 +10,7 @@
 #include <RVersion.h>
 #include <cmath>
 #include <tinyxml2.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -258,7 +258,7 @@ std::unique_ptr<const GBRForest> createGBRForest(const edm::FileInPath& weightsF
 std::unique_ptr<const GBRForest> createGBRForest(const std::string& weightsFile, std::vector<std::string>& varNames) {
   std::string weightsFilePath;
 
-  if (boost::filesystem::exists(weightsFile)) {
+  if (std::filesystem::exists(weightsFile)) {
     weightsFilePath = weightsFile;
   } else {
     weightsFilePath = edm::FileInPath{weightsFile}.fullPath();

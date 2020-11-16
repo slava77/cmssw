@@ -2,7 +2,7 @@
 
 #include "TFile.h"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <iostream>
 
 int main(int argc, char **argv) {
@@ -14,12 +14,12 @@ int main(int argc, char **argv) {
   char *inputFileName = argv[1];
   char *outputFileName = argv[2];
 
-  if (!boost::filesystem::exists(inputFileName)) {
+  if (!std::filesystem::exists(inputFileName)) {
     std::cout << "Input file " << inputFileName << " does not exists." << std::endl;
     return 1;
   }
 
-  if (boost::filesystem::exists(outputFileName)) {
+  if (std::filesystem::exists(outputFileName)) {
     std::cout << "Output file " << outputFileName << " already exists." << std::endl;
     return 1;
   }
