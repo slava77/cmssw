@@ -6,5 +6,5 @@
 <use name="roottmva"/>
 <use name="tinyxml2"/>
 <export>
-  <lib name="CommonToolsMVAUtils"/>
+  <lib name="1"/>
 </export>
