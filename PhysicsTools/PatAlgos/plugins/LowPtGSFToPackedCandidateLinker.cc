@@ -64,7 +64,6 @@ LowPtGSFToPackedCandidateLinker::LowPtGSFToPackedCandidateLinker(const edm::Para
 LowPtGSFToPackedCandidateLinker::~LowPtGSFToPackedCandidateLinker() {}
 
 void LowPtGSFToPackedCandidateLinker::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
-
   auto pfcands = iEvent.getHandle(pfcands_);
   auto packed = iEvent.getHandle(packed_);
   auto lost_tracks = iEvent.getHandle(lost_tracks_);
@@ -92,8 +91,8 @@ void LowPtGSFToPackedCandidateLinker::produce(edm::StreamID, edm::Event& iEvent,
   //store auxiliary mappings for association
   std::vector<int> gsf2pack(ngsf, -1);
   std::vector<int> gsf2lost(ngsf, -1);
-  PackedCandidatePtrCollection ele2packedptr(nele, PackedCandidatePtr(packed,-1));
-  PackedCandidatePtrCollection ele2lostptr(nele, PackedCandidatePtr(lost_tracks,-1));
+  PackedCandidatePtrCollection ele2packedptr(nele, PackedCandidatePtr(packed, -1));
+  PackedCandidatePtrCollection ele2lostptr(nele, PackedCandidatePtr(lost_tracks, -1));
 
   //electrons will never store their track (they store the Gsf track)
   //map PackedPF <--> Track
@@ -113,7 +112,7 @@ void LowPtGSFToPackedCandidateLinker::produce(edm::StreamID, edm::Event& iEvent,
     reco::TrackRef key(tracks, itrk);
     pat::PackedCandidateRef lostTrack = (*lost2trk_assoc)[key];
     if (lostTrack.isNonnull()) {
-      trk2lost[itrk] = lostTrack.index(); // assumes that LostTracks are all made from the same track collection
+      trk2lost[itrk] = lostTrack.index();  // assumes that LostTracks are all made from the same track collection
       //trk2lostptr[itrk] = edm::refToPtr(lostTrack); // Track.index() -> Ptr<Packed>
     }
   }
@@ -149,11 +148,11 @@ void LowPtGSFToPackedCandidateLinker::produce(edm::StreamID, edm::Event& iEvent,
     size_t trkid = trk_ref.index();
     auto packedIdx = trk2packed[trkid];
     if (packedIdx != npacked) {
-      ele2packedptr[iele] = PackedCandidatePtr(packed,packedIdx);
+      ele2packedptr[iele] = PackedCandidatePtr(packed, packedIdx);
     }
     auto lostIdx = trk2lost[trkid];
     if (lostIdx != nlost) {
-      ele2lostptr[iele] = PackedCandidatePtr(lost_tracks,lostIdx);
+      ele2lostptr[iele] = PackedCandidatePtr(lost_tracks, lostIdx);
     }
   }
 
