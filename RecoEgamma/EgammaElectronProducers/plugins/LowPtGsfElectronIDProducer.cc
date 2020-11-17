@@ -86,7 +86,6 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
   if (!rho.isValid()) {
     std::ostringstream os;
     os << "Problem accessing rho collection for low-pT electrons" << std::endl;
-    edm::LogError("InvalidHandle") << os.str();
     throw cms::Exception("InvalidHandle", os.str());
   }
 
@@ -96,7 +95,6 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
   if (!electrons.isValid()) {
     std::ostringstream os;
     os << "Problem accessing low-pT electrons collection" << std::endl;
-    edm::LogError("InvalidHandle") << os.str();
     throw cms::Exception("InvalidHandle", os.str());
   }
 
@@ -119,23 +117,7 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
     if (gsf.isNull()) {
       continue;
     }
-
-    // Attempt to obtained ElectronSeed unbiased BDT score
-    float unbiased = -10.;
-    if (unbiasedH.isValid()) {
-      unbiased = (*unbiasedH)[gsf];
-    } else {
-      pat::Electron const* casted = dynamic_cast<pat::Electron const*>(ele.get());
-      if (casted == nullptr) {
-        std::ostringstream os;
-        os << "Problem accessing low-pT 'unbiased' ElectronSeed collection"
-           << " and a problem to dynamic_cast<pat::Electron*>(reco::GsfElectron*)!" << std::endl;
-        edm::LogError("InvalidHandle") << os.str();
-        throw cms::Exception("InvalidHandle", os.str());
-      } else {
-        unbiased = casted->hasUserFloat("unbiased") ? casted->userFloat("unbiased") : -10.;
-      }
-    }
+    float unbiased = (*unbiasedH)[gsf];
 
     //if ( !passThrough_ && ( ele->pt() < minPtThreshold_ ) ) { continue; }
     for (unsigned int iname = 0; iname < names_.size(); ++iname) {
@@ -164,9 +146,9 @@ double LowPtGsfElectronIDProducer::eval(const std::string& name,
     int index = std::distance(names_.begin(), iter);
     std::vector<float> inputs;
     if (version_ == "V0") {
-      inputs = lowptgsfeleid::features_V0(ele, rho, unbiased);
+      inputs = lowptgsfeleid::features_V0(*ele, rho, unbiased);
     } else if (version_ == "V1") {
-      inputs = lowptgsfeleid::features(ele, rho, unbiased);
+      inputs = lowptgsfeleid::features_V1(*ele, rho, unbiased);
     }
     return models_.at(index)->GetResponse(inputs.data());
   } else {
