@@ -129,7 +129,7 @@ namespace lowptgsfeleseed {
 
 namespace lowptgsfeleid {
 
-  std::vector<float> features(edm::Ptr<reco::GsfElectron> const& ele, float rho, float unbiased) {
+  std::vector<float> features_V1(reco::GsfElectron const& ele, float rho, float unbiased) {
     float eid_rho = -999.;
     float eid_sc_eta = -999.;
     float eid_shape_full5x5_r9 = -999.;
@@ -165,8 +165,8 @@ namespace lowptgsfeleid {
     float sc_clus2_E_ov_p = -999.;
 
     // KF tracks
-    if (ele->core().isNonnull()) {
-      reco::TrackRef trk = ele->closestCtfTrackRef();
+    if (ele.core().isNonnull()) {
+      reco::TrackRef trk = ele.closestCtfTrackRef();
       if (trk.isNonnull()) {
         eid_trk_p = (float)trk->p();
         eid_trk_nhits = (float)trk->found();
@@ -174,14 +174,14 @@ namespace lowptgsfeleid {
         TVector3 trkTV3(0, 0, 0);
         trkTV3.SetPtEtaPhi(trk->pt(), trk->eta(), trk->phi());
         TVector3 eleTV3(0, 0, 0);
-        eleTV3.SetPtEtaPhi(ele->pt(), ele->eta(), ele->phi());
+        eleTV3.SetPtEtaPhi(ele.pt(), ele.eta(), ele.phi());
         trk_dr = eleTV3.DeltaR(trkTV3);
       }
     }
 
     // GSF tracks
-    if (ele->core().isNonnull()) {
-      reco::GsfTrackRef gsf = ele->core()->gsfTrack();
+    if (ele.core().isNonnull()) {
+      reco::GsfTrackRef gsf = ele.core()->gsfTrack();
       if (gsf.isNonnull()) {
         gsf_mode_p = gsf->pMode();
         eid_gsf_nhits = (float)gsf->found();
@@ -189,14 +189,14 @@ namespace lowptgsfeleid {
         TVector3 gsfTV3(0, 0, 0);
         gsfTV3.SetPtEtaPhi(gsf->ptMode(), gsf->etaMode(), gsf->phiMode());
         TVector3 eleTV3(0, 0, 0);
-        eleTV3.SetPtEtaPhi(ele->pt(), ele->eta(), ele->phi());
+        eleTV3.SetPtEtaPhi(ele.pt(), ele.eta(), ele.phi());
         gsf_dr = eleTV3.DeltaR(gsfTV3);
       }
     }
 
     // Super clusters
-    if (ele->core().isNonnull()) {
-      reco::SuperClusterRef sc = ele->core()->superCluster();
+    if (ele.core().isNonnull()) {
+      reco::SuperClusterRef sc = ele.core()->superCluster();
       if (sc.isNonnull()) {
         eid_sc_E = sc->energy();
         eid_sc_eta = sc->eta();
@@ -207,36 +207,36 @@ namespace lowptgsfeleid {
     }
 
     // Track-cluster matching
-    if (ele.isNonnull()) {
-      eid_match_seed_dEta = ele->deltaEtaSeedClusterTrackAtCalo();
-      eid_match_eclu_EoverP = (1. / ele->ecalEnergy()) - (1. / ele->p());
-      eid_match_SC_EoverP = ele->eSuperClusterOverP();
-      eid_match_SC_dEta = ele->deltaEtaSuperClusterTrackAtVtx();
-      eid_match_SC_dPhi = ele->deltaPhiSuperClusterTrackAtVtx();
-    }
+    //if (ele.isNonnull()) {
+    eid_match_seed_dEta = ele.deltaEtaSeedClusterTrackAtCalo();
+    eid_match_eclu_EoverP = (1. / ele.ecalEnergy()) - (1. / ele.p());
+    eid_match_SC_EoverP = ele.eSuperClusterOverP();
+    eid_match_SC_dEta = ele.deltaEtaSuperClusterTrackAtVtx();
+    eid_match_SC_dPhi = ele.deltaPhiSuperClusterTrackAtVtx();
+    //}
 
     // Shower shape vars
-    if (ele.isNonnull()) {
-      eid_shape_full5x5_HoverE = ele->full5x5_hcalOverEcal();
-      eid_shape_full5x5_r9 = ele->full5x5_r9();
-    }
+    //if (ele.isNonnull()) {
+    eid_shape_full5x5_HoverE = ele.full5x5_hcalOverEcal();
+    eid_shape_full5x5_r9 = ele.full5x5_r9();
+    //}
 
     // Misc
     eid_rho = rho;
 
-    if (ele.isNonnull()) {
-      eid_brem_frac = ele->fbrem();
-      core_shFracHits = ele->shFracInnerHits();
-    }
+    //if (ele.isNonnull()) {
+    eid_brem_frac = ele.fbrem();
+    core_shFracHits = ele.shFracInnerHits();
+    //}
 
     // Unbiased BDT from ElectronSeed
     gsf_bdtout1 = unbiased;
 
     // Clusters
-    if (ele->core().isNonnull()) {
-      reco::GsfTrackRef gsf = ele->core()->gsfTrack();
+    if (ele.core().isNonnull()) {
+      reco::GsfTrackRef gsf = ele.core()->gsfTrack();
       if (gsf.isNonnull()) {
-        reco::SuperClusterRef sc = ele->core()->superCluster();
+        reco::SuperClusterRef sc = ele.core()->superCluster();
         if (sc.isNonnull()) {
           // Propagate electron track to ECAL surface
           double mass_ = 0.000511 * 0.000511;
@@ -510,20 +510,8 @@ namespace lowptgsfeleid {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  //
-  std::vector<float> features(edm::Ref<std::vector<reco::GsfElectron> > const& ele, float rho, float unbiased) {
-    return features(edm::refToPtr(ele), rho, unbiased);
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-  //
-  std::vector<float> features(edm::Ref<edm::View<reco::GsfElectron> > const& ele, float rho, float unbiased) {
-    return features(edm::refToPtr(ele), rho, unbiased);
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
   // feature list for original models (2019Aug07 and earlier)
-  std::vector<float> features_V0(edm::Ptr<reco::GsfElectron> const& ele, float rho, float unbiased) {
+  std::vector<float> features_V0(reco::GsfElectron const& ele, float rho, float unbiased) {
     float eid_rho = -999.;
     float eid_sc_eta = -999.;
     float eid_shape_full5x5_r9 = -999.;
@@ -559,8 +547,8 @@ namespace lowptgsfeleid {
     float sc_clus2_E_ov_p = -999.;
 
     // KF tracks
-    if (ele->core().isNonnull()) {
-      const auto& trk = ele->closestCtfTrackRef();  // reco::TrackRef
+    if (ele.core().isNonnull()) {
+      const auto& trk = ele.closestCtfTrackRef();  // reco::TrackRef
       if (trk.isNonnull()) {
         eid_trk_p = (float)trk->p();
         eid_trk_nhits = (float)trk->found();
@@ -568,14 +556,14 @@ namespace lowptgsfeleid {
         TVector3 trkTV3(0, 0, 0);
         trkTV3.SetPtEtaPhi(trk->pt(), trk->eta(), trk->phi());
         TVector3 eleTV3(0, 0, 0);
-        eleTV3.SetPtEtaPhi(ele->pt(), ele->eta(), ele->phi());
+        eleTV3.SetPtEtaPhi(ele.pt(), ele.eta(), ele.phi());
         trk_dr = eleTV3.DeltaR(trkTV3);
       }
     }
 
     // GSF tracks
-    if (ele->core().isNonnull()) {
-      const auto& gsf = ele->core()->gsfTrack();  // reco::GsfTrackRef
+    if (ele.core().isNonnull()) {
+      const auto& gsf = ele.core()->gsfTrack();  // reco::GsfTrackRef
       if (gsf.isNonnull()) {
         gsf_mode_p = gsf->pMode();
         eid_gsf_nhits = (float)gsf->found();
@@ -583,14 +571,14 @@ namespace lowptgsfeleid {
         TVector3 gsfTV3(0, 0, 0);
         gsfTV3.SetPtEtaPhi(gsf->ptMode(), gsf->etaMode(), gsf->phiMode());
         TVector3 eleTV3(0, 0, 0);
-        eleTV3.SetPtEtaPhi(ele->pt(), ele->eta(), ele->phi());
+        eleTV3.SetPtEtaPhi(ele.pt(), ele.eta(), ele.phi());
         gsf_dr = eleTV3.DeltaR(gsfTV3);
       }
     }
 
     // Super clusters
-    if (ele->core().isNonnull()) {
-      const auto& sc = ele->core()->superCluster();  // reco::SuperClusterRef
+    if (ele.core().isNonnull()) {
+      const auto& sc = ele.core()->superCluster();  // reco::SuperClusterRef
       if (sc.isNonnull()) {
         eid_sc_E = sc->energy();
         eid_sc_eta = sc->eta();
@@ -601,36 +589,36 @@ namespace lowptgsfeleid {
     }
 
     // Track-cluster matching
-    if (ele.isNonnull()) {
-      eid_match_seed_dEta = ele->deltaEtaSeedClusterTrackAtCalo();
-      eid_match_eclu_EoverP = (1. / ele->ecalEnergy()) - (1. / ele->p());
-      eid_match_SC_EoverP = ele->eSuperClusterOverP();
-      eid_match_SC_dEta = ele->deltaEtaSuperClusterTrackAtVtx();
-      eid_match_SC_dPhi = ele->deltaPhiSuperClusterTrackAtVtx();
-    }
+    //if (ele.isNonnull()) {
+    eid_match_seed_dEta = ele.deltaEtaSeedClusterTrackAtCalo();
+    eid_match_eclu_EoverP = (1. / ele.ecalEnergy()) - (1. / ele.p());
+    eid_match_SC_EoverP = ele.eSuperClusterOverP();
+    eid_match_SC_dEta = ele.deltaEtaSuperClusterTrackAtVtx();
+    eid_match_SC_dPhi = ele.deltaPhiSuperClusterTrackAtVtx();
+    //}
 
     // Shower shape vars
-    if (ele.isNonnull()) {
-      eid_shape_full5x5_HoverE = ele->full5x5_hcalOverEcal();
-      eid_shape_full5x5_r9 = ele->full5x5_r9();
-    }
+    //if (ele.isNonnull()) {
+    eid_shape_full5x5_HoverE = ele.full5x5_hcalOverEcal();
+    eid_shape_full5x5_r9 = ele.full5x5_r9();
+    //}
 
     // Misc
     eid_rho = rho;
 
-    if (ele.isNonnull()) {
-      eid_brem_frac = ele->fbrem();
-      core_shFracHits = (float)ele->shFracInnerHits();
-    }
+    //if (ele.isNonnull()) {
+    eid_brem_frac = ele.fbrem();
+    core_shFracHits = (float)ele.shFracInnerHits();
+    //}
 
     // Unbiased BDT from ElectronSeed
     gsf_bdtout1 = unbiased;
 
     // Clusters
-    if (ele->core().isNonnull()) {
-      const auto& gsf = ele->core()->gsfTrack();  // reco::GsfTrackRef
+    if (ele.core().isNonnull()) {
+      const auto& gsf = ele.core()->gsfTrack();  // reco::GsfTrackRef
       if (gsf.isNonnull()) {
-        const auto& sc = ele->core()->superCluster();  // reco::SuperClusterRef
+        const auto& sc = ele.core()->superCluster();  // reco::SuperClusterRef
         if (sc.isNonnull()) {
           // Propagate electron track to ECAL surface
           double mass_ = 0.000511 * 0.000511;
@@ -899,18 +887,6 @@ namespace lowptgsfeleid {
                                  sc_clus1_E_ov_p,
                                  sc_clus2_E_ov_p};
     return output;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-  // feature list for original models (2019Aug07 and earlier)
-  std::vector<float> features_V0(edm::Ref<std::vector<reco::GsfElectron> > const& ele, float rho, float unbiased) {
-    return features_V0(edm::refToPtr(ele), rho, unbiased);
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////
-  // feature list for original models (2019Aug07 and earlier)
-  std::vector<float> features_V0(edm::Ref<edm::View<reco::GsfElectron> > const& ele, float rho, float unbiased) {
-    return features_V0(edm::refToPtr(ele), rho, unbiased);
   }
 
 }  // namespace lowptgsfeleid
