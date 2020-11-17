@@ -191,7 +191,7 @@ void LowPtGSFToPackedCandidateLinker::fillDescriptions(edm::ConfigurationDescrip
   desc.add<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
   desc.add<edm::InputTag>("gsfToTrack", edm::InputTag("lowPtGsfToTrackLinks"));
   desc.add<edm::InputTag>("gsfTracks", edm::InputTag("lowPtGsfEleGsfTracks"));
-  desc.add<edm::InputTag>("electrons", edm::InputTag("patLowPtElectrons"));
+  desc.add<edm::InputTag>("electrons", edm::InputTag("selectedPatLowPtElectrons"));
   descriptions.add("lowPtGsfLinksDefault", desc);
 }
 

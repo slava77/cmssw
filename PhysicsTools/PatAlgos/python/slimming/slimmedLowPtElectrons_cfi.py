@@ -26,7 +26,7 @@ slimmedLowPtElectrons = cms.EDProducer("PATElectronSlimmer",
             cms.PSet(
                 electron_config = cms.PSet(
                     ele2packed = cms.InputTag("lowPtGsfLinks:ele2packed"),
-                    electronSrc = cms.InputTag("patLowPtElectrons"),
+                    electronSrc = cms.InputTag("selectedPatLowPtElectrons"),
                 ),
                 modifierName = cms.string('EGExtraInfoModifierFromPackedCandPtrValueMaps'),
                 photon_config = cms.PSet()
@@ -34,7 +34,7 @@ slimmedLowPtElectrons = cms.EDProducer("PATElectronSlimmer",
             cms.PSet(
                 electron_config = cms.PSet(
                     ele2lost = cms.InputTag("lowPtGsfLinks:ele2lost"),
-                    electronSrc = cms.InputTag("patLowPtElectrons"),
+                    electronSrc = cms.InputTag("selectedPatLowPtElectrons"),
                 ),
                 modifierName = cms.string('EGExtraInfoModifierFromPackedCandPtrValueMaps'),
                 photon_config = cms.PSet()
