@@ -55,10 +55,10 @@ LowPtGSFToPackedCandidateLinker::LowPtGSFToPackedCandidateLinker(const edm::Para
       gsf2trk_{consumes<edm::Association<reco::TrackCollection> >(iConfig.getParameter<edm::InputTag>("gsfToTrack"))},
       gsftracks_{consumes<std::vector<reco::GsfTrack> >(iConfig.getParameter<edm::InputTag>("gsfTracks"))},
       electrons_{consumes<std::vector<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons"))} {
-  produces<edm::Association<pat::PackedCandidateCollection> >("packedCandidates");
-  produces<edm::Association<pat::PackedCandidateCollection> >("lostTracks");
-  produces<edm::ValueMap<PackedCandidatePtr> >("packedCandidates");
-  produces<edm::ValueMap<PackedCandidatePtr> >("lostTracks");
+  produces<edm::Association<pat::PackedCandidateCollection> >("gsf2packed");
+  produces<edm::Association<pat::PackedCandidateCollection> >("gsf2lost");
+  produces<edm::ValueMap<PackedCandidatePtr> >("ele2packed");
+  produces<edm::ValueMap<PackedCandidatePtr> >("ele2lost");
 }
 
 LowPtGSFToPackedCandidateLinker::~LowPtGSFToPackedCandidateLinker() {}
@@ -176,25 +176,25 @@ void LowPtGSFToPackedCandidateLinker::produce(edm::StreamID, edm::Event& iEvent,
   edm::Association<pat::PackedCandidateCollection>::Filler gsf2pack_filler(*assoc_gsf2pack);
   gsf2pack_filler.insert(gsftracks, gsf2pack.begin(), gsf2pack.end());
   gsf2pack_filler.fill();
-  iEvent.put(std::move(assoc_gsf2pack), "packedCandidates");
+  iEvent.put(std::move(assoc_gsf2pack), "gsf2packed");
 
   auto assoc_gsf2lost = std::make_unique<edm::Association<pat::PackedCandidateCollection> >(lost_tracks);
   edm::Association<pat::PackedCandidateCollection>::Filler gsf2lost_filler(*assoc_gsf2lost);
   gsf2lost_filler.insert(gsftracks, gsf2lost.begin(), gsf2lost.end());
   gsf2lost_filler.fill();
-  iEvent.put(std::move(assoc_gsf2lost), "lostTracks");
+  iEvent.put(std::move(assoc_gsf2lost), "gsf2lost");
 
   auto map_ele2packedptr = std::make_unique<edm::ValueMap<PackedCandidatePtr> >();
   edm::ValueMap<PackedCandidatePtr>::Filler ele2packedptr_filler(*map_ele2packedptr);
   ele2packedptr_filler.insert(electrons, ele2packedptr.begin(), ele2packedptr.end());
   ele2packedptr_filler.fill();
-  iEvent.put(std::move(map_ele2packedptr), "packedCandidates");
+  iEvent.put(std::move(map_ele2packedptr), "ele2packed");
 
   auto map_ele2lostptr = std::make_unique<edm::ValueMap<PackedCandidatePtr> >();
   edm::ValueMap<PackedCandidatePtr>::Filler ele2lostptr_filler(*map_ele2lostptr);
   ele2lostptr_filler.insert(electrons, ele2lostptr.begin(), ele2lostptr.end());
   ele2lostptr_filler.fill();
-  iEvent.put(std::move(map_ele2lostptr), "lostTracks");
+  iEvent.put(std::move(map_ele2lostptr), "ele2lost");
 }
 
 void LowPtGSFToPackedCandidateLinker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
