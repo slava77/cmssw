@@ -4,8 +4,8 @@ from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSeedValueMaps_cfi import
 
 # Low pT Electron value maps, rekeyed by reco::GsfElectron
 rekeyLowPtGsfElectronSeedValueMaps = lowPtGsfElectronSeedValueMaps.clone(
-    Rekey=cms.bool(True),
-    gsfElectrons=cms.InputTag("lowPtGsfElectrons"),
-    floatValueMaps=cms.VInputTag(["lowPtGsfElectronSeedValueMaps:unbiased",
-                                  "lowPtGsfElectronSeedValueMaps:ptbiased"]),
+    rekey=cms.bool(True),
+    gsfElectrons="lowPtGsfElectrons",
+    floatValueMaps=["lowPtGsfElectronSeedValueMaps:unbiased",
+                    "lowPtGsfElectronSeedValueMaps:ptbiased"],
 )
