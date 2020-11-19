@@ -121,6 +121,16 @@ namespace {
 
   std::unique_ptr<GBRForest> init(const std::string& weightsFileFullPath, std::vector<std::string>& varNames) {
     //
+    // Load weights file, for ROOT file
+    //
+    if (reco::details::hasEnding(weightsFileFullPath, ".root")) {
+      TFile gbrForestFile(weightsFileFullPath.c_str());
+      // Use the copy-constructor of GBRForest to copy the GBRForest.
+      // In this way, the ROOT file can be closed.
+      return std::make_unique<GBRForest>(*(GBRForest*)gbrForestFile.Get("gbrForest"));
+    }
+
+    //
     // Load weights file, for gzipped or raw xml file
     //
     tinyxml2::XMLDocument xmlDoc;
@@ -256,24 +266,14 @@ std::unique_ptr<const GBRForest> createGBRForest(const edm::FileInPath& weightsF
 
 // Overloaded versions which are taking string vectors by reference to store the variable names in
 std::unique_ptr<const GBRForest> createGBRForest(const std::string& weightsFile, std::vector<std::string>& varNames) {
-  std::string weightsFilePath;
-
-  if (std::filesystem::exists(weightsFile)) {
-    weightsFilePath = weightsFile;
-  } else {
-    weightsFilePath = edm::FileInPath{weightsFile}.fullPath();
-  }
-
-  // if the input file is a ROOT file, just read the GBRForest object
-  if (reco::details::hasEnding(weightsFilePath, ".root")) {
-    TFile gbrForestFile(weightsFilePath.c_str());
-    // Use the copy-constructor of GBRForest to copy the GBRForest.
-    // In this way, the ROOT file can be closed.
-    return std::make_unique<GBRForest>(*(GBRForest*)gbrForestFile.Get("gbrForest"));
-  }
-
   std::unique_ptr<GBRForest> gbrForest;
-  gbrForest = init(weightsFilePath, varNames);
+
+  if (weightsFile[0] == '/') {
+    gbrForest = init(weightsFile, varNames);
+  } else {
+    edm::FileInPath weightsFileEdm(weightsFile);
+    gbrForest = init(weightsFileEdm.fullPath(), varNames);
+  }
   return gbrForest;
 }
 
