@@ -130,7 +130,7 @@ namespace lowptgsfeleseed {
 
 namespace lowptgsfeleid {
 
-  std::vector<float> features_V1(reco::GsfElectron const& ele, float rho, float unbiased) {
+  std::vector<float> features_V1(reco::GsfElectron const& ele, float rho, float unbiased, float field_z) {
     float eid_rho = -999.;
     float eid_sc_eta = -999.;
     float eid_shape_full5x5_r9 = -999.;
@@ -239,7 +239,6 @@ namespace lowptgsfeleid {
           float energy = sqrt(mass2 + p2);
           XYZTLorentzVector mom = XYZTLorentzVector(gsf->px(), gsf->py(), gsf->pz(), energy);
           XYZTLorentzVector pos = XYZTLorentzVector(gsf->vx(), gsf->vy(), gsf->vz(), 0.);
-          float field_z = 3.8;
           RawParticle particle(mom, pos);
           BaseParticlePropagator propagator(particle, 0., 0., field_z);
           particle.setCharge(gsf->charge());

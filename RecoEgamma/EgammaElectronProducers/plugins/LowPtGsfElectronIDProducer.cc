@@ -17,6 +17,8 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "RecoEgamma/EgammaElectronProducers/interface/LowPtGsfElectronFeatures.h"
 #include <string>
 #include <vector>
@@ -32,7 +34,7 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions&);
 
 private:
-  double eval(const std::string& name, const edm::Ptr<reco::GsfElectron>&, double rho, float unbiased) const;
+  double eval(const std::string& name, const edm::Ptr<reco::GsfElectron>&, double rho, float unbiased, float field_z) const;
 
   const edm::EDGetTokenT<edm::View<reco::GsfElectron> > electrons_;
   const edm::EDGetTokenT<double> rho_;
@@ -79,7 +81,12 @@ LowPtGsfElectronIDProducer::LowPtGsfElectronIDProducer(const edm::ParameterSet& 
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const edm::EventSetup&) const {
+void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const edm::EventSetup& setup) const {
+  // Get z-component of B field
+  edm::ESHandle<MagneticField> field;
+  setup.get<IdealMagneticFieldRecord>().get(field);
+  math::XYZVector zfield(field->inTesla(GlobalPoint(0, 0, 0)));
+
   // Pileup
   edm::Handle<double> rho;
   event.getByToken(rho_, rho);
@@ -121,7 +128,7 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
 
     //if ( !passThrough_ && ( ele->pt() < minPtThreshold_ ) ) { continue; }
     for (unsigned int iname = 0; iname < names_.size(); ++iname) {
-      output[iname][iele] = eval(names_[iname], ele, *rho, unbiased);
+      output[iname][iele] = eval(names_[iname], ele, *rho, unbiased, zfield.z());
     }
   }
 
@@ -140,7 +147,8 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
 double LowPtGsfElectronIDProducer::eval(const std::string& name,
                                         const edm::Ptr<reco::GsfElectron>& ele,
                                         double rho,
-                                        float unbiased) const {
+                                        float unbiased,
+					float field_z) const {
   auto iter = std::find(names_.begin(), names_.end(), name);
   if (iter != names_.end()) {
     int index = std::distance(names_.begin(), iter);
@@ -148,7 +156,7 @@ double LowPtGsfElectronIDProducer::eval(const std::string& name,
     if (version_ == "V0") {
       inputs = lowptgsfeleid::features_V0(*ele, rho, unbiased);
     } else if (version_ == "V1") {
-      inputs = lowptgsfeleid::features_V1(*ele, rho, unbiased);
+      inputs = lowptgsfeleid::features_V1(*ele, rho, unbiased, field_z);
     }
     return models_.at(index)->GetResponse(inputs.data());
   } else {

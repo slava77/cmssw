@@ -24,7 +24,7 @@ namespace lowptgsfeleseed {
 namespace lowptgsfeleid {
 
   // feature list for new model (2019Sept15)
-  std::vector<float> features_V1(reco::GsfElectron const& ele, float rho, float unbiased);
+  std::vector<float> features_V1(reco::GsfElectron const& ele, float rho, float unbiased, float field_z);
 
   // feature list for original models (2019Aug07 and earlier)
   std::vector<float> features_V0(reco::GsfElectron const& ele, float rho, float unbiased);
