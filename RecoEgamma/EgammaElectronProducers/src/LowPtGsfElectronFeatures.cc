@@ -294,8 +294,7 @@ namespace lowptgsfeleid {
       eid_brem_frac = 1.;  //
     eid_gsf_nhits = std::clamp(eid_gsf_nhits, (float)-1., (float)50.);
     eid_match_SC_EoverP = std::clamp(eid_match_SC_EoverP, (float)0., (float)100.);
-    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, (float)-0.001, (float)0.001);
-    eid_match_eclu_EoverP = eid_match_eclu_EoverP * 1.E7;  //
+    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, (float)-1., (float)1.);
     eid_match_SC_dEta = std::clamp(eid_match_SC_dEta, (float)-10., (float)10.);
     eid_match_SC_dPhi = std::clamp(eid_match_SC_dPhi, (float)-3.14, (float)3.14);
     eid_match_seed_dEta = std::clamp(eid_match_seed_dEta, (float)-10., (float)10.);
