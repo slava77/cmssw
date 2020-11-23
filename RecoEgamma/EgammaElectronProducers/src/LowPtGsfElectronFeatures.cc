@@ -314,14 +314,8 @@ namespace lowptgsfeleid {
       trk_dr = 5.;  //
     sc_Nclus = std::clamp(sc_Nclus, (float)0., (float)20.);
     sc_clus1_nxtal = std::clamp(sc_clus1_nxtal, (float)0., (float)100.);
-    if (sc_clus1_dphi < -3.14)
-      sc_clus1_dphi = -5.;  //
-    if (sc_clus1_dphi > 3.14)
-      sc_clus1_dphi = 5.;  //
-    if (sc_clus2_dphi < -3.14)
-      sc_clus2_dphi = -5.;  //
-    if (sc_clus2_dphi > 3.14)
-      sc_clus2_dphi = 5.;  //
+    sc_clus1_dphi = std::clamp(sc_clus1_dphi, (float)-3.14, (float)3.14);
+    sc_clus2_dphi = std::clamp(sc_clus2_dphi, (float)-3.14, (float)3.14);
     sc_clus1_deta = std::clamp(sc_clus1_deta, (float)-5., (float)5.);
     sc_clus2_deta = std::clamp(sc_clus2_deta, (float)-5., (float)5.);
     sc_clus1_E = std::clamp(sc_clus1_E, (float)0., (float)1000.);
