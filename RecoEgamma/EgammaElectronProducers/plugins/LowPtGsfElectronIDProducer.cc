@@ -34,7 +34,8 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions&);
 
 private:
-  double eval(const std::string& name, const edm::Ptr<reco::GsfElectron>&, double rho, float unbiased, float field_z) const;
+  double eval(
+      const std::string& name, const edm::Ptr<reco::GsfElectron>&, double rho, float unbiased, float field_z) const;
 
   const edm::EDGetTokenT<edm::View<reco::GsfElectron> > electrons_;
   const edm::EDGetTokenT<double> rho_;
@@ -144,11 +145,8 @@ void LowPtGsfElectronIDProducer::produce(edm::StreamID, edm::Event& event, const
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-double LowPtGsfElectronIDProducer::eval(const std::string& name,
-                                        const edm::Ptr<reco::GsfElectron>& ele,
-                                        double rho,
-                                        float unbiased,
-					float field_z) const {
+double LowPtGsfElectronIDProducer::eval(
+    const std::string& name, const edm::Ptr<reco::GsfElectron>& ele, double rho, float unbiased, float field_z) const {
   auto iter = std::find(names_.begin(), names_.end(), name);
   if (iter != names_.end()) {
     int index = std::distance(names_.begin(), iter);
