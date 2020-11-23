@@ -279,30 +279,30 @@ namespace lowptgsfeleid {
     }      // clusters
 
     // Out-of-range
-    eid_rho = std::clamp(eid_rho, (float)0., (float)100.);
-    eid_sc_eta = std::clamp(eid_sc_eta, (float)-5., (float)5.);
-    eid_shape_full5x5_r9 = std::clamp(eid_shape_full5x5_r9, (float)0., (float)2.);
-    eid_sc_etaWidth = std::clamp(eid_sc_etaWidth, (float)0., (float)3.14);
-    eid_sc_phiWidth = std::clamp(eid_sc_phiWidth, (float)0., (float)3.14);
-    eid_shape_full5x5_HoverE = std::clamp(eid_shape_full5x5_HoverE, (float)0., (float)50.);
-    eid_trk_nhits = std::clamp(eid_trk_nhits, (float)-1., (float)50.);
-    eid_trk_chi2red = std::clamp(eid_trk_chi2red, (float)-1., (float)50.);
-    eid_gsf_chi2red = std::clamp(eid_gsf_chi2red, (float)-1., (float)100.);
+    eid_rho = std::clamp(eid_rho, 0.f, 100.f);
+    eid_sc_eta = std::clamp(eid_sc_eta, -5.f, 5.f);
+    eid_shape_full5x5_r9 = std::clamp(eid_shape_full5x5_r9, 0.f, 2.f);
+    eid_sc_etaWidth = std::clamp(eid_sc_etaWidth, 0.f, 3.14f);
+    eid_sc_phiWidth = std::clamp(eid_sc_phiWidth, 0.f, 3.14f);
+    eid_shape_full5x5_HoverE = std::clamp(eid_shape_full5x5_HoverE, 0.f, 50.f);
+    eid_trk_nhits = std::clamp(eid_trk_nhits, -1.f, 50.f);
+    eid_trk_chi2red = std::clamp(eid_trk_chi2red, -1.f, 50.f);
+    eid_gsf_chi2red = std::clamp(eid_gsf_chi2red, -1.f, 100.f);
     if (eid_brem_frac < 0.)
       eid_brem_frac = -1.;  //
     if (eid_brem_frac > 1.)
       eid_brem_frac = 1.;  //
-    eid_gsf_nhits = std::clamp(eid_gsf_nhits, (float)-1., (float)50.);
-    eid_match_SC_EoverP = std::clamp(eid_match_SC_EoverP, (float)0., (float)100.);
-    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, (float)-1., (float)1.);
-    eid_match_SC_dEta = std::clamp(eid_match_SC_dEta, (float)-10., (float)10.);
-    eid_match_SC_dPhi = std::clamp(eid_match_SC_dPhi, (float)-3.14, (float)3.14);
-    eid_match_seed_dEta = std::clamp(eid_match_seed_dEta, (float)-10., (float)10.);
-    eid_sc_E = std::clamp(eid_sc_E, (float)0., (float)1000.);
-    eid_trk_p = std::clamp(eid_trk_p, (float)-1., (float)1000.);
-    gsf_mode_p = std::clamp(gsf_mode_p, (float)0., (float)1000.);
-    core_shFracHits = std::clamp(core_shFracHits, (float)0., (float)1.);
-    gsf_bdtout1 = std::clamp(gsf_bdtout1, (float)-20., (float)20.);
+    eid_gsf_nhits = std::clamp(eid_gsf_nhits, -1.f, 50.f);
+    eid_match_SC_EoverP = std::clamp(eid_match_SC_EoverP, 0.f, 100.f);
+    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, -1.f, 1.f);
+    eid_match_SC_dEta = std::clamp(eid_match_SC_dEta, -10.f, 10.f);
+    eid_match_SC_dPhi = std::clamp(eid_match_SC_dPhi, -3.14f, 3.14f);
+    eid_match_seed_dEta = std::clamp(eid_match_seed_dEta, -10.f, 10.f);
+    eid_sc_E = std::clamp(eid_sc_E, 0.f, 1000.f);
+    eid_trk_p = std::clamp(eid_trk_p, -1.f, 1000.f);
+    gsf_mode_p = std::clamp(gsf_mode_p, 0.f, 1000.f);
+    core_shFracHits = std::clamp(core_shFracHits, 0.f, 1.f);
+    gsf_bdtout1 = std::clamp(gsf_bdtout1, -20.f, 20.f);
     if (gsf_dr < 0.)
       gsf_dr = 5.;  //
     if (gsf_dr > 5.)
@@ -311,14 +311,14 @@ namespace lowptgsfeleid {
       trk_dr = 5.;  //
     if (trk_dr > 5.)
       trk_dr = 5.;  //
-    sc_Nclus = std::clamp(sc_Nclus, (float)0., (float)20.);
-    sc_clus1_nxtal = std::clamp(sc_clus1_nxtal, (float)0., (float)100.);
-    sc_clus1_dphi = std::clamp(sc_clus1_dphi, (float)-3.14, (float)3.14);
-    sc_clus2_dphi = std::clamp(sc_clus2_dphi, (float)-3.14, (float)3.14);
-    sc_clus1_deta = std::clamp(sc_clus1_deta, (float)-5., (float)5.);
-    sc_clus2_deta = std::clamp(sc_clus2_deta, (float)-5., (float)5.);
-    sc_clus1_E = std::clamp(sc_clus1_E, (float)0., (float)1000.);
-    sc_clus2_E = std::clamp(sc_clus2_E, (float)0., (float)1000.);
+    sc_Nclus = std::clamp(sc_Nclus, 0.f, 20.f);
+    sc_clus1_nxtal = std::clamp(sc_clus1_nxtal, 0.f, 100.f);
+    sc_clus1_dphi = std::clamp(sc_clus1_dphi, -3.14f, 3.14f);
+    sc_clus2_dphi = std::clamp(sc_clus2_dphi, -3.14f, 3.14f);
+    sc_clus1_deta = std::clamp(sc_clus1_deta, -5.f, 5.f);
+    sc_clus2_deta = std::clamp(sc_clus2_deta, -5.f, 5.f);
+    sc_clus1_E = std::clamp(sc_clus1_E, 0.f, 1000.f);
+    sc_clus2_E = std::clamp(sc_clus2_E, 0.f, 1000.f);
     if (sc_clus1_E_ov_p < 0.)
       sc_clus1_E_ov_p = -1.;  //
     if (sc_clus2_E_ov_p < 0.)
@@ -510,29 +510,29 @@ namespace lowptgsfeleid {
     }      // clusters
 
     // Out-of-range
-    eid_sc_eta = std::clamp(eid_sc_eta, (float)-5., (float)5.);
-    eid_shape_full5x5_r9 = std::clamp(eid_shape_full5x5_r9, (float)0., (float)2.);
-    eid_sc_etaWidth = std::clamp(eid_sc_etaWidth, (float)0., (float)3.14);
-    eid_sc_phiWidth = std::clamp(eid_sc_phiWidth, (float)0., (float)3.14);
-    eid_shape_full5x5_HoverE = std::clamp(eid_shape_full5x5_HoverE, (float)0., (float)50.);
-    eid_trk_nhits = std::clamp(eid_trk_nhits, (float)-1., (float)50.);
-    eid_trk_chi2red = std::clamp(eid_trk_chi2red, (float)-1., (float)50.);
-    eid_gsf_chi2red = std::clamp(eid_gsf_chi2red, (float)-1., (float)100.);
+    eid_sc_eta = std::clamp(eid_sc_eta, -5.f, 5.f);
+    eid_shape_full5x5_r9 = std::clamp(eid_shape_full5x5_r9, 0.f, 2.f);
+    eid_sc_etaWidth = std::clamp(eid_sc_etaWidth, 0.f, 3.14f);
+    eid_sc_phiWidth = std::clamp(eid_sc_phiWidth, 0.f, 3.14f);
+    eid_shape_full5x5_HoverE = std::clamp(eid_shape_full5x5_HoverE, 0.f, 50.f);
+    eid_trk_nhits = std::clamp(eid_trk_nhits, -1.f, 50.f);
+    eid_trk_chi2red = std::clamp(eid_trk_chi2red, -1.f, 50.f);
+    eid_gsf_chi2red = std::clamp(eid_gsf_chi2red, -1.f, 100.f);
     if (eid_brem_frac < 0.)
       eid_brem_frac = -1.;  //
     if (eid_brem_frac > 1.)
       eid_brem_frac = 1.;  //
-    eid_gsf_nhits = std::clamp(eid_gsf_nhits, (float)-1., (float)50.);
-    eid_match_SC_EoverP = std::clamp(eid_match_SC_EoverP, (float)0., (float)100.);
-    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, (float)-1., (float)1.);
-    eid_match_SC_dEta = std::clamp(eid_match_SC_dEta, (float)-10., (float)10.);
-    eid_match_SC_dPhi = std::clamp(eid_match_SC_dPhi, (float)-3.14, (float)3.14);
-    eid_match_seed_dEta = std::clamp(eid_match_seed_dEta, (float)-10., (float)10.);
-    eid_sc_E = std::clamp(eid_sc_E, (float)0., (float)1000.);
-    eid_trk_p = std::clamp(eid_trk_p, (float)-1., (float)1000.);
-    gsf_mode_p = std::clamp(gsf_mode_p, (float)0., (float)1000.);
-    core_shFracHits = std::clamp(core_shFracHits, (float)0., (float)1.);
-    gsf_bdtout1 = std::clamp(gsf_bdtout1, (float)-20., (float)20.);
+    eid_gsf_nhits = std::clamp(eid_gsf_nhits, -1.f, 50.f);
+    eid_match_SC_EoverP = std::clamp(eid_match_SC_EoverP, 0.f, 100.f);
+    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, -1.f, 1.f);
+    eid_match_SC_dEta = std::clamp(eid_match_SC_dEta, -10.f, 10.f);
+    eid_match_SC_dPhi = std::clamp(eid_match_SC_dPhi, -3.14f, 3.14f);
+    eid_match_seed_dEta = std::clamp(eid_match_seed_dEta, -10.f, 10.f);
+    eid_sc_E = std::clamp(eid_sc_E, 0.f, 1000.f);
+    eid_trk_p = std::clamp(eid_trk_p, -1.f, 1000.f);
+    gsf_mode_p = std::clamp(gsf_mode_p, 0.f, 1000.f);
+    core_shFracHits = std::clamp(core_shFracHits, 0.f, 1.f);
+    gsf_bdtout1 = std::clamp(gsf_bdtout1, -20.f, 20.f);
     if (gsf_dr < 0.)
       gsf_dr = 5.;  //
     if (gsf_dr > 5.)
@@ -541,8 +541,8 @@ namespace lowptgsfeleid {
       trk_dr = 5.;  //
     if (trk_dr > 5.)
       trk_dr = 5.;  //
-    sc_Nclus = std::clamp(sc_Nclus, (float)0., (float)20.);
-    sc_clus1_nxtal = std::clamp(sc_clus1_nxtal, (float)0., (float)100.);
+    sc_Nclus = std::clamp(sc_Nclus, 0.f, 20.f);
+    sc_clus1_nxtal = std::clamp(sc_clus1_nxtal, 0.f, 100.f);
     if (sc_clus1_dphi < -3.14)
       sc_clus1_dphi = -5.;  //
     if (sc_clus1_dphi > 3.14)
@@ -551,10 +551,10 @@ namespace lowptgsfeleid {
       sc_clus2_dphi = -5.;  //
     if (sc_clus2_dphi > 3.14)
       sc_clus2_dphi = 5.;  //
-    sc_clus1_deta = std::clamp(sc_clus1_deta, (float)-5., (float)5.);
-    sc_clus2_deta = std::clamp(sc_clus2_deta, (float)-5., (float)5.);
-    sc_clus1_E = std::clamp(sc_clus1_E, (float)0., (float)1000.);
-    sc_clus2_E = std::clamp(sc_clus2_E, (float)0., (float)1000.);
+    sc_clus1_deta = std::clamp(sc_clus1_deta, -5.f, 5.f);
+    sc_clus2_deta = std::clamp(sc_clus2_deta, -5.f, 5.f);
+    sc_clus1_E = std::clamp(sc_clus1_E, 0.f, 1000.f);
+    sc_clus2_E = std::clamp(sc_clus2_E, 0.f, 1000.f);
     if (sc_clus1_E_ov_p < 0.)
       sc_clus1_E_ov_p = -1.;  //
     if (sc_clus2_E_ov_p < 0.)
