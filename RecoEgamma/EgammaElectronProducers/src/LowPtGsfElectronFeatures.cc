@@ -6,6 +6,7 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "TVector3.h"
+#include <algorithm>
 
 namespace lowptgsfeleseed {
 
@@ -129,7 +130,7 @@ namespace lowptgsfeleseed {
 
 namespace lowptgsfeleid {
 
-  std::vector<float> features_V1(reco::GsfElectron const& ele, float rho, float unbiased) {
+  std::vector<float> features_V1(reco::GsfElectron const& ele, float rho, float unbiased, float field_z) {
     float eid_rho = -999.;
     float eid_sc_eta = -999.;
     float eid_shape_full5x5_r9 = -999.;
@@ -207,27 +208,21 @@ namespace lowptgsfeleid {
     }
 
     // Track-cluster matching
-    //if (ele.isNonnull()) {
     eid_match_seed_dEta = ele.deltaEtaSeedClusterTrackAtCalo();
     eid_match_eclu_EoverP = (1. / ele.ecalEnergy()) - (1. / ele.p());
     eid_match_SC_EoverP = ele.eSuperClusterOverP();
     eid_match_SC_dEta = ele.deltaEtaSuperClusterTrackAtVtx();
     eid_match_SC_dPhi = ele.deltaPhiSuperClusterTrackAtVtx();
-    //}
 
     // Shower shape vars
-    //if (ele.isNonnull()) {
     eid_shape_full5x5_HoverE = ele.full5x5_hcalOverEcal();
     eid_shape_full5x5_r9 = ele.full5x5_r9();
-    //}
 
     // Misc
     eid_rho = rho;
 
-    //if (ele.isNonnull()) {
     eid_brem_frac = ele.fbrem();
     core_shFracHits = ele.shFracInnerHits();
-    //}
 
     // Unbiased BDT from ElectronSeed
     gsf_bdtout1 = unbiased;
@@ -239,12 +234,11 @@ namespace lowptgsfeleid {
         reco::SuperClusterRef sc = ele.core()->superCluster();
         if (sc.isNonnull()) {
           // Propagate electron track to ECAL surface
-          double mass_ = 0.000511 * 0.000511;
+          double mass2 = 0.000511 * 0.000511;
           float p2 = pow(gsf->p(), 2);
-          float energy = sqrt(mass_ + p2);
+          float energy = sqrt(mass2 + p2);
           XYZTLorentzVector mom = XYZTLorentzVector(gsf->px(), gsf->py(), gsf->pz(), energy);
           XYZTLorentzVector pos = XYZTLorentzVector(gsf->vx(), gsf->vy(), gsf->vz(), 0.);
-          float field_z = 3.8;
           RawParticle particle(mom, pos);
           BaseParticlePropagator propagator(particle, 0., 0., field_z);
           particle.setCharge(gsf->charge());
@@ -254,40 +248,7 @@ namespace lowptgsfeleid {
                                particle.y(),
                                particle.z());
 
-          // Iterate through ECAL clusters and sort in energy
-          int clusNum = 0;
-          float maxEne1 = -1;
-          float maxEne2 = -1;
-          int i1 = -1;
-          int i2 = -1;
-          try {
-            if (sc->clustersSize() > 0 && sc->clustersBegin() != sc->clustersEnd()) {
-              for (auto& cluster : sc->clusters()) {
-                if (cluster->energy() > maxEne1) {
-                  maxEne1 = cluster->energy();
-                  i1 = clusNum;
-                }
-                clusNum++;
-              }
-              if (sc->clustersSize() > 1) {
-                clusNum = 0;
-                for (auto& cluster : sc->clusters()) {
-                  if (clusNum != i1) {
-                    if (cluster->energy() > maxEne2) {
-                      maxEne2 = cluster->energy();
-                      i2 = clusNum;
-                    }
-                  }
-                  clusNum++;
-                }
-              }
-            }  // loop over clusters
-          } catch (...) {
-            std::cout << "exception caught clusNum=" << clusNum << " clus size" << sc->clustersSize()
-                      << " energy=" << sc->energy() << std::endl;
-          }
-
-          // Initializations
+          // Track-cluster matching for most energetic clusters
           sc_clus1_nxtal = -999;
           sc_clus1_dphi = -999.;
           sc_clus2_dphi = -999.;
@@ -297,180 +258,70 @@ namespace lowptgsfeleid {
           sc_clus2_E = -999.;
           sc_clus1_E_ov_p = -999.;
           sc_clus2_E_ov_p = -999.;
+          trackClusterMatching(*sc,
+                               *gsf,
+                               reach_ECAL,
+                               ecal_pos,
+                               sc_clus1_nxtal,
+                               sc_clus1_dphi,
+                               sc_clus2_dphi,
+                               sc_clus1_deta,
+                               sc_clus2_deta,
+                               sc_clus1_E,
+                               sc_clus2_E,
+                               sc_clus1_E_ov_p,
+                               sc_clus2_E_ov_p);
+          sc_clus1_nxtal = (int)sc_clus1_nxtal;
 
-          // track-clusters match
-          clusNum = 0;
-          try {
-            if (sc->clustersSize() > 0 && sc->clustersBegin() != sc->clustersEnd()) {
-              for (auto& cluster : sc->clusters()) {
-                double pi_ = 3.1415926535;
-                float deta = std::fabs(ecal_pos.eta() - cluster->eta());
-                float dphi = std::fabs(ecal_pos.phi() - cluster->phi());
-                if (dphi > pi_)
-                  dphi -= 2 * pi_;
-                if (ecal_pos.phi() - cluster->phi() < 0)
-                  dphi = -dphi;
-                if (ecal_pos.eta() - cluster->eta() < 0)
-                  deta = -deta;
-
-                if (clusNum == i1) {
-                  sc_clus1_E = cluster->energy();
-                  if (gsf->pMode() > 0)
-                    sc_clus1_E_ov_p = cluster->energy() / gsf->pMode();
-                  sc_clus1_nxtal = (int)cluster->size();
-                  if (reach_ECAL > 0) {
-                    sc_clus1_deta = deta;
-                    sc_clus1_dphi = dphi;
-                  }
-                } else if (clusNum == i2) {
-                  sc_clus2_E = cluster->energy();
-                  if (gsf->pMode() > 0)
-                    sc_clus2_E_ov_p = cluster->energy() / gsf->pMode();
-                  if (reach_ECAL > 0) {
-                    sc_clus2_deta = deta;
-                    sc_clus2_dphi = dphi;
-                  }
-                }
-                clusNum++;
-              }
-            }
-          } catch (...) {
-            std::cout << "caught an exception" << std::endl;
-          }
-        }
-      }
-    }  // clusters
+        }  // sc.isNonnull()
+      }    // gsf.isNonnull()
+    }      // clusters
 
     // Out-of-range
-    if (eid_rho < 0)
-      eid_rho = 0;
-    if (eid_rho > 100)
-      eid_rho = 100;
-    if (eid_sc_eta < -5)
-      eid_sc_eta = -5;
-    if (eid_sc_eta > 5)
-      eid_sc_eta = 5;
-    if (eid_shape_full5x5_r9 < 0)
-      eid_shape_full5x5_r9 = 0;
-    if (eid_shape_full5x5_r9 > 2)
-      eid_shape_full5x5_r9 = 2;
-    if (eid_sc_etaWidth < 0)
-      eid_sc_etaWidth = 0;
-    if (eid_sc_etaWidth > 3.14)
-      eid_sc_etaWidth = 3.14;
-    if (eid_sc_phiWidth < 0)
-      eid_sc_phiWidth = 0;
-    if (eid_sc_phiWidth > 3.14)
-      eid_sc_phiWidth = 3.14;
-    if (eid_shape_full5x5_HoverE < 0)
-      eid_shape_full5x5_HoverE = 0;
-    if (eid_shape_full5x5_HoverE > 50)
-      eid_shape_full5x5_HoverE = 50;
-    if (eid_trk_nhits < -1)
-      eid_trk_nhits = -1;
-    if (eid_trk_nhits > 50)
-      eid_trk_nhits = 50;
-    if (eid_trk_chi2red < -1)
-      eid_trk_chi2red = -1;
-    if (eid_trk_chi2red > 50)
-      eid_trk_chi2red = 50;
-    if (eid_gsf_chi2red < -1)
-      eid_gsf_chi2red = -1;
-    if (eid_gsf_chi2red > 100)
-      eid_gsf_chi2red = 100;
-    if (eid_brem_frac < 0)
-      eid_brem_frac = -1;
-    if (eid_brem_frac > 1)
-      eid_brem_frac = 1;
-    if (eid_gsf_nhits < -1)
-      eid_gsf_nhits = -1;
-    if (eid_gsf_nhits > 50)
-      eid_gsf_nhits = 50;
-    if (eid_match_SC_EoverP < 0)
-      eid_match_SC_EoverP = 0;
-    if (eid_match_SC_EoverP > 100)
-      eid_match_SC_EoverP = 100;
-    if (eid_match_eclu_EoverP < -0.001)
-      eid_match_eclu_EoverP = -0.001;
-    if (eid_match_eclu_EoverP > 0.001)
-      eid_match_eclu_EoverP = 0.001;
-    eid_match_eclu_EoverP = eid_match_eclu_EoverP * 1.E7;
-    if (eid_match_SC_dEta < -10)
-      eid_match_SC_dEta = -10;
-    if (eid_match_SC_dEta > 10)
-      eid_match_SC_dEta = 10;
-    if (eid_match_SC_dPhi < -3.14)
-      eid_match_SC_dPhi = -3.14;
-    if (eid_match_SC_dPhi > 3.14)
-      eid_match_SC_dPhi = 3.14;
-    if (eid_match_seed_dEta < -10)
-      eid_match_seed_dEta = -10;
-    if (eid_match_seed_dEta > 10)
-      eid_match_seed_dEta = 10;
-    if (eid_sc_E < 0)
-      eid_sc_E = 0;
-    if (eid_sc_E > 1000)
-      eid_sc_E = 1000;
-    if (eid_trk_p < -1)
-      eid_trk_p = -1;
-    if (eid_trk_p > 1000)
-      eid_trk_p = 1000;
-    if (gsf_mode_p < 0)
-      gsf_mode_p = 0;
-    if (gsf_mode_p > 1000)
-      gsf_mode_p = 1000;
-    if (core_shFracHits < 0)
-      core_shFracHits = 0;
-    if (core_shFracHits > 1)
-      core_shFracHits = 1;
-    if (gsf_bdtout1 < -20)
-      gsf_bdtout1 = -20;
-    if (gsf_bdtout1 > 20)
-      gsf_bdtout1 = 20;
-    if (gsf_dr < 0)
-      gsf_dr = 5;
-    if (gsf_dr > 5)
-      gsf_dr = 5;
-    if (trk_dr < 0)
-      trk_dr = 5;
-    if (trk_dr > 5)
-      trk_dr = 5;
-    if (sc_Nclus < 0)
-      sc_Nclus = 0;
-    if (sc_Nclus > 20)
-      sc_Nclus = 20;
-    if (sc_clus1_nxtal < 0)
-      sc_clus1_nxtal = 0;
-    if (sc_clus1_nxtal > 100)
-      sc_clus1_nxtal = 100;
-    if (sc_clus1_dphi < -3.14)
-      sc_clus1_dphi = -5;
-    if (sc_clus1_dphi > 3.14)
-      sc_clus1_dphi = 5;
-    if (sc_clus2_dphi < -3.14)
-      sc_clus2_dphi = -5;
-    if (sc_clus2_dphi > 3.14)
-      sc_clus2_dphi = 5;
-    if (sc_clus1_deta < -5)
-      sc_clus1_deta = -5;
-    if (sc_clus1_deta > 5)
-      sc_clus1_deta = 5;
-    if (sc_clus2_deta < -5)
-      sc_clus2_deta = -5;
-    if (sc_clus2_deta > 5)
-      sc_clus2_deta = 5;
-    if (sc_clus1_E < 0)
-      sc_clus1_E = 0;
-    if (sc_clus1_E > 1000)
-      sc_clus1_E = 1000;
-    if (sc_clus2_E < 0)
-      sc_clus2_E = 0;
-    if (sc_clus2_E > 1000)
-      sc_clus2_E = 1000;
-    if (sc_clus1_E_ov_p < 0)
-      sc_clus1_E_ov_p = -1;
-    if (sc_clus2_E_ov_p < 0)
-      sc_clus2_E_ov_p = -1;
+    eid_rho = std::clamp(eid_rho, 0.f, 100.f);
+    eid_sc_eta = std::clamp(eid_sc_eta, -5.f, 5.f);
+    eid_shape_full5x5_r9 = std::clamp(eid_shape_full5x5_r9, 0.f, 2.f);
+    eid_sc_etaWidth = std::clamp(eid_sc_etaWidth, 0.f, 3.14f);
+    eid_sc_phiWidth = std::clamp(eid_sc_phiWidth, 0.f, 3.14f);
+    eid_shape_full5x5_HoverE = std::clamp(eid_shape_full5x5_HoverE, 0.f, 50.f);
+    eid_trk_nhits = std::clamp(eid_trk_nhits, -1.f, 50.f);
+    eid_trk_chi2red = std::clamp(eid_trk_chi2red, -1.f, 50.f);
+    eid_gsf_chi2red = std::clamp(eid_gsf_chi2red, -1.f, 100.f);
+    if (eid_brem_frac < 0.)
+      eid_brem_frac = -1.;  //
+    if (eid_brem_frac > 1.)
+      eid_brem_frac = 1.;  //
+    eid_gsf_nhits = std::clamp(eid_gsf_nhits, -1.f, 50.f);
+    eid_match_SC_EoverP = std::clamp(eid_match_SC_EoverP, 0.f, 100.f);
+    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, -1.f, 1.f);
+    eid_match_SC_dEta = std::clamp(eid_match_SC_dEta, -10.f, 10.f);
+    eid_match_SC_dPhi = std::clamp(eid_match_SC_dPhi, -3.14f, 3.14f);
+    eid_match_seed_dEta = std::clamp(eid_match_seed_dEta, -10.f, 10.f);
+    eid_sc_E = std::clamp(eid_sc_E, 0.f, 1000.f);
+    eid_trk_p = std::clamp(eid_trk_p, -1.f, 1000.f);
+    gsf_mode_p = std::clamp(gsf_mode_p, 0.f, 1000.f);
+    core_shFracHits = std::clamp(core_shFracHits, 0.f, 1.f);
+    gsf_bdtout1 = std::clamp(gsf_bdtout1, -20.f, 20.f);
+    if (gsf_dr < 0.)
+      gsf_dr = 5.;  //
+    if (gsf_dr > 5.)
+      gsf_dr = 5.;  //
+    if (trk_dr < 0.)
+      trk_dr = 5.;  //
+    if (trk_dr > 5.)
+      trk_dr = 5.;  //
+    sc_Nclus = std::clamp(sc_Nclus, 0.f, 20.f);
+    sc_clus1_nxtal = std::clamp(sc_clus1_nxtal, 0.f, 100.f);
+    sc_clus1_dphi = std::clamp(sc_clus1_dphi, -3.14f, 3.14f);
+    sc_clus2_dphi = std::clamp(sc_clus2_dphi, -3.14f, 3.14f);
+    sc_clus1_deta = std::clamp(sc_clus1_deta, -5.f, 5.f);
+    sc_clus2_deta = std::clamp(sc_clus2_deta, -5.f, 5.f);
+    sc_clus1_E = std::clamp(sc_clus1_E, 0.f, 1000.f);
+    sc_clus2_E = std::clamp(sc_clus2_E, 0.f, 1000.f);
+    if (sc_clus1_E_ov_p < 0.)
+      sc_clus1_E_ov_p = -1.;  //
+    if (sc_clus2_E_ov_p < 0.)
+      sc_clus2_E_ov_p = -1.;  //
 
     // Set contents of vector
     std::vector<float> output = {eid_rho,
@@ -589,27 +440,21 @@ namespace lowptgsfeleid {
     }
 
     // Track-cluster matching
-    //if (ele.isNonnull()) {
     eid_match_seed_dEta = ele.deltaEtaSeedClusterTrackAtCalo();
     eid_match_eclu_EoverP = (1. / ele.ecalEnergy()) - (1. / ele.p());
     eid_match_SC_EoverP = ele.eSuperClusterOverP();
     eid_match_SC_dEta = ele.deltaEtaSuperClusterTrackAtVtx();
     eid_match_SC_dPhi = ele.deltaPhiSuperClusterTrackAtVtx();
-    //}
 
     // Shower shape vars
-    //if (ele.isNonnull()) {
     eid_shape_full5x5_HoverE = ele.full5x5_hcalOverEcal();
     eid_shape_full5x5_r9 = ele.full5x5_r9();
-    //}
 
     // Misc
     eid_rho = rho;
 
-    //if (ele.isNonnull()) {
     eid_brem_frac = ele.fbrem();
     core_shFracHits = (float)ele.shFracInnerHits();
-    //}
 
     // Unbiased BDT from ElectronSeed
     gsf_bdtout1 = unbiased;
@@ -621,9 +466,9 @@ namespace lowptgsfeleid {
         const auto& sc = ele.core()->superCluster();  // reco::SuperClusterRef
         if (sc.isNonnull()) {
           // Propagate electron track to ECAL surface
-          double mass_ = 0.000511 * 0.000511;
+          double mass2 = 0.000511 * 0.000511;
           float p2 = pow(gsf->p(), 2);
-          float energy = sqrt(mass_ + p2);
+          float energy = sqrt(mass2 + p2);
           math::XYZTLorentzVector mom = math::XYZTLorentzVector(gsf->px(), gsf->py(), gsf->pz(), energy);
           math::XYZTLorentzVector pos = math::XYZTLorentzVector(gsf->vx(), gsf->vy(), gsf->vz(), 0.);
           float field_z = 3.8;
@@ -635,41 +480,7 @@ namespace lowptgsfeleid {
           GlobalPoint ecal_pos(
               mypart.particle().vertex().x(), mypart.particle().vertex().y(), mypart.particle().vertex().z());
 
-          // Iterate through ECAL clusters and sort in energy
-          int clusNum = 0;
-          float maxEne1 = -1;
-          float maxEne2 = -1;
-          int i1 = -1;
-          int i2 = -1;
-          try {
-            if (sc->clustersSize() > 0 && sc->clustersBegin() != sc->clustersEnd()) {
-              for (const auto& cluster : sc->clusters()) {
-                if (cluster->energy() > maxEne1) {
-                  maxEne1 = cluster->energy();
-                  i1 = clusNum;
-                }
-                clusNum++;
-              }
-              if (sc->clustersSize() > 1) {
-                clusNum = 0;
-                for (const auto& cluster : sc->clusters()) {
-                  if (clusNum != i1) {
-                    if (cluster->energy() > maxEne2) {
-                      maxEne2 = cluster->energy();
-                      i2 = clusNum;
-                    }
-                  }
-                  clusNum++;
-                }
-              }
-            }  // loop over clusters
-          } catch (...) {
-            edm::LogError("SuperClusters") << "Problem accessing SC constituent clusters:"
-                                           << " clusNum=" << clusNum << " clustersSize=" << sc->clustersSize()
-                                           << " energy=" << sc->energy() << std::endl;
-          }
-
-          // Initializations
+          // Track-cluster matching for most energetic clusters
           sc_clus1_nxtal = -999.;
           sc_clus1_dphi = -999.;
           sc_clus2_dphi = -999.;
@@ -679,178 +490,74 @@ namespace lowptgsfeleid {
           sc_clus2_E = -999.;
           sc_clus1_E_ov_p = -999.;
           sc_clus2_E_ov_p = -999.;
+          trackClusterMatching(*sc,
+                               *gsf,
+                               reach_ECAL,
+                               ecal_pos,
+                               sc_clus1_nxtal,
+                               sc_clus1_dphi,
+                               sc_clus2_dphi,
+                               sc_clus1_deta,
+                               sc_clus2_deta,
+                               sc_clus1_E,
+                               sc_clus2_E,
+                               sc_clus1_E_ov_p,
+                               sc_clus2_E_ov_p);
 
-          // track-clusters match
-          clusNum = 0;
-          try {
-            if (sc->clustersSize() > 0 && sc->clustersBegin() != sc->clustersEnd()) {
-              for (const auto& cluster : sc->clusters()) {
-                float deta = std::fabs(ecal_pos.eta() - cluster->eta());
-                float dphi = std::fabs(ecal_pos.phi() - cluster->phi());
-                if (dphi > M_PI)
-                  dphi -= 2 * M_PI;
-                if (ecal_pos.phi() - cluster->phi() < 0)
-                  dphi = -dphi;
-                if (ecal_pos.eta() - cluster->eta() < 0)
-                  deta = -deta;
-
-                if (clusNum == i1) {
-                  sc_clus1_E = cluster->energy();
-                  if (gsf->pMode() > 0)
-                    sc_clus1_E_ov_p = cluster->energy() / gsf->pMode();
-                  sc_clus1_nxtal = (float)cluster->size();
-                  if (reach_ECAL > 0) {
-                    sc_clus1_deta = deta;
-                    sc_clus1_dphi = dphi;
-                  }
-                } else if (clusNum == i2) {
-                  sc_clus2_E = cluster->energy();
-                  if (gsf->pMode() > 0)
-                    sc_clus2_E_ov_p = cluster->energy() / gsf->pMode();
-                  if (reach_ECAL > 0) {
-                    sc_clus2_deta = deta;
-                    sc_clus2_dphi = dphi;
-                  }
-                }
-                clusNum++;
-              }
-            }
-          } catch (...) {
-            edm::LogError("SuperClusters") << "Problem with track-cluster matching" << std::endl;
-          }
-        }
-      }
-    }  // clusters
+        }  // sc.isNonnull()
+      }    // gsf.isNonnull()
+    }      // clusters
 
     // Out-of-range
-    if (eid_rho < 0)
-      eid_rho = 0;
-    if (eid_rho > 100)
-      eid_rho = 100;
-    if (eid_sc_eta < -5)
-      eid_sc_eta = -5;
-    if (eid_sc_eta > 5)
-      eid_sc_eta = 5;
-    if (eid_shape_full5x5_r9 < 0)
-      eid_shape_full5x5_r9 = 0;
-    if (eid_shape_full5x5_r9 > 2)
-      eid_shape_full5x5_r9 = 2;
-    if (eid_sc_etaWidth < 0)
-      eid_sc_etaWidth = 0;
-    if (eid_sc_etaWidth > 3.14)
-      eid_sc_etaWidth = 3.14;
-    if (eid_sc_phiWidth < 0)
-      eid_sc_phiWidth = 0;
-    if (eid_sc_phiWidth > 3.14)
-      eid_sc_phiWidth = 3.14;
-    if (eid_shape_full5x5_HoverE < 0)
-      eid_shape_full5x5_HoverE = 0;
-    if (eid_shape_full5x5_HoverE > 50)
-      eid_shape_full5x5_HoverE = 50;
-    if (eid_trk_nhits < -1)
-      eid_trk_nhits = -1;
-    if (eid_trk_nhits > 50)
-      eid_trk_nhits = 50;
-    if (eid_trk_chi2red < -1)
-      eid_trk_chi2red = -1;
-    if (eid_trk_chi2red > 50)
-      eid_trk_chi2red = 50;
-    if (eid_gsf_chi2red < -1)
-      eid_gsf_chi2red = -1;
-    if (eid_gsf_chi2red > 100)
-      eid_gsf_chi2red = 100;
-    if (eid_brem_frac < 0)
-      eid_brem_frac = -1;
-    if (eid_brem_frac > 1)
-      eid_brem_frac = 1;
-    if (eid_gsf_nhits < -1)
-      eid_gsf_nhits = -1;
-    if (eid_gsf_nhits > 50)
-      eid_gsf_nhits = 50;
-    if (eid_match_SC_EoverP < 0)
-      eid_match_SC_EoverP = 0;
-    if (eid_match_SC_EoverP > 100)
-      eid_match_SC_EoverP = 100;
-    if (eid_match_eclu_EoverP < -1.)
-      eid_match_eclu_EoverP = -1.;
-    if (eid_match_eclu_EoverP > 1.)
-      eid_match_eclu_EoverP = 1.;
-    if (eid_match_SC_dEta < -10)
-      eid_match_SC_dEta = -10;
-    if (eid_match_SC_dEta > 10)
-      eid_match_SC_dEta = 10;
-    if (eid_match_SC_dPhi < -3.14)
-      eid_match_SC_dPhi = -3.14;
-    if (eid_match_SC_dPhi > 3.14)
-      eid_match_SC_dPhi = 3.14;
-    if (eid_match_seed_dEta < -10)
-      eid_match_seed_dEta = -10;
-    if (eid_match_seed_dEta > 10)
-      eid_match_seed_dEta = 10;
-    if (eid_sc_E < 0)
-      eid_sc_E = 0;
-    if (eid_sc_E > 1000)
-      eid_sc_E = 1000;
-    if (eid_trk_p < -1)
-      eid_trk_p = -1;
-    if (eid_trk_p > 1000)
-      eid_trk_p = 1000;
-    if (gsf_mode_p < 0)
-      gsf_mode_p = 0;
-    if (gsf_mode_p > 1000)
-      gsf_mode_p = 1000;
-    if (core_shFracHits < 0)
-      core_shFracHits = 0;
-    if (core_shFracHits > 1)
-      core_shFracHits = 1;
-    if (gsf_bdtout1 < -20)
-      gsf_bdtout1 = -20;
-    if (gsf_bdtout1 > 20)
-      gsf_bdtout1 = 20;
-    if (gsf_dr < 0)
-      gsf_dr = 5;
-    if (gsf_dr > 5)
-      gsf_dr = 5;
-    if (trk_dr < 0)
-      trk_dr = 5;
-    if (trk_dr > 5)
-      trk_dr = 5;
-    if (sc_Nclus < 0)
-      sc_Nclus = 0;
-    if (sc_Nclus > 20)
-      sc_Nclus = 20;
-    if (sc_clus1_nxtal < 0)
-      sc_clus1_nxtal = 0;
-    if (sc_clus1_nxtal > 100)
-      sc_clus1_nxtal = 100;
+    eid_sc_eta = std::clamp(eid_sc_eta, -5.f, 5.f);
+    eid_shape_full5x5_r9 = std::clamp(eid_shape_full5x5_r9, 0.f, 2.f);
+    eid_sc_etaWidth = std::clamp(eid_sc_etaWidth, 0.f, 3.14f);
+    eid_sc_phiWidth = std::clamp(eid_sc_phiWidth, 0.f, 3.14f);
+    eid_shape_full5x5_HoverE = std::clamp(eid_shape_full5x5_HoverE, 0.f, 50.f);
+    eid_trk_nhits = std::clamp(eid_trk_nhits, -1.f, 50.f);
+    eid_trk_chi2red = std::clamp(eid_trk_chi2red, -1.f, 50.f);
+    eid_gsf_chi2red = std::clamp(eid_gsf_chi2red, -1.f, 100.f);
+    if (eid_brem_frac < 0.)
+      eid_brem_frac = -1.;  //
+    if (eid_brem_frac > 1.)
+      eid_brem_frac = 1.;  //
+    eid_gsf_nhits = std::clamp(eid_gsf_nhits, -1.f, 50.f);
+    eid_match_SC_EoverP = std::clamp(eid_match_SC_EoverP, 0.f, 100.f);
+    eid_match_eclu_EoverP = std::clamp(eid_match_eclu_EoverP, -1.f, 1.f);
+    eid_match_SC_dEta = std::clamp(eid_match_SC_dEta, -10.f, 10.f);
+    eid_match_SC_dPhi = std::clamp(eid_match_SC_dPhi, -3.14f, 3.14f);
+    eid_match_seed_dEta = std::clamp(eid_match_seed_dEta, -10.f, 10.f);
+    eid_sc_E = std::clamp(eid_sc_E, 0.f, 1000.f);
+    eid_trk_p = std::clamp(eid_trk_p, -1.f, 1000.f);
+    gsf_mode_p = std::clamp(gsf_mode_p, 0.f, 1000.f);
+    core_shFracHits = std::clamp(core_shFracHits, 0.f, 1.f);
+    gsf_bdtout1 = std::clamp(gsf_bdtout1, -20.f, 20.f);
+    if (gsf_dr < 0.)
+      gsf_dr = 5.;  //
+    if (gsf_dr > 5.)
+      gsf_dr = 5.;  //
+    if (trk_dr < 0.)
+      trk_dr = 5.;  //
+    if (trk_dr > 5.)
+      trk_dr = 5.;  //
+    sc_Nclus = std::clamp(sc_Nclus, 0.f, 20.f);
+    sc_clus1_nxtal = std::clamp(sc_clus1_nxtal, 0.f, 100.f);
     if (sc_clus1_dphi < -3.14)
-      sc_clus1_dphi = -5;
+      sc_clus1_dphi = -5.;  //
     if (sc_clus1_dphi > 3.14)
-      sc_clus1_dphi = 5;
+      sc_clus1_dphi = 5.;  //
     if (sc_clus2_dphi < -3.14)
-      sc_clus2_dphi = -5;
+      sc_clus2_dphi = -5.;  //
     if (sc_clus2_dphi > 3.14)
-      sc_clus2_dphi = 5;
-    if (sc_clus1_deta < -5)
-      sc_clus1_deta = -5;
-    if (sc_clus1_deta > 5)
-      sc_clus1_deta = 5;
-    if (sc_clus2_deta < -5)
-      sc_clus2_deta = -5;
-    if (sc_clus2_deta > 5)
-      sc_clus2_deta = 5;
-    if (sc_clus1_E < 0)
-      sc_clus1_E = 0;
-    if (sc_clus1_E > 1000)
-      sc_clus1_E = 1000;
-    if (sc_clus2_E < 0)
-      sc_clus2_E = 0;
-    if (sc_clus2_E > 1000)
-      sc_clus2_E = 1000;
-    if (sc_clus1_E_ov_p < 0)
-      sc_clus1_E_ov_p = -1;
-    if (sc_clus2_E_ov_p < 0)
-      sc_clus2_E_ov_p = -1;
+      sc_clus2_dphi = 5.;  //
+    sc_clus1_deta = std::clamp(sc_clus1_deta, -5.f, 5.f);
+    sc_clus2_deta = std::clamp(sc_clus2_deta, -5.f, 5.f);
+    sc_clus1_E = std::clamp(sc_clus1_E, 0.f, 1000.f);
+    sc_clus2_E = std::clamp(sc_clus2_E, 0.f, 1000.f);
+    if (sc_clus1_E_ov_p < 0.)
+      sc_clus1_E_ov_p = -1.;  //
+    if (sc_clus2_E_ov_p < 0.)
+      sc_clus2_E_ov_p = -1.;  //
 
     // Set contents of vector
     std::vector<float> output = {eid_rho,
@@ -887,6 +594,85 @@ namespace lowptgsfeleid {
                                  sc_clus1_E_ov_p,
                                  sc_clus2_E_ov_p};
     return output;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Find most energetic clusters
+  void findEnergeticClusters(
+      reco::SuperCluster const& sc, int& clusNum, float& maxEne1, float& maxEne2, int& i1, int& i2) {
+    if (sc.clustersSize() > 0 && sc.clustersBegin() != sc.clustersEnd()) {
+      for (auto const& cluster : sc.clusters()) {
+        if (cluster->energy() > maxEne1) {
+          maxEne1 = cluster->energy();
+          i1 = clusNum;
+        }
+        clusNum++;
+      }
+      if (sc.clustersSize() > 1) {
+        clusNum = 0;
+        for (auto const& cluster : sc.clusters()) {
+          if (clusNum != i1) {
+            if (cluster->energy() > maxEne2) {
+              maxEne2 = cluster->energy();
+              i2 = clusNum;
+            }
+          }
+          clusNum++;
+        }
+      }
+    }  // loop over clusters
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Track-cluster matching for most energetic clusters
+  void trackClusterMatching(reco::SuperCluster const& sc,
+                            reco::GsfTrack const& gsf,
+                            bool const& reach_ECAL,
+                            GlobalPoint const& ecal_pos,
+                            float& sc_clus1_nxtal,
+                            float& sc_clus1_dphi,
+                            float& sc_clus2_dphi,
+                            float& sc_clus1_deta,
+                            float& sc_clus2_deta,
+                            float& sc_clus1_E,
+                            float& sc_clus2_E,
+                            float& sc_clus1_E_ov_p,
+                            float& sc_clus2_E_ov_p) {
+    // Iterate through ECAL clusters and sort in energy
+    int clusNum = 0;
+    float maxEne1 = -1;
+    float maxEne2 = -1;
+    int i1 = -1;
+    int i2 = -1;
+    findEnergeticClusters(sc, clusNum, maxEne1, maxEne2, i1, i2);
+
+    // track-clusters match
+    clusNum = 0;
+    if (sc.clustersSize() > 0 && sc.clustersBegin() != sc.clustersEnd()) {
+      for (auto const& cluster : sc.clusters()) {
+        float deta = ecal_pos.eta() - cluster->eta();
+        float dphi = reco::deltaPhi(ecal_pos.phi(), cluster->phi());
+        if (clusNum == i1) {
+          sc_clus1_E = cluster->energy();
+          if (gsf.pMode() > 0)
+            sc_clus1_E_ov_p = cluster->energy() / gsf.pMode();
+          sc_clus1_nxtal = (float)cluster->size();
+          if (reach_ECAL > 0) {
+            sc_clus1_deta = deta;
+            sc_clus1_dphi = dphi;
+          }
+        } else if (clusNum == i2) {
+          sc_clus2_E = cluster->energy();
+          if (gsf.pMode() > 0)
+            sc_clus2_E_ov_p = cluster->energy() / gsf.pMode();
+          if (reach_ECAL > 0) {
+            sc_clus2_deta = deta;
+            sc_clus2_dphi = dphi;
+          }
+        }
+        clusNum++;
+      }
+    }
   }
 
 }  // namespace lowptgsfeleid
