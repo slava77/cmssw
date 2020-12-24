@@ -26,6 +26,7 @@
 <use name="MagneticField/Engine"/>
 <use name="MagneticField/Records"/>
 <use name="MagneticField/UniformEngine"/>
+<use name="PhysicsTools/TensorFlow"/>
 <use name="RecoPixelVertexing/PixelLowPtUtilities"/>
 <use name="RecoPixelVertexing/PixelTrackFitting"/>
 <use name="RecoPixelVertexing/PixelTriplets"/>
