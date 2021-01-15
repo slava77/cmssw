@@ -458,9 +458,7 @@ void CTPPSDirectProtonSimulation::processProton(
       const auto &gl_a1 = geometry.localToGlobal(detId, CTPPSGeometry::Vector(1, 0, 0)) - gl_o;
       const auto &gl_a2 = geometry.localToGlobal(detId, CTPPSGeometry::Vector(0, 1, 0)) - gl_o;
 
-      double gl_o_z = gl_o.z();
-      if (detId.subdetId() == CTPPSDetId::sdTimingDiamond)
-        gl_o_z = -gl_o_z;  // fix bug in diamond geometry
+      const double gl_o_z = gl_o.z();
 
       TMatrixD A(3, 3);
       TVectorD B(3);
@@ -528,11 +526,11 @@ void CTPPSDirectProtonSimulation::processProton(
           ssLog << " | m=" << v << ", sigma=" << sigma << std::endl;
 
         edm::DetSet<TotemRPRecHit> &hits = out_strip_hits.find_or_insert(detId);
-        hits.push_back(TotemRPRecHit(v, sigma));
+        hits.emplace_back(v, sigma);
 
         edm::DetSet<TotemRPRecHit> &hits_per_particle =
             out_strip_hits_per_particle[in_trk->barcode()].find_or_insert(detId);
-        hits_per_particle.push_back(TotemRPRecHit(v, sigma));
+        hits_per_particle.emplace_back(v, sigma);
       }
 
       // diamonds
@@ -617,11 +615,11 @@ void CTPPSDirectProtonSimulation::processProton(
         const LocalError le(sigmaHor, 0., sigmaVer);
 
         edm::DetSet<CTPPSPixelRecHit> &hits = out_pixel_hits.find_or_insert(detId);
-        hits.push_back(CTPPSPixelRecHit(lp, le));
+        hits.emplace_back(lp, le);
 
         edm::DetSet<CTPPSPixelRecHit> &hits_per_particle =
             out_pixel_hits_per_particle[in_trk->barcode()].find_or_insert(detId);
-        hits_per_particle.push_back(CTPPSPixelRecHit(lp, le));
+        hits_per_particle.emplace_back(lp, le);
       }
     }
   }

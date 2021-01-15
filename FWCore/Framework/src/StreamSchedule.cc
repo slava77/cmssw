@@ -647,17 +647,18 @@ namespace edm {
       WaitingTaskHolder taskHolder(pathsDone);
 
       //start end paths first so on single threaded the paths will run first
+      WaitingTaskHolder hAllPathsDone(allPathsDone);
       for (auto it = end_paths_.rbegin(), itEnd = end_paths_.rend(); it != itEnd; ++it) {
-        it->processOneOccurrenceAsync(allPathsDone, info, serviceToken, streamID_, &streamContext_);
+        it->processOneOccurrenceAsync(hAllPathsDone, info, serviceToken, streamID_, &streamContext_);
       }
 
       for (auto it = trig_paths_.rbegin(), itEnd = trig_paths_.rend(); it != itEnd; ++it) {
-        it->processOneOccurrenceAsync(pathsDone, info, serviceToken, streamID_, &streamContext_);
+        it->processOneOccurrenceAsync(taskHolder, info, serviceToken, streamID_, &streamContext_);
       }
 
       ParentContext parentContext(&streamContext_);
       workerManager_.processAccumulatorsAsync<OccurrenceTraits<EventPrincipal, BranchActionStreamBegin>>(
-          allPathsDone, info, serviceToken, streamID_, parentContext, &streamContext_);
+          hAllPathsDone, info, serviceToken, streamID_, parentContext, &streamContext_);
     } catch (...) {
       iTask.doneWaiting(std::current_exception());
     }
@@ -695,7 +696,10 @@ namespace edm {
         ParentContext parentContext(&streamContext_);
         using Traits = OccurrenceTraits<EventPrincipal, BranchActionStreamBegin>;
 
-        results_inserter_->doWork<Traits>(info, streamID_, parentContext, &streamContext_);
+        auto expt = results_inserter_->runModuleDirectly<Traits>(info, streamID_, parentContext, &streamContext_);
+        if (expt) {
+          std::rethrow_exception(expt);
+        }
       } catch (cms::Exception& ex) {
         if (not iExcept) {
           if (ex.context().empty()) {

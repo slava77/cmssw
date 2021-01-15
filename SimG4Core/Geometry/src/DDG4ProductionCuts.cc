@@ -1,6 +1,5 @@
 #include "SimG4Core/Geometry/interface/DDG4ProductionCuts.h"
 #include "DetectorDescription/Core/interface/DDLogicalPart.h"
-#include "DataFormats/Math/interface/GeantUnits.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -14,14 +13,6 @@
 #include "G4LogicalVolume.hh"
 
 #include <algorithm>
-
-using geant_units::operators::convertCmToMm;
-
-#ifdef HAVE_GEANT4_UNITS
-#define MM_2_CM 1.0
-#else
-#define MM_2_CM 0.1
-#endif
 
 namespace {
   /** helper function to compare parts through their name instead of comparing them
@@ -124,11 +115,11 @@ void DDG4ProductionCuts::dd4hepInitialize() {
   for (auto const& it : *dd4hepMap_) {
     for (auto const& fit : specs) {
       for (auto const& pit : fit.second->paths) {
-        const std::string_view selection = dd4hep::dd::realTopName(pit);
+        const std::string_view selection = dd4hep::dd::noNamespace(dd4hep::dd::realTopName(pit));
         const std::string_view name = dd4hep::dd::noNamespace(it.first.name());
         if (!(dd4hep::dd::isRegex(selection))
                 ? dd4hep::dd::compareEqual(name, selection)
-                : std::regex_match(name.begin(), name.end(), std::regex(std::string(selection)))) {
+                : std::regex_match(name.begin(), name.end(), std::regex(selection.begin(), selection.end()))) {
           dd4hepVec_.emplace_back(std::make_pair<G4LogicalVolume*, const dd4hep::SpecPar*>(&*it.second, &*fit.second));
         }
       }
@@ -233,10 +224,10 @@ void DDG4ProductionCuts::setProdCuts(const dd4hep::SpecPar* spec, G4Region* regi
     // search for production cuts
     // you must have four of them: e+ e- gamma proton
     //
-    double gammacut = spec->dblValue("ProdCutsForGamma") / MM_2_CM;
-    double electroncut = spec->dblValue("ProdCutsForElectrons") / MM_2_CM;
-    double positroncut = spec->dblValue("ProdCutsForPositrons") / MM_2_CM;
-    double protoncut = spec->dblValue("ProdCutsForProtons") / MM_2_CM;
+    double gammacut = spec->dblValue("ProdCutsForGamma") / dd4hep::mm;  // Convert from DD4hep units to mm
+    double electroncut = spec->dblValue("ProdCutsForElectrons") / dd4hep::mm;
+    double positroncut = spec->dblValue("ProdCutsForPositrons") / dd4hep::mm;
+    double protoncut = spec->dblValue("ProdCutsForProtons") / dd4hep::mm;
     if (protoncut == 0) {
       protoncut = electroncut;
     }
