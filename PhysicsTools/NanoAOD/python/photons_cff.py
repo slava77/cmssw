@@ -75,6 +75,16 @@ seedGainPho = cms.EDProducer("PhotonSeedGainProducer", src = cms.InputTag("slimm
 
 import RecoEgamma.EgammaTools.calibratedEgammas_cff
 
+calibratedPatPhotonsUL16preVFP = RecoEgamma.EgammaTools.calibratedEgammas_cff.calibratedPatPhotons.clone(
+    produceCalibratedObjs = False,
+    correctionFile = cms.string("EgammaAnalysis/ElectronTools/data/ScalesSmearings/Run2016_UltraLegacy_preVFP_RunFineEtaR9Gain"),
+)
+
+calibratedPatPhotonsUL16postVFP = RecoEgamma.EgammaTools.calibratedEgammas_cff.calibratedPatPhotons.clone(
+    produceCalibratedObjs = False,
+    correctionFile = cms.string("EgammaAnalysis/ElectronTools/data/ScalesSmearings/Run2016_UltraLegacy_postVFP_RunFineEtaR9Gain"),
+)
+
 calibratedPatPhotonsUL17 = RecoEgamma.EgammaTools.calibratedEgammas_cff.calibratedPatPhotons.clone(
     produceCalibratedObjs = False,
     correctionFile = cms.string("EgammaAnalysis/ElectronTools/data/ScalesSmearings/Run2017_24Feb2020_runEtaR9Gain_v2")
@@ -136,38 +146,86 @@ slimmedPhotonsWithUserData = cms.EDProducer("PATPhotonUserDataEmbedder",
     ),
 )
 
+(run2_egamma_2016 & tracker_apv_vfp30_2016).toModify(slimmedPhotonsWithUserData.userFloats,
+    ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotonsUL16preVFP","ecalEnergyErrPostCorr"),
+    ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotonsUL16preVFP","ecalEnergyPreCorr"),
+    ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotonsUL16preVFP","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotonsUL16preVFP","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotonsUL16preVFP","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotonsUL16preVFP","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotonsUL16preVFP","energySigmaDown"),
+)
+
+(run2_egamma_2016 & ~tracker_apv_vfp30_2016).toModify(slimmedPhotonsWithUserData.userFloats,
+    ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotonsUL16postVFP","ecalEnergyErrPostCorr"),
+    ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotonsUL16postVFP","ecalEnergyPreCorr"),
+    ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotonsUL16postVFP","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotonsUL16postVFP","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotonsUL16postVFP","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotonsUL16postVFP","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotonsUL16postVFP","energySigmaDown"),
+)
+
 run2_egamma_2017.toModify(slimmedPhotonsWithUserData.userFloats,
     ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotonsUL17","ecalEnergyErrPostCorr"),
     ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotonsUL17","ecalEnergyPreCorr"),
     ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotonsUL17","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotonsUL17","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotonsUL17","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotonsUL17","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotonsUL17","energySigmaDown"),
 )
 
 run2_egamma_2018.toModify(slimmedPhotonsWithUserData.userFloats,
     ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotonsUL18","ecalEnergyErrPostCorr"),
     ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotonsUL18","ecalEnergyPreCorr"),
     ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotonsUL18","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotonsUL18","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotonsUL18","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotonsUL18","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotonsUL18","energySigmaDown"),
 )
 
 run2_miniAOD_80XLegacy.toModify(slimmedPhotonsWithUserData.userFloats,
     ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotons80XLegacy","ecalEnergyErrPostCorr"),
     ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotons80XLegacy","ecalEnergyPreCorr"),
     ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotons80XLegacy","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotons80XLegacy","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotons80XLegacy","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotons80XLegacy","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotons80XLegacy","energySigmaDown"),
+
 )
 run2_nanoAOD_94XMiniAODv1.toModify(slimmedPhotonsWithUserData.userFloats,
     ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotons94Xv1","ecalEnergyErrPostCorr"),
     ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotons94Xv1","ecalEnergyPreCorr"),
     ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotons94Xv1","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotons94Xv1","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotons94Xv1","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotons94Xv1","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotons94Xv1","energySigmaDown"),
+
 )
 run2_nanoAOD_94XMiniAODv2.toModify(slimmedPhotonsWithUserData.userFloats,
     ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotons94Xv2","ecalEnergyErrPostCorr"),
     ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotons94Xv2","ecalEnergyPreCorr"),
     ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotons94Xv2","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotons94Xv2","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotons94Xv2","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotons94Xv2","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotons94Xv2","energySigmaDown"),
+
 )
 
 run2_nanoAOD_102Xv1.toModify(slimmedPhotonsWithUserData.userFloats,
     ecalEnergyErrPostCorrNew = cms.InputTag("calibratedPatPhotons102Xv1","ecalEnergyErrPostCorr"),
     ecalEnergyPreCorrNew     = cms.InputTag("calibratedPatPhotons102Xv1","ecalEnergyPreCorr"),
     ecalEnergyPostCorrNew    = cms.InputTag("calibratedPatPhotons102Xv1","ecalEnergyPostCorr"),
+    energyScaleUp               = cms.InputTag("calibratedPatPhotons102Xv1","energyScaleUp"),
+    energyScaleDown             = cms.InputTag("calibratedPatPhotons102Xv1","energyScaleDown"),
+    energySigmaUp               = cms.InputTag("calibratedPatPhotons102Xv1","energySigmaUp"),
+    energySigmaDown             = cms.InputTag("calibratedPatPhotons102Xv1","energySigmaDown"),
+
 )
 
 finalPhotons = cms.EDFilter("PATPhotonRefSelector",
@@ -243,7 +301,7 @@ for modifier in run2_nanoAOD_94XMiniAODv2, run2_nanoAOD_94X2016:
     )
 
 #these eras need to make the energy correction, hence the "New"
-for modifier in run2_egamma_2017,run2_egamma_2018,run2_nanoAOD_94XMiniAODv1, run2_miniAOD_80XLegacy, run2_nanoAOD_102Xv1,run2_nanoAOD_94XMiniAODv2:
+for modifier in run2_egamma_2016,run2_egamma_2017,run2_egamma_2018,run2_nanoAOD_94XMiniAODv1, run2_miniAOD_80XLegacy, run2_nanoAOD_102Xv1,run2_nanoAOD_94XMiniAODv2:
     modifier.toModify(photonTable.variables,
         pt = Var("pt*userFloat('ecalEnergyPostCorrNew')/userFloat('ecalEnergyPreCorrNew')", float, precision=-1, doc="p_{T}"),
         energyErr = Var("userFloat('ecalEnergyErrPostCorrNew')",float,doc="energy error of the cluster from regression",precision=6),
@@ -300,6 +358,16 @@ for modifier in run2_miniAOD_80XLegacy,run2_nanoAOD_94XMiniAODv1,run2_nanoAOD_94
     modifier.toModify(seedGainPho, src = "slimmedPhotonsTo106X")
 
 
+##adding 4 most imp scale & smearing variables to table
+for modifier in run2_nanoAOD_106Xv1,run2_nanoAOD_106Xv2,run2_egamma_2016,run2_egamma_2017,run2_egamma_2018,run2_miniAOD_80XLegacy, run2_nanoAOD_94XMiniAODv1, run2_nanoAOD_94XMiniAODv2,run2_nanoAOD_102Xv1:
+    modifier.toModify(photonTable.variables,
+        energyScaleUp=Var("userFloat('energyScaleUp')", float, doc="energy with the ecal energy scale shifted 1 sigma up (adding gain/stat/syst in quadrature)"),
+        energyScaleDown=Var("userFloat('energyScaleDown')", float, doc="energy with the ecal energy scale shifted 1 sigma down (adding gain/stat/syst in quadrature) "),
+        energySigmaUp=Var("userFloat('energySigmaUp')", float, doc="energy with the ecal energy smearing value shifted 1 sigma up"),
+        energySigmaDown=Var("userFloat('energySigmaDown')", float, doc="energy with the ecal energy smearing value shifted 1 sigma up"),
+
+)
+
 photonSequence = cms.Sequence(
         bitmapVIDForPho + \
         bitmapVIDForPhoSpring16V2p2 + \
@@ -315,6 +383,14 @@ photonMC = cms.Sequence(photonsMCMatchForTable + photonMCTable)
 from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationMiniAOD_cff import egmPhotonIsolation
 from RecoEgamma.PhotonIdentification.photonIDValueMapProducer_cff import photonIDValueMapProducer
 ###UL to be done first
+_withUL16preVFPScale_sequence = photonSequence.copy()
+_withUL16preVFPScale_sequence.replace(slimmedPhotonsWithUserData, calibratedPatPhotonsUL16preVFP  + slimmedPhotonsWithUserData)
+(run2_egamma_2016 & tracker_apv_vfp30_2016).toReplaceWith(photonSequence, _withUL16preVFPScale_sequence)
+
+_withUL16postVFPScale_sequence = photonSequence.copy()
+_withUL16postVFPScale_sequence.replace(slimmedPhotonsWithUserData, calibratedPatPhotonsUL16postVFP  + slimmedPhotonsWithUserData)
+(run2_egamma_2016 & ~tracker_apv_vfp30_2016).toReplaceWith(photonSequence, _withUL16postVFPScale_sequence)
+
 _withUL17Scale_sequence = photonSequence.copy()
 _withUL17Scale_sequence.replace(slimmedPhotonsWithUserData, calibratedPatPhotonsUL17  + slimmedPhotonsWithUserData)
 run2_egamma_2017.toReplaceWith(photonSequence, _withUL17Scale_sequence)
