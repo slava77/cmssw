@@ -106,12 +106,14 @@ vector<Trajectory> CosmicMuonSmoother::fit(const Trajectory& t) const {
 
   ConstRecHitContainer hits = t.recHits();
   LogTrace(category_) << "hits: " << hits.size();
-  LogTrace(category_) << "hit front" << hits.front()->globalPosition() << " hit back" << hits.back()->globalPosition();
+  //  LogTrace(category_)
+  edm::LogWarning("MYDEBUG") << "CosmicMuonSmoother: hit front" << hits.front()->globalPosition() << " hit back" << hits.back()->globalPosition();
 
   sortHitsAlongMom(hits, firstTsos);
 
-  LogTrace(category_) << "after sorting hit front" << hits.front()->globalPosition() << " hit back"
-                      << hits.back()->globalPosition();
+  //  LogTrace(category_) 
+  edm::LogWarning("MYDEBUG") << "after sorting hit front" << hits.front()->globalPosition() << " hit back"
+                             << hits.back()->globalPosition();
 
   return fit(t.seed(), hits, firstTsos);
 }
@@ -176,21 +178,28 @@ vector<Trajectory> CosmicMuonSmoother::fit(const TrajectorySeed& seed,
       LogTrace(category_) << "Input state is not valid. This loop over hits is doomed: breaking out";
       break;
     }
+    edm::LogWarning("MYDEBUG")<<"TO PREDICT from "<<currTsos;
 
     predTsos = propagatorAlong()->propagate(currTsos, (**ihit).det()->surface());
     LogTrace(category_) << "predicted state propagate directly " << predTsos.isValid();
+    if (predTsos.isValid()) edm::LogWarning("MYDEBUG")<<"INITIAL PRED "<<predTsos;
+    else edm::LogWarning("MYDEBUG")<<"INITIAL PRED isNotValid";
 
     if (!predTsos.isValid()) {
       LogTrace(category_) << "step-propagating from " << currTsos.globalPosition()
                           << " to position: " << (*ihit)->globalPosition();
       predTsos = theUtilities->stepPropagate(currTsos, (*ihit), *propagatorAlong());
     }
+    if (predTsos.isValid()) edm::LogWarning("MYDEBUG")<<"ALMOST FINAL PRED "<<predTsos;
+    else edm::LogWarning("MYDEBUG")<<"ALMOST FINAL PRED isNotValid";
     if (!predTsos.isValid() && (fabs(theService->magneticField()->inTesla(GlobalPoint(0, 0, 0)).z()) < 0.01) &&
         (theService->propagator("StraightLinePropagator").isValid())) {
       LogTrace(category_) << "straight-line propagating from " << currTsos.globalPosition()
                           << " to position: " << (*ihit)->globalPosition();
       predTsos = theService->propagator("StraightLinePropagator")->propagate(currTsos, (**ihit).det()->surface());
     }
+    if (predTsos.isValid()) edm::LogWarning("MYDEBUG")<<"FINAL PRED "<<predTsos;
+    else edm::LogWarning("MYDEBUG")<<"FINAL PRED isNotValid";
     if (predTsos.isValid()) {
       LogTrace(category_) << "predicted pos " << predTsos.globalPosition() << "mom " << predTsos.globalMomentum();
     } else {
@@ -209,6 +218,8 @@ vector<Trajectory> CosmicMuonSmoother::fit(const TrajectorySeed& seed,
       if (!preciseHit->isValid()) {
         currTsos = predTsos;
         myTraj.push(TrajectoryMeasurement(predTsos, *ihit));
+        edm::LogWarning("MYDEBUG")<<"  ADDED from invalid preciseHit pos " << myTraj.measurements().back().updatedState().globalPosition() << "mom "
+                                  << myTraj.measurements().back().updatedState().globalMomentum();
       } else {
         currTsos = theUpdator->update(predTsos, *preciseHit);
         if (!currTsos.isValid()) {
@@ -217,10 +228,18 @@ vector<Trajectory> CosmicMuonSmoother::fit(const TrajectorySeed& seed,
         }
         myTraj.push(TrajectoryMeasurement(
             predTsos, currTsos, preciseHit, theEstimator->estimate(predTsos, *preciseHit).second));
+        edm::LogWarning("MYDEBUG")<<"  ADDED from validHit pos " 
+                                  <<"\n predTsos "<<predTsos
+                                  <<"\n currTsos "<<currTsos
+                                  <<"\n\t est  "<<myTraj.measurements().back().estimate()
+                                  << myTraj.measurements().back().updatedState().globalPosition() << "mom "
+                                  << myTraj.measurements().back().updatedState().globalMomentum();
       }
     } else {
       currTsos = predTsos;
       myTraj.push(TrajectoryMeasurement(predTsos, *ihit));
+      edm::LogWarning("MYDEBUG")<<"  ADDED from invalidHit pos " << myTraj.measurements().back().updatedState().globalPosition() << "mom "
+                                << myTraj.measurements().back().updatedState().globalMomentum();
     }
   }
 

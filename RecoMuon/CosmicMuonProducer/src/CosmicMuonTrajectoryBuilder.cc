@@ -353,13 +353,15 @@ MuonTrajectoryBuilder::TrajectoryContainer CosmicMuonTrajectoryBuilder::trajecto
         else if ((theMeas)->predictedState().isValid())
           lastTsos = (theMeas)->predictedState();
       }
-    }
-  }
+    }//loop over measL
+  }//loop over navLayers
 
   if ((!myTraj.isValid()) || (myTraj.empty()) || ((selfDuplicate(myTraj))) || TotalChamberUsedBack < 2 ||
       (DTChamberUsedBack + CSCChamberUsedBack) < 1) {
     return emptyContainer;
   }
+  edm::LogWarning("MYDEBUG") << "BEFORE SECOND HALF first " << myTraj.firstMeasurement().updatedState() << "\n last "
+                             << myTraj.lastMeasurement().updatedState();
 
   if (theTraversingMuonFlag && (allUnusedHits.size() >= 2)) {
     //      LogTrace(category_)<<utilities()->print(allUnusedHits);
@@ -375,6 +377,8 @@ MuonTrajectoryBuilder::TrajectoryContainer CosmicMuonTrajectoryBuilder::trajecto
   }
 
   LogTrace(category_) << " traj ok ";
+  edm::LogWarning("MYDEBUG") << "BEFORE SMOOTHING first " << myTraj.firstMeasurement().updatedState() << "\n last "
+                             << myTraj.lastMeasurement().updatedState();
 
   //     getDirectionByTime(myTraj);
   if (beamhaloFlag)
@@ -392,7 +396,8 @@ MuonTrajectoryBuilder::TrajectoryContainer CosmicMuonTrajectoryBuilder::trajecto
     LogTrace(category_) << " Smooth failed.";
   }
 
-  LogTrace(category_) << "first " << myTraj.firstMeasurement().updatedState() << "\n last "
+  //  LogTrace(category_) 
+  edm::LogWarning("MYDEBUG") << "AFTER SMOOTHING first " << myTraj.firstMeasurement().updatedState() << "\n last "
                       << myTraj.lastMeasurement().updatedState();
   if (myTraj.direction() == alongMomentum)
     LogTrace(category_) << "alongMomentum";
@@ -428,12 +433,17 @@ MuonTrajectoryBuilder::TrajectoryContainer CosmicMuonTrajectoryBuilder::trajecto
     return emptyContainer;
   }
 
-  LogTrace(category_) << "last hit " << myTraj.measurements().back().recHit()->globalPosition() << endl;
-  LogTrace(category_) << "first hit " << myTraj.measurements().front().recHit()->globalPosition() << endl;
+  edm::LogWarning("MYDEBUG") << "DONE CHECK FOR FLIP ";
+  //  LogTrace(category_) 
+  edm::LogWarning("MYDEBUG") << "last hit " << myTraj.measurements().back().recHit()->globalPosition() << endl;
+  //  LogTrace(category_) 
+  edm::LogWarning("MYDEBUG") << "first hit " << myTraj.measurements().front().recHit()->globalPosition() << endl;
 
-  LogTrace(category_) << "last tsos " << myTraj.measurements().back().updatedState().globalPosition() << " mom "
-                      << myTraj.measurements().back().updatedState().globalMomentum() << endl;
-  LogTrace(category_) << "first tsos " << myTraj.measurements().front().updatedState().globalPosition() << " mom "
+  //  LogTrace(category_)
+  edm::LogWarning("MYDEBUG") << "last tsos " << myTraj.measurements().back().updatedState().globalPosition() << " mom "
+                             << myTraj.measurements().back().updatedState().globalMomentum() << endl;
+    //  LogTrace(category_) 
+  edm::LogWarning("MYDEBUG") << "first tsos " << myTraj.measurements().front().updatedState().globalPosition() << " mom "
                       << myTraj.measurements().front().updatedState().globalMomentum() << endl;
 
   PropagationDirection propDir =
@@ -729,16 +739,19 @@ void CosmicMuonTrajectoryBuilder::flipTrajectory(Trajectory& traj) const {
   TransientTrackingRecHit::ConstRecHitContainer hits = traj.recHits();
   std::reverse(hits.begin(), hits.end());
 
-  LogTrace(category_) << "last tsos before flipping " << lastTSOS;
+  //  LogTrace(category_)
+  edm::LogWarning("MYDEBUG")<< "FLIP: last tsos before flipping " << lastTSOS;
   utilities()->reverseDirection(lastTSOS, &*theService->magneticField());
-  LogTrace(category_) << "last tsos after flipping " << lastTSOS;
+  //  LogTrace(category_) 
+  edm::LogWarning("MYDEBUG")<< "FLIP: last tsos after flipping " << lastTSOS;
 
   vector<Trajectory> refittedback = theSmoother->fit(traj.seed(), hits, lastTSOS);
   if (refittedback.empty()) {
     LogTrace(category_) << "flipTrajectory fail. " << endl;
     return;
   }
-  LogTrace(category_) << "flipTrajectory: first " << refittedback.front().firstMeasurement().updatedState()
+  //  LogTrace(category_) 
+  edm::LogWarning("MYDEBUG")<< "FLIPPED: flipTrajectory: first " << refittedback.front().firstMeasurement().updatedState()
                       << "\nflipTrajectory: last " << refittedback.front().lastMeasurement().updatedState();
 
   traj = refittedback.front();

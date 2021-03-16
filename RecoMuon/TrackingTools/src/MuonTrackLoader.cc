@@ -221,6 +221,8 @@ OrphanHandle<reco::TrackCollection> MuonTrackLoader::loadTracks(TrajectoryContai
        ++itRawTrajectory, ++tjCnt) {
     auto rawTrajectory = std::move(*itRawTrajectory);
     Trajectory& trajectory = *rawTrajectory;
+    edm::LogWarning("MYDEBUG")<<"start with trajectory first upd "<<trajectory.firstMeasurement().updatedState()
+                              <<" last upd "<<trajectory.lastMeasurement().updatedState();
 
     if (doSmoothing) {
       vector<Trajectory> trajectoriesSM = theSmoother->trajectories(*rawTrajectory);
@@ -315,6 +317,8 @@ OrphanHandle<reco::TrackCollection> MuonTrackLoader::loadTracks(TrajectoryContai
     trackCollection->push_back(track);
     iTkRef++;
     LogTrace(metname) << "Debug Track being loaded pt " << track.pt();
+    edm::LogWarning("MYDEBUG")<<" Debug Track being loaded vtx "<<track.vertex() << " mom "<<track.momentum()
+                              << " inner pos "<<trackExtra.innerPosition()<<" mom " <<trackExtra.innerMomentum();
     // fill the TrackCollection updated at vtx
     if (theUpdatingAtVtx && updateResult.first)
       updatedAtVtxTrackCollection->push_back(updateResult.second);
