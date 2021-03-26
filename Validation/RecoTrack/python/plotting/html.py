@@ -153,6 +153,7 @@ _trackAlgoOrder = [
     'jetCoreRegionalStep',
     'muonSeededStepInOut',
     'muonSeededStepOutIn',
+    'displacedRegionalStep',
     'duplicateMerge',
     'convStep',
     'conversionStep',

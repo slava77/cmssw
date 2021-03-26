@@ -67,6 +67,10 @@ _iterations_muonSeeded = [
     "MuonSeededStepInOut",
     "MuonSeededStepOutIn",
 ]
+_iterations_muonSeeded_trackingPhase1 = [
+    "MuonSeededStepInOut",
+    "MuonSeededStepOutIn",
+]
 #Phase2
 _iterations_muonSeeded_trackingPhase2PU140 = [
     "MuonSeededStepInOut",
@@ -94,6 +98,10 @@ _oldStyleHasSelector = set([
     "PixelLessStep",
     "TobTecStep",
 ])
+
+from Configuration.ProcessModifiers.displacedRegionalTracking_cff import displacedRegionalTracking
+displacedRegionalTracking.toModify(_iterations_muonSeeded_trackingPhase1, func=lambda x: x.append('DisplacedRegionalStep'))
+displacedRegionalTracking.toModify(_multipleSeedProducers_trackingPhase1, func=lambda x: x.update({'DisplacedRegionalStep': ['Pair', 'Tripl']}))
 
 from RecoLocalTracker.SubCollectionProducers.trackClusterRemover_cfi import trackClusterRemover as _trackClusterRemover
 _trackClusterRemoverBase = _trackClusterRemover.clone(
@@ -172,7 +180,10 @@ def _seedOrTrackProducers(postfix, typ):
             ret.append(seeder)
 
     for i in globals().get("_iterations_muonSeeded"+postfix, _iterations_muonSeeded):
-        ret.append(_modulePrefix(i).replace("Step", typ))
+        if "DisplacedRegional" in i:
+            ret.append(_modulePrefix(i) + typ)
+        else:
+            ret.append(_modulePrefix(i).replace("Step", typ))
 
     return ret
 
@@ -190,14 +201,14 @@ def clusterRemoverForIter(iteration, eraName="", postfix="", module=None):
 
     iters = globals()["_iterations"+postfix]
     try:
-        ind = iters.index(iteration)
+        ind = iters.index(iteration) if iteration != "DisplacedRegionalStep" else 999
     except ValueError:
         # if the iteration is not active in era, just return the same
         return module
 
     if ind == 0:
         raise Exception("Iteration %s is the first iteration in era %s, asking cluster remover configuration does not make sense" % (iteration, eraName))
-    prevIter = iters[ind-1]
+    prevIter = iters[ind-1] if ind != 999 else iters[-2]
 
     customize = dict(
         trajectories          = _tracks(prevIter),
