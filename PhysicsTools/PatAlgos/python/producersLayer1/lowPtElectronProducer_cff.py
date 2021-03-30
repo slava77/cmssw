@@ -76,7 +76,7 @@ from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSeedValueMaps_cff import
 _makePatLowPtElectronsTask.add(rekeyLowPtGsfElectronSeedValueMaps)
 
 # (2) rerun ID
-from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronID_cfi import lowPtGsfElectronID
+from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronID_cff import lowPtGsfElectronID
 _makePatLowPtElectronsTask.add(lowPtGsfElectronID)
 
 # (3) apply energy regression
