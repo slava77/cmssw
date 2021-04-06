@@ -1,0 +1,532 @@
+import FWCore.ParameterSet.Config as cms
+import RecoTracker.IterativeTracking.iterativeTkConfig as _cfg
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+
+#for dnn classifier
+from Configuration.ProcessModifiers.trackdnn_cff import trackdnn
+
+#############################################################################
+# Tracking seeded by regions of interest targeting exotic physics scenarios #
+#############################################################################
+
+displacedRegionalStepClusters = _cfg.clusterRemoverForIter("DisplacedRegionalStep")
+for _eraName, _postfix, _era in _cfg.nonDefaultEras():
+    _era.toReplaceWith(displacedRegionalStepClusters, _cfg.clusterRemoverForIter("DisplacedRegionalStep", _eraName, _postfix))
+
+# TRIPLET SEEDING LAYERS
+from RecoLocalTracker.SiStripClusterizer.SiStripClusterChargeCut_cfi import *
+displacedRegionalStepSeedLayersTripl = cms.EDProducer("SeedingLayersEDProducer",
+    layerList = cms.vstring(
+    #TOB
+    'TOB1+TOB2+MTOB3','TOB1+TOB2+MTOB4',
+    #TOB+MTEC
+    'TOB1+TOB2+MTEC1_pos','TOB1+TOB2+MTEC1_neg',
+    ),
+    TOB = cms.PSet(
+         TTRHBuilder    = cms.string('WithTrackAngle'), clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTight')),
+         matchedRecHits = cms.InputTag("siStripMatchedRecHits","matchedRecHit"),
+         skipClusters   = cms.InputTag('displacedRegionalStepClusters')
+    ),
+    MTOB = cms.PSet(
+         TTRHBuilder    = cms.string('WithTrackAngle'), clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTight')),
+         skipClusters   = cms.InputTag('displacedRegionalStepClusters'),
+         rphiRecHits    = cms.InputTag("siStripMatchedRecHits","rphiRecHit")
+    ),
+    MTEC = cms.PSet(
+        rphiRecHits    = cms.InputTag("siStripMatchedRecHits","rphiRecHit"),
+        skipClusters = cms.InputTag('displacedRegionalStepClusters'),
+        useRingSlector = cms.bool(True),
+        TTRHBuilder = cms.string('WithTrackAngle'), clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTight')),
+        minRing = cms.int32(6),
+        maxRing = cms.int32(7)
+    )
+)
+
+# Triplet TrackingRegion
+from RecoTracker.FinalTrackSelectors.displacedRegionalStepInputTracks_cfi import displacedRegionalStepInputTracks
+from RecoVertex.V0Producer.generalV0Candidates_cfi import generalV0Candidates as _generalV0Candidates
+from RecoTracker.DisplacedRegionalTracking.displacedRegionProducer_cfi import displacedRegionProducer as _displacedRegionProducer
+displacedRegionalStepTrackingRegionsStepZero = _generalV0Candidates.clone(
+    trackRecoAlgorithm = cms.InputTag("displacedRegionalStepInputTracks"),
+    doLambdas = cms.bool(False),
+    doFit = cms.bool(False),
+    useRefTracks = cms.bool(False),
+    vtxDecayXYCut = cms.double(1.),
+    ssVtxDecayXYCut = cms.double(5.),
+    allowSS = cms.bool(True),
+    innerTkDCACut = cms.double(0.2),
+    outerTkDCACut = cms.double(1.0),
+    allowWideAngleVtx = cms.bool(True),
+    mPiPiCut = cms.double(13000.),
+    cosThetaXYCut = cms.double(0.),
+    kShortMassCut = cms.double(13000.),
+)
+displacedRegionalStepTrackingRegionsStepOne = _displacedRegionProducer.clone(
+    minRadius = cms.double (2.0),
+    discriminatorCut = cms.double(0.5),
+    genMatch = cms.string('None'),
+    input_names = cms.vstring('phi_0', 'phi_1'),
+    output_names = cms.vstring('model_5/activation_10/Softmax'),
+    graph_path = cms.FileInPath('RecoTracker/DisplacedRegionalTracking/data/FullData_Phi-64-128-256_16-32-64_F-128-64-32_Model.pb'),
+    trackClusters = cms.InputTag("displacedRegionalStepTrackingRegionsStepZero", "Kshort"),
+)
+
+from RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cfi import globalTrackingRegionWithVertices as _globalTrackingRegionWithVertices
+displacedRegionalStepTrackingRegionsTripl = _globalTrackingRegionWithVertices.clone(RegionPSet = dict(
+    originRadius = 1.0,
+    fixedError = 1.0,
+    VertexCollection = "displacedRegionalStepTrackingRegionsStepOne",
+    useFakeVertices = True,
+    ptMin = 0.55,
+    allowEmpty = True
+))
+
+from Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017
+from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
+from RecoTracker.IterativeTracking.MixedTripletStep_cff import _mixedTripletStepTrackingRegionsCommon_pp_on_HI
+(pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(displacedRegionalStepTrackingRegionsTripl, 
+                _mixedTripletStepTrackingRegionsCommon_pp_on_HI.clone(RegionPSet=dict(
+                    ptMinScaling4BigEvts= False,
+                    fixedError = 5.0,
+                    ptMin = 2.0,
+                    originRadius = 3.5
+                )                                                                      )
+)
+
+# Triplet seeding
+from RecoPixelVertexing.PixelLowPtUtilities.ClusterShapeHitFilterESProducer_cfi import ClusterShapeHitFilterESProducer as _ClusterShapeHitFilterESProducer
+displacedRegionalStepClusterShapeHitFilter = _ClusterShapeHitFilterESProducer.clone(
+    ComponentName = 'displacedRegionalStepClusterShapeHitFilter',
+    doStripShapeCut = cms.bool(False),
+    clusterChargeCut = dict(refToPSet_ = 'SiStripClusterChargeCutTight')
+)
+
+from RecoTracker.TkHitPairs.hitPairEDProducer_cfi import hitPairEDProducer as _hitPairEDProducer
+displacedRegionalStepHitDoubletsTripl = _hitPairEDProducer.clone(
+    seedingLayers = "displacedRegionalStepSeedLayersTripl",
+    trackingRegions = "displacedRegionalStepTrackingRegionsTripl",
+    maxElement = 50000000,
+    produceIntermediateHitDoublets = True,
+)
+from RecoTracker.TkSeedGenerator.multiHitFromChi2EDProducer_cfi import multiHitFromChi2EDProducer as _multiHitFromChi2EDProducer
+displacedRegionalStepHitTripletsTripl = _multiHitFromChi2EDProducer.clone(
+    doublets = "displacedRegionalStepHitDoubletsTripl",
+    extraPhiKDBox = 0.01,
+)
+from RecoTracker.TkSeedGenerator.seedCreatorFromRegionConsecutiveHitsEDProducer_cff import seedCreatorFromRegionConsecutiveHitsEDProducer as _seedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer
+from RecoPixelVertexing.PixelLowPtUtilities.StripSubClusterShapeSeedFilter_cfi import StripSubClusterShapeSeedFilter as _StripSubClusterShapeSeedFilter
+_displacedRegionalStepSeedComparitorPSet = dict(
+    ComponentName = 'CombinedSeedComparitor',
+    mode = cms.string("and"),
+    comparitors = cms.VPSet(
+        cms.PSet(# FIXME: is this defined in any cfi that could be imported instead of copy-paste?
+            ComponentName = cms.string('PixelClusterShapeSeedComparitor'),
+            FilterAtHelixStage = cms.bool(True),
+            FilterPixelHits = cms.bool(False),
+            FilterStripHits = cms.bool(True),
+            ClusterShapeHitFilterName = cms.string('displacedRegionalStepClusterShapeHitFilter'),
+            ClusterShapeCacheSrc = cms.InputTag("siPixelClusterShapeCache") # not really needed here since FilterPixelHits=False
+        ),
+        _StripSubClusterShapeSeedFilter.clone()
+    )
+)
+displacedRegionalStepSeedsTripl = _seedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer.clone(#empirically better than 'SeedFromConsecutiveHitsTripletOnlyCreator'
+    seedingHitSets = "displacedRegionalStepHitTripletsTripl",
+    SeedComparitorPSet = _displacedRegionalStepSeedComparitorPSet,
+)
+#fastsim
+import FastSimulation.Tracking.TrajectorySeedProducer_cfi
+_fastSim_displacedRegionalStepSeedsTripl = FastSimulation.Tracking.TrajectorySeedProducer_cfi.trajectorySeedProducer.clone(
+    trackingRegions = "displacedRegionalStepTrackingRegionsTripl",
+    hitMasks = cms.InputTag("displacedRegionalStepMasks"),
+)
+from FastSimulation.Tracking.SeedingMigration import _hitSetProducerToFactoryPSet
+_fastSim_displacedRegionalStepSeedsTripl.seedFinderSelector.MultiHitGeneratorFactory = _hitSetProducerToFactoryPSet(displacedRegionalStepHitTripletsTripl)
+_fastSim_displacedRegionalStepSeedsTripl.seedFinderSelector.MultiHitGeneratorFactory.SeedComparitorPSet=cms.PSet(  ComponentName = cms.string( "none" ) )
+_fastSim_displacedRegionalStepSeedsTripl.seedFinderSelector.MultiHitGeneratorFactory.refitHits = False
+_fastSim_displacedRegionalStepSeedsTripl.seedFinderSelector.layerList = displacedRegionalStepSeedLayersTripl.layerList.value()
+fastSim.toReplaceWith(displacedRegionalStepSeedsTripl,_fastSim_displacedRegionalStepSeedsTripl)
+
+# PAIR SEEDING LAYERS
+displacedRegionalStepSeedLayersPair = cms.EDProducer("SeedingLayersEDProducer",
+    layerList = cms.vstring('TOB1+TEC1_pos','TOB1+TEC1_neg', 
+                            'TEC1_pos+TEC2_pos','TEC1_neg+TEC2_neg', 
+                            'TEC2_pos+TEC3_pos','TEC2_neg+TEC3_neg', 
+                            'TEC3_pos+TEC4_pos','TEC3_neg+TEC4_neg', 
+                            'TEC4_pos+TEC5_pos','TEC4_neg+TEC5_neg', 
+                            'TEC5_pos+TEC6_pos','TEC5_neg+TEC6_neg', 
+                            'TEC6_pos+TEC7_pos','TEC6_neg+TEC7_neg'),
+    TOB = cms.PSet(
+         TTRHBuilder    = cms.string('WithTrackAngle'), clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTight')),
+         matchedRecHits = cms.InputTag("siStripMatchedRecHits","matchedRecHit"),
+         skipClusters   = cms.InputTag('displacedRegionalStepClusters')
+    ),
+    TEC = cms.PSet(
+        matchedRecHits = cms.InputTag("siStripMatchedRecHits","matchedRecHit"),
+        skipClusters = cms.InputTag('displacedRegionalStepClusters'),
+        useRingSlector = cms.bool(True),
+        TTRHBuilder = cms.string('WithTrackAngle'), clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTight')),
+        minRing = cms.int32(5),
+        maxRing = cms.int32(5)
+    )
+)
+# Pair TrackingRegion
+displacedRegionalStepTrackingRegionsPair = _globalTrackingRegionWithVertices.clone(RegionPSet = dict(
+    originRadius = 1.0,
+    fixedError = 1.0,
+    VertexCollection = "displacedRegionalStepTrackingRegionsStepOne",
+    useFakeVertices = True,
+    ptMin = 0.6,
+    allowEmpty = True
+))
+
+(pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(displacedRegionalStepTrackingRegionsPair, 
+                _mixedTripletStepTrackingRegionsCommon_pp_on_HI.clone(RegionPSet=dict(
+                    ptMinScaling4BigEvts= False,
+                    fixedError = 7.5,
+                    ptMin = 2.0,
+                    originRadius = 6.0
+                )                                                                      )
+)
+
+
+# Pair seeds
+displacedRegionalStepHitDoubletsPair = _hitPairEDProducer.clone(
+    seedingLayers = "displacedRegionalStepSeedLayersPair",
+    trackingRegions = "displacedRegionalStepTrackingRegionsPair",
+    produceSeedingHitSets = True,
+    maxElementTotal = 12000000,
+)
+from RecoTracker.TkSeedGenerator.seedCreatorFromRegionConsecutiveHitsEDProducer_cff import seedCreatorFromRegionConsecutiveHitsEDProducer as _seedCreatorFromRegionConsecutiveHitsEDProducer
+displacedRegionalStepSeedsPair = _seedCreatorFromRegionConsecutiveHitsEDProducer.clone(
+    seedingHitSets = "displacedRegionalStepHitDoubletsPair",
+    SeedComparitorPSet = _displacedRegionalStepSeedComparitorPSet,
+)
+#fastsim
+import FastSimulation.Tracking.TrajectorySeedProducer_cfi
+fastSim.toReplaceWith(displacedRegionalStepSeedsPair,
+                      FastSimulation.Tracking.TrajectorySeedProducer_cfi.trajectorySeedProducer.clone(
+        trackingRegions = "displacedRegionalStepTrackingRegionsPair",
+        hitMasks = cms.InputTag("displacedRegionalStepMasks"),
+        seedFinderSelector = dict(layerList = displacedRegionalStepSeedLayersPair.layerList.value())
+        )
+)
+
+
+# Combined seeds
+import RecoTracker.TkSeedGenerator.GlobalCombinedSeeds_cfi
+displacedRegionalStepSeeds = RecoTracker.TkSeedGenerator.GlobalCombinedSeeds_cfi.globalCombinedSeeds.clone()
+displacedRegionalStepSeeds.seedCollections = cms.VInputTag(cms.InputTag('displacedRegionalStepSeedsTripl'),cms.InputTag('displacedRegionalStepSeedsPair'))
+
+# LowPU
+from Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU
+trackingLowPU.toModify(displacedRegionalStepHitDoubletsPair, seedingLayers = 'displacedRegionalStepSeedLayers')
+trackingLowPU.toReplaceWith(displacedRegionalStepSeeds, _seedCreatorFromRegionConsecutiveHitsEDProducer.clone(
+    seedingHitSets = "displacedRegionalStepHitDoubletsPair",
+))
+
+
+# QUALITY CUTS DURING TRACK BUILDING (for inwardss and outwards track building steps)
+import TrackingTools.TrajectoryFiltering.TrajectoryFilter_cff
+_displacedRegionalStepTrajectoryFilterBase = TrackingTools.TrajectoryFiltering.TrajectoryFilter_cff.CkfBaseTrajectoryFilter_block.clone(
+    maxLostHits = 0,
+    minimumNumberOfHits = 5,
+    minPt = 0.1,
+    minHitsMinPt = 3
+    )
+displacedRegionalStepTrajectoryFilter = _displacedRegionalStepTrajectoryFilterBase.clone(
+    seedPairPenalty = 1,
+)
+trackingLowPU.toReplaceWith(displacedRegionalStepTrajectoryFilter, _displacedRegionalStepTrajectoryFilterBase.clone(
+    minimumNumberOfHits = 6,
+))
+for e in [pp_on_XeXe_2017, pp_on_AA_2018]:
+    e.toModify(displacedRegionalStepTrajectoryFilter, minPt=2.0)
+
+displacedRegionalStepInOutTrajectoryFilter = displacedRegionalStepTrajectoryFilter.clone(
+    minimumNumberOfHits = 4,
+)
+
+
+import RecoTracker.MeasurementDet.Chi2ChargeMeasurementEstimator_cfi
+displacedRegionalStepChi2Est = RecoTracker.MeasurementDet.Chi2ChargeMeasurementEstimator_cfi.Chi2ChargeMeasurementEstimator.clone(
+    ComponentName = cms.string('displacedRegionalStepChi2Est'),
+    nSigma = cms.double(3.0),
+    MaxChi2 = cms.double(16.0),
+    clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTight'))
+)
+trackingLowPU.toModify(displacedRegionalStepChi2Est,
+    clusterChargeCut = dict(refToPSet_ = 'SiStripClusterChargeCutTiny')
+)
+
+# TRACK BUILDING
+import RecoTracker.CkfPattern.GroupedCkfTrajectoryBuilder_cfi
+displacedRegionalStepTrajectoryBuilder = RecoTracker.CkfPattern.GroupedCkfTrajectoryBuilder_cfi.GroupedCkfTrajectoryBuilder.clone(
+    MeasurementTrackerName = '',
+    trajectoryFilter = cms.PSet(refToPSet_ = cms.string('displacedRegionalStepTrajectoryFilter')),
+    inOutTrajectoryFilter = cms.PSet(refToPSet_ = cms.string('displacedRegionalStepInOutTrajectoryFilter')),
+    useSameTrajFilter = False,
+    minNrOfHitsForRebuild = 4,
+    alwaysUseInvalidHits = False,
+    maxCand = 2,
+    estimator = cms.string('displacedRegionalStepChi2Est'),
+    #startSeedHitsInRebuild = True
+    maxDPhiForLooperReconstruction = cms.double(2.0),
+    maxPtForLooperReconstruction = cms.double(0.7)
+    )
+
+# MAKING OF TRACK CANDIDATES
+import RecoTracker.CkfPattern.CkfTrackCandidates_cfi
+displacedRegionalStepTrackCandidates = RecoTracker.CkfPattern.CkfTrackCandidates_cfi.ckfTrackCandidates.clone(
+    src = cms.InputTag('displacedRegionalStepSeeds'),
+    clustersToSkip = cms.InputTag('displacedRegionalStepClusters'),
+    ### these two parameters are relevant only for the CachingSeedCleanerBySharedInput
+    numHitsForSeedCleaner = cms.int32(50),
+    onlyPixelHitsForSeedCleaner = cms.bool(True),
+
+    TrajectoryBuilderPSet = cms.PSet(refToPSet_ = cms.string('displacedRegionalStepTrajectoryBuilder')),
+    doSeedingRegionRebuilding = True,
+    useHitsSplitting = True,
+    cleanTrajectoryAfterInOut = True,
+    TrajectoryCleaner = 'displacedRegionalStepTrajectoryCleanerBySharedHits'
+)
+import FastSimulation.Tracking.TrackCandidateProducer_cfi
+fastSim.toReplaceWith(displacedRegionalStepTrackCandidates,
+                      FastSimulation.Tracking.TrackCandidateProducer_cfi.trackCandidateProducer.clone(
+        MinNumberOfCrossedLayers = 3,
+        src = cms.InputTag("displacedRegionalStepSeeds"),
+        hitMasks = cms.InputTag("displacedRegionalStepMasks")
+        )
+                      )
+
+
+from TrackingTools.TrajectoryCleaning.TrajectoryCleanerBySharedHits_cfi import trajectoryCleanerBySharedHits
+displacedRegionalStepTrajectoryCleanerBySharedHits = trajectoryCleanerBySharedHits.clone(
+    ComponentName = cms.string('displacedRegionalStepTrajectoryCleanerBySharedHits'),
+    fractionShared = cms.double(0.09),
+    allowSharedFirstHit = cms.bool(True)
+    )
+trackingLowPU.toModify(displacedRegionalStepTrajectoryCleanerBySharedHits, fractionShared = 0.19)
+
+# TRACK FITTING AND SMOOTHING OPTIONS
+import TrackingTools.TrackFitters.RungeKuttaFitters_cff
+displacedRegionalStepFitterSmoother = TrackingTools.TrackFitters.RungeKuttaFitters_cff.KFFittingSmootherWithOutliersRejectionAndRK.clone(
+    ComponentName = 'displacedRegionalStepFitterSmoother',
+    EstimateCut = 30,
+    MinNumberOfHits = 7,
+    Fitter = cms.string('displacedRegionalStepRKFitter'),
+    Smoother = cms.string('displacedRegionalStepRKSmoother')
+    )
+trackingLowPU.toModify(displacedRegionalStepFitterSmoother, MinNumberOfHits = 8)
+
+displacedRegionalStepFitterSmootherForLoopers = displacedRegionalStepFitterSmoother.clone(
+    ComponentName = 'displacedRegionalStepFitterSmootherForLoopers',
+    Fitter = cms.string('displacedRegionalStepRKFitterForLoopers'),
+    Smoother = cms.string('displacedRegionalStepRKSmootherForLoopers')
+)
+
+# Also necessary to specify minimum number of hits after final track fit
+displacedRegionalStepRKTrajectoryFitter = TrackingTools.TrackFitters.RungeKuttaFitters_cff.RKTrajectoryFitter.clone(
+    ComponentName = cms.string('displacedRegionalStepRKFitter'),
+    minHits = 7
+)
+trackingLowPU.toModify(displacedRegionalStepRKTrajectoryFitter, minHits = 8)
+
+displacedRegionalStepRKTrajectoryFitterForLoopers = displacedRegionalStepRKTrajectoryFitter.clone(
+    ComponentName = cms.string('displacedRegionalStepRKFitterForLoopers'),
+    Propagator = cms.string('PropagatorWithMaterialForLoopers'),
+)
+
+displacedRegionalStepRKTrajectorySmoother = TrackingTools.TrackFitters.RungeKuttaFitters_cff.RKTrajectorySmoother.clone(
+    ComponentName = cms.string('displacedRegionalStepRKSmoother'),
+    errorRescaling = 10.0,
+    minHits = 7
+)
+trackingLowPU.toModify(displacedRegionalStepRKTrajectorySmoother, minHits = 8)
+
+displacedRegionalStepRKTrajectorySmootherForLoopers = displacedRegionalStepRKTrajectorySmoother.clone(
+    ComponentName = cms.string('displacedRegionalStepRKSmootherForLoopers'),
+    Propagator = cms.string('PropagatorWithMaterialForLoopers'),
+)
+
+import TrackingTools.TrackFitters.FlexibleKFFittingSmoother_cfi
+displacedRegionalFlexibleKFFittingSmoother = TrackingTools.TrackFitters.FlexibleKFFittingSmoother_cfi.FlexibleKFFittingSmoother.clone(
+    ComponentName = cms.string('displacedRegionalFlexibleKFFittingSmoother'),
+    standardFitter = cms.string('displacedRegionalStepFitterSmoother'),
+    looperFitter = cms.string('displacedRegionalStepFitterSmootherForLoopers'),
+)
+
+
+# TRACK FITTING
+import RecoTracker.TrackProducer.TrackProducer_cfi
+displacedRegionalStepTracks = RecoTracker.TrackProducer.TrackProducer_cfi.TrackProducer.clone(
+    src = 'displacedRegionalStepTrackCandidates',
+    AlgorithmName = cms.string('displacedRegionalStep'),
+    #Fitter = 'displacedRegionalStepFitterSmoother',
+    Fitter = 'displacedRegionalFlexibleKFFittingSmoother',
+    )
+fastSim.toModify(displacedRegionalStepTracks, TTRHBuilder = 'WithoutRefit')
+
+
+# TRACK SELECTION AND QUALITY FLAG SETTING.
+from RecoTracker.FinalTrackSelectors.TrackMVAClassifierPrompt_cfi import *
+from RecoTracker.FinalTrackSelectors.TrackMVAClassifierDetached_cfi import *
+displacedRegionalStepClassifier1 = TrackMVAClassifierDetached.clone()
+displacedRegionalStepClassifier1.src = 'displacedRegionalStepTracks'
+displacedRegionalStepClassifier1.mva.GBRForestLabel = 'MVASelectorIter6_13TeV'
+displacedRegionalStepClassifier1.qualityCuts = [-0.6,-0.45,-0.3]
+fastSim.toModify(displacedRegionalStepClassifier1, vertices = "firstStepPrimaryVerticesBeforeMixing")
+
+displacedRegionalStepClassifier2 = TrackMVAClassifierPrompt.clone()
+displacedRegionalStepClassifier2.src = 'displacedRegionalStepTracks'
+displacedRegionalStepClassifier2.mva.GBRForestLabel = 'MVASelectorIter0_13TeV'
+displacedRegionalStepClassifier2.qualityCuts = [0.0,0.0,0.0]
+fastSim.toModify(displacedRegionalStepClassifier2,vertices = "firstStepPrimaryVerticesBeforeMixing")
+
+from RecoTracker.FinalTrackSelectors.ClassifierMerger_cfi import *
+displacedRegionalStep = ClassifierMerger.clone()
+displacedRegionalStep.inputClassifiers=['displacedRegionalStepClassifier1','displacedRegionalStepClassifier2']
+
+from Configuration.Eras.Modifier_trackingPhase1_cff import trackingPhase1
+trackingPhase1.toReplaceWith(displacedRegionalStep, displacedRegionalStepClassifier1.clone(
+     mva = dict(GBRForestLabel = 'MVASelectorTobTecStep_Phase1'),
+     qualityCuts = [-0.6,-0.45,-0.3]
+))
+
+from RecoTracker.FinalTrackSelectors.TrackLwtnnClassifier_cfi import *
+from RecoTracker.FinalTrackSelectors.trackSelectionLwtnn_cfi import *
+trackdnn.toReplaceWith(displacedRegionalStep, TrackLwtnnClassifier.clone(
+     src = 'displacedRegionalStepTracks',
+     qualityCuts = [-0.4, -0.25, -0.1]
+))
+(trackdnn & fastSim).toModify(displacedRegionalStep,vertices = "firstStepPrimaryVerticesBeforeMixing")
+
+pp_on_AA_2018.toModify(displacedRegionalStep, qualityCuts = [-0.6,-0.3,0.7])
+
+import RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi
+trackingLowPU.toReplaceWith(displacedRegionalStep, RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi.multiTrackSelector.clone(
+    src = 'displacedRegionalStepTracks',
+    useAnyMVA = cms.bool(False),
+    GBRForestLabel = cms.string('MVASelectorIter6'),
+    trackSelectors = [
+        RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi.looseMTS.clone(
+            name = 'displacedRegionalStepLoose',
+            chi2n_par = 0.4,
+            res_par = ( 0.003, 0.001 ),
+            minNumberLayers = 5,
+            maxNumberLostLayers = 1,
+            minNumber3DLayers = 2,
+            d0_par1 = ( 2.0, 4.0 ),
+            dz_par1 = ( 1.8, 4.0 ),
+            d0_par2 = ( 2.0, 4.0 ),
+            dz_par2 = ( 1.8, 4.0 )
+        ),
+        RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi.tightMTS.clone(
+            name = 'displacedRegionalStepTight',
+            preFilterName = 'displacedRegionalStepLoose',
+            chi2n_par = 0.3,
+            res_par = ( 0.003, 0.001 ),
+            minNumberLayers = 5,
+            maxNumberLostLayers = 0,
+            minNumber3DLayers = 2,
+            d0_par1 = ( 1.5, 4.0 ),
+            dz_par1 = ( 1.4, 4.0 ),
+            d0_par2 = ( 1.5, 4.0 ),
+            dz_par2 = ( 1.4, 4.0 )
+        ),
+        RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi.highpurityMTS.clone(
+            name = 'QualityMasks',
+            preFilterName = 'displacedRegionalStepTight',
+            chi2n_par = 0.2,
+            res_par = ( 0.003, 0.001 ),
+            minNumberLayers = 5,
+            maxNumberLostLayers = 0,
+            minNumber3DLayers = 2,
+            d0_par1 = ( 1.4, 4.0 ),
+            dz_par1 = ( 1.3, 4.0 ),
+            d0_par2 = ( 1.4, 4.0 ),
+            dz_par2 = ( 1.3, 4.0 )
+        ),
+    ] #end of vpset
+)) #end of clone
+
+
+
+DisplacedRegionalStepTask = cms.Task(displacedRegionalStepClusters,
+                          displacedRegionalStepSeedLayersTripl,
+                          displacedRegionalStepInputTracks,
+                          displacedRegionalStepTrackingRegionsStepZero,
+                          displacedRegionalStepTrackingRegionsStepOne,
+                          displacedRegionalStepTrackingRegionsTripl,
+                          displacedRegionalStepHitDoubletsTripl,
+                          displacedRegionalStepHitTripletsTripl,
+                          displacedRegionalStepSeedsTripl,
+                          displacedRegionalStepSeedLayersPair,
+                          displacedRegionalStepTrackingRegionsPair,
+                          displacedRegionalStepHitDoubletsPair,
+                          displacedRegionalStepSeedsPair,
+                          displacedRegionalStepSeeds,
+                          displacedRegionalStepTrackCandidates,
+                          displacedRegionalStepTracks,
+                          displacedRegionalStepClassifier1,displacedRegionalStepClassifier2,
+                          displacedRegionalStep)
+DisplacedRegionalStep = cms.Sequence(DisplacedRegionalStepTask)
+
+
+### Following are specific for LowPU, they're collected here to
+### not to interfere too much with the default configuration
+# SEEDING LAYERS
+displacedRegionalStepSeedLayers = cms.EDProducer("SeedingLayersEDProducer",
+    layerList = cms.vstring('TOB1+TOB2', 
+        'TOB1+TEC1_pos', 'TOB1+TEC1_neg', 
+        'TEC1_pos+TEC2_pos', 'TEC2_pos+TEC3_pos', 
+        'TEC3_pos+TEC4_pos', 'TEC4_pos+TEC5_pos', 
+        'TEC5_pos+TEC6_pos', 'TEC6_pos+TEC7_pos', 
+        'TEC1_neg+TEC2_neg', 'TEC2_neg+TEC3_neg', 
+        'TEC3_neg+TEC4_neg', 'TEC4_neg+TEC5_neg', 
+        'TEC5_neg+TEC6_neg', 'TEC6_neg+TEC7_neg'),
+    TOB = cms.PSet(
+        matchedRecHits = cms.InputTag("siStripMatchedRecHits","matchedRecHit"),
+        skipClusters = cms.InputTag('displacedRegionalStepClusters'),
+        TTRHBuilder = cms.string('WithTrackAngle'), clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTiny'))
+    ),
+    TEC = cms.PSet(
+        matchedRecHits = cms.InputTag("siStripMatchedRecHits","matchedRecHit"),
+        skipClusters = cms.InputTag('displacedRegionalStepClusters'),
+        #    untracked bool useSimpleRphiHitsCleaner = false
+        useRingSlector = cms.bool(True),
+        TTRHBuilder = cms.string('WithTrackAngle'), clusterChargeCut = cms.PSet(refToPSet_ = cms.string('SiStripClusterChargeCutTiny')),
+        minRing = cms.int32(5),
+        maxRing = cms.int32(5)
+    )
+)
+
+trackingLowPU.toReplaceWith(DisplacedRegionalStepTask, 
+    cms.Task(
+    displacedRegionalStepClusters,
+    displacedRegionalStepSeedLayers,
+    displacedRegionalStepTrackingRegionsPair,
+    displacedRegionalStepHitDoubletsPair,
+    displacedRegionalStepSeeds,
+    displacedRegionalStepTrackCandidates,
+    displacedRegionalStepTracks,
+    displacedRegionalStep
+    )
+)
+
+#fastsim
+import FastSimulation.Tracking.FastTrackerRecHitMaskProducer_cfi
+displacedRegionalStepMasks = FastSimulation.Tracking.FastTrackerRecHitMaskProducer_cfi.maskProducerFromClusterRemover(displacedRegionalStepClusters)
+fastSim.toReplaceWith(DisplacedRegionalStepTask,
+                      cms.Task(displacedRegionalStepMasks
+                                   ,displacedRegionalStepTrackingRegionsTripl
+                                   ,displacedRegionalStepSeedsTripl
+                                   ,displacedRegionalStepTrackingRegionsPair
+                                   ,displacedRegionalStepSeedsPair
+                                   ,displacedRegionalStepSeeds
+                                   ,displacedRegionalStepTrackCandidates
+                                   ,displacedRegionalStepTracks
+                                   ,displacedRegionalStepClassifier1,displacedRegionalStepClassifier2
+                                   ,displacedRegionalStep
+                                   )
+)
