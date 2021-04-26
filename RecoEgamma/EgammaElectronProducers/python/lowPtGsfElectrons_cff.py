@@ -70,8 +70,8 @@ pp_on_AA_2018.toModify(lowPtGsfElectrons.preselection, minSCEtBarrel = 15.0)
 pp_on_AA_2018.toModify(lowPtGsfElectrons.preselection, minSCEtEndcaps = 15.0)
 
 ################################################################################
-# "lowPtGsfElectrons" (LowPtGsfElectronProducer) above is run as part of RECO
-# "lowPtGsfElectrons" (LowPtGsfElectronFinalizer) below is part of run2_miniAOD_UL
+# LowPtGsfElectronProducer above is run by default in RECO
+# LowPtGsfElectronFinalizer below is scheduled for bParking and run2_miniAOD_UL
 
 from RecoEgamma.EgammaTools.regressionModifier_cfi import regressionModifier106XUL
 _lowPtRegressionModifier = regressionModifier106XUL.clone(
@@ -116,5 +116,13 @@ _lowPtGsfElectrons = cms.EDProducer("LowPtGsfElectronFinalizer",
                                     regressionConfig = _lowPtRegressionModifier,
 )
 
-from Configuration.ProcessModifiers.run2_miniAOD_UL_cff import run2_miniAOD_UL
-run2_miniAOD_UL.toReplaceWith(lowPtGsfElectrons,_lowPtGsfElectrons)
+from Configuration.ProcessModifiers.run2_miniAOD_devel_cff import run2_miniAOD_devel
+run2_miniAOD_devel.toReplaceWith(lowPtGsfElectrons,_lowPtGsfElectrons)
+
+from Configuration.Eras.Modifier_bParking_cff import bParking
+lowPtGsfElectronsPreRegression = lowPtGsfElectrons.clone()
+bParking.toModify(_lowPtGsfElectrons, 
+                  previousGsfElectronsTag = cms.InputTag("lowPtGsfElectronsPreRegression"),
+)
+bParking.toReplaceWith(lowPtGsfElectrons,_lowPtGsfElectrons)
+

@@ -18,3 +18,12 @@ run2_miniAOD_UL.toModify(
     ModelThresholds = [-99.],
     Version = "V1",
 )
+
+from Configuration.ProcessModifiers.run2_miniAOD_devel_cff import run2_miniAOD_devel
+run2_miniAOD_devel.toModify(
+    lowPtGsfElectronID,
+    rho = "fixedGridRhoFastjetAll",
+    ModelWeights = ["RecoEgamma/ElectronIdentification/data/LowPtElectrons/LowPtElectrons_ID_2020Nov28.root"],
+    ModelThresholds = [-99.],
+    Version = "V1",
+)
