@@ -78,15 +78,15 @@ _makePatLowPtElectronsTask.add(lowPtGsfElectronID)
 (bParking | run2_miniAOD_UL).toReplaceWith(makePatLowPtElectronsTask,_makePatLowPtElectronsTask)
 
 # For run2_miniAOD_devel ...
-# (1) rekey seed BDT ValueMaps by reco::GsfElectron
-# (2) rerun ID
-# (3) apply energy regression
+# (1) apply energy regression
+# (2) rekey seed BDT ValueMaps by reco::GsfElectron
+# (3) rerun ID
 from Configuration.ProcessModifiers.run2_miniAOD_devel_cff import run2_miniAOD_devel
+from RecoEgamma.EgammaElectronProducers.lowPtGsfElectrons_cff import lowPtGsfElectrons
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSeedValueMaps_cff import rekeyLowPtGsfElectronSeedValueMaps
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronID_cff import lowPtGsfElectronID
-from RecoEgamma.EgammaElectronProducers.lowPtGsfElectrons_cff import lowPtGsfElectrons
 _makePatLowPtElectronsTask = makePatLowPtElectronsTask.copy()
+_makePatLowPtElectronsTask.add(lowPtGsfElectrons)
 _makePatLowPtElectronsTask.add(rekeyLowPtGsfElectronSeedValueMaps)
 _makePatLowPtElectronsTask.add(lowPtGsfElectronID)
-_makePatLowPtElectronsTask.add(lowPtGsfElectrons)
 run2_miniAOD_devel.toReplaceWith(makePatLowPtElectronsTask,_makePatLowPtElectronsTask)
