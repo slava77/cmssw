@@ -19,7 +19,7 @@ run2_miniAOD_UL.toModify(
     Version = "V1",
 )
 
-from Configuration.ProcessModifiers.run2_miniAOD_devel_cff import run2_miniAOD_devel
+from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
 run2_miniAOD_devel.toModify(
     lowPtGsfElectronID,
     rho = "fixedGridRhoFastjetAll",

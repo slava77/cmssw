@@ -10,7 +10,7 @@ selectedPatLowPtElectrons = cms.EDFilter("PATElectronSelector",
 )
 
 # Modifier for run2_miniAOD_devel
-from Configuration.ProcessModifiers.run2_miniAOD_devel_cff import run2_miniAOD_devel
+from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
 run2_miniAOD_devel.toModify(selectedPatLowPtElectrons,cut = "pt>1. && electronID('ID')>-0.25")
 
 # Modifier for bParking (fully open selection)

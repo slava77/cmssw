@@ -116,7 +116,7 @@ _lowPtGsfElectrons = cms.EDProducer("LowPtGsfElectronFinalizer",
                                     regressionConfig = _lowPtRegressionModifier,
 )
 
-from Configuration.ProcessModifiers.run2_miniAOD_devel_cff import run2_miniAOD_devel
+from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
 run2_miniAOD_devel.toReplaceWith(lowPtGsfElectrons,_lowPtGsfElectrons)
 
 from Configuration.Eras.Modifier_bParking_cff import bParking

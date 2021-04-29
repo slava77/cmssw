@@ -81,7 +81,7 @@ _makePatLowPtElectronsTask.add(lowPtGsfElectronID)
 # (1) apply energy regression
 # (2) rekey seed BDT ValueMaps by reco::GsfElectron
 # (3) rerun ID
-from Configuration.ProcessModifiers.run2_miniAOD_devel_cff import run2_miniAOD_devel
+from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectrons_cff import lowPtGsfElectrons
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSeedValueMaps_cff import rekeyLowPtGsfElectronSeedValueMaps
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronID_cff import lowPtGsfElectronID
