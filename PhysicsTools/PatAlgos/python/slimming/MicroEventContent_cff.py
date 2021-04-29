@@ -117,12 +117,15 @@ MicroEventContentGEN = cms.PSet(
 )
 
 # Only add low pT electrons for run2_miniAOD_UL or bParking era
-from Configuration.ProcessModifiers.run2_miniAOD_UL_cff import run2_miniAOD_UL
 from Configuration.Eras.Modifier_bParking_cff import bParking
+from Configuration.ProcessModifiers.run2_miniAOD_UL_cff import run2_miniAOD_UL
+from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
 _lowPt_extraCommands = ['keep *_slimmedLowPtElectrons_*_*',
                         'keep *_gsfTracksOpenConversions_*_*',]
-(bParking | run2_miniAOD_UL).toModify(MicroEventContent,
-                                      outputCommands = MicroEventContent.outputCommands + _lowPt_extraCommands)
+(bParking | run2_miniAOD_UL | run2_miniAOD_devel).toModify(
+    MicroEventContent,
+    outputCommands = MicroEventContent.outputCommands + _lowPt_extraCommands
+)
 
 # --- Only for 2018 data & MC
 _run2_HCAL_2018_extraCommands = ["keep *_packedPFCandidates_hcalDepthEnergyFractions_*"]
