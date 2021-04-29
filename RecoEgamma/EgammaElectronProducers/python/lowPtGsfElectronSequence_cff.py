@@ -93,7 +93,9 @@ fastSim.toReplaceWith(lowPtGsfElectronTask, _fastSim_lowPtGsfElectronTask)
 
 # For bParking era ...
 # (1) add module to rekey seed BDT ValueMaps by reco::GsfElectron
-# (2) add PreRegression module; lowPtGsfElectrons is also modified to apply energy regression
+# (2) add PreRegression module
+# (3) lowPtGsfElectrons is modified to apply energy regression
+# (4) lowPtGsfElectronID is modified to apply 2020Nov28 model
 from Configuration.Eras.Modifier_bParking_cff import bParking
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectronSeedValueMaps_cff import rekeyLowPtGsfElectronSeedValueMaps
 from RecoEgamma.EgammaElectronProducers.lowPtGsfElectrons_cff import lowPtGsfElectronsPreRegression

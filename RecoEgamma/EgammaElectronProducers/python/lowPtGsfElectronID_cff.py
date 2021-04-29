@@ -27,3 +27,12 @@ run2_miniAOD_devel.toModify(
     ModelThresholds = [-99.],
     Version = "V1",
 )
+
+from Configuration.Eras.Modifier_bParking_cff import bParking
+bParking.toModify(
+    lowPtGsfElectronID,
+    rho = "fixedGridRhoFastjetAll",
+    ModelWeights = ["RecoEgamma/ElectronIdentification/data/LowPtElectrons/LowPtElectrons_ID_2020Nov28.root"],
+    ModelThresholds = [-99.],
+    Version = "V1",
+)
