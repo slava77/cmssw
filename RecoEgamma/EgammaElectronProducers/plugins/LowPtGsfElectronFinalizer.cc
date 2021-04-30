@@ -32,7 +32,7 @@ LowPtGsfElectronFinalizer::LowPtGsfElectronFinalizer(const edm::ParameterSet& cf
   const edm::ParameterSet& iconf = cfg.getParameterSet("regressionConfig");
   const std::string& mname = iconf.getParameter<std::string>("modifierName");
   edm::ConsumesCollector&& cc = consumesCollector();
-  ModifyObjectValueBase* plugin = ModifyObjectValueFactory::get()->create(mname,iconf,cc);
+  ModifyObjectValueBase* plugin = ModifyObjectValueFactory::get()->create(mname, iconf, cc);
   regression_.reset(plugin);
 }
 
