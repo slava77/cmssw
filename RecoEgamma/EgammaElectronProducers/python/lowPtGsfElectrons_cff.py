@@ -68,3 +68,61 @@ fastSim.toModify(lowPtGsfElectrons,ctfTracksTag = cms.InputTag("generalTracksBef
 from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
 pp_on_AA_2018.toModify(lowPtGsfElectrons.preselection, minSCEtBarrel = 15.0)
 pp_on_AA_2018.toModify(lowPtGsfElectrons.preselection, minSCEtEndcaps = 15.0)
+
+################################################################################
+# LowPtGsfElectronProducer above is run by default in RECO
+# LowPtGsfElectronFinalizer below is scheduled for bParking and run2_miniAOD_UL
+
+from RecoEgamma.EgammaTools.regressionModifier_cfi import regressionModifier106XUL
+_lowPtRegressionModifier = regressionModifier106XUL.clone(
+    modifierName = 'EGRegressionModifierV3',
+    rhoTag = 'fixedGridRhoFastjetAll',
+    eleRegs = dict(
+        ecalOnlyMean = dict(
+            lowEtHighEtBoundary = 20.,
+            ebLowEtForestName = "lowPtElectron_eb_ecalOnly_05To50_mean",
+            ebHighEtForestName = "lowPtElectron_eb_ecalOnly_05To50_mean",
+            eeLowEtForestName = "lowPtElectron_ee_ecalOnly_05To50_mean",
+            eeHighEtForestName = "lowPtElectron_ee_ecalOnly_05To50_mean",
+            ),
+        ecalOnlySigma = dict(
+            lowEtHighEtBoundary = 20.,
+            ebLowEtForestName = "lowPtElectron_eb_ecalOnly_05To50_sigma",
+            ebHighEtForestName = "lowPtElectron_eb_ecalOnly_05To50_sigma",
+            eeLowEtForestName = "lowPtElectron_ee_ecalOnly_05To50_sigma",
+            eeHighEtForestName = "lowPtElectron_ee_ecalOnly_05To50_sigma",
+            ),
+        epComb = dict(
+            ecalTrkRegressionConfig = dict(
+                lowEtHighEtBoundary = 20.,
+                ebLowEtForestName = "lowPtElectron_eb_ecalTrk_05To50_mean",
+                ebHighEtForestName = "lowPtElectron_eb_ecalTrk_05To50_mean",
+                eeLowEtForestName = "lowPtElectron_ee_ecalTrk_05To50_mean",
+                eeHighEtForestName = "lowPtElectron_ee_ecalTrk_05To50_mean",
+                ),
+            ecalTrkRegressionUncertConfig = dict(
+                lowEtHighEtBoundary = 20.,
+                ebLowEtForestName = "lowPtElectron_eb_ecalTrk_05To50_sigma",
+                ebHighEtForestName = "lowPtElectron_eb_ecalTrk_05To50_sigma",
+                eeLowEtForestName = "lowPtElectron_ee_ecalTrk_05To50_sigma",
+                eeHighEtForestName = "lowPtElectron_ee_ecalTrk_05To50_sigma",
+                ),
+        )
+    ),
+)
+
+_lowPtGsfElectrons = cms.EDProducer("LowPtGsfElectronFinalizer",
+                                    previousGsfElectronsTag = cms.InputTag("lowPtGsfElectrons::@skipCurrentProcess"),
+                                    regressionConfig = _lowPtRegressionModifier,
+)
+
+from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
+run2_miniAOD_devel.toReplaceWith(lowPtGsfElectrons,_lowPtGsfElectrons)
+
+from Configuration.Eras.Modifier_bParking_cff import bParking
+lowPtGsfElectronsPreRegression = lowPtGsfElectrons.clone()
+bParking.toModify(_lowPtGsfElectrons, 
+                  previousGsfElectronsTag = cms.InputTag("lowPtGsfElectronsPreRegression"),
+)
+bParking.toReplaceWith(lowPtGsfElectrons,_lowPtGsfElectrons)
+
