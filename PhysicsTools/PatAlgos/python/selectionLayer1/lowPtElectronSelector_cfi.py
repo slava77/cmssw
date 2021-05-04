@@ -16,7 +16,7 @@ bParking.toModify(selectedPatLowPtElectrons,cut = "")
 
 # Modifier for run2_miniAOD_UL (order is important: overrides bParking)
 from Configuration.ProcessModifiers.run2_miniAOD_UL_cff import run2_miniAOD_UL
-run2_miniAOD_UL.toModify(selectedPatLowPtElectrons,cut = "pt>1. && electronID('ID')>-1.5")
+run2_miniAOD_UL.toModify(selectedPatLowPtElectrons,cut = "pt>1. && electronID('ID')>1.5")
 
 # Modifier for run2_miniAOD_devel (order is important: overrides run2_miniAOD_UL)
 from Configuration.Eras.Modifier_run2_miniAOD_devel_cff import run2_miniAOD_devel
