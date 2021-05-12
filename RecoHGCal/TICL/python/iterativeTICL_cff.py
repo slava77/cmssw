@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+from RecoHGCal.TICL.CLUE3DHighStep_cff import *
+from RecoHGCal.TICL.CLUE3DLowStep_cff import *
 from RecoHGCal.TICL.MIPStep_cff import *
 from RecoHGCal.TICL.TrkEMStep_cff import *
 from RecoHGCal.TICL.TrkStep_cff import *
@@ -25,6 +27,7 @@ ticlIterationsTask = cms.Task(
     ,ticlTrkStepTask
     ,ticlHADStepTask
 )
+
 ticlIterLabels = [_step.itername.value() for _iteration in ticlIterationsTask for _step in _iteration if (_step._TypedParameterizable__type == "TrackstersProducer")]
 
 iterTICLTask = cms.Task(ticlLayerTileTask
