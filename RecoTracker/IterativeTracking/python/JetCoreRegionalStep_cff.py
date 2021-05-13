@@ -9,8 +9,8 @@ from RecoTracker.IterativeTracking.dnnQualityCuts import qualityCutDictionary
 # run only if there are high pT jets
 jetsForCoreTracking = cms.EDFilter('CandPtrSelector', src = cms.InputTag('ak4CaloJetsForTrk'), cut = cms.string('pt > 100 && abs(eta) < 2.5'), filter = cms.bool(False))
 
-jetsForCoreTrackingBarrel = jetsForCoreTracking.clone( cut = cms.string('pt > 100 && abs(eta) < 2.5') )
-jetsForCoreTrackingEndcap = jetsForCoreTracking.clone( cut = cms.string('pt > 100 && abs(eta) > 1.4 && abs(eta) < 2.5') )
+jetsForCoreTrackingBarrel = jetsForCoreTracking.clone( cut = 'pt > 100 && abs(eta) < 2.5' )
+jetsForCoreTrackingEndcap = jetsForCoreTracking.clone( cut = 'pt > 100 && abs(eta) > 1.4 && abs(eta) < 2.5' )
 
 # care only at tracks from main PV
 firstStepGoodPrimaryVertices = cms.EDFilter('PrimaryVertexObjectFilter',
@@ -234,27 +234,6 @@ fastSim.toReplaceWith(jetCoreRegionalStepTracks,_fastSim_jetCoreRegionalStepTrac
 
 
 # Final selection
-from RecoTracker.IterativeTracking.InitialStep_cff import initialStepClassifier1
-#from RecoTracker.IterativeTracking.DetachedTripletStep_cff import detachedTripletStepClassifier1
-
-#jetCoreRegionalStep = initialStepClassifier1.clone()
-#jetCoreRegionalStep.src='jetCoreRegionalStepTracks'
-#jetCoreRegionalStep.qualityCuts = [-0.3,0.0,0.2]
-#jetCoreRegionalStep.vertices = 'firstStepGoodPrimaryVertices'
-
-#jetCoreRegionalStepClassifier1 = initialStepClassifier1.clone()
-#jetCoreRegionalStepClassifier1.src = 'jetCoreRegionalStepTracks'
-#jetCoreRegionalStepClassifier1.qualityCuts = [-0.2,0.0,0.4]
-#jetCoreRegionalStepClassifier2 = detachedTripletStepClassifier1.clone()
-#jetCoreRegionalStepClassifier2.src = 'jetCoreRegionalStepTracks'
-
-
-
-#from RecoTracker.FinalTrackSelectors.ClassifierMerger_cfi import *
-#jetCoreRegionalStep = ClassifierMerger.clone()
-#jetCoreRegionalStep.inputClassifiers=['jetCoreRegionalStepClassifier1','jetCoreRegionalStepClassifier2']
-
-
 from RecoTracker.FinalTrackSelectors.TrackCutClassifier_cff import *
 jetCoreRegionalStep = TrackCutClassifier.clone(
     src = 'jetCoreRegionalStepTracks',
@@ -372,21 +351,6 @@ seedingDeepCore.toReplaceWith(jetCoreRegionalStepTracks, TrackCollectionMerger.c
 ))
 
 seedingDeepCore.toReplaceWith(jetCoreRegionalStep, jetCoreRegionalStepTracks.clone()) #(*)
-
-## rename jetCoreRegionalStep to e.g. jetCoreRegionalStepImpl
-## alias the MVAValues and QualityMasks products from jetCoreRegionalStepImpl to jetCoreRegionalStep
-#jetCoreRegionalStep = cms.EDAlias(
-#    jetCoreRegionalStepImpl = cms.VPSet(
-#        cms.PSet(type = cms.string("floats")),
-#        cms.PSet(type = cms.string("uchars")),
-#    )
-#)
-## change the alias-from to point to jetCoreRegionalStepTracks
-#seedingDeepCore.toModify(jetCoreRegionalStep,
-#    jetCoreRegionalStepImpl = None,
-#    jetCoreRegionalStepTracks = jetCoreRegionalStep.jetCoreRegionalStepImpl.copy()
-#)
-#
 
 seedingDeepCore.toReplaceWith(JetCoreRegionalStepTask, cms.Task(
     JetCoreRegionalStepBarrelTask,
