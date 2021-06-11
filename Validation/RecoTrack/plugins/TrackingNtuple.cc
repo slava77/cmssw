@@ -3261,7 +3261,7 @@ void TrackingNtuple::fillSeeds(const edm::Event& iEvent,
       see_stateTrajGlbPy.push_back(stateGlobal.momentum().y());
       see_stateTrajGlbPz.push_back(stateGlobal.momentum().z());
       if (addSeedCartesianCov_) {
-        auto const& stateCcov = tsos.cartesianError().matrix();
+        auto const stateCcov = tsos.cartesianError().matrix();
         see_stateCcov00.push_back(stateCcov[0][0]);
         see_stateCcov01.push_back(stateCcov[0][1]);
         see_stateCcov02.push_back(stateCcov[0][2]);
