@@ -28,6 +28,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include <FWCore/MessageLogger/interface/MessageLogger.h>
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
@@ -63,9 +64,15 @@ class CSCRechitClusterProducer : public edm::stream::EDProducer<> {
 
       // ----------member data ---------------------------
    protected:
-    
-    std::vector<edm::Ptr<CSCRecHit2D> > inputs_;
-    std::vector<edm::Ptr<CSCRecHit2D> > getConstituents(const std::vector<fastjet::PseudoJet>& fjConstituents);
+
+    double rParam_ ;            // distance paramter
+    //std::string jetAlgorithm_;  // jetAlgorithm
+    int    nRechitMin_;         // min number of rechits 
+    //std::vector<edm::Ptr<CSCRecHit2D> > inputs_;
+    //std::vector<edm::Ptr<CSCRecHit2D> > getConstituents(const std::vector<fastjet::PseudoJet>& fjConstituents);
+    std::vector<CSCRecHit2D > inputs_;
+    std::vector<CSCRecHit2D > getConstituents(const std::vector<fastjet::PseudoJet>& fjConstituents);
+
 };
 
 //
@@ -83,8 +90,11 @@ CSCRechitClusterProducer::CSCRechitClusterProducer(const edm::ParameterSet& iCon
  : m_cscGeometryToken(esConsumes<CSCGeometry,MuonGeometryRecord>()) 
 {
   
+   rParam_ = iConfig.getParameter<double>("rParam");
+   //jetAlgorithm_ = iConfig.getParameter<std::string>("jetAlgorithm");
+   nRechitMin_ = iConfig.getParameter<int>("nRechitMin");
+
    cscRechitInputToken_ = consumes<CSCRecHit2DCollection>(edm::InputTag("csc2DRecHits")),
-   
    produces<MuonShowerRechitClusterCollection>();
   
 }
@@ -111,7 +121,7 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
 
   std::vector<fastjet::PseudoJet> fjInput;
 
-  fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, 0.4);
+  fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, rParam_);
 
   int nRecHits = cscRechits->size();
   CSCRecHit2DCollection::const_iterator recIt;
@@ -132,6 +142,7 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
         //TODO: Find a way to construct edm::Ptr
         //edm::Ptr<CSCRecHit2D> ptr = edm::Ptr<CSCRecHit2D>(&cscRechit);
         //inputs_.push_back(  ptr );
+        inputs_.push_back( cscRechit );
         fjInput.push_back(fastjet::PseudoJet( x, y, z, 1.0));
         fjInput.back().set_user_index(recIt-cscRechits->begin());
     }
@@ -141,36 +152,44 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
   double ptmin = 0.0;
   std::vector<fastjet::PseudoJet> fjJets = fastjet::sorted_by_pt(clus_seq.inclusive_jets(ptmin));
 
-  auto CSCclusters = std::make_unique<MuonShowerRechitClusterCollection>(fjJets.size());
+  auto CSCclusters = std::make_unique<MuonShowerRechitClusterCollection>();
   if (!fjJets.empty()){
     for (unsigned int ijet = 0; ijet < fjJets.size(); ++ijet) {
 
       // get the fastjet jet
       const fastjet::PseudoJet& fjJet = fjJets[ijet];
+
+      //std::cout<<"CSCrechitCluster" << " fjJet size =  " << (fjJet.constituents().size()) <<std::endl;
+      // skip if the cluster has too few rechits
+      if (int(fjJet.constituents().size()) < nRechitMin_) continue;
       // get the constituents from fastjet
       std::vector<fastjet::PseudoJet> const& fjConstituents = fastjet::sorted_by_pt(fjJet.constituents());
 
-      std::vector<edm::Ptr<CSCRecHit2D> > const& rechits = getConstituents(fjConstituents);
+      std::vector<CSCRecHit2D > const& rechits = getConstituents(fjConstituents);
 
       //Derive cluster properties
-      float time=0;float eta=0;float phi=0;
-      float x=0;float y=0;float z=0;
+      float time=0.0;float eta=0.0;float phi=0.0;
+      float x=0.0;float y=0.0;float z=0.0;
       int nME11_12 =0;
+      //std::cout<<"CSCrechitCluster" << " rec time =  [" ;
       for (auto & rechit : rechits){
 
-        LocalPoint  cscRecHitLocalPosition       = (*rechit).localPosition();
-        CSCDetId cscdetid = (*rechit).cscDetId();
+        //LocalPoint  cscRecHitLocalPosition       = (*rechit).localPosition();
+        //CSCDetId cscdetid = (*rechit).cscDetId();
+        LocalPoint  cscRecHitLocalPosition       = rechit.localPosition();
+        CSCDetId cscdetid = rechit.cscDetId();
         const CSCChamber* cscchamber = cscG->chamber(cscdetid());
         int endcap = CSCDetId::endcap(cscdetid) == 1 ? 1 : -1;
         GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
         x += globalPosition.x();
         y += globalPosition.y();
         z += globalPosition.z();
-
         int  chamber =  endcap * (CSCDetId::station(cscdetid)*10 + CSCDetId::ring(cscdetid));
         if( abs(chamber)==11 || abs(chamber)==12) nME11_12++;
-        time+= (*rechit).tpeak() + (*rechit).wireTime();
+        time+= (rechit.tpeak() + rechit.wireTime());
+        //std::cout<< "("<<rechit.tpeak() <<","<< rechit.wireTime()<<") "; 
       } 
+        //std::cout<< "] "; 
       x = x/rechits.size(); 
       y = y/rechits.size(); 
       z = z/rechits.size(); 
@@ -183,6 +202,14 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
       time = time/(2*rechits.size()); 
       
       reco::MuonShowerRechitCluster cls(eta,phi,x,y,z,time,rechits.size(),nME11_12);
+      //std::cout<<"CSCrechitCluster" << " cls size =  " << (cls.size()) <<std::endl;
+      //std::cout<<"CSCrechitCluster" << " cls x =  " <<    (cls.x()) <<std::endl;
+      //std::cout<<"CSCrechitCluster" << " cls y =  " <<    (cls.y()) <<std::endl;
+      //std::cout<<"CSCrechitCluster" << " cls z =    " <<  (cls.z()) <<std::endl;
+      //std::cout<<"CSCrechitCluster" << " cls time =  " << (cls.time()) <<std::endl;
+      //std::cout<<"CSCrechitCluster" << " cls eta =   " << (cls.eta()) <<std::endl;
+      //std::cout<<"CSCrechitCluster" << " cls phi =   " << (cls.phi()) <<std::endl;
+
       //for (auto & rechit : rechits){
       //  cls.addDaughter(rechit);
       //}
@@ -194,10 +221,10 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
  
 }
 
-std::vector<edm::Ptr<CSCRecHit2D> > CSCRechitClusterProducer::getConstituents(const std::vector<fastjet::PseudoJet>& fjConstituents) {
+std::vector<CSCRecHit2D > CSCRechitClusterProducer::getConstituents(const std::vector<fastjet::PseudoJet>& fjConstituents) {
 
-  std::vector<edm::Ptr<CSCRecHit2D>> result;
-  result.reserve(fjConstituents.size() / 2);
+  std::vector<CSCRecHit2D> result;
+  //result.reserve(fjConstituents.size() / 2);
   for (unsigned int i = 0; i < fjConstituents.size(); i++) {
     auto index = fjConstituents[i].user_index();
     if (index >= 0 && static_cast<unsigned int>(index) < inputs_.size()) {
