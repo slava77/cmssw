@@ -3,17 +3,21 @@
 
 #include <vector>
 #include "DataFormats/Common/interface/SortedCollection.h"
-#include "DataFormats/Common/interface/Ptr.h"
-#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
+#include "DataFormats/Common/interface/RangeMap.h"
 
+#include <DataFormats/MuonDetId/interface/CSCDetId.h>
+#include <DataFormats/CSCRecHit/interface/CSCRecHit2D.h>
+#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
+#include "DataFormats/DetId/interface/DetId.h"
 
 namespace reco {
 
   class MuonShowerRechitCluster  {
   public:
     //TODO: think about how to keep the constituents for both CSC/DT rechits
-    typedef edm::Ptr<TrackingRecHit> Constituent;
-    typedef std::vector<Constituent> Constituents;
+    typedef edm::RangeMap <CSCDetId, edm::OwnVector<CSCRecHit2D> >  rechitCollection;
+    typedef edm::Ref<rechitCollection>  rechitRef;
+    typedef std::vector<rechitRef>  rechits;
 
     //default constructor
     MuonShowerRechitCluster():eta_(0.),phi_(0.),x_(0.),y_(0.),z_(0.),time_(-999.),size_(0),nME11_12_(0){}
@@ -31,7 +35,8 @@ namespace reco {
     float time()   const {return time_;}
     int size()     const {return size_;}
     int nME11_12() const {return nME11_12_;}
-    void addDaughter(const Constituent &);
+    void addDaughter(const rechitRef &);
+    rechits getConstituents(){return rechits_;}
 
    private:
     double eta_;      
@@ -42,12 +47,13 @@ namespace reco {
     float time_;      
     int size_;      
     int nME11_12_;     
-    Constituents rechits_;     
+    rechits rechits_;     
  
   };
-  inline void MuonShowerRechitCluster::addDaughter( const Constituent & cand ) { 
+  inline void MuonShowerRechitCluster::addDaughter( const rechitRef & cand ) { 
     rechits_.push_back( cand ); 
   }
+
    typedef std::vector<MuonShowerRechitCluster> MuonShowerRechitClusterCollection;
 }
 #endif
