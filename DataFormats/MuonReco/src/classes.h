@@ -22,6 +22,7 @@
 #include "DataFormats/MuonReco/interface/MuonShower.h"
 #include "DataFormats/MuonReco/interface/MuonShowerCluster.h"
 #include "DataFormats/MuonReco/interface/MuonShowerCSCCluster.h"
+#include "DataFormats/MuonReco/interface/MuonShowerDTCluster.h"
 #include "DataFormats/MuonReco/interface/MuonToMuonMap.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/Common/interface/AssociationMap.h"

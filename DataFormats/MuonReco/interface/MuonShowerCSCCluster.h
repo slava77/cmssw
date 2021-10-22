@@ -17,16 +17,19 @@ namespace reco {
     //default constructor
     MuonShowerCSCCluster(){}
     
-    MuonShowerCSCCluster(const float x, const float y,const float z, const float time, const int size, const int nME11_12, rechits rh);
+    MuonShowerCSCCluster(const float x, const float y,const float z, const int size, const float time, const int nME11_12, rechits rh);
 
     //destructor
     ~MuonShowerCSCCluster() ;
 
+    int nME11_12() const {return nME11_12_;}
+    float time()   const {return time_;}
     void addDaughter(const rechitRef &);
     rechits getConstituents(){return rechits_;}
 
    private:
     rechits rechits_;     
+    float time_;      
     int nME11_12_;     
  
   };

@@ -6,9 +6,10 @@
  * Vertex associated with the CSC rechit is set to the origin.
  *
  */
-reco::MuonShowerCSCCluster::MuonShowerCSCCluster(const float x,const float y,const float z, const float time,const int size,const int nME11_12, rechits rh)
-: MuonShowerCluster(x,y,z,time,size){
+reco::MuonShowerCSCCluster::MuonShowerCSCCluster(const float x,const float y,const float z,const int size, const float time,const int nME11_12, rechits rh)
+: MuonShowerCluster(x,y,z,size){
 
+  time_     = time;
   nME11_12_ = nME11_12;
   for(unsigned i=0; i< rh.size();i++){
     addDaughter(rh[i]);

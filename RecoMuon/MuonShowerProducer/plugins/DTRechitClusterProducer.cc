@@ -33,14 +33,11 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 
-#include "DataFormats/Common/interface/Ptr.h"
-#include "DataFormats/Math/interface/deltaPhi.h"
-#include <DataFormats/CSCRecHit/interface/CSCRecHit2D.h>
-#include <DataFormats/CSCRecHit/interface/CSCRecHit2DCollection.h>
-#include "DataFormats/MuonReco/interface/MuonShowerCSCCluster.h"
-#include "Geometry/CSCGeometry/interface/CSCGeometry.h"
+#include "DataFormats/DetId/interface/DetId.h"
+#include <DataFormats/DTRecHit/interface/DTRecHitCollection.h>
+#include "DataFormats/MuonReco/interface/MuonShowerDTCluster.h"
+#include "Geometry/DTGeometry/interface/DTGeometry.h"
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
-#include "DataFormats/MuonDetId/interface/CSCDetId.h"
 
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/ClusterSequence.hh"
@@ -48,21 +45,21 @@
 //
 // class declaration
 //
-typedef edm::Ref<CSCRecHit2DCollection>  rechitRef;
+typedef edm::Ref<DTRecHitCollection>  rechitRef;
 typedef std::vector<rechitRef>  rechits;
 
-class CSCRechitClusterProducer : public edm::stream::EDProducer<> {
+class DTRechitClusterProducer : public edm::stream::EDProducer<> {
    public:
-      explicit CSCRechitClusterProducer(const edm::ParameterSet&);
-      ~CSCRechitClusterProducer();
+      explicit DTRechitClusterProducer(const edm::ParameterSet&);
+      ~DTRechitClusterProducer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
    private:
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
-      edm::EDGetTokenT<CSCRecHit2DCollection> cscRechitInputToken_;
-      const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> m_cscGeometryToken;
-      typedef std::vector<reco::MuonShowerCSCCluster> MuonShowerCSCClusterCollection;
+      edm::EDGetTokenT<DTRecHitCollection> dtRechitInputToken_;
+      const edm::ESGetToken<DTGeometry, MuonGeometryRecord> m_dtGeometryToken;
+      typedef std::vector<reco::MuonShowerDTCluster> MuonShowerDTClusterCollection;
 
       // ----------member data ---------------------------
    protected:
@@ -85,20 +82,20 @@ class CSCRechitClusterProducer : public edm::stream::EDProducer<> {
 //
 // constructors and destructor
 //
-CSCRechitClusterProducer::CSCRechitClusterProducer(const edm::ParameterSet& iConfig)
- : m_cscGeometryToken(esConsumes<CSCGeometry,MuonGeometryRecord>()) 
+DTRechitClusterProducer::DTRechitClusterProducer(const edm::ParameterSet& iConfig)
+ : m_dtGeometryToken(esConsumes<DTGeometry,MuonGeometryRecord>()) 
 {
   
    rParam_ = iConfig.getParameter<double>("rParam");
    nRechitMin_ = iConfig.getParameter<int>("nRechitMin");
 
-   cscRechitInputToken_ = consumes<CSCRecHit2DCollection>(edm::InputTag("csc2DRecHits")),
-   produces<MuonShowerCSCClusterCollection>();
+   dtRechitInputToken_ = consumes<DTRecHitCollection>(edm::InputTag("dt1DRecHits")),
+   produces<MuonShowerDTClusterCollection>();
   
 }
 
 
-CSCRechitClusterProducer::~CSCRechitClusterProducer(){
+DTRechitClusterProducer::~DTRechitClusterProducer(){
 }
 
 
@@ -108,40 +105,41 @@ CSCRechitClusterProducer::~CSCRechitClusterProducer(){
 
 // ------------ method called to produce the data  ------------
 void
-CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
+DTRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
 {
-  edm::ESHandle<CSCGeometry> cscG;
-  cscG = iSetup.getHandle(m_cscGeometryToken);
+  edm::ESHandle<DTGeometry> dtG;
+  dtG = iSetup.getHandle(m_dtGeometryToken);
 
-  edm::Handle<CSCRecHit2DCollection> cscRechits;
+  edm::Handle<DTRecHitCollection> dtRechits;
 
-  ev.getByToken(cscRechitInputToken_,cscRechits);
+  ev.getByToken(dtRechitInputToken_,dtRechits);
 
   std::vector<fastjet::PseudoJet> fjInput;
 
   fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, rParam_);
 
-  int nRecHits = cscRechits->size();
-  CSCRecHit2DCollection::const_iterator recIt;
+  int nRecHits = dtRechits->size();
+  DTRecHitCollection::const_iterator recIt;
 
 
   inputs_.clear();
   fjInput.clear();
 
-  for (recIt = cscRechits->begin(); recIt != cscRechits->end(); recIt++) {
-    auto cscRechit = (*recIt);
-    LocalPoint  cscRecHitLocalPosition       = cscRechit.localPosition();
-    CSCDetId cscdetid = cscRechit.cscDetId();
-    const CSCChamber* cscchamber = cscG->chamber(cscdetid);
-    if (cscchamber) {
-        GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
+  for (recIt = dtRechits->begin(); recIt != dtRechits->end(); recIt++) {
+    auto dtRechit = (*recIt);
+    LocalPoint  localPosition       = dtRechit.localPosition();
+    DetId geoid = dtRechit.geographicalId();
+    DTChamberId dtdetid = DTChamberId(geoid);
+    const DTChamber * dtchamber = dtG->chamber(dtdetid);
+    if (dtchamber) {
+        GlobalPoint globalPosition = dtchamber->toGlobal(localPosition);
         float x = globalPosition.x();
         float y = globalPosition.y();
         float z = globalPosition.z();
-        rechitRef csc_ref = rechitRef(cscRechits, recIt-cscRechits->begin());
-        inputs_.push_back( csc_ref );
+        rechitRef dt_ref = rechitRef(dtRechits, recIt-dtRechits->begin());
+        inputs_.push_back( dt_ref );
         fjInput.push_back(fastjet::PseudoJet( x, y, z, 1.0));
-        fjInput.back().set_user_index(recIt-cscRechits->begin());
+        fjInput.back().set_user_index(recIt-dtRechits->begin());
     }
   }
   fastjet::ClusterSequence clus_seq ( fjInput , jet_def);
@@ -149,7 +147,7 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
   double ptmin = 0.0;
   std::vector<fastjet::PseudoJet> fjJets = fastjet::sorted_by_pt(clus_seq.inclusive_jets(ptmin));
 
-  auto CSCclusters = std::make_unique<MuonShowerCSCClusterCollection>();
+  auto DTclusters = std::make_unique<MuonShowerDTClusterCollection>();
   if (!fjJets.empty()){
     for (unsigned int ijet = 0; ijet < fjJets.size(); ++ijet) {
 
@@ -164,36 +162,32 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
       std::vector<rechitRef > const& rechits = getConstituents(fjConstituents);
 
       //Derive cluster properties
-      float time=0.0;
-      int nME11_12 =0;
+      int nMB1 =0;
       for (auto & rechit : rechits){
 
-        CSCDetId cscdetid = rechit->cscDetId();
-        int endcap = CSCDetId::endcap(cscdetid) == 1 ? 1 : -1;
-        int  chamber =  endcap * (CSCDetId::station(cscdetid)*10 + CSCDetId::ring(cscdetid));
-        if( abs(chamber)==11 || abs(chamber)==12) nME11_12++;
-        time+= (rechit->tpeak() + rechit->wireTime());
+        DetId geoid = rechit->geographicalId();
+        DTChamberId dtdetid = DTChamberId(geoid);
+        
+        if( dtdetid.station()==1 ) nMB1++;
       }
-      time = time/(2*rechits.size()); 
-
       
       float jetX = fjJet.px()/rechits.size(); 
       float jetY = fjJet.py()/rechits.size(); 
       float jetZ = fjJet.pz()/rechits.size(); 
      
-      reco::MuonShowerCSCCluster cls(jetX,jetY,jetZ,rechits.size(),time,nME11_12,rechits);
+      reco::MuonShowerDTCluster cls(jetX,jetY,jetZ,rechits.size(),nMB1,rechits);
       //std::cout<<"CSCrechitCluster" << " my phi =  " <<   phi  << " my eta =  " <<    eta ;
       //std::cout<< " cls phi =  " <<    cls.phi()  << " cls eta =  " <<    (cls.eta()) <<std::endl;
 
       
-      CSCclusters->push_back(cls);
+      DTclusters->push_back(cls);
     }
   }
-  ev.put(std::move(CSCclusters));
+  ev.put(std::move(DTclusters));
  
 }
 
-std::vector<rechitRef > CSCRechitClusterProducer::getConstituents(const std::vector<fastjet::PseudoJet>& fjConstituents) {
+std::vector<rechitRef > DTRechitClusterProducer::getConstituents(const std::vector<fastjet::PseudoJet>& fjConstituents) {
 
   std::vector<rechitRef> result;
   for (unsigned int i = 0; i < fjConstituents.size(); i++) {
@@ -207,7 +201,7 @@ std::vector<rechitRef > CSCRechitClusterProducer::getConstituents(const std::vec
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-CSCRechitClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+DTRechitClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -216,4 +210,4 @@ CSCRechitClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& descr
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(CSCRechitClusterProducer);
+DEFINE_FWK_MODULE(DTRechitClusterProducer);

@@ -13,9 +13,9 @@ namespace reco {
 
     typedef math::XYZVector Vector;
     //default constructor
-    MuonShowerCluster():x_(0),y_(0),z_(0),time_(-999.),size_(0){}
+    MuonShowerCluster():x_(0),y_(0),z_(0),size_(0){}
     
-    MuonShowerCluster(const float x, const float y, const float z, const float time, const int size);
+    MuonShowerCluster(const float x, const float y, const float z, const int size);
 
     //destructor
     ~MuonShowerCluster() ;
@@ -25,14 +25,13 @@ namespace reco {
     float x()      const {return x_;}
     float y()      const {return y_;}
     float z()      const {return z_;}
-    float time()   const {return time_;}
+    float r()      const {return std::sqrt(x_*x_+y_*y_);}
     int size()     const {return size_;}
 
    private:
     float x_; 
     float y_; 
     float z_; 
-    float time_;      
     int size_;      
  
   };
