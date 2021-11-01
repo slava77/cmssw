@@ -4,34 +4,34 @@
 #include <vector>
 #include "DataFormats/Common/interface/SortedCollection.h"
 
-#include <DataFormats/DTRecHit/interface/DTRecHitCollection.h>
+#include "DataFormats/DTRecHit/interface/DTRecHitCollection.h"
 #include "DataFormats/MuonReco/interface/MuonRecHitCluster.h"
 
 namespace reco {
 
   class MuonDTRecHitCluster : public MuonRecHitCluster {
   public:
-    typedef edm::Ref<DTRecHitCollection>  rechitRef;
-    typedef std::vector<rechitRef>  rechits;
+    typedef edm::Ref<DTRecHitCollection>  RechitRef;
+    typedef std::vector<RechitRef>  Rechits;
 
     //default constructor
-    MuonDTRecHitCluster(){}
+    MuonDTRecHitCluster() = default;
     
-    MuonDTRecHitCluster(const float x, const float y,const float z, const int size, const int nMB1, rechits rh);
+    MuonDTRecHitCluster(const float x, const float y,const float z, const int size, const int nMB1,const Rechits rh);
 
     //destructor
     ~MuonDTRecHitCluster() ;
 
     int nMB1() const {return nMB1_;}
-    void addDaughter(const rechitRef &);
-    rechits getConstituents(){return rechits_;}
+    void addDaughter(const RechitRef &);
+    Rechits getConstituents(){return rechits_;}
 
    private:
-    rechits rechits_;     
+    Rechits rechits_;     
     int nMB1_;     
  
   };
-  inline void MuonDTRecHitCluster::addDaughter( const rechitRef & cand ) { 
+  inline void MuonDTRecHitCluster::addDaughter( const RechitRef & cand ) { 
     rechits_.push_back( cand ); 
   }
 
