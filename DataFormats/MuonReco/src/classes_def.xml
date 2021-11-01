@@ -164,23 +164,23 @@ initial version number of a class which has never been stored before.
   </class>
   <class name="edm::Wrapper<edm::ValueMap<reco::MuonShower> >"/>
 
-  <class name="reco::MuonShowerCluster" ClassVersion="3">
-    <version ClassVersion="3" checksum="3059705349"/>
+  <class name="reco::MuonRecHitCluster" ClassVersion="3">
+    <version ClassVersion="3" checksum="523874514"/>
   </class>
-  <class name="std::vector<reco::MuonShowerCluster>"/>
-  <class name="edm::Wrapper<std::vector<reco::MuonShowerCluster>>"/>
+  <class name="std::vector<reco::MuonRecHitCluster>"/>
+  <class name="edm::Wrapper<std::vector<reco::MuonRecHitCluster>>"/>
 
-  <class name="reco::MuonShowerCSCCluster" ClassVersion="3">
-    <version ClassVersion="3" checksum="2249034585"/>
+  <class name="reco::MuonCSCRecHitCluster" ClassVersion="3">
+    <version ClassVersion="3" checksum="3358963912"/>
   </class>
-  <class name="std::vector<reco::MuonShowerCSCCluster>"/>
-  <class name="edm::Wrapper<std::vector<reco::MuonShowerCSCCluster>>"/>
+  <class name="std::vector<reco::MuonCSCRecHitCluster>"/>
+  <class name="edm::Wrapper<std::vector<reco::MuonCSCRecHitCluster>>"/>
 
-  <class name="reco::MuonShowerDTCluster" ClassVersion="3">
-    <version ClassVersion="3" checksum="704495656"/>
+  <class name="reco::MuonDTRecHitCluster" ClassVersion="3">
+    <version ClassVersion="3" checksum="2361277099"/>
   </class>
-  <class name="std::vector<reco::MuonShowerDTCluster>"/>
-  <class name="edm::Wrapper<std::vector<reco::MuonShowerDTCluster>>"/>
+  <class name="std::vector<reco::MuonDTRecHitCluster>"/>
+  <class name="edm::Wrapper<std::vector<reco::MuonDTRecHitCluster>>"/>
 
 
 

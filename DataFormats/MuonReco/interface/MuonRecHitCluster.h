@@ -1,5 +1,5 @@
-#ifndef DataFormats_MuonShowerCluster_h
-#define DataFormats_MuonShowerCluster_h
+#ifndef DataFormats_MuonRecHitCluster_h
+#define DataFormats_MuonRecHitCluster_h
 
 #include <vector>
 #include "DataFormats/Common/interface/SortedCollection.h"
@@ -8,17 +8,17 @@
 
 namespace reco {
 
-  class MuonShowerCluster  {
+  class MuonRecHitCluster  {
   public:
 
     typedef math::XYZVector Vector;
     //default constructor
-    MuonShowerCluster():x_(0),y_(0),z_(0),size_(0){}
+    MuonRecHitCluster():x_(0),y_(0),z_(0),size_(0){}
     
-    MuonShowerCluster(const float x, const float y, const float z, const int size);
+    MuonRecHitCluster(const float x, const float y, const float z, const int size);
 
     //destructor
-    ~MuonShowerCluster() ;
+    ~MuonRecHitCluster() ;
 
     double eta()   const {return Vector(x_,y_,z_).eta();}
     double phi()   const {return Vector(x_,y_,z_).phi();}
@@ -36,6 +36,6 @@ namespace reco {
  
   };
 
-   typedef std::vector<MuonShowerCluster> MuonShowerClusterCollection;
+   typedef std::vector<MuonRecHitCluster> MuonRecHitClusterCollection;
 }
 #endif
