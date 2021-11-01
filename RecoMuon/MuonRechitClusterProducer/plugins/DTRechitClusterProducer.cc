@@ -35,7 +35,7 @@
 
 #include "DataFormats/DetId/interface/DetId.h"
 #include <DataFormats/DTRecHit/interface/DTRecHitCollection.h>
-#include "DataFormats/MuonReco/interface/MuonShowerDTCluster.h"
+#include "DataFormats/MuonReco/interface/MuonDTRecHitCluster.h"
 #include "Geometry/DTGeometry/interface/DTGeometry.h"
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 
@@ -59,7 +59,7 @@ class DTRechitClusterProducer : public edm::stream::EDProducer<> {
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       edm::EDGetTokenT<DTRecHitCollection> dtRechitInputToken_;
       const edm::ESGetToken<DTGeometry, MuonGeometryRecord> m_dtGeometryToken;
-      typedef std::vector<reco::MuonShowerDTCluster> MuonShowerDTClusterCollection;
+      typedef std::vector<reco::MuonDTRecHitCluster> MuonDTRecHitClusterCollection;
 
       // ----------member data ---------------------------
    protected:
@@ -90,7 +90,7 @@ DTRechitClusterProducer::DTRechitClusterProducer(const edm::ParameterSet& iConfi
    nRechitMin_ = iConfig.getParameter<int>("nRechitMin");
 
    dtRechitInputToken_ = consumes<DTRecHitCollection>(edm::InputTag("dt1DRecHits")),
-   produces<MuonShowerDTClusterCollection>();
+   produces<MuonDTRecHitClusterCollection>();
   
 }
 
@@ -147,7 +147,7 @@ DTRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
   double ptmin = 0.0;
   std::vector<fastjet::PseudoJet> fjJets = fastjet::sorted_by_pt(clus_seq.inclusive_jets(ptmin));
 
-  auto DTclusters = std::make_unique<MuonShowerDTClusterCollection>();
+  auto DTclusters = std::make_unique<MuonDTRecHitClusterCollection>();
   if (!fjJets.empty()){
     for (unsigned int ijet = 0; ijet < fjJets.size(); ++ijet) {
 
@@ -175,7 +175,7 @@ DTRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
       float jetY = fjJet.py()/rechits.size(); 
       float jetZ = fjJet.pz()/rechits.size(); 
      
-      reco::MuonShowerDTCluster cls(jetX,jetY,jetZ,rechits.size(),nMB1,rechits);
+      reco::MuonDTRecHitCluster cls(jetX,jetY,jetZ,rechits.size(),nMB1,rechits);
       //std::cout<<"CSCrechitCluster" << " my phi =  " <<   phi  << " my eta =  " <<    eta ;
       //std::cout<< " cls phi =  " <<    cls.phi()  << " cls eta =  " <<    (cls.eta()) <<std::endl;
 

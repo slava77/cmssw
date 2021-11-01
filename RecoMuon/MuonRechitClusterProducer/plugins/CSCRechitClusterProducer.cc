@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    RecoMuon/MuonShowerProducer
-// Class:      MuonShowerProducer
+// Package:    RecoMuon/MuonRecHitProducer
+// Class:      MuonRecHitProducer
 // 
-/**\class MuonShowerProducer MuonShowerProducer.cc RecoMuon/MuonShowerProducer/plugins/MuonShowerProducer.cc
+/**\class MuonRecHitProducer MuonRecHitProducer.cc RecoMuon/MuonRecHitProducer/plugins/MuonRecHitProducer.cc
 
  Description: [one line class summary]
 
@@ -37,7 +37,7 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include <DataFormats/CSCRecHit/interface/CSCRecHit2D.h>
 #include <DataFormats/CSCRecHit/interface/CSCRecHit2DCollection.h>
-#include "DataFormats/MuonReco/interface/MuonShowerCSCCluster.h"
+#include "DataFormats/MuonReco/interface/MuonCSCRecHitCluster.h"
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
@@ -62,7 +62,7 @@ class CSCRechitClusterProducer : public edm::stream::EDProducer<> {
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       edm::EDGetTokenT<CSCRecHit2DCollection> cscRechitInputToken_;
       const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> m_cscGeometryToken;
-      typedef std::vector<reco::MuonShowerCSCCluster> MuonShowerCSCClusterCollection;
+      typedef std::vector<reco::MuonCSCRecHitCluster> MuonCSCRecHitClusterCollection;
 
       // ----------member data ---------------------------
    protected:
@@ -93,7 +93,7 @@ CSCRechitClusterProducer::CSCRechitClusterProducer(const edm::ParameterSet& iCon
    nRechitMin_ = iConfig.getParameter<int>("nRechitMin");
 
    cscRechitInputToken_ = consumes<CSCRecHit2DCollection>(edm::InputTag("csc2DRecHits")),
-   produces<MuonShowerCSCClusterCollection>();
+   produces<MuonCSCRecHitClusterCollection>();
   
 }
 
@@ -149,7 +149,7 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
   double ptmin = 0.0;
   std::vector<fastjet::PseudoJet> fjJets = fastjet::sorted_by_pt(clus_seq.inclusive_jets(ptmin));
 
-  auto CSCclusters = std::make_unique<MuonShowerCSCClusterCollection>();
+  auto CSCclusters = std::make_unique<MuonCSCRecHitClusterCollection>();
   if (!fjJets.empty()){
     for (unsigned int ijet = 0; ijet < fjJets.size(); ++ijet) {
 
@@ -181,7 +181,7 @@ CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSetup)
       float jetY = fjJet.py()/rechits.size(); 
       float jetZ = fjJet.pz()/rechits.size(); 
      
-      reco::MuonShowerCSCCluster cls(jetX,jetY,jetZ,rechits.size(),time,nME11_12,rechits);
+      reco::MuonCSCRecHitCluster cls(jetX,jetY,jetZ,rechits.size(),time,nME11_12,rechits);
       //std::cout<<"CSCrechitCluster" << " my phi =  " <<   phi  << " my eta =  " <<    eta ;
       //std::cout<< " cls phi =  " <<    cls.phi()  << " cls eta =  " <<    (cls.eta()) <<std::endl;
 
