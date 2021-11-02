@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "DataFormats/Common/interface/SortedCollection.h"
-#include "DataFormats/Math/interface/Vector3D.h"
+#include "DataFormats/Math/interface/PtEtaPhiMass.h"
 
 
 namespace reco {
@@ -11,7 +11,6 @@ namespace reco {
   class MuonRecHitCluster  {
   public:
 
-    typedef math::XYZVector Vector;
     //default constructor
     MuonRecHitCluster():x_(0),y_(0),z_(0),size_(0){}
     
@@ -20,18 +19,18 @@ namespace reco {
     //destructor
     ~MuonRecHitCluster() ;
 
-    double eta()   const {return Vector(x_,y_,z_).eta();}
-    double phi()   const {return Vector(x_,y_,z_).phi();}
-    float x()      const {return x_;}
-    float y()      const {return y_;}
-    float z()      const {return z_;}
-    float r()      const {return std::sqrt(x_*x_+y_*y_);}
+    double eta()   const {return etaFromXYZ(x_,y_,z_);}
+    double phi()   const {return std::atan2(y_,x_);}
+    double x()      const {return x_;}
+    double y()      const {return y_;}
+    double z()      const {return z_;}
+    double r()      const {return std::sqrt(x_*x_+y_*y_);}
     int size()     const {return size_;}
 
    private:
-    float x_; 
-    float y_; 
-    float z_; 
+    double x_; 
+    double y_; 
+    double z_; 
     int size_;      
  
   };

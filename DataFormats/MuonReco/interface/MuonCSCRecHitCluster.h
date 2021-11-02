@@ -17,7 +17,7 @@ namespace reco {
     //default constructor
     MuonCSCRecHitCluster() = default;
     
-    MuonCSCRecHitCluster(const float x, const float y,const float z, const int size, const float time, const int nME11_12,const Rechits rh);
+    MuonCSCRecHitCluster(const float x, const float y,const float z, const int size, const float time, const int nME11_12,const Rechits& rh);
 
     //destructor
     ~MuonCSCRecHitCluster() ;
