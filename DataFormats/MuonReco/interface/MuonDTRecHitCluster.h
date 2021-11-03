@@ -11,30 +11,27 @@ namespace reco {
 
   class MuonDTRecHitCluster : public MuonRecHitCluster {
   public:
-    typedef edm::Ref<DTRecHitCollection>  RechitRef;
-    typedef std::vector<RechitRef>  Rechits;
+    typedef edm::Ref<DTRecHitCollection> RechitRef;
+    typedef std::vector<RechitRef> Rechits;
 
     //default constructor
     MuonDTRecHitCluster() = default;
-    
-    MuonDTRecHitCluster(const float x, const float y,const float z, const int size, const int nMB1,const Rechits& rh);
+
+    MuonDTRecHitCluster(const float x, const float y, const float z, const int size, const int nMB1, const Rechits& rh);
 
     //destructor
-    ~MuonDTRecHitCluster() ;
+    ~MuonDTRecHitCluster();
 
-    int nMB1() const {return nMB1_;}
-    void addDaughter(const RechitRef &);
-    Rechits getConstituents(){return rechits_;}
+    int nMB1() const { return nMB1_; }
+    void addDaughter(const RechitRef&);
+    Rechits getConstituents() { return rechits_; }
 
-   private:
-    Rechits rechits_;     
-    int nMB1_;     
- 
+  private:
+    Rechits rechits_;
+    int nMB1_;
   };
-  inline void MuonDTRecHitCluster::addDaughter( const RechitRef & cand ) { 
-    rechits_.push_back( cand ); 
-  }
+  inline void MuonDTRecHitCluster::addDaughter(const RechitRef& cand) { rechits_.push_back(cand); }
 
-   typedef std::vector<MuonDTRecHitCluster> MuonDTRecHitClusterCollection;
-}
+  typedef std::vector<MuonDTRecHitCluster> MuonDTRecHitClusterCollection;
+}  // namespace reco
 #endif
