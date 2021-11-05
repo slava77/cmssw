@@ -6,11 +6,22 @@
  * Vertex associated with the CSC rechit is set to the origin.
  *
  */
-reco::MuonCSCRecHitCluster::MuonCSCRecHitCluster(
-    const float x, const float y, const float z, const int size, const float time, const int nME11_12, const Rechits& rh)
-    : MuonRecHitCluster(x, y, z, size) {
+reco::MuonCSCRecHitCluster::MuonCSCRecHitCluster(const float x,
+                                                 const float y,
+                                                 const float z,
+                                                 const int size,
+                                                 const int nStation10,
+                                                 const float avgStation10,
+                                                 const float time,
+                                                 const float timeSpread,
+                                                 const int nME11,
+                                                 const int nME12,
+                                                 const Rechits& rh)
+    : MuonRecHitCluster(x, y, z, size, nStation10, avgStation10) {
   time_ = time;
-  nME11_12_ = nME11_12;
+  timeSpread_ = timeSpread;
+  nME11_ = nME11;
+  nME12_ = nME12;
   for (unsigned i = 0; i < rh.size(); i++) {
     addDaughter(rh[i]);
   }

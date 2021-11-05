@@ -165,19 +165,19 @@ initial version number of a class which has never been stored before.
   <class name="edm::Wrapper<edm::ValueMap<reco::MuonShower> >"/>
 
   <class name="reco::MuonRecHitCluster" ClassVersion="3">
-    <version ClassVersion="3" checksum="383686271"/>
+    <version ClassVersion="3" checksum="2997981630"/>
   </class>
   <class name="std::vector<reco::MuonRecHitCluster>"/>
   <class name="edm::Wrapper<std::vector<reco::MuonRecHitCluster>>"/>
 
   <class name="reco::MuonCSCRecHitCluster" ClassVersion="3">
-    <version ClassVersion="3" checksum="983425303"/>
+    <version ClassVersion="3" checksum="1208504348"/>
   </class>
   <class name="std::vector<reco::MuonCSCRecHitCluster>"/>
   <class name="edm::Wrapper<std::vector<reco::MuonCSCRecHitCluster>>"/>
 
   <class name="reco::MuonDTRecHitCluster" ClassVersion="3">
-    <version ClassVersion="3" checksum="2139390474"/>
+    <version ClassVersion="3" checksum="86934618"/>
   </class>
   <class name="std::vector<reco::MuonDTRecHitCluster>"/>
   <class name="edm::Wrapper<std::vector<reco::MuonDTRecHitCluster>>"/>

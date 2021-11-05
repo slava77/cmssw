@@ -21,22 +21,30 @@ namespace reco {
                          const float y,
                          const float z,
                          const int size,
+                         const int nStation10,
+                         const float avgStation10,
                          const float time,
-                         const int nME11_12,
+                         const float timeSpread,
+                         const int nME11,
+                         const int nME12,
                          const Rechits& rh);
 
     //destructor
     ~MuonCSCRecHitCluster();
 
-    int nME11_12() const { return nME11_12_; }
+    int nME11() const { return nME11_; }
+    int nME12() const { return nME12_; }
     float time() const { return time_; }
+    float timeSpread() const { return timeSpread_; }
     void addDaughter(const RechitRef&);
     Rechits getConstituents() { return rechits_; }
 
   private:
     Rechits rechits_;
     float time_;
-    int nME11_12_;
+    float timeSpread_;
+    int nME11_;
+    int nME12_;
   };
   inline void MuonCSCRecHitCluster::addDaughter(const RechitRef& cand) { rechits_.push_back(cand); }
 

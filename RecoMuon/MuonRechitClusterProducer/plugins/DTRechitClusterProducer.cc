@@ -107,7 +107,6 @@ void DTRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSe
 
   fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, rParam_);
 
-  int nRecHits = dtRechits->size();
   DTRecHitCollection::const_iterator recIt;
 
   inputs_.clear();
@@ -151,19 +150,35 @@ void DTRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSe
 
       //Derive cluster properties
       int nMB1 = 0;
+      int nMB2 = 0;
+      int nStation10 = 0;
+      float avgStation10 = 0.0;
+      std::map<int, int> station_count_map;
+
       for (auto& rechit : rechits) {
         DetId geoid = rechit->geographicalId();
         DTChamberId dtdetid = DTChamberId(geoid);
 
         if (dtdetid.station() == 1)
           nMB1++;
+        if (dtdetid.station() == 2)
+          nMB2++;
+        station_count_map[dtdetid.station()]++;
+      }
+      //chamber statistics
+      std::map<int, int>::iterator it;
+      for (it = station_count_map.begin(); it != station_count_map.end(); it++) {
+        if (it->second >= 10) {
+          nStation10++;
+          avgStation10 += (it->first) * (it->second);
+        }
       }
 
       float jetX = fjJet.px() / rechits.size();
       float jetY = fjJet.py() / rechits.size();
       float jetZ = fjJet.pz() / rechits.size();
 
-      reco::MuonDTRecHitCluster cls(jetX, jetY, jetZ, rechits.size(), nMB1, rechits);
+      reco::MuonDTRecHitCluster cls(jetX, jetY, jetZ, rechits.size(), nStation10, avgStation10, nMB1, nMB2, rechits);
       //std::cout<<"CSCrechitCluster" << " my phi =  " <<   phi  << " my eta =  " <<    eta ;
       //std::cout<< " cls phi =  " <<    cls.phi()  << " cls eta =  " <<    (cls.eta()) <<std::endl;
 

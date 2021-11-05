@@ -110,7 +110,6 @@ void CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iS
 
   fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, rParam_);
 
-  int nRecHits = cscRechits->size();
   CSCRecHit2DCollection::const_iterator recIt;
 
   inputs_.clear();
@@ -153,22 +152,45 @@ void CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iS
 
       //Derive cluster properties
       float time = 0.0;
-      int nME11_12 = 0;
+      int nME11 = 0;
+      int nME12 = 0;
+      int nStation10 = 0;
+      float avgStation10 = 0.0;
+      float timeSpread = 0.0;
+      std::map<int, int> station_count_map;
       for (auto& rechit : rechits) {
         CSCDetId cscdetid = rechit->cscDetId();
         int endcap = CSCDetId::endcap(cscdetid) == 1 ? 1 : -1;
         int chamber = endcap * (CSCDetId::station(cscdetid) * 10 + CSCDetId::ring(cscdetid));
-        if (abs(chamber) == 11 || abs(chamber) == 12)
-          nME11_12++;
+        station_count_map[CSCDetId::station(cscdetid)]++;
+        if (abs(chamber) == 11)
+          nME11++;
+        if (abs(chamber) == 12)
+          nME12++;
         time += (rechit->tpeak() + rechit->wireTime());
       }
+      //chamber statistics
+      std::map<int, int>::iterator it;
+      for (it = station_count_map.begin(); it != station_count_map.end(); it++) {
+        if (it->second >= 10) {
+          nStation10++;
+          avgStation10 += (it->first) * (it->second);
+        }
+      }
       time = time / (2 * rechits.size());
+
+      //derive cluster statistics
+      for (auto& rechit : rechits) {
+        timeSpread += ((rechit->tpeak() + rechit->wireTime()) - time) * ((rechit->tpeak() + rechit->wireTime()) - time);
+      }
+      timeSpread = std::sqrt(timeSpread / rechits.size());
 
       float jetX = fjJet.px() / rechits.size();
       float jetY = fjJet.py() / rechits.size();
       float jetZ = fjJet.pz() / rechits.size();
 
-      reco::MuonCSCRecHitCluster cls(jetX, jetY, jetZ, rechits.size(), time, nME11_12, rechits);
+      reco::MuonCSCRecHitCluster cls(
+          jetX, jetY, jetZ, rechits.size(), nStation10, avgStation10, time, timeSpread, nME11, nME12, rechits);
       //std::cout<<"CSCrechitCluster" << " my phi =  " <<   phi  << " my eta =  " <<    eta ;
       //std::cout<< " cls phi =  " <<    cls.phi()  << " cls eta =  " <<    (cls.eta()) <<std::endl;
 
