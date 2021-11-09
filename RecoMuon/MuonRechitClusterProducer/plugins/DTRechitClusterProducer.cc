@@ -84,7 +84,7 @@ DTRechitClusterProducer::DTRechitClusterProducer(const edm::ParameterSet& iConfi
   rParam_ = iConfig.getParameter<double>("rParam");
   nRechitMin_ = iConfig.getParameter<int>("nRechitMin");
 
-  dtRechitInputToken_ = consumes<DTRecHitCollection>(edm::InputTag("dt1DRecHits")),
+  dtRechitInputToken_ = consumes<DTRecHitCollection>(iConfig.getParameter<edm::InputTag>("dtRecHitLabel")),
   produces<MuonDTRecHitClusterCollection>();
 }
 
@@ -152,6 +152,7 @@ void DTRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSe
       int nMB1 = 0;
       int nMB2 = 0;
       int nStation10 = 0;
+      int totStation10 = 0;
       float avgStation10 = 0.0;
       std::map<int, int> station_count_map;
 
@@ -171,7 +172,11 @@ void DTRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iSe
         if (it->second >= 10) {
           nStation10++;
           avgStation10 += (it->first) * (it->second);
+          totStation10 += (it->second);
         }
+      }
+      if (nStation10 != 0) {
+        avgStation10 = avgStation10 / totStation10;
       }
 
       float jetX = fjJet.px() / rechits.size();
@@ -204,6 +209,7 @@ void DTRechitClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& d
   edm::ParameterSetDescription desc;
   desc.add<int>("nRechitMin", 50);
   desc.add<double>("rParam", 0.4);
+  desc.add<edm::InputTag>("dtRecHitLabel", edm::InputTag("dt1DRecHits"));
   descriptions.add("DTRechitClusterProducer", desc);
 }
 

@@ -87,7 +87,7 @@ CSCRechitClusterProducer::CSCRechitClusterProducer(const edm::ParameterSet& iCon
   rParam_ = iConfig.getParameter<double>("rParam");
   nRechitMin_ = iConfig.getParameter<int>("nRechitMin");
 
-  cscRechitInputToken_ = consumes<CSCRecHit2DCollection>(edm::InputTag("csc2DRecHits")),
+  cscRechitInputToken_ = consumes<CSCRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("cscRecHitLabel"));
   produces<MuonCSCRecHitClusterCollection>();
 }
 
@@ -152,9 +152,11 @@ void CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iS
 
       //Derive cluster properties
       float time = 0.0;
+      float time_strip = 0.0;  // for timeSpread calculation
       int nME11 = 0;
       int nME12 = 0;
       int nStation10 = 0;
+      int totStation10 = 0;
       float avgStation10 = 0.0;
       float timeSpread = 0.0;
       std::map<int, int> station_count_map;
@@ -168,6 +170,7 @@ void CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iS
         if (abs(chamber) == 12)
           nME12++;
         time += (rechit->tpeak() + rechit->wireTime());
+        time_strip += rechit->tpeak();
       }
       //chamber statistics
       std::map<int, int>::iterator it;
@@ -175,13 +178,18 @@ void CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iS
         if (it->second >= 10) {
           nStation10++;
           avgStation10 += (it->first) * (it->second);
+          totStation10 += (it->second);
         }
       }
+      if (nStation10 != 0) {
+        avgStation10 = avgStation10 / totStation10;
+      }
       time = time / (2 * rechits.size());
+      time_strip = time_strip / (rechits.size());
 
       //derive cluster statistics
       for (auto& rechit : rechits) {
-        timeSpread += ((rechit->tpeak() + rechit->wireTime()) - time) * ((rechit->tpeak() + rechit->wireTime()) - time);
+        timeSpread += (rechit->tpeak() - time_strip) * (rechit->tpeak() - time_strip);
       }
       timeSpread = std::sqrt(timeSpread / rechits.size());
 
@@ -191,8 +199,11 @@ void CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iS
 
       reco::MuonCSCRecHitCluster cls(
           jetX, jetY, jetZ, rechits.size(), nStation10, avgStation10, time, timeSpread, nME11, nME12, rechits);
-      //std::cout<<"CSCrechitCluster" << " my phi =  " <<   phi  << " my eta =  " <<    eta ;
-      //std::cout<< " cls phi =  " <<    cls.phi()  << " cls eta =  " <<    (cls.eta()) <<std::endl;
+      //std::cout<<"CSCrechitCluster" ;
+      //std::cout<< " my phi =  " <<   phi  << " my eta =  " <<    eta ;
+      //std::cout<< " cls phi =  " <<    cls.phi()  << " cls eta =  " <<    (cls.eta())
+      //std::cout<< " cls nStation10 =  " <<    cls.nStation10()  << " cls avgStation10 =  " <<    (cls.avgStation10());
+      //std::cout<< " cls time =  " <<    cls.time()  << " cls timeSpread =  " <<    (cls.timeSpread()) <<std::endl;
 
       CSCclusters->push_back(cls);
     }
@@ -216,6 +227,7 @@ void CSCRechitClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& 
   edm::ParameterSetDescription desc;
   desc.add<int>("nRechitMin", 50);
   desc.add<double>("rParam", 0.4);
+  desc.add<edm::InputTag>("cscRecHitLabel", edm::InputTag("csc2DRecHits"));
   descriptions.add("CSCRechitClusterProducer", desc);
 }
 
