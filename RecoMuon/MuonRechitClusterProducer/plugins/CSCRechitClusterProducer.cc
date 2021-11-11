@@ -163,16 +163,18 @@ void CSCRechitClusterProducer::produce(edm::Event& ev, const edm::EventSetup& iS
       for (auto& rechit : rechits) {
         CSCDetId cscdetid = rechit->cscDetId();
         int endcap = CSCDetId::endcap(cscdetid) == 1 ? 1 : -1;
-        int chamber = endcap * (CSCDetId::station(cscdetid) * 10 + CSCDetId::ring(cscdetid));
+        int stationRing = endcap * (CSCDetId::station(cscdetid) * 10 + CSCDetId::ring(cscdetid));
+        if (CSCDetId::ring(cscdetid) == 4)
+          stationRing = endcap * (CSCDetId::station(cscdetid) * 10 + 1);  // ME1/a has ring==4
         station_count_map[CSCDetId::station(cscdetid)]++;
-        if (abs(chamber) == 11)
+        if (abs(stationRing) == 11)
           nME11++;
-        if (abs(chamber) == 12)
+        if (abs(stationRing) == 12)
           nME12++;
         time += (rechit->tpeak() + rechit->wireTime());
         time_strip += rechit->tpeak();
       }
-      //chamber statistics
+      //station statistics
       std::map<int, int>::iterator it;
       for (it = station_count_map.begin(); it != station_count_map.end(); it++) {
         if (it->second >= 10) {
