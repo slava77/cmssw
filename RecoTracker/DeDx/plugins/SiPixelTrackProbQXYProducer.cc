@@ -208,6 +208,14 @@ void SiPixelTrackProbQXYProducer::produce(edm::StreamID id, edm::Event& iEvent, 
        << " = " << probQonTrackWMultiNoLayer1 << " * " << probQonTrackTermNoLayer1;
     }
 
+    // To save space let's zero out the low pt tracks
+    if (track.pt() < 5) {
+      probQonTrack = 0;
+      probXYonTrack = 0;
+      probQonTrackNoLayer1 = 0;
+      probXYonTrackNoLayer1 = 0;
+    }
+
     // Store the values in the collection
     resultSiPixelTrackProbQXYColl->emplace_back(probQonTrack, probXYonTrack);
     resultSiPixelTrackProbQXYNoLayer1Coll->emplace_back(probQonTrackNoLayer1, probXYonTrackNoLayer1);
