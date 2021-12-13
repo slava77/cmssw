@@ -41,6 +41,11 @@
 #include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
 #include "DataFormats/GeometrySurface/interface/Cylinder.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "DataFormats/GeometrySurface/interface/PlaneBuilder.h"
+#include "DataFormats/GeometrySurface/interface/BoundPlane.h"
+ #include "DataFormats/GeometrySurface/interface/Plane.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 
 class ProbQXYAna : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
@@ -60,6 +65,15 @@ using namespace reco;
 using namespace std;
 using namespace edm;
 
+namespace {
+  Surface::RotationType rotation(const GlobalVector& zDir) {
+    GlobalVector zAxis = zDir.unit();
+    GlobalVector yAxis(zAxis.y(), -zAxis.x(), 0);
+    GlobalVector xAxis = yAxis.cross(zAxis);
+    return Surface::RotationType(xAxis, yAxis, zAxis);
+  }
+}
+
 ProbQXYAna::ProbQXYAna(const edm::ParameterSet& iConfig)
     : packedCandidate_(consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("packedCandidates"))),
       trackToken_(consumes<std::vector<pat::IsolatedTrack>>(iConfig.getParameter<edm::InputTag>("tracks"))),
@@ -74,8 +88,11 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   int qbin,ierr;
   speed=-2;
 
+  edm::ESHandle<MagneticField> magfield_;
+  iSetup.get<IdealMagneticFieldRecord>().get(magfield_);
+
   edm::ESHandle<TransientTrackBuilder> transientTrackBuilder;
-  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", transientTrackBuilder);
+  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", transientTrackBuilder);
 
   edm::ESHandle<TrackerGeometry> theTrackerGeometry;
   iSetup.get<TrackerDigiGeometryRecord>().get( theTrackerGeometry );
@@ -110,12 +127,15 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	   << (*templateDBobject_).version() << "\n\n";
   }
   unsigned int numTrack = 0;
-  LogPrint("ProbQXYAna") << "Analyzing run " << iEvent.id().run() << " / event " << iEvent.id().event();
   
   for (unsigned int c = 0; c < IsotrackCollectionHandle->size(); c++) {
    numTrack++;
 
    edm::Ref<std::vector<pat::IsolatedTrack>> track = edm::Ref<std::vector<pat::IsolatedTrack>>(IsotrackCollectionHandle, c);
+
+   LogPrint("ProbQXYAna") << "Analyzing run " << iEvent.id().run() << " / event " << iEvent.id().event();
+   if ( track->pt() < 50.1) continue;
+   LogPrint("ProbQXYAna") << " track with pT =  " << track->pt();
 
    float probQonTrack = track->probQonTrack();
    float probXYonTrack = track->probXYonTrack();
@@ -127,8 +147,6 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    LogPrint("ProbQXYAna") << "  >> probQonTrackNoLayer1: " << probQonTrackNoLayer1
                            << " and probXYonTrackNoLayer1: " << probXYonTrackNoLayer1;
 
-   LogPrint("ProbQXYAna") << " track with pT =  " << track->pt();
-   if ( track->pt() < 10) continue;
    for (unsigned int i = 0; i < cands->size(); i++) {
     const pat::PackedCandidate& pc = (*cands)[i];
     if (pc.hasTrackDetails()) {
@@ -140,9 +158,8 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      }
      LogPrint("ProbQXYAna") << "  >>>> pseudo track with pT =  " << pseudoTrack->pt();
     
-     LogPrint("ProbQXYAna") << "  >>>>>> TrajectoryStateOnSurface builder"; 
+     LogPrint("ProbQXYAna") << "  >>>>>> transientTrack builder"; 
      reco::TransientTrack transientTrack = transientTrackBuilder->build(*pseudoTrack);
-     TrajectoryStateOnSurface innerTSOS = transientTrack.innermostMeasurementState();
 
      LogPrint("ProbQXYAna") << " Get DeDxHitInfo";
      const reco::DeDxHitInfo* dedxHits = nullptr;
@@ -152,6 +169,7 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
        dedxHits = &(*dedxHitsRef);
      } else {
        LogPrint("ProbQXYAna") << " dedxHits is null";
+       continue;
      }
 
      LogPrint("ProbQXYAna") << " Loop through the hits on track, num hit is " << dedxHits->size();
@@ -200,9 +218,54 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	    ydouble[iy] = true;
 	  }
 	}
+
+
+        LogPrint("ProbQXYAna") << "  >>>>>> get the startingStateP";
+
+        float track_px = pseudoTrack->px();
+        float track_py = pseudoTrack->py();
+        float track_pz = pseudoTrack->pz();
+        float track_phi = pseudoTrack->phi();
+        float track_dz = pseudoTrack->dz();
+        float track_dxy = pseudoTrack->dxy();
+        float track_dsz = pseudoTrack->dsz();
+        float track_lambda =  pseudoTrack->lambda();
+        float track_qoverpError = pseudoTrack->qoverpError();
+        float track_lambdaError = pseudoTrack->lambdaError();
+        float track_phiError = pseudoTrack->phiError();
+        float track_dxyError = pseudoTrack->dxyError();
+        float track_dszError = pseudoTrack->dszError();
+        int track_charge = pseudoTrack->charge();
+
+        float sinphi = sin(track_phi);
+        float cosphi = cos(track_phi);
+        float sinlmb = sin(track_lambda);
+        float coslmb = cos(track_lambda);
+        float tanlmb = sinlmb/coslmb;
+        float track_vz = track_dz;
+        float track_vx = -sinphi*track_dxy - (cosphi/sinlmb)*track_dsz + (cosphi/tanlmb)*track_vz;
+        float track_vy =  cosphi*track_dxy - (sinphi/sinlmb)*track_dsz + (sinphi/tanlmb)*track_vz;
+
+        GlobalVector startingPosition(track_vx, track_vy, track_vz);
+        GlobalVector startingMomentum(track_px, track_py, track_pz);
+        reco::TrackBase::CovarianceMatrix track_cov;
+        track_cov(0,0) = pow(track_qoverpError,2);
+        track_cov(1,1) = pow(track_lambdaError,2);
+        track_cov(2,2) = pow(track_phiError,2);
+        track_cov(3,3) = pow(track_dxyError,2);
+        track_cov(4,4) = pow(track_dszError,2);
+        CurvilinearTrajectoryError err(track_cov);
+        PlaneBuilder pb;
+        auto startingPlane = pb.plane(startingPosition, rotation(startingMomentum));
+
+
+        TrajectoryStateOnSurface startingStateP(
+                GlobalTrajectoryParameters(startingPosition, startingMomentum, track_charge, magfield_.product()),
+                err, *startingPlane);
+
         const auto detIDforThisHit = dedxHits->detId(iHit);
         const GeomDet* geomDet = theTracker.idToDet(detIDforThisHit);
-        TrajectoryStateOnSurface extraptsos = thePropagator->propagate(innerTSOS, geomDet->specificSurface());
+        TrajectoryStateOnSurface extraptsos = thePropagator->propagate(startingStateP, geomDet->specificSurface());
         LogPrint("ProbQXYAna") << "  >>>>>> LocalTrajectoryParameters calculation";
         LocalTrajectoryParameters ltp = extraptsos.localParameters();
         LocalVector localDir = ltp.momentum()/ltp.momentum().mag();
