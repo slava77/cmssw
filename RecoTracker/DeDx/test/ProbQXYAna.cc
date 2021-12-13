@@ -37,6 +37,10 @@
 #include "RecoBTag/FeatureTools/interface/TrackInfoBuilder.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 #include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
+#include "TrackingTools/GeomPropagators/interface/Propagator.h"
+#include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
+#include "DataFormats/GeometrySurface/interface/Cylinder.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 
 class ProbQXYAna : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
@@ -71,6 +75,14 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   speed=-2;
 
   edm::ESHandle<TransientTrackBuilder> transientTrackBuilder;
+  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", transientTrackBuilder);
+
+  edm::ESHandle<TrackerGeometry> theTrackerGeometry;
+  iSetup.get<TrackerDigiGeometryRecord>().get( theTrackerGeometry );
+  const TrackerGeometry& theTracker(*theTrackerGeometry);
+
+  ESHandle<Propagator> thePropagator;
+  iSetup.get<TrackingComponentsRecord>().get("SteppingHelixPropagatorAny", thePropagator);
 
   // get packed candidate collection
   edm::Handle<std::vector<pat::PackedCandidate>> cands;
@@ -131,15 +143,6 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      LogPrint("ProbQXYAna") << "  >>>>>> TrajectoryStateOnSurface builder"; 
      reco::TransientTrack transientTrack = transientTrackBuilder->build(*pseudoTrack);
      TrajectoryStateOnSurface innerTSOS = transientTrack.innermostMeasurementState();
-     TrajectoryStateOnSurface outerTSOS = transientTrack.outermostMeasurementState();
-
-     LogPrint("ProbQXYAna") << "  >>>>>> TrajectoryStateOnSurface combiner";
-     TrajectoryStateCombiner tsoscomb;
-     TrajectoryStateOnSurface tsos = tsoscomb(innerTSOS,outerTSOS);
-
-     LogPrint("ProbQXYAna") << "  >>>>>> LocalTrajectoryParameters calculation";
-     LocalTrajectoryParameters ltp = tsos.localParameters();
-     LocalVector localDir = ltp.momentum()/ltp.momentum().mag();
 
      LogPrint("ProbQXYAna") << " Get DeDxHitInfo";
      const reco::DeDxHitInfo* dedxHits = nullptr;
@@ -197,7 +200,12 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	    ydouble[iy] = true;
 	  }
 	}
-
+        const auto detIDforThisHit = dedxHits->detId(iHit);
+        const GeomDet* geomDet = theTracker.idToDet(detIDforThisHit);
+        TrajectoryStateOnSurface extraptsos = thePropagator->propagate(innerTSOS, geomDet->specificSurface());
+        LogPrint("ProbQXYAna") << "  >>>>>> LocalTrajectoryParameters calculation";
+        LocalTrajectoryParameters ltp = extraptsos.localParameters();
+        LocalVector localDir = ltp.momentum()/ltp.momentum().mag();
         //float cotAlpha=0.2;
         //float cotBeta=0.2;
 	float cotAlpha = atan2(localDir.z(), localDir.x());
@@ -207,7 +215,6 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	float locBz = locBx;
 	if(cotAlpha < 0.) locBz = -locBx;
 	int TemplID1=-9999;
-        const DetId& detIDforThisHit = dedxHits->detId(iHit);
 	TemplID1=templateDBobject_->getTemplateID(detIDforThisHit);
 	templ.interpolate(TemplID1, 0.f, 0.f, 0.f, 0.f);
 	SiPixelTemplateReco::ClusMatrix clusterPayload{&clusbuf[0][0], xdouble, ydouble, mrow,mcol};

@@ -15,6 +15,9 @@ options.parseArguments()
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.load("Configuration.StandardSequences.GeometryDB_cff")
+process.load("Configuration.StandardSequences.Reconstruction_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
 #process.GlobalTag.DumpStat = cms.untracked.bool(True)
     
 process.source = cms.Source("PoolSource",
