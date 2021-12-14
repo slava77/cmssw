@@ -293,7 +293,6 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       TrajectoryStateOnSurface extraptsos = thePropagator->propagate(startingStateP, geomDet->specificSurface());
       LogPrint("ProbQXYAna") << "      >> LocalTrajectoryParameters calculation";
       LocalTrajectoryParameters ltp = extraptsos.localParameters();
-      LocalVector localDir = ltp.momentum()/ltp.momentum().mag();
       //auto geomdetunit = geomDet->detUnit();
       //const GeomDetUnit* geomdetunit = dynamic_cast<const GeomDetUnit*>(geomDet);
       //auto const& topol = geomdetunit->specificTopology();
@@ -344,9 +343,8 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       mcol -= siPixelCluster->minPixelCol(); mcol+=1; 
       mcol = std::min(mcol, TYSIZE);
 
-
-      float cotAlpha = atan2(localDir.z(), localDir.x());
-      float cotBeta =  atan2(localDir.z(), localDir.y());
+      float cotAlpha=ltp.dxdz();
+      float cotBeta=ltp.dydz();
       if(fabsf(cotBeta) > 6.0) {
         continue;
         LogPrint("ProbQXYAna") << "        >> |cotBeta|>6.0, skipping it";
