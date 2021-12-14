@@ -134,22 +134,6 @@ ProbQXYAna::ProbQXYAna(const edm::ParameterSet& iConfig)
 }
 
 void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
- /* static char outfile0[80], outfile1[80], outfile2[80];
-  gStyle->SetOptFit(101);
-  gStyle->SetHistLineWidth(2);
-  static vector<TH1F*> hp(2);
-  edm::Service<TFileService> fs;
-
-  hp[0]  = fs->make<TH1F>("combProbQ","ProbQ on tracks (w/ combine);Combined on-track charge probability;Entries (1/bin)",100,0.,1.);
-  hp[1]  = fs->make<TH1F>("combProbQNew","ProbQ on tracks (w/ combine) from MiniAOD;Combined on-track charge probability;Entries (1/bin)",100,0.,1.);
-
-  for(unsigned int i=0; i<hp.size(); ++i) {
-    hp[i]->SetLineColor(2);
-    hp[i]->SetFillColor(38);
-    hp[i]->SetMinimum(0.0);
-  }
- */
-
   float clusbuf[TXSIZE][TYSIZE];
   int mrow=TXSIZE,mcol=TYSIZE;
   static float xrec, yrec, sigmax, sigmay, probx, proby,probQ;
@@ -220,35 +204,34 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    LogPrint("ProbQXYAna") << "  >> probQonTrackNoLayer1: " << probQonTrackNoLayer1
                            << " and probXYonTrackNoLayer1: " << probXYonTrackNoLayer1;
 
-   for (unsigned int i = 0; i < cands->size(); i++) {
-    const pat::PackedCandidate& pc = (*cands)[i];
-    if (pc.hasTrackDetails()) {
-     const reco::Track* pseudoTrack = &(pc.pseudoTrack());
-     if (abs(pseudoTrack->pt()-track->pt()) > 1) {
+    pat::PackedCandidateRef pc = track->packedCandRef(); 
+    if (!pc->hasTrackDetails()) continue; 
+    const reco::Track pseudoTrack = (pc->pseudoTrack());
+    if (abs(pseudoTrack.pt()-track->pt()) > 1) {
        continue;
-     } else if (abs(pseudoTrack->eta() - track->eta()) > 1) {
+    } else if (abs(pseudoTrack.eta() - track->eta()) > 1) {
        continue;
-     } else if (abs(pseudoTrack->phi() - track->phi()) > 1) {
+    } else if (abs(pseudoTrack.phi() - track->phi()) > 1) {
        continue;
-     } else {
+    } else {
         LogPrint("ProbQXYAna") << "    >> Matching packed candidate found";
-     }
-     LogPrint("ProbQXYAna") << "    >> pseudo track with pT - iso track pt =  " << pseudoTrack->pt()-track->pt();
+    }
+    LogPrint("ProbQXYAna") << "    >> pseudo track with pT - iso track pt =  " << pseudoTrack.pt()-track->pt();
 
-     float track_px = pseudoTrack->px();
-     float track_py = pseudoTrack->py();
-     float track_pz = pseudoTrack->pz();
-     float track_phi = pseudoTrack->phi();
-     float track_dz = pseudoTrack->dz();
-     float track_dxy = pseudoTrack->dxy();
-     float track_dsz = pseudoTrack->dsz();
-     float track_lambda =  pseudoTrack->lambda();
-     float track_qoverpError = pseudoTrack->qoverpError();
-     float track_lambdaError = pseudoTrack->lambdaError();
-     float track_phiError = pseudoTrack->phiError();
-     float track_dxyError = pseudoTrack->dxyError();
-     float track_dszError = pseudoTrack->dszError();
-     int track_charge = pseudoTrack->charge();
+     float track_px = pseudoTrack.px();
+     float track_py = pseudoTrack.py();
+     float track_pz = pseudoTrack.pz();
+     float track_phi = pseudoTrack.phi();
+     float track_dz = pseudoTrack.dz();
+     float track_dxy = pseudoTrack.dxy();
+     float track_dsz = pseudoTrack.dsz();
+     float track_lambda =  pseudoTrack.lambda();
+     float track_qoverpError = pseudoTrack.qoverpError();
+     float track_lambdaError = pseudoTrack.lambdaError();
+     float track_phiError = pseudoTrack.phiError();
+     float track_dxyError = pseudoTrack.dxyError();
+     float track_dszError = pseudoTrack.dszError();
+     int track_charge = pseudoTrack.charge();
 
      float sinphi = sin(track_phi);
      float cosphi = cos(track_phi);
@@ -277,7 +260,7 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
              err, *startingPlane);
 
     
-     reco::TransientTrack transientTrack = transientTrackBuilder->build(*pseudoTrack);
+     reco::TransientTrack transientTrack = transientTrackBuilder->build(pseudoTrack);
 
      const reco::DeDxHitInfo* dedxHits = nullptr;
      reco::DeDxHitInfoRef dedxHitsRef;
@@ -318,56 +301,58 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       for(int j=0; j<TXSIZE; ++j) {for(int i=0; i<TYSIZE; ++i) {clusbuf[j][i] = 0.;} } 
 
       const std::vector<SiPixelCluster::Pixel> pixelsVec = siPixelCluster->pixels();
+      
       int minPixelRow = 161;
       int minPixelCol = 417;
+      mrow = 0, mcol = 0;
 
       LogPrint("ProbQXYAna") << "      >> Loop through the pixels corresponding to the cluster attached to the hit" ;
       for (unsigned int i = 0; i < pixelsVec.size(); ++i) {
-          float pixx = pixelsVec[i].x;  // index as float=iteger, row index
-          float pixy = pixelsVec[i].y;  // same, col index
+          int irow = int(pixelsVec[i].x);  // index as float=iteger, row index
+          int icol = int(pixelsVec[i].y);  // same, col index
+          mrow = std::max(mrow, irow);
+          mcol = std::max(mcol, icol);
 
-          //bool bigInX = topol->isItBigPixelInX(int(pixx));
-          //bool bigInY = topol.isItBigPixelInY(int(pixy));
-          bool bigInX = false;
-          bool bigInY = false;
           float pixel_charge = pixelsVec[i].adc;
 
 	  //  Find lower left corner pixel and its coordinates
-	  if((int)pixx < minPixelRow) {
-	    minPixelRow = (int)pixx; 
+	  if(irow < minPixelRow) {
+	    minPixelRow = irow; 
 	  }
-	  if((int)pixy < minPixelCol) {
-	    minPixelCol = (int)pixy;
+	  if(icol < minPixelCol) {
+	    minPixelCol = icol;
 	  }
-          if (bigInX || bigInY ) continue;
 
 	// Now fill the cluster buffer with charges
 
-	  ix = (int)pixx - minPixelRow;
+	  ix = irow - minPixelRow;
 	  if(ix >= TXSIZE) continue;
-	  iy = (int)pixy - minPixelCol;
+	  iy = icol - minPixelCol;
 	  if(iy >= TYSIZE) continue;
 	  
 	  clusbuf[ix][iy] = pixel_charge;
 
-	  if ((int)pixx == 79 || (int)pixx == 80){
+	  if (irow == 79 || irow == 80){
 	    xdouble[ix] = true;
 	  }
-	  if ((int)pixy % 52 == 0 || (int)pixy % 52 == 51 ){
+	  if (icol % 52 == 0 || icol % 52 == 51 ){
 	    ydouble[iy] = true;
 	  }
-	}
+      }
+      mrow -= siPixelCluster->minPixelRow(); mrow+=1;
+      mrow = std::min(mrow, TXSIZE);
+      mcol -= siPixelCluster->minPixelCol(); mcol+=1; 
+      mcol = std::min(mcol, TYSIZE);
 
 
-        //float cotAlpha=0.2;
-        //float cotBeta=0.2;
-	float cotAlpha = atan2(localDir.z(), localDir.x());
-	float cotBeta =  atan2(localDir.z(), localDir.y());
-        if(fabsf(cotBeta) > 6.0) {
-          continue;
-          LogPrint("ProbQXYAna") << "        >> |cotBeta|>6.0, skipping it";
-        }
-	float locBx = 1.;
+      float cotAlpha = atan2(localDir.z(), localDir.x());
+      float cotBeta =  atan2(localDir.z(), localDir.y());
+      if(fabsf(cotBeta) > 6.0) {
+        continue;
+        LogPrint("ProbQXYAna") << "        >> |cotBeta|>6.0, skipping it";
+      }
+
+      float locBx = 1.;
 	if(cotBeta < 0.) locBx = -1.;
 	float locBz = locBx;
 	if(cotAlpha < 0.) locBz = -locBx;
@@ -377,7 +362,9 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	SiPixelTemplateReco::ClusMatrix clusterPayload{&clusbuf[0][0], xdouble, ydouble, mrow,mcol};
 
         // Running the actualy 1D Template Reco
-        LogPrint("ProbQXYAna") << "        >> Running the actualy 1D Template Reco" ;
+        LogPrint("ProbQXYAna") << "        >> Running the actual 1D Template Reco" ;
+        LogPrint("ProbQXYAna") << "        >> TemplID1: " << TemplID1 << " cot(alpha): "
+        << cotAlpha << " cot(beta): " << cotBeta;
         ierr = PixelTempReco1D(TemplID1,
                                cotAlpha, 
                                cotBeta, 
@@ -406,8 +393,6 @@ void ProbQXYAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
          if (probx !=1.110223e-16 && proby != 1.110223e-16) probXYonTrackWMulti *= probx*proby;
         }
       } // end loop on hits corresponding to the track
-     } // end if on the packed candidate having track details 
-   } // end loop on the packed candidate collection
    float probQonTrackNew = combineProbs(probQonTrackWMulti,numRecHitsWithProb);
    float probXYonTrackNew = combineProbs(probXYonTrackWMulti,numRecHitsWithProb);
    LogPrint("ProbQXYAna") << "  >> probQonTrackNew: " << probQonTrackNew << " and probXYonTrackNew: " << probXYonTrackNew;

@@ -541,12 +541,13 @@ int SiPixelTemplateReco::PixelTempReco1D(int id, float cotalpha, float cotbeta, 
    if(!deadpix && qtotal < 0.95f*templ.qmin()) {qbin = 5;} else {
       if(!deadpix && qtotal < 0.95f*templ.qmin(1)) {qbin = 4;}
    }
-   if (theVerboseLevel > 9) {
-      LOGDEBUG("SiPixelTemplateReco") <<
+   //if (theVerboseLevel > 9) {
+   //   LOGDEBUG("SiPixelTemplateReco") <<
+      edm::LogPrint("SiPixelTemplateReco") <<
       "ID = " << id <<
       " cot(alpha) = " << cotalpha << " cot(beta) = " << cotbeta <<
       " nclusx = " << nclusx << " nclusy = " << nclusy << ENDL;
-   }
+   //}
    
    
    // Next, copy the y- and x-templates to local arrays
