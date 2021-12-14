@@ -19,7 +19,9 @@ process.load("Configuration.StandardSequences.GeometryDB_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 #process.GlobalTag.DumpStat = cms.untracked.bool(True)
-    
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.threshold = "DEBUG"
+process.MessageLogger.debugModules = ["*"]   
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(options.inputFiles),
                             secondaryFileNames = cms.untracked.vstring()
@@ -30,6 +32,9 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.options = cms.untracked.PSet()
+process.TFileService = cms.Service('TFileService',
+                                 fileName = cms.string('HSCPAna.root'),
+                                 )
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag

@@ -11,7 +11,17 @@
 <use name="MagneticField/Records"/>
 <use name="MagneticField/Engine"/>
 <use name="TrackingTools/PatternTools"/>
+<use name="clhep"/>
+<use name="boost"/>
 <use name="root"/>
+<use name="rootmath"/>
+<use name="rootrflx"/>
+<use name="rootcore"/>
+<use name="FWCore/ServiceRegistry"/>
+<use name="FWCore/PluginManager"/>
+<use name="CommonTools/UtilAlgos"/>
+<use name="PhysicsTools/UtilAlgos"/>
+<use name="PhysicsTools/Utilities"/>
 
 <library file="ProbQXYAna.cc" name="ProbQXYAna">
   <flags EDM_PLUGIN="1"/>
