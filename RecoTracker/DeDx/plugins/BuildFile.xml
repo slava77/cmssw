@@ -1,4 +1,7 @@
 <use   name="RecoTracker/DeDx"/>
+<use   name="Geometry/TrackerGeometryBuilder"/>
+<use   name="RecoLocalTracker/Records"/>
+<use   name="RecoLocalTracker/ClusterParameterEstimator"/>
 <library   file="*.cc" name="RecoTrackerDeDxPlugins">
   <flags   EDM_PLUGIN="1"/>
 </library>

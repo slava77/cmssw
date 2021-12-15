@@ -19,6 +19,7 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHit.h"
+#include "DataFormats/TrackReco/interface/DeDxHitInfo.h"
 #include "DataFormats/TrackReco/interface/SiPixelTrackProbQXY.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
@@ -33,6 +34,9 @@
 #include "FWCore/Utilities/interface/EDPutToken.h"
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
 
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "RecoLocalTracker/Records/interface/TkPixelCPERecord.h"
+#include "RecoLocalTracker/ClusterParameterEstimator/interface/PixelClusterParameterEstimator.h"
 //
 // class declaration
 //
@@ -49,7 +53,9 @@ private:
 
   // ----------member data ---------------------------
   const bool debugFlag_;
+  const std::string pixelCPE_;
   const edm::EDGetTokenT<reco::TrackCollection> trackToken_;
+  const edm::EDGetTokenT<reco::DeDxHitInfoAss> gt2dedxHitInfo_;
   const edm::EDPutTokenT<edm::ValueMap<reco::SiPixelTrackProbQXY>> putProbQXYVMToken_;
   const edm::EDPutTokenT<edm::ValueMap<reco::SiPixelTrackProbQXY>> putProbQXYNoLayer1VMToken_;
 };
@@ -60,7 +66,9 @@ using namespace edm;
 
 SiPixelTrackProbQXYProducer::SiPixelTrackProbQXYProducer(const edm::ParameterSet& iConfig)
     : debugFlag_(iConfig.getUntrackedParameter<bool>("debug", false)),
+      pixelCPE_(iConfig.getParameter<std::string>("pixelCPE")),
       trackToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"))),
+      gt2dedxHitInfo_(consumes<reco::DeDxHitInfoAss>(iConfig.getParameter<edm::InputTag>("dedxInfos"))),
       putProbQXYVMToken_(produces<edm::ValueMap<reco::SiPixelTrackProbQXY>>()),
       putProbQXYNoLayer1VMToken_(produces<edm::ValueMap<reco::SiPixelTrackProbQXY>>("NoLayer1")) {}
 
@@ -71,16 +79,27 @@ void SiPixelTrackProbQXYProducer::produce(edm::StreamID id, edm::Event& iEvent, 
   int numTrack = 0;
   int numTrackWSmallProbQ = 0;
 
+  auto const& gt2dedxHitInfo = iEvent.get(gt2dedxHitInfo_);
+
   // Retrieve tracker topology from geometry
   edm::ESHandle<TrackerTopology> TopoHandle;
   iSetup.get<TrackerTopologyRcd>().get(TopoHandle);
   const TrackerTopology* tTopo = TopoHandle.product();
+
+  edm::ESHandle<PixelClusterParameterEstimator> pixelCPE;
+  iSetup.get<TkPixelCPERecord>().get(pixelCPE_, pixelCPE);
+
+
+  edm::ESHandle<TrackerGeometry> tkGeometry;
+  iSetup.get<TrackerDigiGeometryRecord>().get(tkGeometry);
+
   // Creates the output collection
   auto resultSiPixelTrackProbQXYColl = std::make_unique<reco::SiPixelTrackProbQXYCollection>();
   auto resultSiPixelTrackProbQXYNoLayer1Coll = std::make_unique<reco::SiPixelTrackProbQXYCollection>();
 
   // Loop through the tracks
   for (const auto& track : trackCollection) {
+    reco::TrackRef trackRef(trackCollectionHandle, numTrack);
     numTrack++;
     float probQonTrack = 0.0;
     float probXYonTrack = 0.0;
@@ -92,18 +111,57 @@ void SiPixelTrackProbQXYProducer::produce(edm::StreamID id, edm::Event& iEvent, 
     float probXYonTrackWMulti = 1;
     float probQonTrackWMultiNoLayer1 = 1;
     float probXYonTrackWMultiNoLayer1 = 1;
+
+    auto const& dedxRef = gt2dedxHitInfo[trackRef];
     // Loop through the rechits on the given track
     if(debugFlag_) {
        LogPrint("SiPixelTrackProbQXYProducer") << "  -----------------------------------------------";
-       LogPrint("SiPixelTrackProbQXYProducer") << "  For track " << numTrack;
+       LogPrint("SiPixelTrackProbQXYProducer") << "  For track " << numTrack << " -1 ( "<<numTrack-1<<" dedxinfoRef is "<<(!dedxRef.isNull());
+       if (!dedxRef.isNull()) {
+         LogPrint("SiPixelTrackProbQXYProducer") << "track : "<<track.pt()<<" "<<track.eta()<<" "<<track.phi()<<" dedx: size "<<dedxRef->size();
+       }
     }
 
+    int iHit = -1;
     for (auto const& hit : track.recHits()) {
       const SiPixelRecHit* pixhit = dynamic_cast<const SiPixelRecHit*>(hit);
       if (pixhit == nullptr)
         continue;
       if (!pixhit->isValid())
         continue;
+      iHit++;
+      
+      DetId hitDetId = pixhit->detUnit()->geographicalId();
+      if (debugFlag_) {
+        if (!dedxRef.isNull()) {
+          DetId dedxId = dedxRef->detId(iHit);
+          bool isSame = hitDetId.rawId()==dedxId.rawId();
+          LogPrint("SiPixelTrackProbQXYProducer") 
+            << "  >>>>> hit IDs tkHit "<<hitDetId.rawId()<<" dedx "<<dedxId.rawId()<<" eq "<<isSame;
+          if (isSame) {
+            auto const* dedxClu = dedxRef->pixelCluster(iHit);
+            if (dedxClu == nullptr) {
+              LogPrint("SiPixelTrackProbQXYProducer")
+                << "  >>>>>> FAILED to get dedxClu";
+            } else {
+              auto const* hitClu = &*(pixhit->cluster());
+              LogPrint("SiPixelTrackProbQXYProducer")
+                << "  >>>>>> dedx "<<dedxClu->x()<<" "<<dedxClu->y()<<" "<<dedxClu->charge()<<" "<<dedxClu->size()
+                << " tkHit "<<hitClu->x()<<" "<<hitClu->y()<<" "<<hitClu->charge()<<" "<<hitClu->size();
+              const GeomDetUnit& geomDet = *tkGeometry->idToDetUnit(dedxId);
+              //NOT GOOD FOR TEMPLATE              auto qual_0 =  std::get<2>(pixelCPE->getParameters(*hitClu, geomDet));
+              //lazy option, no propagation
+              LocalVector lv = geomDet.toLocal(GlobalVector(track.px(), track.py(), track.pz()));
+              auto qual_1 = std::get<2>(pixelCPE->getParameters(*hitClu, geomDet, 
+                                                                LocalTrajectoryParameters(dedxRef->pos(iHit), lv, track.charge())));
+              LogPrint("SiPixelTrackProbQXYProducer")
+                << "  >>>>>> probs dedx "<<SiPixelRecHitQuality::thePacking.probabilityQ(qual_1)
+                << " tkHit "<<pixhit->probabilityQ();
+              
+            }
+          }
+        }
+      }
 
       // Have a separate variable that excludes Layer 1
       // Layer 1 was very noisy in 2017/2018
@@ -118,7 +176,7 @@ void SiPixelTrackProbQXYProducer::produce(edm::StreamID id, edm::Event& iEvent, 
           probQonTrackWMultiNoLayer1 *= probQNoLayer1;
           probXYonTrackWMultiNoLayer1 *= probXYNoLayer1;
           if(debugFlag_) {
-            LogDebug("SiPixelTrackProbQXYProducer") << "    >>>> For rechit excluding Layer 1: " << numRecHitsNoLayer1 << " ProbQ = " << probQNoLayer1;
+            LogPrint("SiPixelTrackProbQXYProducer") << "    >>>> For rechit excluding Layer 1: " << numRecHitsNoLayer1 << " ProbQ = " << probQNoLayer1;
       }
 
         }
@@ -134,7 +192,7 @@ void SiPixelTrackProbQXYProducer::produce(edm::StreamID id, edm::Event& iEvent, 
       numRecHits++;
 
       if(debugFlag_) {
-        LogDebug("SiPixelTrackProbQXYProducer") << "    >>>> For rechit: " << numRecHits << " ProbQ = " << probQ;
+        LogPrint("SiPixelTrackProbQXYProducer") << "    >>>> For rechit: " << numRecHits << " ProbQ = " << probQ;
       }
 
       // Calculate alpha term needed for the combination
@@ -245,8 +303,12 @@ void SiPixelTrackProbQXYProducer::fillDescriptions(edm::ConfigurationDescription
   edm::ParameterSetDescription desc;
   desc.setComment("Producer that creates SiPixel Charge and shape probabilities combined for tracks");
   desc.addUntracked<bool>("debug", false);
+  desc.add<std::string>("pixelCPE", {"PixelCPEClusterRepair"})
+      ->setComment("PixelCPE name");
   desc.add<edm::InputTag>("tracks", edm::InputTag("generalTracks"))
       ->setComment("Input track collection for the producer");
+  desc.add<edm::InputTag>("dedxInfos", edm::InputTag("dedxHitInfo"))
+      ->setComment("Input track dedxHitInfo");
   descriptions.addWithDefaultLabel(desc);
 }
 
