@@ -154,8 +154,11 @@ void SiPixelTrackProbQXYProducer::produce(edm::StreamID id, edm::Event& iEvent, 
               LocalVector lv = geomDet.toLocal(GlobalVector(track.px(), track.py(), track.pz()));
               auto qual_1 = std::get<2>(pixelCPE->getParameters(*hitClu, geomDet, 
                                                                 LocalTrajectoryParameters(dedxRef->pos(iHit), lv, track.charge())));
+              auto qual_2 = std::get<2>(pixelCPE->getParameters(*dedxClu, geomDet, 
+                                                                LocalTrajectoryParameters(dedxRef->pos(iHit), lv, track.charge())));
               LogPrint("SiPixelTrackProbQXYProducer")
-                << "  >>>>>> probs dedx "<<SiPixelRecHitQuality::thePacking.probabilityQ(qual_1)
+                << "  >>>>>> probs hitClu "<<SiPixelRecHitQuality::thePacking.probabilityQ(qual_1)
+                << " dedxClu "<<SiPixelRecHitQuality::thePacking.probabilityQ(qual_2)
                 << " tkHit "<<pixhit->probabilityQ();
               
             }
