@@ -266,12 +266,10 @@ namespace mkfit {
     int getEtaRegion() const { return status_.eta_region; }
     void setEtaRegion(int r) { status_.eta_region = r; }
 
-    // Those are defined in Track, TrackCand has separate member. To be consolidated but
-    // it's a binary format change.
-    // int  nOverlapHits()  const  { return status_.n_overlaps; }
-    // void setNOverlapHits(int n) { status_.n_overlaps = n; }
+    int  nOverlapHits()  const  { return status_.n_overlaps; }
+    void setNOverlapHits(int n) { status_.n_overlaps = n; }
 
-    /// track algorithm; partial copy from TrackBase.h
+    /// track algorithm; copy from TrackBase.h to keep in standalone builds
     enum class TrackAlgorithm {
       undefAlgorithm = 0,
       ctf = 1,
@@ -331,9 +329,9 @@ namespace mkfit {
     TrackAlgorithm algorithm() const { return TrackAlgorithm(status_.algorithm); }
     void setAlgorithm(TrackAlgorithm algo) { status_.algorithm = static_cast<unsigned int>(algo); }
     void setAlgoint(int algo) { status_.algorithm = algo; }
-    // To be used later
-    // bool isStopped() const { return status_.stopped; }
-    // void setStopped()      { status_.stopped = true; }
+
+    bool isStopped() const { return status_.stopped; }
+    void setStopped()      { status_.stopped = true; }
 
     static const char* algoint_to_cstr(int algo);
 
@@ -515,9 +513,6 @@ namespace mkfit {
 
     int nFoundHits() const { return nFoundHits_; }
     int nTotalHits() const { return lastHitIdx_ + 1; }
-
-    int nOverlapHits() const { return status_.n_overlaps; }
-    void setNOverlapHits(int n) { status_.n_overlaps = n; }
 
     int nInsideMinusOneHits() const {
       int n = 0;
