@@ -31,6 +31,7 @@ TrajectoryStateClosestToPoint TSCPBuilderNoMaterial::operator()(const TSOS& orig
   // Now do the propagation
 
   PairBoolFTS newStatePair = createFTSatTransverseImpactPoint(*originalTSOS.freeState(), referencePoint);
+  edm::LogWarning("MYDEBUG")<<"TSCPBuilderNoMaterial "<<newStatePair.first<<" "<<newStatePair.second; 
   if (newStatePair.first) {
     return constructTSCP(newStatePair.second, referencePoint);
   } else {

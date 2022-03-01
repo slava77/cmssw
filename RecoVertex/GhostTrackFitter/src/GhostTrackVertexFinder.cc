@@ -46,6 +46,7 @@
 
 #include "RecoVertex/GhostTrackFitter/interface/GhostTrackVertexFinder.h"
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 // #define DEBUG
 
 #ifdef DEBUG
@@ -123,11 +124,16 @@ static double vtxErrorLong(const GlobalError &error, const GlobalVector &dir) {
 static GlobalPoint vtxMean(const GlobalPoint &p1, const GlobalError &e1, const GlobalPoint &p2, const GlobalError &e2) {
   GlobalVector diff = p2 - p1;
 
+  if (p1 == p2){
+    edm::LogWarning("MYDEBUG")<<"compare to self at "<<p1;
+    return p1;
+  }
   double err1 = vtxErrorLong(e1, diff);
   double err2 = vtxErrorLong(e2, diff);
 
   double weight = err1 / (err1 + err2);
 
+  edm::LogWarning("MYDEBUG")<<__FILE__<<" "<<__LINE__<<" "<<GlobalPoint(p1 + weight * diff);
   return p1 + weight * diff;
 }
 
@@ -173,11 +179,16 @@ static CachingVertex<5> vertexAtState(const TransientTrack &ghostTrack,
   GlobalError err2 = state.cartesianError();
 
   GlobalPoint point = vtxMean(pca1, err1, pca2, err2);
-
+  edm::LogWarning("MYDEBUG")<<__FILE__<<" "<<__LINE__<<" point = vtxMean "<<point;
   const TransientTrack &recTrack = state.track();
 
   RefCountedLinearizedTrackState linState[2] = {linTrackFactory.linearizedTrackState(point, ghostTrack),
                                                 linTrackFactory.linearizedTrackState(point, recTrack)};
+  edm::LogWarning("MYDEBUG")<<__FILE__<<" "<<__LINE__<<" created states from ghost TSOS "<<ghostTrack.impactPointState()
+                            <<" is valid "<<ghostTrack.impactPointState().isValid()
+                            <<" and rec TSOS "<<recTrack.impactPointState()
+                            <<" is valid "<<recTrack.impactPointState().isValid();
+  edm::LogWarning("MYDEBUG")<<__FILE__<<" "<<__LINE__<<" linStates "<<linState[0]->isValid()<<" "<<linState[1]->isValid();
   if (!linState[0]->isValid() || !linState[1]->isValid())
     return CachingVertex<5>();
 
@@ -195,8 +206,10 @@ static CachingVertex<5> vertexAtState(const TransientTrack &ghostTrack,
                         err2.matrix(),
                         chi2,
                         linState[1]->predictedStateParameters()[1],
-                        linState[1]->predictedStateParameters()[2]))
+                        linState[1]->predictedStateParameters()[2])){
+    edm::LogWarning("MYDEBUG")<<"Failed covarianceUpdate";
     return CachingVertex<5>();
+  }
 
   GlobalError error(cov);
   VertexState vtxState(point, error);
@@ -650,7 +663,7 @@ std::vector<CachingVertex<5> > GhostTrackVertexFinder::initialVertices(const Fin
       continue;
 
     CachingVertex<5> vtx = vertexAtState(info.ghostTrack, info.pred, state);
-
+    edm::LogWarning("MYDEBUG")<<"initialVertices added "<<vtx.isValid();
     if (vtx.isValid())  // && fitChi2(vtx) < maxFitChi2_)
       vertices.push_back(vtx);
   }
@@ -1009,7 +1022,7 @@ std::vector<TransientVertex> GhostTrackVertexFinder::vertices(const GhostTrack &
   info.field = info.states[0].track().field();
   info.ghostTrack = transientGhostTrack(info.pred, info.field);
 
-  std::vector<CachingVertex<5> > vertices = initialVertices(info);
+  std::vector<CachingVertex<5> > vertices = initialVertices(info); edm::LogWarning("MYDEBUG")<<" got initialVertices size "<<vertices.size()<<" have primary "<<primary.isValid();
   if (primary.isValid()) {
     vertices.push_back(primary);
     if (vertices.size() > 1)
@@ -1073,5 +1086,6 @@ std::vector<TransientVertex> GhostTrackVertexFinder::vertices(const GhostTrack &
     result.push_back(vtx);
   }
 
+  edm::LogWarning("MYDEBUG")<<__FILE__<<" "<<__LINE__<<" result size "<<result.size();
   return result;
 }
