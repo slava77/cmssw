@@ -291,7 +291,8 @@ namespace mkfit {
                                        MPlexLV& outPar,
                                        MPlexLL& errorProp,
                                        const int N_proc,
-                                       const PropagationFlags pflags, const float bScale) {
+                                       const PropagationFlags pflags,
+                                       const float bScale) {
     errorProp.setVal(0.f);
     MPlexLL errorPropTmp(0.f);   //initialize to zero
     MPlexLL errorPropSwap(0.f);  //initialize to zero
@@ -314,9 +315,8 @@ namespace mkfit {
         continue;
       }
       const float k = inChg.constAt(n, 0, 0) * 100.f /
-        (-Const::sol * bScale * (pflags.use_param_b_field
-                        ? Config::bFieldFromZR(inPar.constAt(n, 2, 0), r0)
-                        : Config::Bfield));
+                      (-Const::sol * bScale *
+                       (pflags.use_param_b_field ? Config::bFieldFromZR(inPar.constAt(n, 2, 0), r0) : Config::Bfield));
 
       const float ipt = inPar.constAt(n, 3, 0);
       const float phiin = inPar.constAt(n, 4, 0);
@@ -478,7 +478,8 @@ namespace mkfit {
                                 MPlexLL& errorProp,
                                 MPlexQI& outFailFlag,
                                 const int N_proc,
-                                const PropagationFlags pflags, const float bScale) {
+                                const PropagationFlags pflags,
+                                const float bScale) {
     errorProp.setVal(0.f);
     outFailFlag.setVal(0.f);
 
@@ -492,8 +493,10 @@ namespace mkfit {
                               MPlexLS& outErr,
                               MPlexLV& outPar,
                               const int N_proc,
-                              const PropagationFlags pflags, const float bScale,
+                              const PropagationFlags pflags,
+                              const float bScale,
                               const MPlexQI* noMatEffPtr) {
+    assert(bScale != 0);
     // bool debug = true;
 
     // This is used further down when calculating similarity with errorProp (and before in DEBUG).
@@ -600,8 +603,10 @@ namespace mkfit {
                               MPlexLS& outErr,
                               MPlexLV& outPar,
                               const int N_proc,
-                              const PropagationFlags pflags, const float bScale,
+                              const PropagationFlags pflags,
+                              const float bScale,
                               const MPlexQI* noMatEffPtr) {
+    assert(bScale != 0);
     // debug = true;
 
     outErr = inErr;
@@ -701,7 +706,8 @@ namespace mkfit {
                 MPlexLV& outPar,
                 MPlexLL& errorProp,
                 const int N_proc,
-                const PropagationFlags pflags, const float bScale) {
+                const PropagationFlags pflags,
+                const float bScale) {
     errorProp.setVal(0.f);
 
 #pragma omp simd
@@ -722,9 +728,9 @@ namespace mkfit {
 
       const float k =
           inChg.constAt(n, 0, 0) * 100.f /
-          (-Const::sol * bScale * (pflags.use_param_b_field
-                              ? Config::bFieldFromZR(zin, hipo(inPar.constAt(n, 0, 0), inPar.constAt(n, 1, 0)))
-                              : Config::Bfield));
+          (-Const::sol * bScale *
+           (pflags.use_param_b_field ? Config::bFieldFromZR(zin, hipo(inPar.constAt(n, 0, 0), inPar.constAt(n, 1, 0)))
+                                     : Config::Bfield));
       const float kinv = 1.f / k;
 
       dprint_np(n,
