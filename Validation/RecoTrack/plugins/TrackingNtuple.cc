@@ -1504,10 +1504,10 @@ TrackingNtuple::TrackingNtuple(const edm::ParameterSet& iConfig)
       if (includeStripHits_) {
         if (includePhase2OTHits_)
           ph2OTUseMaskTokens_.emplace_back(
-                                           index, consumes<Phase2OTMaskContainer>(mask.getUntrackedParameter<edm::InputTag>("src")));
+              index, consumes<Phase2OTMaskContainer>(mask.getUntrackedParameter<edm::InputTag>("src")));
         else
           stripUseMaskTokens_.emplace_back(
-                                           index, consumes<StripMaskContainer>(mask.getUntrackedParameter<edm::InputTag>("src")));
+              index, consumes<StripMaskContainer>(mask.getUntrackedParameter<edm::InputTag>("src")));
       }
     }
   }
@@ -3337,8 +3337,10 @@ void TrackingNtuple::fillPhase2OTHits(const edm::Event& iEvent,
   auto ph2OTUsedMask = [&phase2OTMasks](size_t key) {
     uint64_t mask = 0;
     for (auto const& m : phase2OTMasks) {
-      if (m.second->mask(key))
+      if (m.second->mask(key)) {
+        edm::LogWarning("MYDEBUG") << "OT Hit at "<<key<< " is masked with "<<m.first;
         mask |= m.first;
+      }
     }
     return mask;
   };

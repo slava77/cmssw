@@ -178,10 +178,12 @@ namespace {
       auto const& chi2sX5 = track.extra()->chi2sX5();
       assert(chi2sX5.size() == track.recHitsSize());
       auto hb = track.recHitsBegin();
+      edm::LogWarning("MYDEBUG")<<"Good track "<<i <<" nh "<<track.recHitsSize()<<" "<<track.pt()<<" "<<track.eta()<<" "<<track.phi();
       for (unsigned int h = 0; h < track.recHitsSize(); h++) {
         auto hit = *(hb + h);
         if (!hit->isValid())
           continue;
+        edm::LogWarning("MYDEBUG")<<" hit "<<h<<" ch2 "<<0.2f*(int)chi2sX5[h]<<" r "<<hit->globalPosition().perp()<<" z "<<hit->globalPosition().z();
         if (chi2sX5[h] > maxChi2_)
           continue;  // skip outliers
         auto const& thit = reinterpret_cast<BaseTrackerRecHit const&>(*hit);
@@ -189,8 +191,10 @@ namespace {
         // FIXME when we will get also Phase2 pixel
         if (cluster.isPixel())
           collectedPixels[cluster.key()] = true;
-        else if (cluster.isPhase2())
+        else if (cluster.isPhase2()) {
+          edm::LogWarning("MYDEBUG")<<" masked OT at "<<cluster.key();
           collectedPhase2OTs[cluster.key()] = true;
+        }
 
         // Phase 2 OT is defined as Pixel detector (for now)
         const auto& hitType = typeid(hit);
