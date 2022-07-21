@@ -76,15 +76,6 @@ namespace mkfit {
     /// quality filter tuned for pixelLess iteration during forward search
     template <class TRACK>
     bool qfilter_pixelLessFwd(const TRACK &t, const BeamSpot &bspot, const TrackerInfo &tk_info) {
-      float d0BS = t.d0BeamSpot(bspot.x, bspot.y);
-      float d0_max = 0.05;  // 0.5 mm
-
-      int encoded;
-      encoded = t.nLayersByTypeEncoded(tk_info);
-      int nLyrs = t.nTotMatchDecoded(encoded);
-      encoded = t.nHitsByTypeEncoded(tk_info);
-      int nHits = t.nTotMatchDecoded(encoded);
-
       int seedReduction = (t.getNSeedHits() <= 5) ? 2 : 3;
 
       float invpt = t.invpT();
@@ -95,16 +86,12 @@ namespace mkfit {
 
       return (((t.nFoundHits() - seedReduction >= 4 && invpt < invptmin) ||
                (t.nFoundHits() - seedReduction >= 3 && invpt > invptmin && thetasym <= thetasymmin) ||
-               (t.nFoundHits() - seedReduction >= 4 && invpt > invptmin && thetasym > thetasymmin)) &&
-              !((nLyrs <= 4 || nHits <= 4) && std::abs(d0BS) > d0_max && invpt < invptmin));
+               (t.nFoundHits() - seedReduction >= 4 && invpt > invptmin && thetasym > thetasymmin)));
     }
 
     /// quality filter tuned for pixelLess iteration during backward search
     template <class TRACK>
     bool qfilter_pixelLessBkwd(const TRACK &t, const BeamSpot &bspot, const TrackerInfo &tk_info) {
-      float d0BS = t.d0BeamSpot(bspot.x, bspot.y);
-      float d0_max = 0.1;  // 1 mm
-
       int encoded;
       encoded = t.nLayersByTypeEncoded(tk_info);
       int nLyrs = t.nTotMatchDecoded(encoded);
@@ -114,14 +101,9 @@ namespace mkfit {
       float invpt = t.invpT();
       float invptmin = 1.11;  // =1/0.9
 
-      float thetasym = std::abs(t.theta() - Const::PIOver2);
-      float thetasymmin_l = 0.80;  // -> |eta|=0.9
-      float thetasymmin_h = 1.11;  // -> |eta|=1.45
-
       return !(
           ((nLyrs <= 3 || nHits <= 3)) ||
-          ((nLyrs <= 4 || nHits <= 4) && (invpt < invptmin || (thetasym > thetasymmin_l && std::abs(d0BS) > d0_max))) ||
-          ((nLyrs <= 6 || nHits <= 6) && (invpt > invptmin && thetasym > thetasymmin_h && std::abs(d0BS) > d0_max)));
+          ((nLyrs <= 4 || nHits <= 4) && (invpt < invptmin)));
     }
 
     template <class TRACK>
