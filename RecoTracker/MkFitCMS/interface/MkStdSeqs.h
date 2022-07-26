@@ -58,19 +58,12 @@ namespace mkfit {
       int npixhits = t.nPixelDecoded(enhits);
       int enlyrs = t.nLayersByTypeEncoded(trk_inf);
       int npixlyrs = t.nPixelDecoded(enlyrs);
-      int nmatlyrs = t.nTotMatchDecoded(enlyrs);
       int llyr = t.getLastFoundHitLyr();
-      int lplyr = t.getLastFoundPixelHitLyr();
       float invpt = t.invpT();
       float invptmin = 1.43;  // min 1/pT (=1/0.7) for full filter on (npixhits<=3 .or. npixlyrs<=3)
-      float d0BS = t.d0BeamSpot(bspot.x, bspot.y);
-      float d0_max = 0.1;  // 1 mm
 
       bool endsInsidePix = (llyr == 2 || llyr == 18 || llyr == 45);
-      bool lastInsidePix = ((0 <= lplyr && lplyr < 3) || (18 <= lplyr && lplyr < 20) || (45 <= lplyr && lplyr < 47));
-      return !(((npixhits <= 3 || npixlyrs <= 3) && endsInsidePix &&
-                (invpt < invptmin || (invpt >= invptmin && std::abs(d0BS) > d0_max))) ||
-               ((npixlyrs <= 3 && nmatlyrs <= 6) && lastInsidePix && llyr != lplyr && std::abs(d0BS) > d0_max));
+      return !((npixhits <= 3 || npixlyrs <= 3) && endsInsidePix && invpt < invptmin);
     }
 
     /// quality filter tuned for pixelLess iteration during forward search
