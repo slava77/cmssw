@@ -23,7 +23,6 @@ ifdef WITH_ROOT
 SRCS += ${SACMS}/tkNtuple/WriteMemoryFile.cc
 DictsDict.cc ${DICTPCM}: ${SACMS}/tkNtuple/DictsLinkDef.h
 	rootcint -v3 -f $@ $<
-	mv DictsDict_rdict.pcm ${DICTPCM}
 endif
 SRCB := $(notdir ${SRCS})
 DEPS := $(SRCB:.cc=.d)
