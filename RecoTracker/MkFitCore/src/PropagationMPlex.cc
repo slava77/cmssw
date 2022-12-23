@@ -13,7 +13,7 @@
 using namespace Matriplex;
 
 namespace mkfit {
-
+  constexpr static bool debug = true;
   void propagateLineToRMPlex(const MPlexLS& psErr,
                              const MPlexLV& psPar,
                              const MPlexHS& msErr,
@@ -416,42 +416,42 @@ namespace mkfit {
       if (n < N_proc) {
         dmutex_guard;
         std::cout << n << " jacobian" << std::endl;
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 0, 0),
                errorProp(n, 0, 1),
                errorProp(n, 0, 2),
                errorProp(n, 0, 3),
                errorProp(n, 0, 4),
                errorProp(n, 0, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 1, 0),
                errorProp(n, 1, 1),
                errorProp(n, 1, 2),
                errorProp(n, 1, 3),
                errorProp(n, 1, 4),
                errorProp(n, 1, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 2, 0),
                errorProp(n, 2, 1),
                errorProp(n, 2, 2),
                errorProp(n, 2, 3),
                errorProp(n, 2, 4),
                errorProp(n, 2, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 3, 0),
                errorProp(n, 3, 1),
                errorProp(n, 3, 2),
                errorProp(n, 3, 3),
                errorProp(n, 3, 4),
                errorProp(n, 3, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 4, 0),
                errorProp(n, 4, 1),
                errorProp(n, 4, 2),
                errorProp(n, 4, 3),
                errorProp(n, 4, 4),
                errorProp(n, 4, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 5, 0),
                errorProp(n, 5, 1),
                errorProp(n, 5, 2),
@@ -494,6 +494,7 @@ namespace mkfit {
                               const PropagationFlags pflags,
                               const MPlexQI* noMatEffPtr) {
     // bool debug = true;
+    dprintf("propagateHelixToRMPlex\n");
 
     // This is used further down when calculating similarity with errorProp (and before in DEBUG).
     // MT: I don't think this really needed if we use inErr where required.
@@ -513,7 +514,7 @@ namespace mkfit {
         dprintf("outErr before prop %d\n", kk);
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 6; ++j)
-            dprintf("%8f ", outErr.At(kk, i, j));
+            dprintf("% 8e ", outErr.At(kk, i, j));
           printf("\n");
         }
         dprintf("\n");
@@ -521,7 +522,7 @@ namespace mkfit {
         dprintf("errorProp %d\n", kk);
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 6; ++j)
-            dprintf("%8f ", errorProp.At(kk, i, j));
+            dprintf("% 8e ", errorProp.At(kk, i, j));
           printf("\n");
         }
         dprintf("\n");
@@ -557,6 +558,21 @@ namespace mkfit {
 
     squashPhiMPlex(outPar, N_proc);  // ensure phi is between |pi|
 
+#ifdef DEBUG
+    {
+      for (int kk = 0; kk < N_proc; ++kk) {
+        dprintf("outErr after material %d\n", kk);
+        for (int i = 0; i < 6; ++i) {
+          for (int j = 0; j < 6; ++j)
+            dprintf("% 8e ", outErr.At(kk, i, j));
+          printf("\n");
+        }
+        dprintf("\n");
+
+      }
+    }
+#endif
+
     // Matriplex version of:
     // result.errors = ROOT::Math::Similarity(errorProp, outErr);
 
@@ -576,6 +592,22 @@ namespace mkfit {
        // std::cout << "    pt=" << pt << " pz=" << inPar.At(n, 2) << std::endl;
      }
    */
+
+#ifdef DEBUG
+    {
+      for (int kk = 0; kk < N_proc; ++kk) {
+        dprintf("outErr after prop %d\n", kk);
+        for (int i = 0; i < 6; ++i) {
+          for (int j = 0; j < 6; ++j)
+            dprintf("% 8e ", outErr.At(kk, i, j));
+          printf("\n");
+        }
+        dprintf("\n");
+
+        dprintf("failFlag %d : %d\n", kk, failFlag(kk, 0, 0));
+      }
+    }
+#endif
 
     // FIXUP BOTCHED (low pT) propagations.
     // For now let's enforce reseting output to input for failed cases. But:
@@ -602,6 +634,7 @@ namespace mkfit {
                               const PropagationFlags pflags,
                               const MPlexQI* noMatEffPtr) {
     // debug = true;
+    dprintf("propagateHelixToZMPlex\n");
 
     outErr = inErr;
     outPar = inPar;
@@ -616,7 +649,7 @@ namespace mkfit {
         dprintf("inErr %d\n", kk);
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 6; ++j)
-            dprintf("%8f ", inErr.constAt(kk, i, j));
+            dprintf("% 8e ", inErr.constAt(kk, i, j));
           printf("\n");
         }
         dprintf("\n");
@@ -624,7 +657,29 @@ namespace mkfit {
         dprintf("errorProp %d\n", kk);
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 6; ++j)
-            dprintf("%8f ", errorProp.At(kk, i, j));
+            dprintf("% 8e ", errorProp.At(kk, i, j));
+          printf("\n");
+        }
+        dprintf("\n");
+      }
+    }
+#endif
+
+#ifdef DEBUG
+    {
+      for (int kk = 0; kk < N_proc; ++kk) {
+        dprintf("outErr before prop %d\n", kk);
+        for (int i = 0; i < 6; ++i) {
+          for (int j = 0; j < 6; ++j)
+            dprintf("% 8e ", outErr.At(kk, i, j));
+          printf("\n");
+        }
+        dprintf("\n");
+
+        dprintf("errorProp %d\n", kk);
+        for (int i = 0; i < 6; ++i) {
+          for (int j = 0; j < 6; ++j)
+            dprintf("% 8e ", errorProp.At(kk, i, j));
           printf("\n");
         }
         dprintf("\n");
@@ -660,6 +715,21 @@ namespace mkfit {
 
     squashPhiMPlex(outPar, N_proc);  // ensure phi is between |pi|
 
+#ifdef DEBUG
+    {
+      for (int kk = 0; kk < N_proc; ++kk) {
+        dprintf("outErr after material %d\n", kk);
+        for (int i = 0; i < 6; ++i) {
+          for (int j = 0; j < 6; ++j)
+            dprintf("% 8e ", outErr.At(kk, i, j));
+          printf("\n");
+        }
+        dprintf("\n");
+
+      }
+    }
+#endif
+
     // Matriplex version of:
     // result.errors = ROOT::Math::Similarity(errorProp, outErr);
     MPlexLL temp;
@@ -675,12 +745,12 @@ namespace mkfit {
      {
        dprintf("outErr %d\n", kk);
        for (int i = 0; i < 6; ++i) { for (int j = 0; j < 6; ++j)
-           dprintf("%8f ", outErr.At(kk,i,j)); printf("\n");
+           dprintf("% 8e ", outErr.At(kk,i,j)); printf("\n");
        } dprintf("\n");
 
        dprintf("outPar %d\n", kk);
        for (int i = 0; i < 6; ++i) {
-           dprintf("%8f ", outPar.At(kk,i,0)); printf("\n");
+           dprintf("% 8e ", outPar.At(kk,i,0)); printf("\n");
        } dprintf("\n");
        if (std::abs(outPar.At(kk,2,0) - msZ.constAt(kk, 0, 0)) > 0.0001) {
          float pt = 1.0f / inPar.constAt(kk,3,0);
@@ -692,6 +762,19 @@ namespace mkfit {
    }
 #endif
    */
+#ifdef DEBUG
+    {
+      for (int kk = 0; kk < N_proc; ++kk) {
+        dprintf("outErr after prop %d\n", kk);
+        for (int i = 0; i < 6; ++i) {
+          for (int j = 0; j < 6; ++j)
+            dprintf("% 8e ", outErr.At(kk, i, j));
+          printf("\n");
+        }
+        dprintf("\n");
+      }
+    }
+#endif
   }
 
   void helixAtZ(const MPlexLV& inPar,
@@ -752,12 +835,12 @@ namespace mkfit {
       dprint_np(n,
                 std::endl
                     << "input parameters"
-                    << " inPar.constAt(n, 0, 0)=" << std::setprecision(9) << inPar.constAt(n, 0, 0)
-                    << " inPar.constAt(n, 1, 0)=" << std::setprecision(9) << inPar.constAt(n, 1, 0)
-                    << " inPar.constAt(n, 2, 0)=" << std::setprecision(9) << inPar.constAt(n, 2, 0)
-                    << " inPar.constAt(n, 3, 0)=" << std::setprecision(9) << inPar.constAt(n, 3, 0)
-                    << " inPar.constAt(n, 4, 0)=" << std::setprecision(9) << inPar.constAt(n, 4, 0)
-                    << " inPar.constAt(n, 5, 0)=" << std::setprecision(9) << inPar.constAt(n, 5, 0));
+                    << " " << std::setprecision(8) << inPar.constAt(n, 0, 0)
+                    << " " << std::setprecision(8) << inPar.constAt(n, 1, 0)
+                    << " " << std::setprecision(8) << inPar.constAt(n, 2, 0)
+                    << " " << std::setprecision(8) << inPar.constAt(n, 3, 0)
+                    << " " << std::setprecision(8) << inPar.constAt(n, 4, 0)
+                    << " " << std::setprecision(8) << inPar.constAt(n, 5, 0));
     }
 
     float pt[NN];
@@ -930,42 +1013,42 @@ namespace mkfit {
       if (n < N_proc) {
         dmutex_guard;
         std::cout << n << ": jacobian" << std::endl;
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 0, 0),
                errorProp(n, 0, 1),
                errorProp(n, 0, 2),
                errorProp(n, 0, 3),
                errorProp(n, 0, 4),
                errorProp(n, 0, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 1, 0),
                errorProp(n, 1, 1),
                errorProp(n, 1, 2),
                errorProp(n, 1, 3),
                errorProp(n, 1, 4),
                errorProp(n, 1, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 2, 0),
                errorProp(n, 2, 1),
                errorProp(n, 2, 2),
                errorProp(n, 2, 3),
                errorProp(n, 2, 4),
                errorProp(n, 2, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 3, 0),
                errorProp(n, 3, 1),
                errorProp(n, 3, 2),
                errorProp(n, 3, 3),
                errorProp(n, 3, 4),
                errorProp(n, 3, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 4, 0),
                errorProp(n, 4, 1),
                errorProp(n, 4, 2),
                errorProp(n, 4, 3),
                errorProp(n, 4, 4),
                errorProp(n, 4, 5));
-        printf("%5f %5f %5f %5f %5f %5f\n",
+        printf("%5e %5e %5e %5e %5e %5e\n",
                errorProp(n, 5, 0),
                errorProp(n, 5, 1),
                errorProp(n, 5, 2),

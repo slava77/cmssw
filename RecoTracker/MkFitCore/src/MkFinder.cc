@@ -32,6 +32,7 @@ namespace {
 }  // namespace
 
 namespace mkfit {
+  constexpr static bool debug = true;
 
   void MkFinder::setup(const PropagationConfig &pc,
                        const IterationParams &ip,
@@ -215,6 +216,8 @@ namespace mkfit {
 
     // dphi hit selection window
     float this_dphi = (ILC.c_dp_0) * max_invpt + (ILC.c_dp_1) * theta + (ILC.c_dp_2);
+    dprint("getHitSelDynamicWindows : "<<this_dphi*ILC.c_dp_sf<<" = "<<ILC.c_dp_sf<<" * ( "<<this_dphi<<" = "<<ILC.c_dp_0<<" * "<<max_invpt
+           <<" + "<<ILC.c_dp_1<<" * "<<theta <<" + "<<ILC.c_dp_2<<" ) vs "<<min_dphi );
     // In case layer is missing (e.g., seeding layers, or too low stats for training), leave original limits
     if ((ILC.c_dp_sf) * this_dphi > min_dphi) {
       min_dphi = (ILC.c_dp_sf) * this_dphi;
@@ -246,6 +249,8 @@ namespace mkfit {
       max_invpt = 10.0f;
 
     float this_c2 = ILC.c_c2_0 * max_invpt + ILC.c_c2_1 * theta + ILC.c_c2_2;
+    dprint("getHitSelDynamicChi2Cut "<<itrk<<" "<<ipar<<" : "<<this_c2*ILC.c_c2_sf<<" = "<<ILC.c_c2_sf<<" * ( "<<this_c2<<" = "<<ILC.c_c2_0<<" * "<<max_invpt
+           <<" + "<<ILC.c_c2_1<<" * "<<theta <<" + "<<ILC.c_c2_2<<" ) vs "<<minChi2Cut );
     // In case layer is missing (e.g., seeding layers, or too low stats for training), leave original limits
     if ((ILC.c_c2_sf) * this_c2 > minChi2Cut)
       //clamp the parametric cut to twice the default
@@ -270,10 +275,13 @@ namespace mkfit {
     const float nSigmaZ = 3;
     const float nSigmaR = 3;
 
-    dprintf("LayerOfHits::SelectHitIndices %s layer=%d N_proc=%d\n",
+    dprintf("LayerOfHits::SelectHitIndices %s layer=%d N_proc=%d r %f - %f z %f - %f rhole %d  %f - %f\n",
             L.is_barrel() ? "barrel" : "endcap",
             L.layer_id(),
-            N_proc);
+            N_proc,
+            L.layer_info()->rin(), L.layer_info()->rout(),
+            L.layer_info()->zmin(), L.layer_info()->zmax(),
+            L.layer_info()->has_r_range_hole(), L.layer_info()->hole_r_min(), L.layer_info()->hole_r_max());
 
     float dqv[NN], dphiv[NN], qv[NN], phiv[NN];
     bidx_t qb1v[NN], qb2v[NN], qbv[NN], pb1v[NN], pb2v[NN];
@@ -287,6 +295,7 @@ namespace mkfit {
                                 float max_dq,
                                 float min_dphi,
                                 float max_dphi) {
+      dprint("assignbins dphi "<< dphi << " vs "<< min_dphi<<" "<<max_dphi<<"   dq "<<dq<<" vs "<<min_dq<<" "<<max_dq);
       dphi = std::clamp(std::abs(dphi), min_dphi, max_dphi);
       dq = std::clamp(dq, min_dq, max_dq);
       //
@@ -345,6 +354,9 @@ namespace mkfit {
         // XXX-NUM-ERR above, m_Err(2,2) gets negative!
 
         m_XWsrResult[itrack] = L.is_within_z_sensitive_region(z, std::sqrt(dz * dz + edgeCorr * edgeCorr));
+        dprint("  WSR result "<<m_XWsrResult[itrack].m_wsr<<" for "<<z<<" +/- dz "<<std::sqrt(dz * dz + edgeCorr * edgeCorr)<<" ( "
+               << dz<<" oplus "<<edgeCorr<<" )");
+
         assignbins(itrack, z, dz, phi, dphi, min_dq, max_dq, min_dphi, max_dphi);
       }
     } else  // endcap
@@ -352,6 +364,8 @@ namespace mkfit {
       //layer half-thikness for dphi spread calculation; only for very restrictive iters
       const float layerD = std::abs(L.layer_info()->zmax() - L.layer_info()->zmin())*0.5f
         * (m_iteration_params->maxConsecHoles == 0 || m_iteration_params->maxHolesPerCand == 0);
+      dprint("layerD " << layerD << " = "<< std::abs(L.layer_info()->zmax() - L.layer_info()->zmin())*0.5f
+             << " * ( "<< m_iteration_params->maxConsecHoles <<" ==0 || "<<m_iteration_params->maxHolesPerCand <<" ==0 )");
       // Pull out the part of the loop that vectorizes
 #pragma omp simd
       for (int itrack = 0; itrack < NN; ++itrack) {
@@ -375,6 +389,10 @@ namespace mkfit {
         const float dphi2 = calcdphi2(itrack, dphidx, dphidy)
           //range from finite layer thickness
           + std::pow(layerD * std::tan(m_Par[iI].At(itrack, 5, 0)) * std::sin(m_Par[iI].At(itrack, 4, 0) - phi), 2) * r2Inv;
+        dprint("dphi "<< sqrt(dphi2) <<" **2 = "<<sqrt(calcdphi2(itrack, dphidx, dphidy))<<" **2 + ("
+               <<sqrt(std::pow(layerD*std::tan(m_Par[iI].At(itrack, 5, 0))*std::sin(m_Par[iI].At(itrack, 4, 0)-phi), 2) * r2Inv)<<" = "
+               <<layerD <<" * "<<std::tan(m_Par[iI].At(itrack, 5, 0))<<" * "<<std::sin(m_Par[iI].At(itrack, 4, 0)-phi)<<" / "<<
+               sqrt(r2)<<" )**2" );
 #ifdef HARD_CHECK
         assert(dphi2 >= 0);
 #endif
@@ -390,6 +408,9 @@ namespace mkfit {
                                         std::tan(m_Par[iI].constAt(itrack, 5, 0)));
 
         m_XWsrResult[itrack] = L.is_within_r_sensitive_region(r, std::sqrt(dr * dr + edgeCorr * edgeCorr));
+        dprint("  WSR result "<<m_XWsrResult[itrack].m_wsr<<" for "<<r<<" +/- dr "<<std::sqrt(dr * dr + edgeCorr * edgeCorr)<<" ( "
+               << dr<<" oplus "<<edgeCorr<<" )");
+
         assignbins(itrack, r, dr, phi, dphi, min_dq, max_dq, min_dphi, max_dphi);
       }
     }
@@ -660,8 +681,8 @@ namespace mkfit {
               if (ddphi >= dphi)
                 continue;
               // clang-format off
-              dprintf("     SHI %3u %4u %5u  %6.3f %6.3f %6.4f %7.5f   %s\n",
-                      qi, pi, hi, L.hit_q(hi), L.hit_phi(hi),
+              dprintf("     SHI %3u %4u %5u %5u %6.3f %6.3f %6.4f %7.5f   %s\n",
+                      qi, pi, hi, L.getOriginalHitIndex(hi), L.hit_q(hi), L.hit_phi(hi),
                       ddq, ddphi, (ddq < dq && ddphi < dphi) ? "PASS" : "FAIL");
               // clang-format on
 
@@ -1205,7 +1226,7 @@ namespace mkfit {
           // XXX-NUM-ERR assert(chi2 >= 0);
           const float chi2 = std::abs(outChi2[itrack]);  //fixme negative chi2 sometimes...
 
-          dprint("chi2=" << chi2 << " for trkIdx=" << itrack << " hitIdx=" << m_XHitArr.At(itrack, hit_cnt, 0));
+          dprint("chi2=" << chi2 << " for trkIdx=" << itrack << " hitIdx=" << m_XHitArr.At(itrack, hit_cnt, 0) << " vs "<<max_c2);
           if (chi2 < max_c2) {
             bool isCompatible = true;
             if (!layer_of_hits.is_pixel()) {
@@ -1213,20 +1234,26 @@ namespace mkfit {
               isCompatible =
                   isStripQCompatible(itrack, layer_of_hits.is_barrel(), m_Err[iP], propPar, m_msErr, m_msPar);
 
+              dprint(" ... hit after isStripQCompatible: isCompatible " << isCompatible);
+
               //rescale strip charge to track parameters and reapply the cut
               isCompatible &= passStripChargePCMfromTrack(
                   itrack, layer_of_hits.is_barrel(), charge_pcm[itrack], Hit::minChargePerCM(), propPar, m_msErr);
+              dprint(" ... hit after passStripChargePCMfromTrack: isCompatible " << isCompatible);
             }
 
             // Select only SiStrip hits with cluster size < maxClusterSize
             if (!layer_of_hits.is_pixel()) {
+              dprint("cluSize "<<layer_of_hits.refHit(m_XHitArr.At(itrack, hit_cnt, 0)).spanRows()<<" vs "<<m_iteration_params->maxClusterSize);
               if (layer_of_hits.refHit(m_XHitArr.At(itrack, hit_cnt, 0)).spanRows() >=
                   m_iteration_params->maxClusterSize) {
                 isTooLargeCluster[itrack] = true;
                 isCompatible = false;
               }
+              dprint(" ... hit after maxClusterSize: isCompatible " << isCompatible);
             }
 
+            dprint(" ... hit isCompatible final " << isCompatible);
             if (isCompatible) {
               CombCandidate &ccand = cloner.combCandWithOriginalIndex(m_SeedIdx(itrack, 0, 0));
               bool hitExists = false;
@@ -1250,6 +1277,7 @@ namespace mkfit {
               // Register hit for overlap consideration, if chi2 cut is passed
               // To apply a fixed cut instead of dynamic cut for overlap: m_iteration_params->chi2CutOverlap
               if (chi2 < max_c2) {
+                dprint("hit with chi2 "<<chi2<<" vs "<<max_c2<<" added to overlap");
                 ccand[m_CandIdx(itrack, 0, 0)].considerHitForOverlap(
                     hit_idx, layer_of_hits.refHit(hit_idx).detIDinLayer(), chi2);
               }
@@ -1269,6 +1297,7 @@ namespace mkfit {
               cloner.add_cand(m_SeedIdx(itrack, 0, 0) - offset, tmpList);
 
               dprint("  adding hit with hit_cnt=" << hit_cnt << " for trkIdx=" << tmpList.trkIdx
+                                                  << " score= " << tmpList.score
                                                   << " orig Seed=" << m_Label(itrack, 0, 0));
             }
           }

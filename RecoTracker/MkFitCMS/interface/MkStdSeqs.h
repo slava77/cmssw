@@ -93,11 +93,27 @@ namespace mkfit {
       float thetasym = std::abs(t.theta() - Const::PIOver2);
       float thetasymmin = 1.11;  // -> |eta|=1.45
 
-      return (((t.nFoundHits() - seedReduction >= 4 && invpt < invptmin) ||
+      bool pass = (((t.nFoundHits() - seedReduction >= 4 && invpt < invptmin) ||
                (t.nFoundHits() - seedReduction >= 3 && invpt > invptmin && thetasym <= thetasymmin) ||
                (t.nFoundHits() - seedReduction >= 4 && invpt > invptmin && thetasym > thetasymmin)) &&
               !((nLyrs <= 4 || nHits <= 4) && std::abs(d0BS) > d0_max && invpt < invptmin));
-    }
+
+#ifdef DEBUG
+      auto const& tp = t.parameters();
+      std::cout<<"qfilter_pixelLessFwd detail : score " << t.score()<< " state "
+               << tp[0]<<" "<< tp[1]<<" "<< tp[2]<<" "<< tp[3]<<" "<< tp[4]<<" "<< tp[5]
+               << " ntot " << t.nTotalHits() << " ovlps " << t.nOverlapHits() << " lastCCix " <<t.lastCcIndex() << std::endl;
+      for (int ih = 0u; ih <  t.combCandidate()->hotsSize(); ++ih) {
+        auto const& hn = t.combCandidate()->hot_node(ih);
+        std::cout<<" hit "<<ih<< " ix " << hn.m_hot.index << " il " << hn.m_hot.layer << " ch2 " << hn.m_chi2 << " idx " << hn.m_prev_idx<<std::endl;
+      }
+#endif
+
+      printf("qfilter_pixelLessFwd pass %d label %d nFound %d seeRed %d invpt %f theta %f nLyrs %d nHits %d d0BS %f\n", 
+             pass, t.label(), t.nFoundHits(), seedReduction, invpt, thetasym, nLyrs, nHits, d0BS);
+
+      return  pass;
+   }
 
     /// quality filter tuned for pixelLess iteration during backward search
     template <class TRACK>
@@ -118,14 +134,37 @@ namespace mkfit {
       float thetasymmin_l = 0.80;  // -> |eta|=0.9
       float thetasymmin_h = 1.11;  // -> |eta|=1.45
 
-      return !(
+      bool pass = !(
           ((nLyrs <= 3 || nHits <= 3)) ||
           ((nLyrs <= 4 || nHits <= 4) && (invpt < invptmin || (thetasym > thetasymmin_l && std::abs(d0BS) > d0_max))) ||
           ((nLyrs <= 5 || nHits <= 5) && (invpt > invptmin && thetasym > thetasymmin_h && std::abs(d0BS) > d0_max)));
+
+#ifdef DEBUG
+      auto const& tp = t.parameters();
+      std::cout<<"qfilter_pixelLessBkwd detail : label "<<t.label()<< "score " << t.score()<< " state " 
+             << tp[0]<<" "<< tp[1]<<" "<< tp[2]<<" "<< tp[3]<<" "<< tp[4]<<" "<< tp[5]
+               << " ntot " << t.nTotalHits() << " ovlps " << t.nOverlapHits() << " lastCCix " <<t.lastCcIndex() << std::endl;
+      for (int ih = 0u; ih <  t.combCandidate()->hotsSize(); ++ih) {
+        auto const& hn = t.combCandidate()->hot_node(ih);
+        std::cout<<" hit "<<ih<< " ix " << hn.m_hot.index << " il " << hn.m_hot.layer << " ch2 " << hn.m_chi2 << " idx " << hn.m_prev_idx<<std::endl;
+      }
+#endif
+
+      printf("qfilter_pixelLessBkwd pass %d nLyrs %d nHits %d invpt %f thetasym %f d0BS %f\n",
+             pass, nLyrs, nHits, invpt, thetasym, d0BS);
+
+      return pass;
     }
 
     template <class TRACK>
     bool qfilter_nan_n_silly(const TRACK &t) {
+#ifdef DEBUG
+      auto const& tp = t.parameters();
+      std::cout<<"qfilter_nan_n_silly "<<!(t.hasNanNSillyValues()) << " detail : score " << t.score()<< " state "
+             << tp[0]<<" "<< tp[1]<<" "<< tp[2]<<" "<< tp[3]<<" "<< tp[4]<<" "<< tp[5]
+               << " ntot " << t.nTotalHits() << " ovlps " << t.nOverlapHits() << " lastCCix " <<t.lastCcIndex() << std::endl;
+      
+#endif
       return !(t.hasNanNSillyValues());
     }
 

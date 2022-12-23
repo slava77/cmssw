@@ -13,7 +13,7 @@ static inline void helixAtRFromIterativeCCS_impl(const Tf& __restrict__ inPar,
                                                  const int nmax,
                                                  const int N_proc,
                                                  const PropagationFlags pf) {
-  // bool debug = true;
+   bool debug = true;
 
 #pragma omp simd
   for (int n = nmin; n < nmax; ++n) {
@@ -72,11 +72,12 @@ static inline void helixAtRFromIterativeCCS_impl(const Tf& __restrict__ inPar,
   for (int n = nmin; n < nmax; ++n) {
     dprint_np(n,
               "input parameters"
-                  << " inPar(n, 0, 0)=" << std::setprecision(9) << inPar(n, 0, 0) << " inPar(n, 1, 0)="
-                  << std::setprecision(9) << inPar(n, 1, 0) << " inPar(n, 2, 0)=" << std::setprecision(9)
-                  << inPar(n, 2, 0) << " inPar(n, 3, 0)=" << std::setprecision(9) << inPar(n, 3, 0)
-                  << " inPar(n, 4, 0)=" << std::setprecision(9) << inPar(n, 4, 0)
-                  << " inPar(n, 5, 0)=" << std::setprecision(9) << inPar(n, 5, 0));
+                  << " " << std::setprecision(8) << inPar(n, 0, 0)
+                  << " " << std::setprecision(8) << inPar(n, 1, 0)
+                  << " " << std::setprecision(8) << inPar(n, 2, 0)
+                  << " " << std::setprecision(8) << inPar(n, 3, 0)
+                  << " " << std::setprecision(8) << inPar(n, 4, 0)
+                  << " " << std::setprecision(8) << inPar(n, 5, 0));
   }
 
   float kinv[nmax - nmin];
@@ -231,7 +232,7 @@ static inline void helixAtRFromIterativeCCS_impl(const Tf& __restrict__ inPar,
       dprint_np(n,
                 "Attempt propagation from r="
                     << r0[n - nmin] << " to r=" << r[n - nmin] << std::endl
-                    << "   x=" << xin[n - nmin] << " y=" << yin[n - nmin] << " z=" << inPar(n, 2, 0)
+                    << "   x=" << x[n - nmin] << " y=" << y[n - nmin] << " zin=" << inPar(n, 2, 0)
                     << " px=" << pxin[n - nmin] << " py=" << pyin[n - nmin]
                     << " pz=" << pt[n - nmin] * std::tan(theta[n - nmin]) << " q=" << inChg(n, 0, 0) << std::endl
                     << "   r=" << std::setprecision(9) << r[n - nmin] << " r0=" << std::setprecision(9) << r0[n - nmin]
@@ -466,42 +467,42 @@ static inline void helixAtRFromIterativeCCS_impl(const Tf& __restrict__ inPar,
     if (n < N_proc) {
       dmutex_guard;
       std::cout << n << ": jacobian" << std::endl;
-      printf("%5f %5f %5f %5f %5f %5f\n",
+      printf("%5e %5e %5e %5e %5e %5e\n",
              errorProp(n, 0, 0),
              errorProp(n, 0, 1),
              errorProp(n, 0, 2),
              errorProp(n, 0, 3),
              errorProp(n, 0, 4),
              errorProp(n, 0, 5));
-      printf("%5f %5f %5f %5f %5f %5f\n",
+      printf("%5e %5e %5e %5e %5e %5e\n",
              errorProp(n, 1, 0),
              errorProp(n, 1, 1),
              errorProp(n, 1, 2),
              errorProp(n, 1, 3),
              errorProp(n, 1, 4),
              errorProp(n, 1, 5));
-      printf("%5f %5f %5f %5f %5f %5f\n",
+      printf("%5e %5e %5e %5e %5e %5e\n",
              errorProp(n, 2, 0),
              errorProp(n, 2, 1),
              errorProp(n, 2, 2),
              errorProp(n, 2, 3),
              errorProp(n, 2, 4),
              errorProp(n, 2, 5));
-      printf("%5f %5f %5f %5f %5f %5f\n",
+      printf("%5e %5e %5e %5e %5e %5e\n",
              errorProp(n, 3, 0),
              errorProp(n, 3, 1),
              errorProp(n, 3, 2),
              errorProp(n, 3, 3),
              errorProp(n, 3, 4),
              errorProp(n, 3, 5));
-      printf("%5f %5f %5f %5f %5f %5f\n",
+      printf("%5e %5e %5e %5e %5e %5e\n",
              errorProp(n, 4, 0),
              errorProp(n, 4, 1),
              errorProp(n, 4, 2),
              errorProp(n, 4, 3),
              errorProp(n, 4, 4),
              errorProp(n, 4, 5));
-      printf("%5f %5f %5f %5f %5f %5f\n",
+      printf("%5e %5e %5e %5e %5e %5e\n",
              errorProp(n, 5, 0),
              errorProp(n, 5, 1),
              errorProp(n, 5, 2),

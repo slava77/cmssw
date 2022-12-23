@@ -118,6 +118,20 @@ void MkFitEventOfHitsProducer::produce(edm::StreamID iID, edm::Event& iEvent, co
 
     if (useStripStripQualityDB_) {
       const auto& siStripQuality = iSetup.getData(stripQualityToken_);
+      std::vector<uint32_t> badDets;
+      siStripQuality.getDetIds(badDets);
+      for (const auto bd : badDets) {
+        const DetId detid(bd);
+        const auto ilay = mkFitGeom.mkFitLayerNumber(detid);
+        const auto& surf = trackerGeom.idToDet(detid)->surface();
+
+        const auto bstrips = siStripQuality.getRange(bd);
+        for (auto bstrip = bstrips.first; bstrip != bstrips.second; ++bstrip) {
+          auto strip = siStripQuality.decode(*bstrip);
+          edm::LogWarning("MYDEBUG")<<"Bad strips on lay "<<ilay<<" in "<<detid<<" at "<<surf.position()
+                                    <<" frf "<< strip.firstStrip<<" "<<strip.range<<" "<<strip.flag;
+        }
+      }
       const auto& badStrips = siStripQuality.getBadComponentList();
       for (const auto& bs : badStrips) {
         const DetId detid(bs.detid);
@@ -126,8 +140,12 @@ void MkFitEventOfHitsProducer::produce(edm::StreamID iID, edm::Event& iEvent, co
         const auto ilay = mkFitGeom.mkFitLayerNumber(detid);
         const auto q1 = isBarrel ? surf.zSpan().first : surf.rSpan().first;
         const auto q2 = isBarrel ? surf.zSpan().second : surf.rSpan().second;
-        if (bs.BadModule)
+        edm::LogWarning("MYDEBUG")<<"Strip bad component in lay "<<ilay<<" at "<<surf.position();
+        if (bs.BadModule) {
+          edm::LogWarning("SiStripBadComponents")<<"insert bad module " 
+                                                 << surf.phiSpan().first<< " " << surf.phiSpan().second<< " " << q1 << " " << q2;
           deadvectors[ilay].push_back({surf.phiSpan().first, surf.phiSpan().second, q1, q2});
+        }
         else {  //assume that BadApvs are filled in sync with BadFibers
           auto const& topo = dynamic_cast<const StripTopology&>(trackerGeom.idToDet(detid)->topology());
           int firstApv = -1;
@@ -140,8 +158,8 @@ void MkFitEventOfHitsProducer::produce(edm::StreamID iID, edm::Event& iEvent, co
             float phi2 = lastPoint.phi();
             if (reco::deltaPhi(phi1, phi2) > 0)
               std::swap(phi1, phi2);
-            LogTrace("SiStripBadComponents")
-                << "insert bad range " << first << " to " << last << " " << phi1 << " " << phi2;
+            edm::LogWarning("SiStripBadComponents")
+            << "insert bad range " << first << " to " << last << " " << phi1 << " " << phi2 << " " << q1 << " " << q2;
             dv.push_back({phi1, phi2, q1, q2});
           };
 

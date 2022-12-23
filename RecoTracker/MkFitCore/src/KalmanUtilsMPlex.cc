@@ -555,29 +555,27 @@ namespace mkfit {
 #ifdef DEBUG
     {
       dmutex_guard;
-      printf("psPar:\n");
+      printf("psPar: ");
       for (int i = 0; i < 6; ++i) {
         printf("%8f ", psPar.constAt(0, 0, i));
-        printf("\n");
       }
       printf("\n");
       printf("psErr:\n");
       for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 6; ++j)
-          printf("%8f ", psErr.constAt(0, i, j));
+          printf("% 8e ", psErr.constAt(0, i, j));
         printf("\n");
       }
       printf("\n");
-      printf("msPar:\n");
+      printf("msPar: ");
       for (int i = 0; i < 3; ++i) {
         printf("%8f ", msPar.constAt(0, 0, i));
-        printf("\n");
       }
       printf("\n");
       printf("msErr:\n");
       for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j)
-          printf("%8f ", msErr.constAt(0, i, j));
+          printf("% 8e ", msErr.constAt(0, i, j));
         printf("\n");
       }
       printf("\n");
@@ -620,7 +618,7 @@ namespace mkfit {
       printf("resErr_loc:\n");
       for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j)
-          printf("%8f ", resErr_loc.At(0, i, j));
+          printf("% 8e ", resErr_loc.At(0, i, j));
         printf("\n");
       }
       printf("\n");
@@ -639,7 +637,7 @@ namespace mkfit {
         printf("resErr_loc (Inv):\n");
         for (int i = 0; i < 2; ++i) {
           for (int j = 0; j < 2; ++j)
-            printf("%8f ", resErr_loc.At(0, i, j));
+            printf("% 8e ", resErr_loc.At(0, i, j));
           printf("\n");
         }
         printf("\n");
@@ -691,14 +689,22 @@ namespace mkfit {
         printf("resErr_loc (Inv):\n");
         for (int i = 0; i < 2; ++i) {
           for (int j = 0; j < 2; ++j)
-            printf("%8f ", resErr_loc.At(0, i, j));
+            printf("% 8e ", resErr_loc.At(0, i, j));
+          printf("\n");
+        }
+        printf("\n");
+        printf("cos %f sin %f\n", rotT00.At(0,0,0), rotT01.At(0,0,0));
+        printf("tHH:\n");
+        for (int i = 0; i < 3; ++i) {
+          for (int j = 0; j < 3; ++j)
+            printf("% 8e ", tempHH.At(0, i, j));
           printf("\n");
         }
         printf("\n");
         printf("K:\n");
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 3; ++j)
-            printf("%8f ", K.At(0, i, j));
+            printf("% 8e ", K.At(0, i, j));
           printf("\n");
         }
         printf("\n");
@@ -710,7 +716,7 @@ namespace mkfit {
         printf("outErr:\n");
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 6; ++j)
-            printf("%8f ", outErr.At(0, i, j));
+            printf("% 8e ", outErr.At(0, i, j));
           printf("\n");
         }
         printf("\n");
@@ -743,6 +749,7 @@ namespace mkfit {
                                       const int N_proc,
                                       const PropagationFlags propFlags,
                                       const bool propToHit) {
+    printf("kalmanPropagateAndUpdateEndcap N_proc %d for NN %d\n", N_proc, NN);
     if (propToHit) {
       MPlexLS propErr;
       MPlexLV propPar;
@@ -820,29 +827,27 @@ namespace mkfit {
     {
       dmutex_guard;
       printf("updateParametersEndcapMPlex\n");
-      printf("psPar:\n");
+      printf("psPar: ");
       for (int i = 0; i < 6; ++i) {
         printf("%8f ", psPar.constAt(0, 0, i));
-        printf("\n");
       }
       printf("\n");
-      printf("msPar:\n");
+      printf("msPar: ");
       for (int i = 0; i < 3; ++i) {
         printf("%8f ", msPar.constAt(0, 0, i));
-        printf("\n");
       }
       printf("\n");
       printf("psErr:\n");
       for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 6; ++j)
-          printf("%8f ", psErr.constAt(0, i, j));
+          printf("% 8e ", psErr.constAt(0, i, j));
         printf("\n");
       }
       printf("\n");
       printf("msErr:\n");
       for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j)
-          printf("%8f ", msErr.constAt(0, i, j));
+          printf("% 8e ", msErr.constAt(0, i, j));
         printf("\n");
       }
       printf("\n");
@@ -861,7 +866,7 @@ namespace mkfit {
       printf("resErr:\n");
       for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j)
-          printf("%8f ", resErr.At(0, i, j));
+          printf("% 8e ", resErr.At(0, i, j));
         printf("\n");
       }
       printf("\n");
@@ -880,7 +885,7 @@ namespace mkfit {
         printf("resErr_loc (Inv):\n");
         for (int i = 0; i < 2; ++i) {
           for (int j = 0; j < 2; ++j)
-            printf("%8f ", resErr.At(0, i, j));
+            printf("% 8e ", resErr.At(0, i, j));
           printf("\n");
         }
         printf("\n");
@@ -905,7 +910,7 @@ namespace mkfit {
         printf("outErr before subtract:\n");
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 6; ++j)
-            printf("%8f ", outErr.At(0, i, j));
+            printf("% 8e ", outErr.At(0, i, j));
           printf("\n");
         }
         printf("\n");
@@ -925,14 +930,14 @@ namespace mkfit {
         printf("resErr (Inv):\n");
         for (int i = 0; i < 2; ++i) {
           for (int j = 0; j < 2; ++j)
-            printf("%8f ", resErr.At(0, i, j));
+            printf("% 8e ", resErr.At(0, i, j));
           printf("\n");
         }
         printf("\n");
         printf("K:\n");
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 2; ++j)
-            printf("%8f ", K.At(0, i, j));
+            printf("% 8e ", K.At(0, i, j));
           printf("\n");
         }
         printf("\n");
@@ -944,7 +949,7 @@ namespace mkfit {
         printf("outErr:\n");
         for (int i = 0; i < 6; ++i) {
           for (int j = 0; j < 6; ++j)
-            printf("%8f ", outErr.At(0, i, j));
+            printf("% 8e ", outErr.At(0, i, j));
           printf("\n");
         }
         printf("\n");

@@ -20,6 +20,9 @@
 #include "RecoTracker/MkFitCore/interface/Hit.h"
 #include "RecoTracker/MkFitCore/interface/HitStructures.h"
 
+#include <type_traits>
+#include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit2DCollection.h"
+
 namespace mkfit {
   template <typename Traits, typename HitCollection>
   edm::ProductID convertHits(const Traits& traits,
@@ -74,10 +77,12 @@ namespace mkfit {
               << ", but encountered Ref to product " << clusterRef.id() << " on detid " << detid.rawId();
         }
         const auto clusterIndex = clusterRef.index();
-        LogTrace("MkFitHitConverter") << "Adding hit detid " << detid.rawId() << " subdet " << detid.subdetId()
+        if constexpr (std::is_same<HitCollection, SiStripRecHit2DCollection>::value){
+        edm::LogPrint("MkFitHitConverter") << "Adding hit detid " << detid.rawId() << " subdet " << detid.subdetId()
                                       << " layer " << ttopo.layer(detid) << " isStereo " << ttopo.isStereo(detid)
                                       << " zplus "
-                                      << " index " << clusterIndex << " ilay " << ilay;
+                                      << " index " << clusterIndex << " ilay " << ilay << " "<< gpos << " str "<<hit.cluster()->firstStrip();
+        }
 
         if UNLIKELY (clusterIndex >= mkFitHits.size()) {
           mkFitHits.resize(clusterIndex + 1);

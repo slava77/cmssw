@@ -624,6 +624,11 @@ namespace mkfit {
     }
     float score_ =
         bonus * nfoundhits + overlapBonus * noverlaphits - penalty * nmisshits - tailPenalty * ntailholes - chi2;
+#ifdef DEBUG
+    std::cout<<"getScoreCalc pt "<<pt<<" inFind "<< inFindCandidates << " score "<<score_ <<" =  "
+             <<bonus <<" * "<<nfoundhits<<" + "<<overlapBonus<<" * "<<noverlaphits<<" - "
+             <<penalty<< " * "<<nmisshits<<" - "<<tailPenalty<<" * "<<ntailholes<<" - "<<chi2<<std::endl;
+#endif
     return score_;
   }
 

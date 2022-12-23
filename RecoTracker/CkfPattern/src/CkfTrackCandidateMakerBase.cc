@@ -266,13 +266,13 @@ namespace cms {
         // to be moved inside a par section (how with tbb??)
         std::vector<Trajectory> theTmpTrajectories;
 
-        LogDebug("CkfPattern") << "======== Begin to look for trajectories from seed " << j << " ========\n";
+        edm::LogWarning("CkfPattern") << "======== Begin to look for trajectories from seed " << j << " ========\n";
 
         {
           Lock lock(theMutex);
           // Check if seed hits already used by another track
           if (theSeedCleaner && !theSeedCleaner->good(&((*collseed)[j]))) {
-            LogDebug("CkfTrackCandidateMakerBase") << " Seed cleaning kills seed " << j;
+            edm::LogWarning("CkfTrackCandidateMakerBase") << " Seed cleaning kills seed " << j;
             (*outputSeedStopInfos)[j].setStopReason(SeedStopReason::SEED_CLEANING);
             return;  // from the lambda!
           }
@@ -292,15 +292,36 @@ namespace cms {
           }
         }
 
-        LogDebug("CkfPattern") << "======== In-out trajectory building found " << theTmpTrajectories.size()
+        edm::LogWarning("CkfPattern") << "======== In-out trajectory building found " << theTmpTrajectories.size()
                                << " trajectories from seed " << j << " ========\n"
                                << PrintoutHelper::dumpCandidates(theTmpTrajectories);
+        std::stringstream buffer;
+        int iTraj = -1;
+        for (auto const& tr: theTmpTrajectories) {
+          iTraj++;
+          buffer<<"  traj "<<iTraj<<"\n";
+          int iMs = -1;
+          for (auto const& ms: tr.measurements()) {
+            iMs++;
+            buffer<<"    measurement "<<iMs;
+            if (ms.predictedState().isValid() ) buffer<<" pred "<<ms.predictedState();
+            else buffer<<" pred isInvalid ";
+            if (ms.forwardPredictedState().isValid()) buffer<<" FWpred "<<ms.forwardPredictedState();
+            else buffer<<" FWpred isInvalid ";
+            if (ms.backwardPredictedState().isValid()) buffer<<" BWpred "<<ms.backwardPredictedState();
+            else buffer<<" BWpred isInvalid ";
+            if (ms.updatedState().isValid()) buffer<<" upd "<<ms.updatedState();
+            else buffer<<" upd isInvalid ";
+            buffer <<" est "<<ms.estimate() <<std::endl;
+          }
+        }
+        edm::LogWarning("CkfPattern") << buffer.str();
 
         if (cleanTrajectoryAfterInOut) {
           // Select the best trajectory from this seed (declare others invalid)
           theTrajectoryCleaner->clean(theTmpTrajectories);
 
-          LogDebug("CkfPattern") << "======== In-out trajectory cleaning gave the following "
+          edm::LogWarning("CkfPattern") << "======== In-out trajectory cleaning gave the following "
                                  << theTmpTrajectories.size() << " valid trajectories from seed " << j << " ========\n"
                                  << PrintoutHelper::dumpCandidates(theTmpTrajectories);
         }
@@ -311,7 +332,7 @@ namespace cms {
         if (doSeedingRegionRebuilding) {
           theTrajectoryBuilder->rebuildTrajectories(startTraj, (*collseed)[j], theTmpTrajectories);
 
-          LogDebug("CkfPattern") << "======== Out-in trajectory building found " << theTmpTrajectories.size()
+          edm::LogWarning("CkfPattern") << "======== Out-in trajectory building found " << theTmpTrajectories.size()
                                  << " valid/invalid trajectories from seed " << j << " ========\n"
                                  << PrintoutHelper::dumpCandidates(theTmpTrajectories);
           if (theTmpTrajectories.empty()) {
@@ -324,7 +345,7 @@ namespace cms {
         // Select the best trajectory from this seed (after seed region rebuilding, can be more than one)
         theTrajectoryCleaner->clean(theTmpTrajectories);
 
-        LogDebug("CkfPattern") << "======== Trajectory cleaning gave the following " << theTmpTrajectories.size()
+        edm::LogWarning("CkfPattern") << "======== Trajectory cleaning gave the following " << theTmpTrajectories.size()
                                << " valid trajectories from seed " << j << " ========\n"
                                << PrintoutHelper::dumpCandidates(theTmpTrajectories);
 
@@ -347,7 +368,7 @@ namespace cms {
 
         theTmpTrajectories.clear();
 
-        LogDebug("CkfPattern") << "rawResult trajectories found so far = " << rawResult.size();
+        edm::LogWarning("CkfPattern") << "rawResult trajectories found so far = " << rawResult.size();
 
         {
           Lock lock(theMutex);
@@ -390,11 +411,11 @@ namespace cms {
       // Rejected ones just flagged as invalid.
       theTrajectoryCleaner->clean(rawResult);
 
-      LogDebug("CkfPattern") << "======== Final cleaning of entire event found " << rawResult.size()
+      edm::LogWarning("CkfPattern") << "======== Final cleaning of entire event found " << rawResult.size()
                              << " valid/invalid trajectories =======" << endl
                              << PrintoutHelper::dumpCandidates(rawResult);
 
-      LogDebug("CkfPattern") << "removing invalid trajectories.";
+      edm::LogWarning("CkfPattern") << "removing invalid trajectories.";
 
       // Assuming here that theLoop() gives at most one Trajectory per seed
       for (const auto& traj : rawResult) {
@@ -458,16 +479,16 @@ namespace cms {
         Traj2TrackHits t2t(theTrajectoryBuilder->hitBuilder(), true);
 
         for (vector<Trajectory>::const_iterator it = unsmoothedResult.begin(); it != unsmoothedResult.end(); ++it) {
-          LogDebug("CkfPattern") << "copying " << (useSplitting ? "splitted" : "un-splitted")
+          edm::LogWarning("CkfPattern") << "copying " << (useSplitting ? "splitted" : "un-splitted")
                                  << " hits from trajectory";
           edm::OwnVector<TrackingRecHit> recHits;
           if (it->direction() != alongMomentum)
-            LogDebug("CkfPattern") << "not along momentum... " << std::endl;
+            edm::LogWarning("CkfPattern") << "not along momentum... " << std::endl;
           t2t(*it, recHits, useSplitting);
 
           viTotHits += recHits.size();
 
-          LogDebug("CkfPattern") << "getting initial state.";
+          edm::LogWarning("CkfPattern") << "getting initial state.";
           Trajectory trialTrajectory = (*it);
           std::pair<TrajectoryStateOnSurface, const GeomDet*> initState;
           bool failed = false;
@@ -475,9 +496,9 @@ namespace cms {
           do {
             // Drop last hit if previous backFitter was not successful
             if (failed) {
-              LogDebug("CkfPattern") << "removing last hit";
+              edm::LogWarning("CkfPattern") << "removing last hit";
               trialTrajectory.pop();
-              LogDebug("CkfPattern") << "hits remaining " << trialTrajectory.foundHits();
+              edm::LogWarning("CkfPattern") << "hits remaining " << trialTrajectory.foundHits();
             }
 
             // Get inner state
@@ -497,7 +518,7 @@ namespace cms {
 
           PTrajectoryStateOnDet state;
           if (useSplitting && (initState.second != recHits.front().det()) && recHits.front().det()) {
-            LogDebug("CkfPattern") << "propagating to hit front in case of splitting.";
+            edm::LogWarning("CkfPattern") << "propagating to hit front in case of splitting.";
             TrajectoryStateOnSurface&& propagated =
                 propagator.propagate(initState.first, recHits.front().det()->surface());
             if (!propagated.isValid())
@@ -506,7 +527,7 @@ namespace cms {
           } else
             state =
                 trajectoryStateTransform::persistentState(initState.first, initState.second->geographicalId().rawId());
-          LogDebug("CkfPattern") << "pushing a TrackCandidate.";
+          edm::LogWarning("CkfPattern") << "pushing a TrackCandidate.";
           output->emplace_back(recHits, it->seed(), state, it->seedRef(), it->nLoops(), (uint8_t)it->stopReason());
         }
       }  //output trackcandidates

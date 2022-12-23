@@ -69,6 +69,10 @@ namespace mkfit {
     bool is_pixel() const { return m_is_pixel; }
     bool is_stereo() const { return m_is_stereo; }
 
+    bool has_r_range_hole() const { return m_has_r_range_hole; }
+    float hole_r_min() const { return m_hole_r_min; }
+    float hole_r_max() const { return m_hole_r_max; }
+
     bool is_within_z_limits(float z) const { return z > m_zmin && z < m_zmax; }
     bool is_within_r_limits(float r) const { return r > m_rin && r < m_rout; }
     bool is_within_q_limits(float q) const { return is_barrel() ? is_within_z_limits(q) : is_within_r_limits(q); }

@@ -26,6 +26,7 @@
 
 // Set this to select a single track for deep debugging:
 //#define SELECT_SEED_LABEL -494
+constexpr static bool debug = true;
 
 namespace mkfit {
 
@@ -164,7 +165,7 @@ namespace {
 //------------------------------------------------------------------------------
 
 namespace mkfit {
-
+  constexpr static bool debug = true;
   std::unique_ptr<MkBuilder> MkBuilder::make_builder(bool silent) { return std::make_unique<MkBuilder>(silent); }
 
   void MkBuilder::populate() { g_exe_ctx.populate(Config::numThreadsFinder); }
@@ -418,7 +419,7 @@ namespace mkfit {
       int count = 0;
 
       for (int i = 0; i < (int)tv.size(); ++i) {
-        bool silly = tv[i].hasSillyValues(Const::nan_n_silly_print_bad_seeds,
+        bool silly = tv[i].hasSillyValues(true /*Const::nan_n_silly_print_bad_seeds*/,
                                           Const::nan_n_silly_fixup_bad_seeds,
                                           "Post-cleaning seed silly value check and fix");
         if (silly) {
@@ -1073,6 +1074,7 @@ namespace mkfit {
         // propagate to current layer
         (mkfndr->*fnd_foos.m_propagate_foo)(
             layer_info.propagate_to(), end - itrack, prop_config.finding_inter_layer_pflags);
+        dcall(post_prop_print(curr_layer, mkfndr));
 
         dprint("now get hit range");
 

@@ -12,6 +12,8 @@ namespace {
 }  // namespace
 
 namespace mkfit {
+  constexpr static bool debug = true;
+
 
   void CandCloner::setup(const IterationParams &ip) {
     mp_iteration_params = &ip;
@@ -143,13 +145,25 @@ namespace mkfit {
       dprint("  seed n " << is << " with input candidates=" << hitsForSeed.size());
       for (int ih = 0; ih < (int)hitsForSeed.size(); ih++) {
         dprint("trkIdx=" << hitsForSeed[ih].trkIdx << " hitIdx=" << hitsForSeed[ih].hitIdx
-                         << " chi2=" << hitsForSeed[ih].chi2 << std::endl
+                         << " chi2=" << hitsForSeed[ih].chi2
+                         << " score=" << hitsForSeed[ih].score << std::endl
                          << "    "
                          << "original pt=" << ccand[hitsForSeed[ih].trkIdx].pT() << " "
                          << "nTotalHits=" << ccand[hitsForSeed[ih].trkIdx].nTotalHits() << " "
                          << "nFoundHits=" << ccand[hitsForSeed[ih].trkIdx].nFoundHits() << " "
                          << "chi2=" << ccand[hitsForSeed[ih].trkIdx].chi2());
       }
+
+      dprint("extras available "<<extras.size());
+      for (int ie = 0; ie < (int)extras.size(); ie++){
+        auto const& ex = extras[ie];
+        dprint("  " << ie << " : score " << ex.score()<< " pt " << ex.pT()
+               << " overlaps " << ex.nOverlapHits() << " lastCCix " <<ex.lastCcIndex());
+        for (int ih = 0u; ih <  ex.combCandidate()->hotsSize(); ++ih) {
+          auto const& hn = ex.combCandidate()->hot_node(ih);
+          dprint(" hit "<<ih<< " ix " << hn.m_hot.index << " il " << hn.m_hot.layer << " ch2 " << hn.m_chi2 << " idx " << hn.m_prev_idx);
+        }
+      }      
 #endif
 
       if (!hitsForSeed.empty()) {
@@ -157,6 +171,13 @@ namespace mkfit {
         std::sort(hitsForSeed.begin(), hitsForSeed.end(), sortCandListByScore);
 
         int num_hits = (int)hitsForSeed.size();
+
+#ifdef DEBUG
+        dprint("select leading " << num_hits << " from:");
+        for (int ih = 0; ih < (int)hitsForSeed.size(); ++ih)
+          dprint("  " << ih << " score " << hitsForSeed[ih].score << " hIdx " << hitsForSeed[ih].hitIdx);
+#endif
+        
 
         // This is from buffer, we know it was cleared after last usage.
         std::vector<TrackCand> &cv = t_cands_for_next_lay[is - is_beg];
@@ -173,6 +194,7 @@ namespace mkfit {
           tc.setScore(h2a.score);
 
           if (h2a.hitIdx == -2) {
+            dprint("cand with hitIdx == -2: "<< h2a.score << " vs " << ccand.refBestShortCand().score());
             if (h2a.score > ccand.refBestShortCand().score()) {
               ccand.setBestShortCand(tc);
             }
@@ -186,6 +208,8 @@ namespace mkfit {
                  n_pushed < mp_iteration_params->maxCandsPerSeed) {
             cv.emplace_back(*extra_i);
             ++n_pushed;
+            dprint("added an extra ( now " << n_pushed << " ): score " << extra_i->score()<< " pt " << extra_i->pT()
+                   << " overlaps " << extra_i->nOverlapHits());
             ++extra_i;
           }
 
@@ -206,6 +230,14 @@ namespace mkfit {
 
           cv.emplace_back(tc);
           ++n_pushed;
+          dprint("added a cand ( now " << n_pushed << " ): label " << tc.label() << " score " << tc.score()<< " pt " << tc.pT()
+                 << " overlaps " << tc.nOverlapHits() << " lastCCix " <<tc.lastCcIndex());
+#ifdef DEBUG
+          for (int ih = 0u; ih <  tc.combCandidate()->hotsSize(); ++ih) {
+            auto const& hn = tc.combCandidate()->hot_node(ih);
+            dprint(" hit "<<ih<< " ix " << hn.m_hot.index << " il " << hn.m_hot.layer << " ch2 " << hn.m_chi2 << " idx " << hn.m_prev_idx);
+          }
+#endif
 
           if (n_pushed >= mp_iteration_params->maxCandsPerSeed)
             break;
@@ -215,6 +247,8 @@ namespace mkfit {
         while (extra_i != extra_e && n_pushed < mp_iteration_params->maxCandsPerSeed) {
           cv.emplace_back(*extra_i);
           ++n_pushed;
+          dprint("added a late extra ( now " << n_pushed << " ): score " << extra_i->score()<< " pt " << extra_i->pT()
+                 << " overlaps " << extra_i->nOverlapHits());
           ++extra_i;
         }
 
