@@ -1,0 +1,30 @@
+<!-- host-only plugins -->
+<library file="*.cc" name="RecoTrackerLSTPlugins">
+  <use name="DataFormats/TrackCandidate"/>
+  <use name="DataFormats/TrackerRecHit2D"/>
+  <use name="FWCore/Framework"/>
+  <use name="FWCore/ParameterSet"/>
+  <use name="FWCore/Utilities"/>
+  <use name="MagneticField/Engine"/>
+  <use name="RecoTracker/LST"/>
+  <use name="RecoTracker/TkSeedGenerator"/>
+  <use name="TrackingTools/Records"/>
+  <use name="TrackingTools/TrajectoryState"/>
+  <use name="TrackingTools/TransientTrackingRecHit"/>
+  <use name="Validation/RecoTrack"/>
+  <flags EDM_PLUGIN="1"/>
+</library>
+
+<!-- alpaka-based portable plugins -->
+<library file="alpaka/*.cc" name="RecoTrackerLSTPluginsPortable">
+  <use name="alpaka"/>
+  <use name="lst"/>
+  <use name="FWCore/Framework"/>
+  <use name="FWCore/ParameterSet"/>
+  <use name="FWCore/Utilities"/>
+  <use name="HeterogeneousCore/AlpakaCore"/>
+  <use name="HeterogeneousCore/AlpakaInterface"/>
+  <use name="RecoTracker/LST"/>
+  <flags ALPAKA_BACKENDS="cuda"/>
+  <flags EDM_PLUGIN="1"/>
+</library>
