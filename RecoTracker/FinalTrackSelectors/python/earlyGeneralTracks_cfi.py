@@ -107,6 +107,16 @@ trackingPhase2PU140.toReplaceWith(earlyGeneralTracks, _trackListMerger.clone(
     makeReKeyedSeeds = cms.untracked.bool(False)
     )
 )
+from Configuration.ProcessModifiers.trackingIters01_cff import trackingIters01
+trackingIters01.toModify(earlyGeneralTracks,
+                         TrackProducers = ['initialStepTracks', 'highPtTripletStepTracks'],
+                         hasSelector = [1,1],
+                         indivShareFrac = [1,0.16],
+                         selectedTrackQuals = ['initialStepSelector:initialStep',
+                                               'highPtTripletStepSelector:highPtTripletStep'
+                         ],
+                         setsToMerge = {0: dict(tLists = [0,1])}
+)
 from Configuration.ProcessModifiers.vectorHits_cff import vectorHits
 def _extend_pixelLess(x):
     x.TrackProducers += ['pixelLessStepTracks']
