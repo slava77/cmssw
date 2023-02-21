@@ -116,3 +116,14 @@ def _extend_pixelLess(x):
     x.setsToMerge[0].tLists += [6]
 (trackingPhase2PU140 & vectorHits).toModify(earlyGeneralTracks, _extend_pixelLess)
 
+def _dropIter(mod, iteration):
+     mod.TrackProducers.pop(iteration)
+     mod.hasSelector.pop(iteration)
+     mod.indivShareFrac.pop(iteration)
+     mod.selectedTrackQuals.pop(iteration)
+     mod.setsToMerge[0].tLists.pop(iteration)
+
+from Configuration.ProcessModifiers.trackingLST_cff import trackingLST
+# remove initialStep from earlyGeneralTracks inputs
+(trackingPhase2PU140 & trackingLST).toModify(earlyGeneralTracks, func=lambda x:_dropIter(x,0))
+(trackingPhase2PU140 & trackingLST).toModify(earlyGeneralTracks, indivShareFrac = {0:  1})
