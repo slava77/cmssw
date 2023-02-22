@@ -15,17 +15,15 @@
 #include "RecoTracker/LST/interface/LSTPhase2OTHitsInput.h"
 #include "RecoTracker/LST/interface/LSTOutput.h"
 #include "RecoTracker/TkSeedingLayers/interface/SeedingHitSet.h"
+
+#include "RecoTracker/TkSeedGenerator/interface/SeedCreator.h"
 #include "RecoTracker/TkSeedGenerator/interface/SeedCreatorFactory.h"
+
 #include "RecoTracker/TkTrackingRegions/interface/GlobalTrackingRegion.h"
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 
-//typedef SeedingHitSet::ConstRecHitPointer Hit;
-//
-//struct HitLessByRadius {
-//  bool operator()(const Hit& h1, const Hit& h2) { return h1->globalPosition().perp2() < h2->globalPosition().perp2(); }
-//};
 
 class LSTOutputConverter : public edm::global::EDProducer<> {
 public:
@@ -44,7 +42,7 @@ private:
   edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorAlongToken_;
   edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorOppositeToken_;
   //const edm::EDGetTokenT<reco::BeamSpot> beamSpotToken_;
-  //std::unique_ptr<SeedCreator> seedCreator_;
+  std::unique_ptr<SeedCreator> seedCreator_;
   const edm::EDPutTokenT<TrackCandidateCollection> trackCandidatePutToken_;
   const edm::EDPutTokenT<std::vector<SeedStopInfo>> seedStopInfoPutToken_;
 };
@@ -57,7 +55,7 @@ LSTOutputConverter::LSTOutputConverter(edm::ParameterSet const& iConfig)
       propagatorAlongToken_{esConsumes<Propagator, TrackingComponentsRecord>(iConfig.getParameter<edm::ESInputTag>("propagatorAlong"))},
       propagatorOppositeToken_{esConsumes<Propagator, TrackingComponentsRecord>(iConfig.getParameter<edm::ESInputTag>("propagatorOpposite"))},
       //beamSpotToken_(consumes<reco::BeamSpot>(iConfig.getUntrackedParameter<edm::InputTag>("beamSpot"))),
-      //seedCreator_(SeedCreatorFactory::get()->create("SeedFromConsecutiveHitsCreator", iConfig.getParameter<edm::ParameterSet>("SeedCreatorPSet"), consumesCollector())),
+      seedCreator_(SeedCreatorFactory::get()->create("SeedFromConsecutiveHitsCreator", iConfig.getParameter<edm::ParameterSet>("SeedCreatorPSet"), consumesCollector())),
       trackCandidatePutToken_(produces<TrackCandidateCollection>()),
       seedStopInfoPutToken_(produces<std::vector<SeedStopInfo>>()) {}
 
@@ -71,16 +69,16 @@ void LSTOutputConverter::fillDescriptions(edm::ConfigurationDescriptions& descri
   desc.add("propagatorOpposite", edm::ESInputTag{"", "PropagatorWithMaterialOpposite"});
   //desc.addUntracked<edm::InputTag>("beamSpot", edm::InputTag("offlineBeamSpot"));
 
-  //edm::ParameterSetDescription psd0;
-  //psd0.add<std::string>("ComponentName", std::string("SeedFromConsecutiveHitsCreator"));
-  //psd0.add<std::string>("propagator", std::string("PropagatorWithMaterial"));
-  //psd0.add<double>("SeedMomentumForBOFF", 5.0);
-  //psd0.add<double>("OriginTransverseErrorMultiplier", 1.0);
-  //psd0.add<double>("MinOneOverPtError", 1.0);
-  //psd0.add<std::string>("magneticField", std::string(""));
-  //psd0.add<std::string>("TTRHBuilder", std::string("WithTrackAngle"));
-  //psd0.add<bool>("forceKinematicWithRegionDirection", false);
-  //desc.add<edm::ParameterSetDescription>("SeedCreatorPSet", psd0);
+  edm::ParameterSetDescription psd0;
+  psd0.add<std::string>("ComponentName", std::string("SeedFromConsecutiveHitsCreator"));
+  psd0.add<std::string>("propagator", std::string("PropagatorWithMaterial"));
+  psd0.add<double>("SeedMomentumForBOFF", 5.0);
+  psd0.add<double>("OriginTransverseErrorMultiplier", 1.0);
+  psd0.add<double>("MinOneOverPtError", 1.0);
+  psd0.add<std::string>("magneticField", std::string(""));
+  psd0.add<std::string>("TTRHBuilder", std::string("WithTrackAngle"));
+  psd0.add<bool>("forceKinematicWithRegionDirection", false);
+  desc.add<edm::ParameterSetDescription>("SeedCreatorPSet", psd0);
 
   descriptions.addWithDefaultLabel(desc);
 }
@@ -96,12 +94,12 @@ void LSTOutputConverter::produce(edm::StreamID, edm::Event& iEvent, const edm::E
   //auto const& bs = iEvent.get(beamSpotToken_);
 
   // Vector definitions
-  std::vector<std::vector<unsigned int>> const lstTC_hitIdx = lstOutput.hitIdx();
-  std::vector<unsigned int> const lstTC_len = lstOutput.len();
-  std::vector<float> const lstTC_pt = lstOutput.pt();
-  std::vector<float> const lstTC_eta = lstOutput.eta();
-  std::vector<float> const lstTC_phi = lstOutput.phi();
-  std::vector<int> const lstTC_seedIdx = lstOutput.seedIdx();
+  std::vector<std::vector<unsigned int>> const& lstTC_hitIdx = lstOutput.hitIdx();
+  std::vector<unsigned int> const& lstTC_len = lstOutput.len();
+  std::vector<float> const& lstTC_pt = lstOutput.pt();
+  std::vector<float> const& lstTC_eta = lstOutput.eta();
+  std::vector<float> const& lstTC_phi = lstOutput.phi();
+  std::vector<int> const& lstTC_seedIdx = lstOutput.seedIdx();
 
   TrackCandidateCollection output;
   output.reserve(lstTC_len.size());
@@ -113,33 +111,18 @@ void LSTOutputConverter::produce(edm::StreamID, edm::Event& iEvent, const edm::E
   LogDebug("LSTOutputConverter")<<"lstTC size "<<lstTC_len.size();
   for (unsigned int i=0; i<lstTC_len.size(); i++) {
     LogDebug("LSTOutputConverter")<<" cand "<<i<<" "<<lstTC_len[i]<<" "<<lstTC_pt[i]<<" "<<lstTC_eta[i]<<" "<<lstTC_phi[i]<<" "<<lstTC_seedIdx[i];
-    if (lstTC_seedIdx[i] == -1) { // T5
-      continue; // temporary
-      //std::vector<Hit> hitsFromT5;
-      //for (auto hitIdx : lstTC_hitIdx[i])
-      //  hitsFromT5.push_back((Hit) OTHits[hitIdx]);
-      //sort(hitsFromT5.begin(), hitsFromT5.end(), HitLessByRadius());
-      //GlobalTrackingRegion region(lstTC_pt[i], vtxOfBs, 0.2, 0.2);
-      //seedCreator_->init(region, iSetup, nullptr);
-      //seedCreator_->makeSeed(*seedsFromT5, hitsFromT5);
-    }
 
-    //TrajectorySeed s = lstTC_seedIdx[i] == -1 ? (*seedsFromT5)[0] : pixelSeeds[lstTC_seedIdx[i]];
-    TrajectorySeed s = pixelSeeds[lstTC_seedIdx[i]];
+    TrajectorySeed seed;
+    if (lstTC_seedIdx[i] != - 1)
+      seed = pixelSeeds[lstTC_seedIdx[i]];
 
     edm::OwnVector<TrackingRecHit> recHits;
-    for (auto const& hit : s.recHits())
-      recHits.push_back(hit.clone());
-
-    TrajectoryStateOnSurface tsos = trajectoryStateTransform::transientState(s.startingState(), recHits.back().surface(), &mf);
-    auto tsosPair = propAlo.propagateWithPath(tsos, *recHits[0].surface());
-    if (!tsosPair.first.isValid()) {
-      LogDebug("MkFitOutputConverter") << "Propagating to startingState along momentum failed, trying opposite next";
-      tsosPair = propOppo.propagateWithPath(tsos, *recHits[0].surface());
+    if (lstTC_seedIdx[i] != - 1) {
+      for (auto const& hit : seed.recHits())
+        recHits.push_back(hit.clone());
     }
-    PTrajectoryStateOnDet st = trajectoryStateTransform::persistentState(tsosPair.first, recHits[0].det()->geographicalId().rawId());
 
-    unsigned int const nPixelHits = lstTC_len[i]==10 ? 0 : recHits.size();
+    unsigned int const nPixelHits = lstTC_seedIdx[i] == -1 ? 0 : recHits.size();
     for (unsigned int j=nPixelHits; j<lstTC_hitIdx[i].size(); j++)
       recHits.push_back(OTHits[lstTC_hitIdx[i][j]]->clone());
 
@@ -163,7 +146,45 @@ void LSTOutputConverter::produce(edm::StreamID, edm::Event& iEvent, const edm::E
       }
     });
 
-    output.emplace_back(TrackCandidate(recHits,s,st));
+    if (lstTC_seedIdx[i] == -1) { // T5
+      using Hit = SeedingHitSet::ConstRecHitPointer;
+      std::vector<Hit> hitsFromT5;
+      hitsFromT5.reserve(lstTC_len[i]);
+      for (auto const& hit : recHits)
+        hitsFromT5.emplace_back(dynamic_cast<Hit>(&hit));
+
+      TrajectorySeedCollection seeds;
+      seedCreator_->init(GlobalTrackingRegion(), iSetup, nullptr);
+      seedCreator_->makeSeed(seeds, hitsFromT5);
+      if (seeds.empty()) {
+        edm::LogInfo("LSTOutputConverter")<<"failed to convert a T5 to a seed"<<i<<" "<<lstTC_len[i]
+                                             <<" "<<lstTC_pt[i]<<" "<<lstTC_eta[i]<<" "<<lstTC_phi[i]<<" "<<lstTC_seedIdx[i];
+        continue;
+      }
+      seed = seeds[0];
+      auto const& ss = seed.startingState();
+      LogDebug("LSTOutputConverter")<<"Created a seed with "<<seed.nHits()<<" "<<ss.detId()<<" "<<ss.pt()
+                                           <<" "<<ss.parameters().vector()<<" "<<ss.error(0);
+    }
+
+
+    TrajectoryStateOnSurface tsos = trajectoryStateTransform::transientState(seed.startingState(), (seed.recHits().end()-1)->surface(), &mf);
+    auto tsosPair = propOppo.propagateWithPath(tsos, *recHits[0].surface());
+    if (!tsosPair.first.isValid()) {
+      LogDebug("LSTOutputConverter") << "Propagating to startingState opposite to momentum failed, trying along next";
+      tsosPair = propAlo.propagateWithPath(tsos, *recHits[0].surface());
+    }
+    if (tsosPair.first.isValid()) {
+      PTrajectoryStateOnDet st = trajectoryStateTransform::persistentState(tsosPair.first, recHits[0].det()->geographicalId().rawId());
+
+      output.emplace_back(TrackCandidate(recHits,seed,st));
+    } else {
+      edm::LogInfo("LSTOutputConverter")<<"Failed to make a candidate initial state. Seed state is "<<tsos
+                                           <<" TC cand "<<i<<" "<<lstTC_len[i]
+                                           <<" "<<lstTC_pt[i]<<" "<<lstTC_eta[i]<<" "<<lstTC_phi[i]<<" "<<lstTC_seedIdx[i]
+                                           <<" first hit "<<recHits.front().globalPosition()
+                                           <<" last hit "<<recHits.back().globalPosition();
+    }
   }
 
   LogDebug("LSTOutputConverter")<<"done with conversion: output size "<<output.size();
