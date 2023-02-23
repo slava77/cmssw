@@ -7,9 +7,14 @@
   <use name="FWCore/Framework"/>
   <use name="FWCore/ParameterSet"/>
   <use name="FWCore/Utilities"/>
+  <use name="Geometry/TrackerGeometryBuilder"/>
   <use name="MagneticField/Engine"/>
+  <use name="MagneticField/Records"/>
   <use name="RecoTracker/LST"/>
+  <use name="RecoTracker/TkSeedingLayers"/>
   <use name="RecoTracker/TkSeedGenerator"/>
+  <use name="TrackingTools/Records"/>
+  <use name="TrackingTools/GeomPropagators"/>
   <use name="TrackingTools/Records"/>
   <use name="TrackingTools/TrajectoryState"/>
   <use name="TrackingTools/TransientTrackingRecHit"/>

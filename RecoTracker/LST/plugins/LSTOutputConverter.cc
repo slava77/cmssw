@@ -10,6 +10,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "RecoTracker/LST/interface/LSTPhase2OTHitsInput.h"
@@ -41,6 +42,7 @@ private:
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> mfToken_;
   edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorAlongToken_;
   edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorOppositeToken_;
+  const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tGeomToken_;
   //const edm::EDGetTokenT<reco::BeamSpot> beamSpotToken_;
   std::unique_ptr<SeedCreator> seedCreator_;
   const edm::EDPutTokenT<TrackCandidateCollection> trackCandidatePutToken_;
@@ -55,6 +57,7 @@ LSTOutputConverter::LSTOutputConverter(edm::ParameterSet const& iConfig)
       propagatorAlongToken_{esConsumes<Propagator, TrackingComponentsRecord>(iConfig.getParameter<edm::ESInputTag>("propagatorAlong"))},
       propagatorOppositeToken_{esConsumes<Propagator, TrackingComponentsRecord>(iConfig.getParameter<edm::ESInputTag>("propagatorOpposite"))},
       //beamSpotToken_(consumes<reco::BeamSpot>(iConfig.getUntrackedParameter<edm::InputTag>("beamSpot"))),
+      tGeomToken_(esConsumes()),
       seedCreator_(SeedCreatorFactory::get()->create("SeedFromConsecutiveHitsCreator", iConfig.getParameter<edm::ParameterSet>("SeedCreatorPSet"), consumesCollector())),
       trackCandidatePutToken_(produces<TrackCandidateCollection>()),
       seedStopInfoPutToken_(produces<std::vector<SeedStopInfo>>()) {}
@@ -91,6 +94,7 @@ void LSTOutputConverter::produce(edm::StreamID, edm::Event& iEvent, const edm::E
   const auto& mf = iSetup.getData(mfToken_);
   const auto& propAlo = iSetup.getData(propagatorAlongToken_);
   const auto& propOppo = iSetup.getData(propagatorOppositeToken_);
+  const auto& tracker = iSetup.getData(tGeomToken_);
   //auto const& bs = iEvent.get(beamSpotToken_);
 
   // Vector definitions
@@ -150,8 +154,14 @@ void LSTOutputConverter::produce(edm::StreamID, edm::Event& iEvent, const edm::E
       using Hit = SeedingHitSet::ConstRecHitPointer;
       std::vector<Hit> hitsFromT5;
       hitsFromT5.reserve(lstTC_len[i]);
-      for (auto const& hit : recHits)
+      int nHits = 0;
+      for (auto const& hit : recHits) {
+        auto hType = tracker.getDetectorType(hit.geographicalId());
+        if (hType != TrackerGeometry::ModuleType::Ph2PSP && nHits <= 2)
+          continue; // the first two should be P
         hitsFromT5.emplace_back(dynamic_cast<Hit>(&hit));
+        nHits++;
+      }
 
       TrajectorySeedCollection seeds;
       seedCreator_->init(GlobalTrackingRegion(), iSetup, nullptr);
