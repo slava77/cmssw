@@ -157,7 +157,7 @@ void LSTOutputConverter::produce(edm::StreamID, edm::Event& iEvent, const edm::E
       int nHits = 0;
       for (auto const& hit : recHits) {
         auto hType = tracker.getDetectorType(hit.geographicalId());
-        if (hType != TrackerGeometry::ModuleType::Ph2PSP && nHits <= 2)
+        if (hType != TrackerGeometry::ModuleType::Ph2PSP && nHits < 2)
           continue; // the first two should be P
         hitsFromT5.emplace_back(dynamic_cast<Hit>(&hit));
         nHits++;
