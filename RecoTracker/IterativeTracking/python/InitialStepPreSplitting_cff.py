@@ -204,15 +204,8 @@ jetsForCoreTrackingPreSplitting = jetsForCoreTracking.clone(
     src    = 'ak4CaloJetsForTrkPreSplitting'
 )
 
-#Cluster Splitting
-from RecoLocalTracker.SubCollectionProducers.jetCoreClusterSplitter_cfi import jetCoreClusterSplitter
-siPixelClusters = jetCoreClusterSplitter.clone(
-    pixelClusters = 'siPixelClustersPreSplitting',
-    vertices      = 'firstStepPrimaryVerticesPreSplitting',
-    cores         = 'jetsForCoreTrackingPreSplitting'
-)
-
 # Final sequence
+from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizer_cfi import siPixelClusters
 from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import siPixelRecHits
 from RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi import MeasurementTrackerEvent
 from RecoPixelVertexing.PixelLowPtUtilities.siPixelClusterShapeCache_cfi import *
@@ -252,25 +245,13 @@ trackingMkFitInitialStepPreSplitting.toReplaceWith(InitialStepPreSplittingTask, 
 # collections for non-splitted pixel clusters. All modules before
 # iterTracking sequence use siPixelClustersPreSplitting and
 # siPixelRecHitsPreSplitting for that purpose.
-#
-# If siPixelClusters would be defined in
-# RecoLocalTracker.Configuration.RecoLocalTracker_cff, we would have a
-# situation where
-# - LowPU/Phase2PU140 has siPixelClusters defined in RecoLocalTracker_cff
-# - everything else has siPixelClusters defined here
-# and this leads to a mess. The way it is done here we have only
-# one place (within Reconstruction_cff) where siPixelClusters
-# module is defined.
-from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizer_cfi import siPixelClusters as _siPixelClusters
-from Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU
-trackingLowPU.toReplaceWith(siPixelClusters, _siPixelClusters)
-from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
-trackingPhase2PU140.toReplaceWith(siPixelClusters, _siPixelClusters)
 _InitialStepPreSplittingTask_LowPU_Phase2PU140 = cms.Task(
     siPixelClusters ,
     siPixelRecHits ,
     MeasurementTrackerEvent ,
     siPixelClusterShapeCache
 )
-trackingLowPU.toReplaceWith(InitialStepPreSplittingTask, _InitialStepPreSplittingTask_LowPU_Phase2PU140)
-trackingPhase2PU140.toReplaceWith(InitialStepPreSplittingTask, _InitialStepPreSplittingTask_LowPU_Phase2PU140)
+from Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU
+from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
+(trackingLowPU | trackingPhase2PU140).toReplaceWith(InitialStepPreSplittingTask, _InitialStepPreSplittingTask_LowPU_Phase2PU140)
+

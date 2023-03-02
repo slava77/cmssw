@@ -120,7 +120,7 @@ pixelNtupletFit.toReplaceWith(pixelTracks, _pixelTrackProducerFromSoA.clone(
 ))
 
 (pixelNtupletFit & phase2_tracker).toReplaceWith(pixelTracks, _pixelTrackProducerFromSoAPhase2.clone(
-    pixelRecHitLegacySrc = "siPixelRecHitsPreSplitting",
+    pixelRecHitLegacySrc = "siPixelRecHits",
 ))
 
 pixelNtupletFit.toReplaceWith(pixelTracksTask, cms.Task(
@@ -158,12 +158,12 @@ gpu.toModify(pixelTracksSoA,
 ))
 
 phase2_tracker.toModify(pixelTracksSoA,cpu = _pixelTracksCUDAPhase2.clone(
-    pixelRecHitSrc = "siPixelRecHitsPreSplittingSoA",
+    pixelRecHitSrc = "siPixelRecHitsSoA",
     onGPU = False
 ))
 
 phase2_tracker.toReplaceWith(pixelTracksCUDA,_pixelTracksCUDAPhase2.clone(
-    pixelRecHitSrc = "siPixelRecHitsPreSplittingCUDA",
+    pixelRecHitSrc = "siPixelRecHitsCUDA",
     onGPU = True,
 ))
 

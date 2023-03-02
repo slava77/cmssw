@@ -12,6 +12,7 @@ clusterSummaryProducer = cms.EDProducer('ClusterSummaryProducer',
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
 phase2_tracker.toModify(clusterSummaryProducer,
   doStrips = False,
-  stripClusters = ''
+  stripClusters = '',
+  pixelClusters = 'siPixelClusters'
 )
 clusterSummaryProducerNoSplitting = clusterSummaryProducer.clone(pixelClusters = 'siPixelClusters')

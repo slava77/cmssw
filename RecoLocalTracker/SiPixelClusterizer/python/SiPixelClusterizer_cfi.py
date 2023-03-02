@@ -49,3 +49,15 @@ from Configuration.ProcessModifiers.pixelNtupletFit_cff import pixelNtupletFit
 (phase2_tracker & pixelNtupletFit).toModify(siPixelClusters, #at the moment the duplicate dropping is not imnplemented in Phase2
     DropDuplicates = False
 )
+
+#Cluster Splitting
+from RecoLocalTracker.SubCollectionProducers.jetCoreClusterSplitter_cfi import jetCoreClusterSplitter
+_siPixelClustersSplit = jetCoreClusterSplitter.clone(
+    pixelClusters = 'siPixelClustersPreSplitting',
+    vertices      = 'firstStepPrimaryVerticesPreSplitting',
+    cores         = 'jetsForCoreTrackingPreSplitting'
+)
+
+from Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU
+from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
+(~(phase2_tracker | trackingLowPU | trackingPhase2PU140)).toReplaceWith(siPixelClusters, _siPixelClustersSplit)
