@@ -3,18 +3,16 @@ from HeterogeneousCore.CUDACore.SwitchProducerCUDA import SwitchProducerCUDA
 from Configuration.ProcessModifiers.gpu_cff import gpu
 
 # legacy pixel rechit producer
-siPixelRecHits = cms.EDProducer("SiPixelRecHitConverter",
+siPixelRecHits = SwitchProducerCUDA(cpu = cms.EDProducer("SiPixelRecHitConverter",
     src = cms.InputTag("siPixelClusters"),
     CPE = cms.string('PixelCPEGeneric'),
     VerboseLevel = cms.untracked.int32(0)
-)
+))
 
 # SwitchProducer wrapping the legacy pixel rechit producer
-siPixelRecHitsPreSplitting = SwitchProducerCUDA(
-    cpu = siPixelRecHits.clone(
-        src = 'siPixelClustersPreSplitting'
-    )
-)
+siPixelRecHitsPreSplitting = siPixelRecHits.clone(cpu = dict(
+    src = 'siPixelClustersPreSplitting'
+))
 
 # phase 2 tracker modifier
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker

@@ -206,11 +206,12 @@ jetsForCoreTrackingPreSplitting = jetsForCoreTracking.clone(
 
 #Cluster Splitting
 from RecoLocalTracker.SubCollectionProducers.jetCoreClusterSplitter_cfi import jetCoreClusterSplitter
-siPixelClusters = jetCoreClusterSplitter.clone(
+from HeterogeneousCore.CUDACore.SwitchProducerCUDA import SwitchProducerCUDA
+siPixelClusters = SwitchProducerCUDA(cpu = jetCoreClusterSplitter.clone(
     pixelClusters = 'siPixelClustersPreSplitting',
     vertices      = 'firstStepPrimaryVerticesPreSplitting',
     cores         = 'jetsForCoreTrackingPreSplitting'
-)
+))
 
 # Final sequence
 from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import siPixelRecHits
@@ -265,7 +266,15 @@ from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizer_cfi import siPixelCl
 from Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU
 trackingLowPU.toReplaceWith(siPixelClusters, _siPixelClusters)
 from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
-trackingPhase2PU140.toReplaceWith(siPixelClusters, _siPixelClusters)
+from Configuration.ProcessModifiers.gpu_cff import gpu
+(trackingPhase2PU140 & (~gpu)).toReplaceWith(siPixelClusters, _siPixelClusters)
+from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizerPreSplitting_cfi import siPixelClustersPreSplitting as _clustersSwitch
+(trackingPhase2PU140 & gpu).toReplaceWith(siPixelClusters, _clustersSwitch.clone())
+
+from Configuration.ProcessModifiers.pixelNtupletFit_cff import pixelNtupletFit
+from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import siPixelRecHitsPreSplitting
+(trackingPhase2PU140 & pixelNtupletFit).toReplaceWith(siPixelRecHits, siPixelRecHitsPreSplitting.clone())
+(trackingPhase2PU140 & pixelNtupletFit & gpu).toModify(siPixelRecHits.cuda, src = "siPixelClusters")
 _InitialStepPreSplittingTask_LowPU_Phase2PU140 = cms.Task(
     siPixelClusters ,
     siPixelRecHits ,

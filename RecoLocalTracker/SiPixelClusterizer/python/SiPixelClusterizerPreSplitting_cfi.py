@@ -7,7 +7,7 @@ from CondTools.SiPixel.SiPixelGainCalibrationService_cfi import *
 # legacy pixel cluster producer
 from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizer_cfi import siPixelClusters as _siPixelClusters
 siPixelClustersPreSplitting = SwitchProducerCUDA(
-    cpu = _siPixelClusters.clone()
+    cpu = _siPixelClusters.cpu.clone()
 )
 
 from Configuration.ProcessModifiers.gpu_cff import gpu

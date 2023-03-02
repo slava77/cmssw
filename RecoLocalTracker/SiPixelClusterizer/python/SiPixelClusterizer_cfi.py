@@ -1,11 +1,12 @@
 import FWCore.ParameterSet.Config as cms
 
 from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizerDefault_cfi import SiPixelClusterizerDefault as _SiPixelClusterizerDefault
-siPixelClusters = _SiPixelClusterizerDefault.clone()
+from HeterogeneousCore.CUDACore.SwitchProducerCUDA import SwitchProducerCUDA
+siPixelClusters = SwitchProducerCUDA(cpu = _SiPixelClusterizerDefault.clone())
 
 # phase1 pixel
 from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
-phase1Pixel.toModify(siPixelClusters,
+phase1Pixel.toModify(siPixelClusters.cpu,
   VCaltoElectronGain      = 47,   # L2-4: 47 +- 4.7
   VCaltoElectronGain_L1   = 50,   # L1:   49.6 +- 2.6
   VCaltoElectronOffset    = -60,  # L2-4: -60 +- 130
@@ -20,7 +21,7 @@ phase1Pixel.toModify(siPixelClusters,
 #from Configuration.Eras.Era_Run3_cff import Run3
 #Run3.toModify(siPixelClusters,
 from Configuration.Eras.Modifier_run3_common_cff import run3_common
-run3_common.toModify(siPixelClusters,
+run3_common.toModify(siPixelClusters.cpu,
   VCaltoElectronGain      = 1,  # all gains=1, pedestals=0
   VCaltoElectronGain_L1   = 1,
   VCaltoElectronOffset    = 0,
@@ -31,7 +32,7 @@ run3_common.toModify(siPixelClusters,
 # Need these until phase2 pixel templates are used
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
 from SimTracker.SiPhase2Digitizer.phase2TrackerDigitizer_cfi import PixelDigitizerAlgorithmCommon
-phase2_tracker.toModify(siPixelClusters, # FIXME
+phase2_tracker.toModify(siPixelClusters.cpu, # FIXME
   src = 'simSiPixelDigis:Pixel',
   DropDuplicates = False, # do not drop duplicates for phase-2 until the digitizer can handle them consistently
   MissCalibrate = False,
@@ -42,10 +43,10 @@ phase2_tracker.toModify(siPixelClusters, # FIXME
   ElectronPerADCGain = PixelDigitizerAlgorithmCommon.ElectronPerAdc.value()
 )
 from Configuration.ProcessModifiers.premix_stage2_cff import premix_stage2
-(premix_stage2 & phase2_tracker).toModify(siPixelClusters,
+(premix_stage2 & phase2_tracker).toModify(siPixelClusters.cpu,
     src = "mixData:Pixel"
 )
 from Configuration.ProcessModifiers.pixelNtupletFit_cff import pixelNtupletFit
-(phase2_tracker & pixelNtupletFit).toModify(siPixelClusters, #at the moment the duplicate dropping is not imnplemented in Phase2
+(phase2_tracker & pixelNtupletFit).toModify(siPixelClusters.cpu, #at the moment the duplicate dropping is not imnplemented in Phase2
     DropDuplicates = False
 )
