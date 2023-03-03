@@ -274,7 +274,7 @@ from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizerPreSplitting_cfi impo
 from Configuration.ProcessModifiers.pixelNtupletFit_cff import pixelNtupletFit
 from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import siPixelRecHitsPreSplitting
 (trackingPhase2PU140 & pixelNtupletFit).toReplaceWith(siPixelRecHits, siPixelRecHitsPreSplitting.clone())
-(trackingPhase2PU140 & pixelNtupletFit & gpu).toModify(siPixelRecHits.cuda, src = "siPixelClusters")
+(trackingPhase2PU140 & pixelNtupletFit & gpu).toModify(siPixelRecHits, cuda = dict(src = "siPixelClusters"))
 _InitialStepPreSplittingTask_LowPU_Phase2PU140 = cms.Task(
     siPixelClusters ,
     siPixelRecHits ,
