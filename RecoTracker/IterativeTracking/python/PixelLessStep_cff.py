@@ -361,6 +361,7 @@ pixelLessStepTracks = RecoTracker.TrackProducer.TrackProducerIterativeDefault_cf
     Fitter        = 'FlexibleKFFittingSmoother'
 )
 fastSim.toModify(pixelLessStepTracks, TTRHBuilder = 'WithoutRefit')
+trackingMkFitPixelLessStep.toModify(pixelLessStepTracks, Fitter = 'FlexibleKFFittingNoOutliersSmoother')
 
 from Configuration.Eras.Modifier_phase2_timing_layer_cff import phase2_timing_layer
 phase2_timing_layer.toModify(pixelLessStepTracks, TrajectoryInEvent = True)
