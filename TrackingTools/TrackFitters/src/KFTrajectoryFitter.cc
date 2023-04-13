@@ -5,6 +5,7 @@
 #include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/isFinite.h"
+#include "DataFormats/TrackingRecHit/interface/InvalidTrackingRecHit.h"
 #include "DataFormats/TrackerRecHit2D/interface/BaseTrackerRecHit.h"
 #include "DataFormats/TrackerRecHit2D/interface/TkCloner.h"
 #include "FWCore/Utilities/interface/Likely.h"
@@ -121,6 +122,19 @@ Trajectory KFTrajectoryFitter::fitOne(const TrajectorySeed& aSeed,
       } else {
         LogTrace("TrackFitters") << "THE Precise HIT IS VALID: updating currTsos"
                                  << "\n";
+        float hitEstimate = estimator()->estimate(predTsos, *preciseHit).second;
+
+        float maxEst = hitcounter == 1 ? maxEst_ * firstHitScale_ : maxEst_;
+        if (maxEst > 0 && hitEstimate > maxEst) {
+          LogTrace("FailedUpdate") << "Hit fails compatibility check " << hitEstimate << " > " << maxEst;
+          myTraj.push(TM(predTsos,
+                         std::make_shared<InvalidTrackingRecHit>(*ihit->det(), TrackingRecHit::missing),
+                         0,
+                         theGeometry->idToLayer((ihit)->geographicalId())));
+          currTsos = predTsos;
+          continue;
+        }
+
         currTsos = updator()->update(predTsos, *preciseHit);
         //check for valid hits with no det (refitter with constraints)
         bool badState = (!currTsos.isValid()) ||
@@ -157,11 +171,8 @@ Trajectory KFTrajectoryFitter::fitOne(const TrajectorySeed& aSeed,
           }
         } else {
           if (preciseHit->det()) {
-            myTraj.push(TM(predTsos,
-                           currTsos,
-                           preciseHit,
-                           estimator()->estimate(predTsos, *preciseHit).second,
-                           theGeometry->idToLayer(preciseHit->geographicalId())));
+            myTraj.push(
+                TM(predTsos, currTsos, preciseHit, hitEstimate, theGeometry->idToLayer(preciseHit->geographicalId())));
           } else {
             myTraj.push(TM(predTsos, currTsos, preciseHit, estimator()->estimate(predTsos, *preciseHit).second));
           }

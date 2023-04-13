@@ -32,13 +32,17 @@ public:
                      const MeasurementEstimator& aEstimator,
                      int minHits = 3,
                      const DetLayerGeometry* detLayerGeometry = nullptr,
-                     TkCloner const* hc = nullptr)
+                     TkCloner const* hc = nullptr,
+                     float maxEst = -1,
+                     float firstHitScale = 1)
       : thePropagator(aPropagator.clone()),
         theUpdator(aUpdator.clone()),
         theEstimator(aEstimator.clone()),
         theHitCloner(hc),
         theGeometry(detLayerGeometry),
         minHits_(minHits),
+        maxEst_(maxEst),
+        firstHitScale_(firstHitScale),
         owner(true) {
     if (!theGeometry)
       theGeometry = &dummyGeometry;
@@ -51,13 +55,17 @@ public:
                      const MeasurementEstimator* aEstimator,
                      int minHits = 3,
                      const DetLayerGeometry* detLayerGeometry = nullptr,
-                     TkCloner const* hc = nullptr)
+                     TkCloner const* hc = nullptr,
+                     float maxEst = -1,
+                     float firstHitScale = 1)
       : thePropagator(aPropagator),
         theUpdator(aUpdator),
         theEstimator(aEstimator),
         theHitCloner(hc),
         theGeometry(detLayerGeometry),
         minHits_(minHits),
+        maxEst_(maxEst),
+        firstHitScale_(firstHitScale),
         owner(false) {
     if (!theGeometry)
       theGeometry = &dummyGeometry;
@@ -86,10 +94,22 @@ public:
   const MeasurementEstimator* estimator() const { return theEstimator; }
 
   std::unique_ptr<TrajectoryFitter> clone() const override {
-    return owner ? std::unique_ptr<TrajectoryFitter>(new KFTrajectoryFitter(
-                       *thePropagator, *theUpdator, *theEstimator, minHits_, theGeometry, theHitCloner))
-                 : std::unique_ptr<TrajectoryFitter>(new KFTrajectoryFitter(
-                       thePropagator, theUpdator, theEstimator, minHits_, theGeometry, theHitCloner));
+    return owner ? std::unique_ptr<TrajectoryFitter>(new KFTrajectoryFitter(*thePropagator,
+                                                                            *theUpdator,
+                                                                            *theEstimator,
+                                                                            minHits_,
+                                                                            theGeometry,
+                                                                            theHitCloner,
+                                                                            maxEst_,
+                                                                            firstHitScale_))
+                 : std::unique_ptr<TrajectoryFitter>(new KFTrajectoryFitter(thePropagator,
+                                                                            theUpdator,
+                                                                            theEstimator,
+                                                                            minHits_,
+                                                                            theGeometry,
+                                                                            theHitCloner,
+                                                                            maxEst_,
+                                                                            firstHitScale_));
   }
 
   // FIXME a prototype:	final inplementaiton may differ
@@ -103,6 +123,8 @@ private:
   TkCloner const* theHitCloner = nullptr;
   const DetLayerGeometry* theGeometry;
   int minHits_;
+  float maxEst_;
+  float firstHitScale_;
   bool owner;
 };
 

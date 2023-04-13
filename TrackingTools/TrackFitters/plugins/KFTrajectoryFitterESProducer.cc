@@ -32,6 +32,8 @@ namespace {
       desc.add<std::string>("Estimator", "Chi2");
       desc.add<std::string>("RecoGeometry", "GlobalDetLayerGeometry");
       desc.add<int>("minHits", 3);
+      desc.add<double>("maxEstimate", -1)->setComment("max value of estimator; -1 to disable the check");
+      desc.add<double>("firstHitScale", 0.01)->setComment("estimate scale factor for the first hit");
       descriptions.add("KFTrajectoryFitter", desc);
     }
 
@@ -41,10 +43,14 @@ namespace {
     edm::ESGetToken<Chi2MeasurementEstimatorBase, TrackingComponentsRecord> estToken_;
     edm::ESGetToken<DetLayerGeometry, RecoGeometryRecord> geoToken_;
     const int minHits_;
+    const float maxEst_;
+    const float firstHitScale_;
   };
 
   KFTrajectoryFitterESProducer::KFTrajectoryFitterESProducer(const edm::ParameterSet& p)
-      : minHits_{p.getParameter<int>("minHits")} {
+      : minHits_{p.getParameter<int>("minHits")},
+        maxEst_{static_cast<float>(p.getParameter<double>("maxEstimate"))},
+        firstHitScale_{static_cast<float>(p.getParameter<double>("firstHitScale"))} {
     std::string myname = p.getParameter<std::string>("ComponentName");
     auto cc = setWhatProduced(this, myname);
     propToken_ = cc.consumes(edm::ESInputTag("", p.getParameter<std::string>("Propagator")));
@@ -54,8 +60,14 @@ namespace {
   }
 
   std::unique_ptr<TrajectoryFitter> KFTrajectoryFitterESProducer::produce(const TrajectoryFitterRecord& iRecord) {
-    return std::make_unique<KFTrajectoryFitter>(
-        &iRecord.get(propToken_), &iRecord.get(updToken_), &iRecord.get(estToken_), minHits_, &iRecord.get(geoToken_));
+    return std::make_unique<KFTrajectoryFitter>(&iRecord.get(propToken_),
+                                                &iRecord.get(updToken_),
+                                                &iRecord.get(estToken_),
+                                                minHits_,
+                                                &iRecord.get(geoToken_),
+                                                nullptr,
+                                                maxEst_,
+                                                firstHitScale_);
   }
 
 }  // namespace
