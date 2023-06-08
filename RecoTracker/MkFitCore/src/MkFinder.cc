@@ -1360,7 +1360,6 @@ namespace mkfit {
     // We expect input in iC slots from above function.
     // See comment in MkBuilder::find_tracks_in_layer() about intra / inter flags used here
     // for propagation to the hit.
-    clearFailFlag();
     (*fnd_foos.m_compute_chi2_foo)(m_Err[iC],
                                    m_Par[iC],
                                    m_Chg,
@@ -1368,7 +1367,6 @@ namespace mkfit {
                                    m_msPar,
                                    m_Chi2,
                                    m_Par[iP],
-                                   m_FailFlag,
                                    N_proc,
                                    m_prop_config->finding_inter_layer_pflags,
                                    m_prop_config->finding_requires_propagation_to_hit_pos);
