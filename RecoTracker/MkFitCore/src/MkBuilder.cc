@@ -1140,12 +1140,12 @@ namespace mkfit {
         mkfndr->chi2OfLoadedHit(end - itrack, fnd_foos);
 
         for (int ii = itrack; ii < end; ++ii) {
-          /*const int fi = ii - itrack;*/
+          const int fi = ii - itrack;
           TrackCand &tc = eoccs[seed_cand_overlap_idx[ii].seed_idx][seed_cand_overlap_idx[ii].cand_idx];
 
           // XXXX For now we DO NOT use chi2 as this was how things were done before the post-update
           // chi2 check. To use it we should retune scoring function (might be even simpler).
-          /*if (mkfndr->m_Chi2[fi] >= 0.0f && mkfndr->m_Chi2[fi] <= 60.0f)*/ {
+          if (mkfndr->m_Chi2[fi] >= 0.0f && mkfndr->m_Chi2[fi] <= 60.0f) {
             tc.addHitIdx(seed_cand_overlap_idx[ii].ovlp_idx, curr_layer, 0.0f);
             tc.incOverlapCount();
           }
