@@ -275,6 +275,7 @@ initialStepTracks = RecoTracker.TrackProducer.TrackProducerIterativeDefault_cfi.
     Fitter        = 'FlexibleKFFittingSmoother'
 )
 fastSim.toModify(initialStepTracks, TTRHBuilder = 'WithoutRefit')
+trackingMkFitInitialStep.toModify(initialStepTracks, Fitter = 'FlexibleKFFittingNoOutliersSmoother')
 
 from Configuration.Eras.Modifier_phase2_timing_layer_cff import phase2_timing_layer
 phase2_timing_layer.toModify(initialStepTracks, TrajectoryInEvent = True)
