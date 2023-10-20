@@ -1,5 +1,9 @@
 <use name="DataFormats/Common"/>
+<use name="lst"/>
+<use name="alpaka"/>
 <use name="DataFormats/TrackerRecHit2D"/>
+<use name="HeterogeneousCore/AlpakaInterface"/>
+<flags ALPAKA_BACKENDS="cuda serial"/>
 <export>
-  <lib name="RecoTrackerLST"/>
+  <lib name="1"/>
 </export>
