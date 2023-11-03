@@ -35,9 +35,9 @@
   <flags EDM_PLUGIN="1"/>
 </library>
 
-<library file="alpaka/*.cc" name="RecoTrackerLSTPluginsPortableGpu">
+<library file="alpaka/*.cc" name="RecoTrackerLSTPluginsPortableCuda">
   <use name="alpaka"/>
-  <use name="lst_gpu"/>
+  <use name="lst_cuda"/>
   <use name="FWCore/Framework"/>
   <use name="FWCore/ParameterSet"/>
   <use name="FWCore/Utilities"/>
