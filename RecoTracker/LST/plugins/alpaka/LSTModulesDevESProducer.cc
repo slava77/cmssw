@@ -9,6 +9,8 @@
 #include "RecoTracker/Record/interface/TrackerRecoGeometryRecord.h"
 
 // LST includes
+#include <SDL/ModuleMethods.h>
+#include <SDL/LST.h>
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   
@@ -39,7 +41,12 @@ void LSTModulesDevESProducer::fillDescriptions(edm::ConfigurationDescriptions &d
 }
 
   std::optional<SDL::modulesBuffer<alpaka_common::DevHost>> LSTModulesDevESProducer::produce(const TrackerRecoGeometryRecord &iRecord) {
-    return SDL::modulesBuffer<alpaka_common::DevHost>(cms::alpakatools::host());
+    // write directly to SDL : FIXME : SHOULD NOT HAPPEN HERE
+    SDL::modulesBuffer<alpaka_common::DevHost> modules(cms::alpakatools::host());
+    alpaka::QueueCpuBlocking queue(cms::alpakatools::host());
+    SDL::LST::loadMaps();
+    SDL::loadModulesFromFile(&modules, SDL::nModules, SDL::nLowerModules, *SDL::pixelMapping, queue, txtFile_.c_str());
+    return modules;
 }
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE

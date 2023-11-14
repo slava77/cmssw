@@ -40,8 +40,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       auto const& phase2OTHits = event.get(lstPhase2OTHitsInputToken_);
 
       auto const& modulesData = setup.getData(modulesESToken_);
-      edm::LogWarning("MYDEBUG")<<*modulesData.nLowerModules<<" "<<*modulesData.nModules;
-      lst_.eventSetup();
+      SDL::modulesInGPU->setData(modulesData);
       lst_.run(event.queue(),
                verbose_,
                pixelSeeds.px(),
