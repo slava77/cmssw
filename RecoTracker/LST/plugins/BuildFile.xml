@@ -1,6 +1,6 @@
 <!-- host-only plugins -->
 <library file="*.cc" name="RecoTrackerLSTPlugins">
-  <use name="lst"/>
+  <use name="lst_cpu"/>
   <use name="DataFormats/TrackCandidate"/>
   <use name="DataFormats/TrackReco"/>
   <use name="DataFormats/TrackerRecHit2D"/>
