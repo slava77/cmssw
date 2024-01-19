@@ -91,8 +91,7 @@ lstInputSequence = cms.Sequence(lstInputTask)
 # Main LST Producer
 process.load('Configuration.StandardSequences.Accelerators_cff')
 process.load("HeterogeneousCore.AlpakaCore.ProcessAcceleratorAlpaka_cfi")
-from RecoTracker.LST.lstProducer_cfi import lstProducer as _lstProducer
-process.lstProducer = _lstProducer.clone()
+process.load("RecoTracker.LST.lstProducer_cff")
 
 # Track Fitting
 import RecoTracker.TrackProducer.TrackProducer_cfi
