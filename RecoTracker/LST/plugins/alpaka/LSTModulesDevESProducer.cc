@@ -44,7 +44,7 @@ LSTModulesDevESProducer::LSTModulesDevESProducer(const edm::ParameterSet &iConfi
 void LSTModulesDevESProducer::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<std::string>("ComponentName", "")->setComment("Product label");
-  desc.add<edm::FileInPath>("txt", edm::FileInPath())
+  desc.add<edm::FileInPath>("txt", edm::FileInPath("RecoTracker/LST/data/centroid_CMSSW_12_2_0_pre2.txt"))
       ->setComment("Path to the txt file for the module map parameters");
   descriptions.addWithDefaultLabel(desc);
 }
