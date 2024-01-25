@@ -46,7 +46,6 @@ void LSTModulesDevESProducer::fillDescriptions(edm::ConfigurationDescriptions &d
 }
 
   std::optional<SDL::modulesBuffer<alpaka_common::DevHost>> LSTModulesDevESProducer::produce(const TrackerRecoGeometryRecord &iRecord) {
-    // write directly to SDL : FIXME : SHOULD NOT HAPPEN HERE
     SDL::modulesBuffer<alpaka_common::DevHost> modules(cms::alpakatools::host());
     alpaka::QueueCpuBlocking queue(cms::alpakatools::host());
     SDL::LST::loadAndFillES(queue, &modules);
