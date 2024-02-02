@@ -387,14 +387,9 @@ from RecoLocalTracker.Phase2TrackerRecHits.Phase2TrackerRecHits_cfi import siPha
 from RecoTracker.LST.lstSeedTracks_cfi import lstInitialStepSeedTracks,lstHighPtTripletStepSeedTracks
 from RecoTracker.LST.lstPixelSeedInputProducer_cfi import lstPixelSeedInputProducer
 from RecoTracker.LST.lstPhase2OTHitsInputProducer_cfi import lstPhase2OTHitsInputProducer
-from RecoTracker.LST.lstProducer_cfi import lstProducer as _lstProducer
-# Define lstProducer like this to be able to run the serial version explicitly
-lstProducer = _lstProducer.clone(
-  alpaka = cms.untracked.PSet(backend = cms.untracked.string('serial_sync'))
-)
-from Configuration.ProcessModifiers.gpu_cff import gpu
-gpu.toReplaceWith(lstProducer,_lstProducer.clone())
-_HighPtTripletStepTask_LST.add(siPhase2RecHits, lstInitialStepSeedTracks, lstHighPtTripletStepSeedTracks, lstPixelSeedInputProducer, lstPhase2OTHitsInputProducer, lstProducer)
+from RecoTracker.LST.lstProducer_cff import *
+_HighPtTripletStepTask_LST.add(siPhase2RecHits, lstInitialStepSeedTracks, lstHighPtTripletStepSeedTracks, lstPixelSeedInputProducer, lstPhase2OTHitsInputProducer,
+                               lstProducer, lstModulesDevESProducer)
 (trackingPhase2PU140 & trackingLST).toReplaceWith(HighPtTripletStepTask, _HighPtTripletStepTask_LST)
 
 # fast tracking mask producer 
