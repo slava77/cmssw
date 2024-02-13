@@ -40,8 +40,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       auto const& phase2OTHits = event.get(lstPhase2OTHitsInputToken_);
 
       auto const& modulesData = setup.getData(modulesESToken_);
-      SDL::globals::modulesBuffersES = &modulesData;
       lst_.run(event.queue(),
+               &modulesData,
                verbose_,
                pixelSeeds.px(),
                pixelSeeds.py(),
