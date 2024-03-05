@@ -1,0 +1,9 @@
+<use name="DataFormats/Common"/>
+<use name="alpaka"/>
+<use name="lst_headers"/>
+<use name="DataFormats/TrackerRecHit2D"/>
+<use name="HeterogeneousCore/AlpakaInterface"/>
+<flags ALPAKA_BACKENDS="cuda serial"/>
+<export>
+  <lib name="1"/>
+</export>
