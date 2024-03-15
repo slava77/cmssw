@@ -88,7 +88,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const int verbose_;
     edm::EDPutTokenT<LSTOutput> lstOutputToken_;
 
-    SDL::LST lst_;
+    SDL::LST<SDL::Acc> lst_;
   };
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
