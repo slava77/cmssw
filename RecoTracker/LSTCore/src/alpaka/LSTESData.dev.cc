@@ -24,7 +24,7 @@ namespace {
       std::stringstream search_path(std::getenv("CMSSW_SEARCH_PATH"));
       std::string path;
       while (std::getline(search_path, path, ':')) {
-        if (std::filesystem::exists(path+"/RecoTracker/LSTCore/data")) {
+        if (std::filesystem::exists(path + "/RecoTracker/LSTCore/data")) {
           path_str = path;
           break;
         }
