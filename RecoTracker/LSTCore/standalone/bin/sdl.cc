@@ -63,10 +63,8 @@ int main(int argc, char **argv) {
       "j,nsplit_jobs", "Enable splitting jobs by N blocks (--job_index must be set)", cxxopts::value<int>())(
       "I,job_index",
       "job_index of split jobs (--nsplit_jobs must be set. index starts from 0. i.e. 0, 1, 2, 3, etc...)",
-      cxxopts::value<int>())(
-      "3,tc_pls_triplets" , "Allow triplet pLSs in TC collection")(
-      "2,no_pls_dupclean" , "Disable pLS duplicate cleaning (both steps)")(
-      "h,help", "Print help");
+      cxxopts::value<int>())("3,tc_pls_triplets", "Allow triplet pLSs in TC collection")(
+      "2,no_pls_dupclean", "Disable pLS duplicate cleaning (both steps)")("h,help", "Print help");
 
   auto result = options.parse(argc, argv);
 
@@ -443,10 +441,10 @@ void run_sdl() {
       timing_LS = runSegment(events.at(omp_get_thread_num()));
       timing_T3 = runT3(events.at(omp_get_thread_num()));
       timing_T5 = runQuintuplet(events.at(omp_get_thread_num()));
-      timing_pLS = runPixelLineSegment(events.at(omp_get_thread_num()),ana.no_pls_dupclean);
+      timing_pLS = runPixelLineSegment(events.at(omp_get_thread_num()), ana.no_pls_dupclean);
       timing_pT5 = runPixelQuintuplet(events.at(omp_get_thread_num()));
       timing_pT3 = runpT3(events.at(omp_get_thread_num()));
-      timing_TC = runTrackCandidate(events.at(omp_get_thread_num()),ana.no_pls_dupclean,ana.tc_pls_triplets);
+      timing_TC = runTrackCandidate(events.at(omp_get_thread_num()), ana.no_pls_dupclean, ana.tc_pls_triplets);
 
       if (ana.verbose == 4) {
 #pragma omp critical
