@@ -66,9 +66,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     void produce(device::Event& event, device::EventSetup const&) override {
       // Output
-      LSTOutput lstOutput;
-      lstOutput.setLSTOutputTraits(lst_.hits(), lst_.len(), lst_.seedIdx(), lst_.trackCandidateType());
-
+      LSTOutput lstOutput(lst_.hits(), lst_.len(), lst_.seedIdx(), lst_.trackCandidateType());
       event.emplace(lstOutputToken_, std::move(lstOutput));
     }
 
