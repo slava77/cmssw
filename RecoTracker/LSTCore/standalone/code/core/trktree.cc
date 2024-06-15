@@ -6744,7 +6744,9 @@ namespace tas {
   const std::vector<std::vector<int> > &simhit_hitType() { return trk.simhit_hitType(); }
   const std::vector<unsigned short> &ph2_isUpper() { return trk.ph2_isUpper(); }
   const std::vector<unsigned int> &see_nStrip() { return trk.see_nStrip(); }
-  const std::vector<float> &trk_bestSimTrkShareFracSimClusterDenom() { return trk.trk_bestSimTrkShareFracSimClusterDenom(); }
+  const std::vector<float> &trk_bestSimTrkShareFracSimClusterDenom() {
+    return trk.trk_bestSimTrkShareFracSimClusterDenom();
+  }
   const std::vector<unsigned short> &simhit_side() { return trk.simhit_side(); }
   const std::vector<float> &simhit_x() { return trk.simhit_x(); }
   const std::vector<int> &see_q() { return trk.see_q(); }

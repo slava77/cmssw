@@ -576,7 +576,10 @@ void RooUtil::Cutflow::fillCutflow(std::vector<TString>& cutlist, THist* h, THis
 }
 
 //_______________________________________________________________________________________________________
-void RooUtil::Cutflow::fillCutflow_v2(std::vector<RooUtil::CutTree*>& cuttreelist, THist* h, THist* hraw, float wgtsyst) {
+void RooUtil::Cutflow::fillCutflow_v2(std::vector<RooUtil::CutTree*>& cuttreelist,
+                                      THist* h,
+                                      THist* hraw,
+                                      float wgtsyst) {
   for (unsigned int i = 0; i < cuttreelist.size(); ++i) {
     RooUtil::CutTree* ct = cuttreelist[i];
     // if (std::find(cutflow_nofill_cut_list.begin(), cutflow_nofill_cut_list.end(), ct->name) != cutflow_nofill_cut_list.end())

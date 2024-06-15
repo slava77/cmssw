@@ -208,16 +208,18 @@ namespace RooUtil {
                        TString = "");
     void bookVecHistogram(
         TString,
-        std::pair<TString,
-                  std::tuple<unsigned, float, float, std::function<std::vector<float>()>, std::function<std::vector<float>()>>>,
+        std::pair<
+            TString,
+            std::tuple<unsigned, float, float, std::function<std::vector<float>()>, std::function<std::vector<float>()>>>,
         TString = "");
     void bookHistogram(TString,
                        std::pair<TString, std::tuple<std::vector<float>, std::function<float()>>>,
                        TString = "");
     void bookVecHistogram(
         TString,
-        std::pair<TString,
-                  std::tuple<std::vector<float>, std::function<std::vector<float>()>, std::function<std::vector<float>()>>>,
+        std::pair<
+            TString,
+            std::tuple<std::vector<float>, std::function<std::vector<float>()>, std::function<std::vector<float>()>>>,
         TString = "");
     void book2DHistogram(
         TString,

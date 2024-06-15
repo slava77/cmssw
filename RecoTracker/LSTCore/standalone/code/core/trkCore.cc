@@ -388,7 +388,10 @@ std::vector<int> matchedSimTrkIdxs(std::vector<unsigned int> hitidxs,
 
   // Compute all permutations
   std::function<void(std::vector<std::vector<int>> &, std::vector<int>, size_t, std::vector<std::vector<int>> &)> perm =
-      [&](std::vector<std::vector<int>> &result, std::vector<int> intermediate, size_t n, std::vector<std::vector<int>> &va) {
+      [&](std::vector<std::vector<int>> &result,
+          std::vector<int> intermediate,
+          size_t n,
+          std::vector<std::vector<int>> &va) {
         // std::cout <<  " 'called': " << "called" <<  std::endl;
         if (va.size() > n) {
           for (auto x : va[n]) {
