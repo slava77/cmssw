@@ -44,7 +44,7 @@ namespace {
   }
 
   void loadMapsHost(SDL::MapPLStoLayer& pLStoLayer,
-                    std::shared_ptr<SDL::EndcapGeometryHost<SDL::Dev>> endcapGeometry,
+                    std::shared_ptr<SDL::EndcapGeometry<SDL::DevHost>> endcapGeometry,
                     std::shared_ptr<SDL::TiltedGeometry<SDL::Dev>> tiltedGeometry,
                     std::shared_ptr<SDL::ModuleConnectionMap<SDL::Dev>> moduleConnectionMap) {
     // Module orientation information (DrDz or phi angles)
@@ -81,30 +81,21 @@ namespace {
   }
 }  // namespace
 
-std::unique_ptr<SDL::LSTESHostData<SDL::Dev>> SDL::loadAndFillESHost() {
-  auto pLStoLayer = std::make_shared<SDL::MapPLStoLayer>();
-  auto endcapGeometry = std::make_shared<SDL::EndcapGeometryHost<SDL::Dev>>();
-  auto tiltedGeometry = std::make_shared<SDL::TiltedGeometry<SDL::Dev>>();
-  auto moduleConnectionMap = std::make_shared<SDL::ModuleConnectionMap<SDL::Dev>>();
-  ::loadMapsHost(*pLStoLayer, endcapGeometry, tiltedGeometry, moduleConnectionMap);
-  return std::make_unique<LSTESHostData<SDL::Dev>>(pLStoLayer, endcapGeometry, tiltedGeometry, moduleConnectionMap);
-}
-
-std::unique_ptr<SDL::LSTESDeviceData<SDL::Dev>> SDL::loadAndFillESDevice(SDL::QueueAcc& queue,
-                                                                         const LSTESHostData<SDL::Dev>* hostData) {
-  SDL::Dev const& devAccIn = alpaka::getDev(queue);
+std::unique_ptr<SDL::LSTESData<SDL::DevHost>> SDL::loadAndFillESHost() {
   uint16_t nModules;
   uint16_t nLowerModules;
   unsigned int nPixels;
-  std::shared_ptr<SDL::modulesBuffer<SDL::Dev>> modulesBuffers = nullptr;
-  auto endcapGeometry = std::make_shared<SDL::EndcapGeometry<SDL::Dev>>(devAccIn, queue, *hostData->endcapGeometry);
+  std::shared_ptr<SDL::modulesBuffer<SDL::DevHost>> modulesBuffers = nullptr;
+  auto pLStoLayer = std::make_shared<SDL::MapPLStoLayer>();
+  auto endcapGeometry = std::make_shared<SDL::EndcapGeometry<SDL::DevHost>>(cms::alpakatools::host());
+  auto tiltedGeometry = std::make_shared<SDL::TiltedGeometry<SDL::Dev>>();
   auto pixelMapping = std::make_shared<SDL::pixelMap>();
-  auto moduleConnectionMap = hostData->moduleConnectionMap;
+  auto moduleConnectionMap = std::make_shared<SDL::ModuleConnectionMap<SDL::Dev>>();
+  ::loadMapsHost(*pLStoLayer, endcapGeometry, tiltedGeometry, moduleConnectionMap);
 
   auto path =
       get_absolute_path_after_check_file_exists(trackLooperDir() + "/data/OT800_IT615_pt0.8/sensor_centroids.bin");
-  SDL::loadModulesFromFile(queue,
-                           hostData->mapPLStoLayer.get(),
+  SDL::loadModulesFromFile(pLStoLayer.get(),
                            path.c_str(),
                            nModules,
                            nLowerModules,
@@ -112,8 +103,30 @@ std::unique_ptr<SDL::LSTESDeviceData<SDL::Dev>> SDL::loadAndFillESDevice(SDL::Qu
                            modulesBuffers,
                            pixelMapping.get(),
                            endcapGeometry.get(),
-                           hostData->tiltedGeometry.get(),
+                           tiltedGeometry.get(),
                            moduleConnectionMap.get());
-  return std::make_unique<LSTESDeviceData<SDL::Dev>>(
+  return std::make_unique<LSTESData<SDL::DevHost>>(
       nModules, nLowerModules, nPixels, modulesBuffers, endcapGeometry, pixelMapping);
 }
+
+template <typename TQueue>
+SDL::LSTESData<alpaka::Dev<TQueue>> cms::alpakatools::CopyToDevice<SDL::LSTESData<SDL::DevHost>>::copyAsync(
+    TQueue& queue, SDL::LSTESData<SDL::DevHost> const& srcData) {
+  auto deviceModulesBuffers = std::make_shared<SDL::modulesBuffer<alpaka::Dev<TQueue>>>(
+      alpaka::getDev(queue), srcData.nModules, srcData.nPixels);
+  deviceModulesBuffers->copyFromSrc(queue, *srcData.modulesBuffers);
+  auto deviceEndcapGeometry =
+      std::make_shared<SDL::EndcapGeometry<alpaka::Dev<TQueue>>>(queue, *srcData.endcapGeometry);
+
+  return SDL::LSTESData<alpaka::Dev<TQueue>>(srcData.nModules,
+                                             srcData.nLowerModules,
+                                             srcData.nPixels,
+                                             deviceModulesBuffers,
+                                             deviceEndcapGeometry,
+                                             srcData.pixelMapping);
+}
+
+// Make sure it is compiled
+template struct cms::alpakatools::CopyToDevice<SDL::LSTESData<SDL::DevHost>>;
+template SDL::LSTESData<alpaka::Dev<SDL::QueueAcc>> cms::alpakatools::CopyToDevice<
+    SDL::LSTESData<SDL::DevHost>>::copyAsync<SDL::QueueAcc>(SDL::QueueAcc&, SDL::LSTESData<SDL::DevHost> const&);

@@ -97,7 +97,7 @@ namespace SDL {
   public:
     // Constructor used for CMSSW integration. Uses an external queue.
     template <typename TQueue>
-    Event(bool verbose, TQueue const& q, const LSTESDeviceData<Dev>* deviceESData)
+    Event(bool verbose, TQueue const& q, const LSTESData<Dev>* deviceESData)
         : queue(q),
           devAcc(alpaka::getDev(q)),
           devHost(cms::alpakatools::host()),
