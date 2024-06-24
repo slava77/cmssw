@@ -231,7 +231,7 @@ namespace SDL {
                                   unsigned int& nPixels,
                                   std::shared_ptr<modulesBuffer<DevHost>>& modulesBuf,
                                   pixelMap* pixelMapping,
-                                  const EndcapGeometry<DevHost>* endcapGeometry,
+                                  const EndcapGeometry<Dev>* endcapGeometry,
                                   const TiltedGeometry<Dev>* tiltedGeometry,
                                   const ModuleConnectionMap<Dev>* moduleConnectionMap) {
     ModuleMetaData mmd;

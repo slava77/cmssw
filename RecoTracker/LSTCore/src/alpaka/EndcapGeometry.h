@@ -15,33 +15,27 @@
 #include "Constants.h"
 #endif
 
-#include "HeterogeneousCore/AlpakaInterface/interface/host.h"
-
 namespace SDL {
-
-  template <typename TDev>
-  class EndcapGeometry {
+  template <typename>
+  class EndcapGeometry;
+  template <>
+  class EndcapGeometry<SDL::Dev> {
   private:
     std::map<unsigned int, float> dxdy_slope_;     // dx/dy slope
     std::map<unsigned int, float> centroid_phis_;  // centroid phi
 
-    // Friend all other instantiations of this template
-    template <typename OtherTDev>
-    friend class EndcapGeometry;
-
   public:
-    Buf<TDev, unsigned int> geoMapDetId_buf;
-    Buf<TDev, float> geoMapPhi_buf;
+    std::vector<unsigned int> geoMapDetId_buf;
+    std::vector<float> geoMapPhi_buf;
 
     unsigned int nEndCapMap;
 
-    EndcapGeometry(TDev const& devAccIn);
-    template <typename TQueue>
-    EndcapGeometry(TQueue& queue, EndcapGeometry<DevHost> const& endcapGeometrySrc);
+    EndcapGeometry() = default;
+    EndcapGeometry(std::string filename);
     ~EndcapGeometry() = default;
 
     void load(std::string);
-    void fillGeoMapArraysExplicitHost();
+    void fillGeoMapArraysExplicit();
     float getdxdy_slope(unsigned int detid) const;
   };
 }  // namespace SDL

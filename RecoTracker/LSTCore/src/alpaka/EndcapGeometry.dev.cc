@@ -1,23 +1,8 @@
 #include "EndcapGeometry.h"
 
-template <typename TDev>
-SDL::EndcapGeometry<TDev>::EndcapGeometry(TDev const& devAccIn)
-    : geoMapDetId_buf(allocBufWrapper<unsigned int>(devAccIn, 0)), geoMapPhi_buf(allocBufWrapper<float>(devAccIn, 0)) {}
+SDL::EndcapGeometry<SDL::Dev>::EndcapGeometry(std::string filename) { load(filename); }
 
-template <typename TDev>
-template <typename TQueue>
-SDL::EndcapGeometry<TDev>::EndcapGeometry(TQueue& queue, SDL::EndcapGeometry<SDL::DevHost> const& endcapGeometrySrc)
-    : dxdy_slope_(endcapGeometrySrc.dxdy_slope_),
-      centroid_phis_(endcapGeometrySrc.centroid_phis_),
-      geoMapDetId_buf(allocBufWrapper<unsigned int>(alpaka::getDev(queue), endcapGeometrySrc.nEndCapMap)),
-      geoMapPhi_buf(allocBufWrapper<float>(alpaka::getDev(queue), endcapGeometrySrc.nEndCapMap)),
-      nEndCapMap(endcapGeometrySrc.nEndCapMap) {
-  alpaka::memcpy(queue, geoMapPhi_buf, endcapGeometrySrc.geoMapPhi_buf);
-  alpaka::memcpy(queue, geoMapDetId_buf, endcapGeometrySrc.geoMapDetId_buf);
-}
-
-template <typename TDev>
-void SDL::EndcapGeometry<TDev>::load(std::string filename) {
+void SDL::EndcapGeometry<SDL::Dev>::load(std::string filename) {
   dxdy_slope_.clear();
   centroid_phis_.clear();
 
@@ -46,44 +31,27 @@ void SDL::EndcapGeometry<TDev>::load(std::string filename) {
     }
   }
 
-  fillGeoMapArraysExplicitHost();
+  fillGeoMapArraysExplicit();
 }
 
-template <typename TDev>
-void SDL::EndcapGeometry<TDev>::fillGeoMapArraysExplicitHost() {
-  unsigned int phi_size = centroid_phis_.size();
+void SDL::EndcapGeometry<SDL::Dev>::fillGeoMapArraysExplicit() {
+  nEndCapMap = centroid_phis_.size();
 
-  // Allocate buffers on host
-  SDL::DevHost const& devHost = cms::alpakatools::host();
-  geoMapPhi_buf = allocBufWrapper<float>(devHost, phi_size);
-  geoMapDetId_buf = allocBufWrapper<unsigned int>(devHost, phi_size);
+  geoMapDetId_buf.reserve(nEndCapMap);
+  geoMapPhi_buf.reserve(nEndCapMap);
 
-  // Access the raw pointers of the buffers
-  float* mapPhi = alpaka::getPtrNative(geoMapPhi_buf);
-  unsigned int* mapDetId = alpaka::getPtrNative(geoMapDetId_buf);
-
-  unsigned int counter = 0;
   for (auto it = centroid_phis_.begin(); it != centroid_phis_.end(); ++it) {
     unsigned int detId = it->first;
     float Phi = it->second;
-    mapPhi[counter] = Phi;
-    mapDetId[counter] = detId;
-    counter++;
+    geoMapPhi_buf.push_back(Phi);
+    geoMapDetId_buf.push_back(detId);
   }
-
-  nEndCapMap = counter;
 }
 
-template <typename TDev>
-float SDL::EndcapGeometry<TDev>::getdxdy_slope(unsigned int detid) const {
+float SDL::EndcapGeometry<SDL::Dev>::getdxdy_slope(unsigned int detid) const {
   if (dxdy_slope_.find(detid) != dxdy_slope_.end()) {
     return dxdy_slope_.at(detid);
   } else {
     return 0;
   }
 }
-
-// We need to instantiate these to ensure that the compiler generates them
-template class SDL::EndcapGeometry<SDL::DevHost>;
-template SDL::EndcapGeometry<SDL::Dev>::EndcapGeometry(SDL::QueueAcc& queue,
-                                                       SDL::EndcapGeometry<SDL::DevHost> const& endcapGeometrySrc);
