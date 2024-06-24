@@ -40,16 +40,16 @@ namespace SDL {
           pixelMapping(pixelMappingIn) {}
   };
 
-  std::unique_ptr<LSTESData<SDL::DevHost>> loadAndFillESHost();
+  std::unique_ptr<LSTESData<alpaka_common::DevHost>> loadAndFillESHost();
 
 }  // namespace SDL
 
 namespace cms::alpakatools {
   template <>
-  struct CopyToDevice<SDL::LSTESData<SDL::DevHost>> {
+  struct CopyToDevice<SDL::LSTESData<alpaka_common::DevHost>> {
     template <typename TQueue>
-    static SDL::LSTESData<alpaka::Dev<TQueue>> copyAsync(
-        TQueue& queue, SDL::LSTESData<SDL::DevHost> const& srcData) {
+    static SDL::LSTESData<alpaka::Dev<TQueue>> copyAsync(TQueue& queue,
+                                                         SDL::LSTESData<alpaka_common::DevHost> const& srcData) {
       auto deviceModulesBuffers = std::make_shared<SDL::modulesBuffer<alpaka::Dev<TQueue>>>(
           alpaka::getDev(queue), srcData.nModules, srcData.nPixels);
       deviceModulesBuffers->copyFromSrc(queue, *srcData.modulesBuffers);
@@ -58,12 +58,12 @@ namespace cms::alpakatools {
       deviceEndcapGeometryBuffers->copyFromSrc(queue, *srcData.endcapGeometryBuffers);
 
       return SDL::LSTESData<alpaka::Dev<TQueue>>(srcData.nModules,
-                                                srcData.nLowerModules,
-                                                srcData.nPixels,
-                                                srcData.nEndCapMap,
-                                                deviceModulesBuffers,
-                                                deviceEndcapGeometryBuffers,
-                                                srcData.pixelMapping);
+                                                 srcData.nLowerModules,
+                                                 srcData.nPixels,
+                                                 srcData.nEndCapMap,
+                                                 deviceModulesBuffers,
+                                                 deviceEndcapGeometryBuffers,
+                                                 srcData.pixelMapping);
     }
   };
 }  // namespace cms::alpakatools

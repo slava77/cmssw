@@ -93,11 +93,13 @@ std::unique_ptr<SDL::LSTESData<SDL::DevHost>> SDL::loadAndFillESHost() {
   auto moduleConnectionMap = std::make_shared<SDL::ModuleConnectionMap<SDL::Dev>>();
   ::loadMapsHost(*pLStoLayer, endcapGeometry, tiltedGeometry, moduleConnectionMap);
 
-  auto endcapGeometryBuffers = std::make_shared<SDL::endcapGeometryBuffer<SDL::DevHost>>(cms::alpakatools::host(),
-                                                                                     endcapGeometry->nEndCapMap);
+  auto endcapGeometryBuffers =
+      std::make_shared<SDL::endcapGeometryBuffer<SDL::DevHost>>(cms::alpakatools::host(), endcapGeometry->nEndCapMap);
   alpaka::QueueCpuBlocking queue(cms::alpakatools::host());
-  alpaka::memcpy(queue, endcapGeometryBuffers->geoMapDetId_buf, endcapGeometry->geoMapDetId_buf, endcapGeometry->nEndCapMap);
-  alpaka::memcpy(queue, endcapGeometryBuffers->geoMapPhi_buf, endcapGeometry->geoMapPhi_buf, endcapGeometry->nEndCapMap);
+  alpaka::memcpy(
+      queue, endcapGeometryBuffers->geoMapDetId_buf, endcapGeometry->geoMapDetId_buf, endcapGeometry->nEndCapMap);
+  alpaka::memcpy(
+      queue, endcapGeometryBuffers->geoMapPhi_buf, endcapGeometry->geoMapPhi_buf, endcapGeometry->nEndCapMap);
 
   auto path =
       get_absolute_path_after_check_file_exists(trackLooperDir() + "/data/OT800_IT615_pt0.8/sensor_centroids.bin");

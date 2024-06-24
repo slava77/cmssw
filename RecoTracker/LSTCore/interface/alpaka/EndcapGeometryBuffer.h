@@ -43,14 +43,15 @@ namespace SDL {
       alpaka::memcpy(queue, geoMapPhi_buf, src.geoMapPhi_buf);
     }
 
-    template <typename TQueue>
-    endcapGeometryBuffer(TQueue queue, const endcapGeometryBuffer<alpaka::DevCpu>& src, unsigned int nEndCapMap) {
+    template <typename TQueue, typename TDevSrc>
+    endcapGeometryBuffer(TQueue queue, const endcapGeometryBuffer<TDevSrc>& src, unsigned int nEndCapMap)
+        : endcapGeometryBuffer(alpaka::getDev(queue), nEndCapMap) {
       copyFromSrc(queue, src);
     }
 
     inline SDL::endcapGeom const* data() const { return this; }
   };
-  
+
 }  // namespace SDL
 
 #endif
