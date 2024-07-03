@@ -113,12 +113,12 @@ namespace SDL {
     template <typename TQueue, typename TDevAcc>
     tripletsBuffer(unsigned int maxTriplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
         : segmentIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * maxTriplets, queue)),
-          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, 3 * maxTriplets, queue)),
+          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, layers_T3 * maxTriplets, queue)),
           nTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
           totOccupancyTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
           nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, maxTriplets * 3, queue)),
-          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxTriplets * 6, queue)),
+          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, maxTriplets * layers_T3, queue)),
+          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxTriplets * hits_T3, queue)),
           betaIn_buf(allocBufWrapper<FPX>(devAccIn, maxTriplets, queue)),
           circleRadius_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           circleCenterX_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
@@ -196,31 +196,31 @@ namespace SDL {
   {
     tripletsInGPU.segmentIndices[tripletIndex * 2] = innerSegmentIndex;
     tripletsInGPU.segmentIndices[tripletIndex * 2 + 1] = outerSegmentIndex;
-    tripletsInGPU.lowerModuleIndices[tripletIndex * 3] = innerInnerLowerModuleIndex;
-    tripletsInGPU.lowerModuleIndices[tripletIndex * 3 + 1] = middleLowerModuleIndex;
-    tripletsInGPU.lowerModuleIndices[tripletIndex * 3 + 2] = outerOuterLowerModuleIndex;
+    tripletsInGPU.lowerModuleIndices[tripletIndex * layers_T3] = innerInnerLowerModuleIndex;
+    tripletsInGPU.lowerModuleIndices[tripletIndex * layers_T3 + 1] = middleLowerModuleIndex;
+    tripletsInGPU.lowerModuleIndices[tripletIndex * layers_T3 + 2] = outerOuterLowerModuleIndex;
 
     tripletsInGPU.betaIn[tripletIndex] = __F2H(betaIn);
     tripletsInGPU.circleRadius[tripletIndex] = circleRadius;
     tripletsInGPU.circleCenterX[tripletIndex] = circleCenterX;
     tripletsInGPU.circleCenterY[tripletIndex] = circleCenterY;
-    tripletsInGPU.logicalLayers[tripletIndex * 3] =
+    tripletsInGPU.logicalLayers[tripletIndex * layers_T3] =
         modulesInGPU.layers[innerInnerLowerModuleIndex] + (modulesInGPU.subdets[innerInnerLowerModuleIndex] == 4) * 6;
-    tripletsInGPU.logicalLayers[tripletIndex * 3 + 1] =
+    tripletsInGPU.logicalLayers[tripletIndex * layers_T3 + 1] =
         modulesInGPU.layers[middleLowerModuleIndex] + (modulesInGPU.subdets[middleLowerModuleIndex] == 4) * 6;
-    tripletsInGPU.logicalLayers[tripletIndex * 3 + 2] =
+    tripletsInGPU.logicalLayers[tripletIndex * layers_T3 + 2] =
         modulesInGPU.layers[outerOuterLowerModuleIndex] + (modulesInGPU.subdets[outerOuterLowerModuleIndex] == 4) * 6;
     //get the hits
     unsigned int firstMDIndex = segmentsInGPU.mdIndices[2 * innerSegmentIndex];
     unsigned int secondMDIndex = segmentsInGPU.mdIndices[2 * innerSegmentIndex + 1];
     unsigned int thirdMDIndex = segmentsInGPU.mdIndices[2 * outerSegmentIndex + 1];
 
-    tripletsInGPU.hitIndices[tripletIndex * 6] = mdsInGPU.anchorHitIndices[firstMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * 6 + 1] = mdsInGPU.outerHitIndices[firstMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * 6 + 2] = mdsInGPU.anchorHitIndices[secondMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * 6 + 3] = mdsInGPU.outerHitIndices[secondMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * 6 + 4] = mdsInGPU.anchorHitIndices[thirdMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * 6 + 5] = mdsInGPU.outerHitIndices[thirdMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * hits_T3] = mdsInGPU.anchorHitIndices[firstMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * hits_T3 + 1] = mdsInGPU.outerHitIndices[firstMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * hits_T3 + 2] = mdsInGPU.anchorHitIndices[secondMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * hits_T3 + 3] = mdsInGPU.outerHitIndices[secondMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * hits_T3 + 4] = mdsInGPU.anchorHitIndices[thirdMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * hits_T3 + 5] = mdsInGPU.outerHitIndices[thirdMDIndex];
 #ifdef CUT_VALUE_DEBUG
     tripletsInGPU.zOut[tripletIndex] = zOut;
     tripletsInGPU.rtOut[tripletIndex] = rtOut;
@@ -313,7 +313,6 @@ namespace SDL {
                                                                 unsigned int& innerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
-    bool pass = true;
     bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == SDL::PS);
     bool isPSOut = (modulesInGPU.moduleType[outerOuterLowerModuleIndex] == SDL::PS);
 
@@ -339,9 +338,8 @@ namespace SDL {
                       (zpitchIn + zpitchOut);  //slope-correction only on outer end
 
     //Cut 1 - z compatibility
-    pass = pass and ((zOut >= zLo) && (zOut <= zHi));
-    if (not pass)
-      return pass;
+    if (not((zOut >= zLo) && (zOut <= zHi)))
+      return false;
 
     float drt_OutIn = (rtOut - rtIn);
 
@@ -354,10 +352,9 @@ namespace SDL {
     float coshEta = dr3_InSeg / drt_InSeg;
     float dzErr = (zpitchIn + zpitchOut) * (zpitchIn + zpitchOut) * 2.f;
 
-    float sdlThetaMulsF =
-        0.015f * alpaka::math::sqrt(acc, 0.1f + 0.2f * (rtOut - rtIn) / 50.f) * alpaka::math::sqrt(acc, r3In / rtIn);
-    float sdlMuls = sdlThetaMulsF * 3.f / SDL::ptCut * 4.f;                        // will need a better guess than x4?
-    dzErr += sdlMuls * sdlMuls * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;  //sloppy
+    float sdlThetaMulsF2 = (0.015f * 0.015f) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
+    float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
+    dzErr += sdlMuls2 * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;
     dzErr = alpaka::math::sqrt(acc, dzErr);
 
     // Constructing upper and lower bound
@@ -371,7 +368,8 @@ namespace SDL {
     // Constructing upper and lower bound
 
     // Cut #2: Pointed Z (Inner segment two MD points to outer segment inner MD)
-    pass = pass and ((zOut >= zLoPointed) && (zOut <= zHiPointed));
+    if (not((zOut >= zLoPointed) && (zOut <= zHiPointed)))
+      return false;
 
     // raw betaIn value without any correction, based on the mini-doublet hit positions
     float alpha_InLo = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
@@ -395,9 +393,10 @@ namespace SDL {
         (0.02f / drt_InSeg);
 
     //Cut #3: first beta cut
-    pass = pass and (alpaka::math::abs(acc, betaIn) < betaInCut);
+    if (not(alpaka::math::abs(acc, betaIn) < betaInCut))
+      return false;
 
-    return pass;
+    return true;
   };
 
   template <typename TAcc>
@@ -418,8 +417,6 @@ namespace SDL {
                                                                 unsigned int& outerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
-    bool pass = true;
-
     bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == SDL::PS);
     bool isPSOut = (modulesInGPU.moduleType[outerOuterLowerModuleIndex] == SDL::PS);
 
@@ -441,9 +438,8 @@ namespace SDL {
     float zGeom = zpitchIn + zpitchOut;
 
     // Cut #0: Preliminary (Only here in endcap case)
-    pass = pass and (zIn * zOut > 0);
-    if (not pass)
-      return pass;
+    if (not(zIn * zOut > 0))
+      return false;
 
     float dLum = SDL::copysignf(SDL::deltaZLum, zIn);
     bool isOutSgInnerMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == SDL::PS;
@@ -460,9 +456,8 @@ namespace SDL {
     float rtHi = rtIn * (1.f + (zOut - zIn + zGeom1) / zInForHi) + rtGeom1;
 
     //Cut #2: rt condition
-    pass = pass and ((rtOut >= rtLo) && (rtOut <= rtHi));
-    if (not pass)
-      return pass;
+    if (not((rtOut >= rtLo) && (rtOut <= rtHi)))
+      return false;
 
     float rIn = alpaka::math::sqrt(acc, zIn * zIn + rtIn * rtIn);
 
@@ -478,16 +473,15 @@ namespace SDL {
     const float kZ = (zOut - zIn) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
-    const float sdlThetaMulsF =
-        0.015f * alpaka::math::sqrt(acc, 0.1f + 0.2 * (rtOut - rtIn) / 50.f) * alpaka::math::sqrt(acc, rIn / rtIn);
-    const float sdlMuls = sdlThetaMulsF * 3.f / SDL::ptCut * 4.f;  //will need a better guess than x4?
-    drtErr +=
-        sdlMuls * sdlMuls * multDzDr * multDzDr / 3.f * coshEta * coshEta;  //sloppy: relative muls is 1/3 of total muls
+    const float sdlThetaMulsF2 = (0.015f * 0.015f) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
+    const float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
+    drtErr += sdlMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
 
     //Cut #3: rt-z pointed
 
-    pass = pass and (kZ >= 0) && (rtOut >= rtLo) && (rtOut <= rtHi);
+    if (not((kZ >= 0) && (rtOut >= rtLo) && (rtOut <= rtHi)))
+      return false;
 
     float rt_InLo = mdsInGPU.anchorRt[firstMDIndex];
     float rt_InOut = mdsInGPU.anchorRt[secondMDIndex];
@@ -523,8 +517,10 @@ namespace SDL {
                 (0.02f / sdIn_d);
 
     //Cut #4: first beta cut
-    pass = pass and (alpaka::math::abs(acc, betaInRHmin) < betaInCut);
-    return pass;
+    if (not(alpaka::math::abs(acc, betaInRHmin) < betaInCut))
+      return false;
+
+    return true;
   };
 
   template <typename TAcc>
@@ -544,8 +540,6 @@ namespace SDL {
                                                                 unsigned int& outerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
-    bool pass = true;
-
     float rtIn = mdsInGPU.anchorRt[firstMDIndex];
     float rtMid = mdsInGPU.anchorRt[secondMDIndex];
     rtOut = mdsInGPU.anchorRt[thirdMDIndex];
@@ -561,9 +555,8 @@ namespace SDL {
         alpaka::math::tan(acc, alpha1GeV_Out) / alpha1GeV_Out;  // The track can bend in r-z plane slightly
 
     // Cut #0: Preliminary (Only here in endcap case)
-    pass = pass and (zIn * zOut > 0);
-    if (not pass)
-      return pass;
+    if (not(zIn * zOut > 0))
+      return false;
 
     float dLum = SDL::copysignf(SDL::deltaZLum, zIn);
     bool isOutSgOuterMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == SDL::PS;
@@ -578,9 +571,8 @@ namespace SDL {
     const float rtHi = rtIn * (1.f + dz / (zIn - dLum)) + rtGeom;
 
     //Cut #1: rt condition
-    pass = pass and ((rtOut >= rtLo) && (rtOut <= rtHi));
-    if (not pass)
-      return pass;
+    if (not((rtOut >= rtLo) && (rtOut <= rtHi)))
+      return false;
 
     bool isInSgOuterMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == SDL::PS;
 
@@ -594,14 +586,14 @@ namespace SDL {
     float multDzDr = dzOutInAbs * coshEta / (coshEta * coshEta - 1.f);
 
     float kZ = (zOut - zIn) / dzSDIn;
-    float sdlThetaMulsF = 0.015f * alpaka::math::sqrt(acc, 0.1f + 0.2f * (rtOut - rtIn) / 50.f);
+    float sdlThetaMulsF2 = (0.015f * 0.015f) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
 
-    float sdlMuls = sdlThetaMulsF * 3.f / SDL::ptCut * 4.f;  //will need a better guess than x4?
+    float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
 
     float drtErr = alpaka::math::sqrt(
         acc,
         SDL::pixelPSZpitch * SDL::pixelPSZpitch * 2.f / (dzSDIn * dzSDIn) * (dzOutInAbs * dzOutInAbs) +
-            sdlMuls * sdlMuls * multDzDr * multDzDr / 3.f * coshEta * coshEta);
+            sdlMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
 
     float drtMean = drtSDIn * dzOutInAbs / alpaka::math::abs(acc, dzSDIn);
     float rtWindow = drtErr + rtGeom;
@@ -613,7 +605,8 @@ namespace SDL {
 
     if (isInSgInnerMDPS and isInSgOuterMDPS)  // If both PS then we can point
     {
-      pass = pass and ((kZ >= 0) && (rtOut >= rtLo_point) && (rtOut <= rtHi_point));
+      if (not((kZ >= 0) && (rtOut >= rtLo_point) && (rtOut <= rtHi_point)))
+        return false;
     }
 
     float rt_InLo = mdsInGPU.anchorRt[firstMDIndex];
@@ -650,8 +643,10 @@ namespace SDL {
                 (0.02f / sdIn_d);
 
     //Cut #4: first beta cut
-    pass = pass and (alpaka::math::abs(acc, betaInRHmin) < betaInCut);
-    return pass;
+    if (not(alpaka::math::abs(acc, betaInRHmin) < betaInCut))
+      return false;
+
+    return true;
   };
 
   template <typename TAcc>
@@ -817,7 +812,6 @@ namespace SDL {
                                                                    float& zHiPointed,
                                                                    float& sdlCut,
                                                                    float& betaInCut) {
-    bool pass = true;
     //this cut reduces the number of candidates by a factor of 4, i.e., 3 out of 4 warps can end right here!
     if (segmentsInGPU.mdIndices[2 * innerSegmentIndex + 1] != segmentsInGPU.mdIndices[2 * outerSegmentIndex])
       return false;
@@ -826,37 +820,35 @@ namespace SDL {
     unsigned int secondMDIndex = segmentsInGPU.mdIndices[2 * outerSegmentIndex];
     unsigned int thirdMDIndex = segmentsInGPU.mdIndices[2 * outerSegmentIndex + 1];
 
-    pass = pass and (passRZConstraint(acc,
-                                      modulesInGPU,
-                                      mdsInGPU,
-                                      segmentsInGPU,
-                                      innerInnerLowerModuleIndex,
-                                      middleLowerModuleIndex,
-                                      outerOuterLowerModuleIndex,
-                                      firstMDIndex,
-                                      secondMDIndex,
-                                      thirdMDIndex));
-    if (not pass)
-      return pass;
-    pass = pass and (passPointingConstraint(acc,
-                                            modulesInGPU,
-                                            mdsInGPU,
-                                            segmentsInGPU,
-                                            innerInnerLowerModuleIndex,
-                                            middleLowerModuleIndex,
-                                            outerOuterLowerModuleIndex,
-                                            firstMDIndex,
-                                            secondMDIndex,
-                                            thirdMDIndex,
-                                            zOut,
-                                            rtOut,
-                                            middleLowerModuleIndex,
-                                            innerSegmentIndex,
-                                            outerSegmentIndex,
-                                            betaIn,
-                                            betaInCut));
-    if (not pass)
-      return pass;
+    if (not(passRZConstraint(acc,
+                             modulesInGPU,
+                             mdsInGPU,
+                             segmentsInGPU,
+                             innerInnerLowerModuleIndex,
+                             middleLowerModuleIndex,
+                             outerOuterLowerModuleIndex,
+                             firstMDIndex,
+                             secondMDIndex,
+                             thirdMDIndex)))
+      return false;
+    if (not(passPointingConstraint(acc,
+                                   modulesInGPU,
+                                   mdsInGPU,
+                                   segmentsInGPU,
+                                   innerInnerLowerModuleIndex,
+                                   middleLowerModuleIndex,
+                                   outerOuterLowerModuleIndex,
+                                   firstMDIndex,
+                                   secondMDIndex,
+                                   thirdMDIndex,
+                                   zOut,
+                                   rtOut,
+                                   middleLowerModuleIndex,
+                                   innerSegmentIndex,
+                                   outerSegmentIndex,
+                                   betaIn,
+                                   betaInCut)))
+      return false;
 
     float x1 = mdsInGPU.anchorX[firstMDIndex];
     float x2 = mdsInGPU.anchorX[secondMDIndex];
@@ -866,7 +858,7 @@ namespace SDL {
     float y3 = mdsInGPU.anchorY[thirdMDIndex];
 
     circleRadius = computeRadiusFromThreeAnchorHits(acc, x1, y1, x2, y2, x3, y3, circleCenterX, circleCenterY);
-    return pass;
+    return true;
   };
 
   struct createTripletsInGPUv2 {
@@ -1048,11 +1040,11 @@ namespace SDL {
 
         if (module_eta < 0.75)
           eta_number = 0;
-        else if (module_eta > 0.75 && module_eta < 1.5)
+        else if (module_eta < 1.5)
           eta_number = 1;
-        else if (module_eta > 1.5 && module_eta < 2.25)
+        else if (module_eta < 2.25)
           eta_number = 2;
-        else if (module_eta > 2.25 && module_eta < 3)
+        else if (module_eta < 3)
           eta_number = 3;
         else
           eta_number = -1;

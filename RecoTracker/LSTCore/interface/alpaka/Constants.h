@@ -120,6 +120,20 @@ namespace SDL {
   const unsigned int size_superbins = 45000;
 
   //defining the constant host device variables right up here
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int layers_pLS = 2;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int layers_LS = 2;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int layers_T3 = 3;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int layers_pT3 = 5;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int layers_T5 = 5;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int layers_pT5 = 7;
+
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int hits_pLS = 4;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int hits_LS = 4;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int hits_T3 = 6;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int hits_pT3 = 10;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int hits_T5 = 10;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const int hits_pT5 = 14;
+
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float miniMulsPtScaleBarrel[6] = {0.0052, 0.0038, 0.0034, 0.0034, 0.0032, 0.0034};
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float miniMulsPtScaleEndcap[5] = {0.006, 0.006, 0.006, 0.006, 0.006};
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float miniRminMeanBarrel[6] = {
@@ -132,7 +146,10 @@ namespace SDL {
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float ptCut = PT_CUT;
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float deltaZLum = 15.0;
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float pixelPSZpitch = 0.15;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const float stripPSZpitch = 2.4;
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float strip2SZpitch = 5.0;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const float width2S = 0.009;
+  ALPAKA_STATIC_ACC_MEM_GLOBAL const float widthPS = 0.01;
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float pt_betaMax = 7.0;
   ALPAKA_STATIC_ACC_MEM_GLOBAL const float magnetic_field = 3.8112;
   // Since C++ can't represent infinity, SDL_INF = 123456789 was used to represent infinity in the data table
