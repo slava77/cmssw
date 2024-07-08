@@ -1,5 +1,5 @@
-#ifndef RecoTracker_LST_LSTPhase2OTHitsInput_h
-#define RecoTracker_LST_LSTPhase2OTHitsInput_h
+#ifndef RecoTracker_LST_interface_LSTPhase2OTHitsInput_h
+#define RecoTracker_LST_interface_LSTPhase2OTHitsInput_h
 
 #include <memory>
 #include <vector>

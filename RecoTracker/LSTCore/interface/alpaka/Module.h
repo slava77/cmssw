@@ -1,5 +1,5 @@
-#ifndef Module_cuh
-#define Module_cuh
+#ifndef RecoTracker_LSTCore_interface_alpaka_Module_h
+#define RecoTracker_LSTCore_interface_alpaka_Module_h
 
 #include <alpaka/alpaka.hpp>
 

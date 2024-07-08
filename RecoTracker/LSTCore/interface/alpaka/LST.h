@@ -1,5 +1,5 @@
-#ifndef LST_H
-#define LST_H
+#ifndef RecoTracker_LSTCore_interface_alpaka_LST_h
+#define RecoTracker_LSTCore_interface_alpaka_LST_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/LSTESData.h"

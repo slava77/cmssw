@@ -1,5 +1,5 @@
-#ifndef LSTESData_H
-#define LSTESData_H
+#ifndef RecoTracker_LSTCore_interface_alpaka_LSTESData_h
+#define RecoTracker_LSTCore_interface_alpaka_LSTESData_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/EndcapGeometryBuffer.h"

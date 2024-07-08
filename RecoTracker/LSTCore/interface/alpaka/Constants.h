@@ -1,5 +1,5 @@
-#ifndef Constants_cuh
-#define Constants_cuh
+#ifndef RecoTracker_LSTCore_interface_alpaka_Constants_h
+#define RecoTracker_LSTCore_interface_alpaka_Constants_h
 
 #include <alpaka/alpaka.hpp>
 
