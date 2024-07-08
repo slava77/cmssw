@@ -666,7 +666,7 @@ namespace SDL {
     const float sign = ((dz > 0) - (dz < 0)) * ((zLower > 0) - (zLower < 0));
     const float invertedcrossercut = (alpaka::math::abs(acc, dz) > 2) * sign;
 
-    if (not((alpaka::math::abs(acc, dz) < dzCut) && (invertedcrossercut <= 0)))
+    if ((alpaka::math::abs(acc, dz) >= dzCut) || (invertedcrossercut > 0))
       return false;
 
     float miniCut = 0;
@@ -726,7 +726,7 @@ namespace SDL {
       noShiftedDphi = dPhi;
     }
 
-    if (not(alpaka::math::abs(acc, dPhi) < miniCut))
+    if (alpaka::math::abs(acc, dPhi) >= miniCut)
       return false;
 
     // Cut #3: The dphi change going from lower Hit to upper Hit
@@ -762,10 +762,9 @@ namespace SDL {
       noShiftedDphiChange = dPhiChange;
     }
 
-    if (not(alpaka::math::abs(acc, dPhiChange) < miniCut))
-      return false;
     noShiftedDz = 0;  // not used anywhere
-    return true;
+
+    return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
 
   template <typename TAcc>
@@ -801,13 +800,13 @@ namespace SDL {
 
     const float dzCut = 1.f;
 
-    if (not(alpaka::math::abs(acc, dz) < dzCut))
+    if (alpaka::math::abs(acc, dz) >= dzCut)
       return false;
     // Cut #2 : drt cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3100
     const float drtCut = modulesInGPU.moduleType[lowerModuleIndex] == SDL::PS ? 2.f : 10.f;
     drt = rtLower - rtUpper;
-    if (not(alpaka::math::abs(acc, drt) < drtCut))
+    if (alpaka::math::abs(acc, drt) >= drtCut)
       return false;
     // The new scheme shifts strip hits to be "aligned" along the line of sight from interaction point to the pixel hit (if it is PS modules)
     float xn = 0, yn = 0, zn = 0;
@@ -867,7 +866,7 @@ namespace SDL {
                   ? dPhiThreshold(acc, rtLower, modulesInGPU, lowerModuleIndex, dPhi, dz)
                   : dPhiThreshold(acc, rtUpper, modulesInGPU, lowerModuleIndex, dPhi, dz);
 
-    if (not(alpaka::math::abs(acc, dPhi) < miniCut))
+    if (alpaka::math::abs(acc, dPhi) >= miniCut)
       return false;
 
     // Cut #4: Another cut on the dphi after some modification
@@ -876,10 +875,9 @@ namespace SDL {
     float dzFrac = alpaka::math::abs(acc, dz) / alpaka::math::abs(acc, zLower);
     dPhiChange = dPhi / dzFrac * (1.f + dzFrac);
     noShiftedDphichange = noShiftedDphi / dzFrac * (1.f + dzFrac);
-    if (not(alpaka::math::abs(acc, dPhiChange) < miniCut))
-      return false;
     noShiftedDz = 0;  // not used anywhere
-    return true;
+
+    return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
 
   struct createMiniDoubletsInGPUv2 {
@@ -1017,13 +1015,13 @@ namespace SDL {
         else
           category_number = -1;
 
-        if (module_eta < 0.75)
+        if (module_eta < 0.75f)
           eta_number = 0;
-        else if (module_eta < 1.5)
+        else if (module_eta < 1.5f)
           eta_number = 1;
-        else if (module_eta < 2.25)
+        else if (module_eta < 2.25f)
           eta_number = 2;
-        else if (module_eta < 3)
+        else if (module_eta < 3.0f)
           eta_number = 3;
         else
           eta_number = -1;

@@ -499,19 +499,19 @@ namespace SDL {
           zGeom;  //slope-correction only on outer end
     zHi = zIn + (zIn + deltaZLum) * (rtOut / rtIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + zGeom;
 
-    if (not((zOut >= zLo) && (zOut <= zHi)))
+    if ((zOut < zLo) || (zOut > zHi))
       return false;
 
     sdCut = sdSlope + alpaka::math::sqrt(acc, sdMuls * sdMuls + sdPVoff * sdPVoff);
 
     dPhi = SDL::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
-    if (not(alpaka::math::abs(acc, dPhi) <= sdCut))
+    if (alpaka::math::abs(acc, dPhi) > sdCut)
       return false;
 
     dPhiChange = SDL::phi_mpi_pi(acc, SDL::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
 
-    if (not(alpaka::math::abs(acc, dPhiChange) <= sdCut))
+    if (alpaka::math::abs(acc, dPhiChange) > sdCut)
       return false;
 
     float dAlphaThresholdValues[3];
@@ -542,14 +542,11 @@ namespace SDL {
     dAlphaOuterMDSegmentThreshold = dAlphaThresholdValues[1];
     dAlphaInnerMDOuterMDThreshold = dAlphaThresholdValues[2];
 
-    if (not(alpaka::math::abs(acc, dAlphaInnerMDSegment) < dAlphaInnerMDSegmentThreshold))
+    if (alpaka::math::abs(acc, dAlphaInnerMDSegment) >= dAlphaInnerMDSegmentThreshold)
       return false;
-    if (not(alpaka::math::abs(acc, dAlphaOuterMDSegment) < dAlphaOuterMDSegmentThreshold))
+    if (alpaka::math::abs(acc, dAlphaOuterMDSegment) >= dAlphaOuterMDSegmentThreshold)
       return false;
-    if (not(alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaInnerMDOuterMDThreshold))
-      return false;
-
-    return true;
+    return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaInnerMDOuterMDThreshold;
   };
 
   template <typename TAcc>
@@ -604,7 +601,7 @@ namespace SDL {
                                                                                  : (2.f * strip2SZpitch)));
 
     //cut 0 - z compatibility
-    if (not(zIn * zOut >= 0))
+    if (zIn * zOut < 0)
       return false;
 
     float dz = zOut - zIn;
@@ -618,7 +615,7 @@ namespace SDL {
            rtGeom;  //dLum for luminous; rGeom for measurement size; no tanTheta_loc(pt) correction
 
     // Completeness
-    if (not((rtOut >= rtLo) && (rtOut <= rtHi)))
+    if ((rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
     dPhi = SDL::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
@@ -636,7 +633,7 @@ namespace SDL {
       dPhiMax = dPhi;
       dPhiMin = dPhi;
     }
-    if (not(alpaka::math::abs(acc, dPhi) <= sdCut))
+    if (alpaka::math::abs(acc, dPhi) > sdCut)
       return false;
 
     float dzFrac = dz / zIn;
@@ -644,7 +641,7 @@ namespace SDL {
     dPhiChangeMin = dPhiMin / dzFrac * (1.f + dzFrac);
     dPhiChangeMax = dPhiMax / dzFrac * (1.f + dzFrac);
 
-    if (not(alpaka::math::abs(acc, dPhiChange) <= sdCut))
+    if (alpaka::math::abs(acc, dPhiChange) > sdCut)
       return false;
 
     float dAlphaThresholdValues[3];
@@ -675,14 +672,11 @@ namespace SDL {
     dAlphaOuterMDSegment = outerMDAlpha - dPhiChange;
     dAlphaInnerMDOuterMD = innerMDAlpha - outerMDAlpha;
 
-    if (not(alpaka::math::abs(acc, dAlphaInnerMDSegment) < dAlphaThresholdValues[0]))
+    if (alpaka::math::abs(acc, dAlphaInnerMDSegment) >= dAlphaThresholdValues[0])
       return false;
-    if (not(alpaka::math::abs(acc, dAlphaOuterMDSegment) < dAlphaThresholdValues[1]))
+    if (alpaka::math::abs(acc, dAlphaOuterMDSegment) >= dAlphaThresholdValues[1])
       return false;
-    if (not(alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaThresholdValues[2]))
-      return false;
-
-    return true;
+    return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaThresholdValues[2]
   };
 
   template <typename TAcc>
@@ -933,13 +927,13 @@ namespace SDL {
         else
           category_number = -1;
 
-        if (module_eta < 0.75)
+        if (module_eta < 0.75f)
           eta_number = 0;
-        else if (module_eta < 1.5)
+        else if (module_eta < 1.5f)
           eta_number = 1;
-        else if (module_eta < 2.25)
+        else if (module_eta < 2.25f)
           eta_number = 2;
-        else if (module_eta < 3)
+        else if (module_eta < 3.0f)
           eta_number = 3;
         else
           eta_number = -1;
@@ -1074,7 +1068,7 @@ namespace SDL {
                           (hitsInGPU.zs[mdsInGPU.anchorHitIndices[outerMDIndex]]);
         score_lsq = score_lsq * score_lsq;
 
-        unsigned int hits1[hits_pLS];
+        unsigned int hits1[objHits::kpLS];
         hits1[0] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[innerMDIndex]];
         hits1[1] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[outerMDIndex]];
         hits1[2] = hitsInGPU.idxs[mdsInGPU.outerHitIndices[innerMDIndex]];

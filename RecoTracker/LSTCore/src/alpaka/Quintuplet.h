@@ -103,7 +103,7 @@ namespace SDL {
     template <typename TQueue, typename TDevAcc>
     quintupletsBuffer(unsigned int nTotalQuintuplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
         : tripletIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * nTotalQuintuplets, queue)),
-          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, layers_T5 * nTotalQuintuplets, queue)),
+          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, objLayers::kT5 * nTotalQuintuplets, queue)),
           nQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
           totOccupancyQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
           nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
@@ -121,8 +121,8 @@ namespace SDL {
           regressionRadius_buf(allocBufWrapper<float>(devAccIn, nTotalQuintuplets, queue)),
           regressionG_buf(allocBufWrapper<float>(devAccIn, nTotalQuintuplets, queue)),
           regressionF_buf(allocBufWrapper<float>(devAccIn, nTotalQuintuplets, queue)),
-          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, layers_T5 * nTotalQuintuplets, queue)),
-          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, hits_T5 * nTotalQuintuplets, queue)),
+          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, objLayers::kT5 * nTotalQuintuplets, queue)),
+          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, objHits::kT5 * nTotalQuintuplets, queue)),
           rzChiSquared_buf(allocBufWrapper<float>(devAccIn, nTotalQuintuplets, queue)),
           chiSquared_buf(allocBufWrapper<float>(devAccIn, nTotalQuintuplets, queue)),
           nonAnchorChiSquared_buf(allocBufWrapper<float>(devAccIn, nTotalQuintuplets, queue)) {
@@ -170,11 +170,11 @@ namespace SDL {
     quintupletsInGPU.tripletIndices[2 * quintupletIndex] = innerTripletIndex;
     quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1] = outerTripletIndex;
 
-    quintupletsInGPU.lowerModuleIndices[layers_T5 * quintupletIndex] = lowerModule1;
-    quintupletsInGPU.lowerModuleIndices[layers_T5 * quintupletIndex + 1] = lowerModule2;
-    quintupletsInGPU.lowerModuleIndices[layers_T5 * quintupletIndex + 2] = lowerModule3;
-    quintupletsInGPU.lowerModuleIndices[layers_T5 * quintupletIndex + 3] = lowerModule4;
-    quintupletsInGPU.lowerModuleIndices[layers_T5 * quintupletIndex + 4] = lowerModule5;
+    quintupletsInGPU.lowerModuleIndices[objLayers::kT5 * quintupletIndex] = lowerModule1;
+    quintupletsInGPU.lowerModuleIndices[objLayers::kT5 * quintupletIndex + 1] = lowerModule2;
+    quintupletsInGPU.lowerModuleIndices[objLayers::kT5 * quintupletIndex + 2] = lowerModule3;
+    quintupletsInGPU.lowerModuleIndices[objLayers::kT5 * quintupletIndex + 3] = lowerModule4;
+    quintupletsInGPU.lowerModuleIndices[objLayers::kT5 * quintupletIndex + 4] = lowerModule5;
     quintupletsInGPU.innerRadius[quintupletIndex] = __F2H(innerRadius);
     quintupletsInGPU.outerRadius[quintupletIndex] = __F2H(outerRadius);
     quintupletsInGPU.pt[quintupletIndex] = __F2H(pt);
@@ -187,36 +187,37 @@ namespace SDL {
     quintupletsInGPU.regressionRadius[quintupletIndex] = regressionRadius;
     quintupletsInGPU.regressionG[quintupletIndex] = regressionG;
     quintupletsInGPU.regressionF[quintupletIndex] = regressionF;
-    quintupletsInGPU.logicalLayers[layers_T5 * quintupletIndex] =
-        tripletsInGPU.logicalLayers[layers_T3 * innerTripletIndex];
-    quintupletsInGPU.logicalLayers[layers_T5 * quintupletIndex + 1] =
-        tripletsInGPU.logicalLayers[layers_T3 * innerTripletIndex + 1];
-    quintupletsInGPU.logicalLayers[layers_T5 * quintupletIndex + 2] =
-        tripletsInGPU.logicalLayers[layers_T3 * innerTripletIndex + 2];
-    quintupletsInGPU.logicalLayers[layers_T5 * quintupletIndex + 3] =
-        tripletsInGPU.logicalLayers[layers_T3 * outerTripletIndex + 1];
-    quintupletsInGPU.logicalLayers[layers_T5 * quintupletIndex + 4] =
-        tripletsInGPU.logicalLayers[layers_T3 * outerTripletIndex + 2];
+    quintupletsInGPU.logicalLayers[objLayers::kT5 * quintupletIndex] =
+        tripletsInGPU.logicalLayers[objLayers::kT3 * innerTripletIndex];
+    quintupletsInGPU.logicalLayers[objLayers::kT5 * quintupletIndex + 1] =
+        tripletsInGPU.logicalLayers[objLayers::kT3 * innerTripletIndex + 1];
+    quintupletsInGPU.logicalLayers[objLayers::kT5 * quintupletIndex + 2] =
+        tripletsInGPU.logicalLayers[objLayers::kT3 * innerTripletIndex + 2];
+    quintupletsInGPU.logicalLayers[objLayers::kT5 * quintupletIndex + 3] =
+        tripletsInGPU.logicalLayers[objLayers::kT3 * outerTripletIndex + 1];
+    quintupletsInGPU.logicalLayers[objLayers::kT5 * quintupletIndex + 4] =
+        tripletsInGPU.logicalLayers[objLayers::kT3 * outerTripletIndex + 2];
 
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex] = tripletsInGPU.hitIndices[hits_T3 * innerTripletIndex];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 1] =
-        tripletsInGPU.hitIndices[hits_T3 * innerTripletIndex + 1];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 2] =
-        tripletsInGPU.hitIndices[hits_T3 * innerTripletIndex + 2];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 3] =
-        tripletsInGPU.hitIndices[hits_T3 * innerTripletIndex + 3];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 4] =
-        tripletsInGPU.hitIndices[hits_T3 * innerTripletIndex + 4];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 5] =
-        tripletsInGPU.hitIndices[hits_T3 * innerTripletIndex + 5];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 6] =
-        tripletsInGPU.hitIndices[hits_T3 * outerTripletIndex + 2];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 7] =
-        tripletsInGPU.hitIndices[hits_T3 * outerTripletIndex + 3];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 8] =
-        tripletsInGPU.hitIndices[hits_T3 * outerTripletIndex + 4];
-    quintupletsInGPU.hitIndices[hits_T5 * quintupletIndex + 9] =
-        tripletsInGPU.hitIndices[hits_T3 * outerTripletIndex + 5];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex] =
+        tripletsInGPU.hitIndices[objHits::kT3 * innerTripletIndex];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 1] =
+        tripletsInGPU.hitIndices[objHits::kT3 * innerTripletIndex + 1];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 2] =
+        tripletsInGPU.hitIndices[objHits::kT3 * innerTripletIndex + 2];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 3] =
+        tripletsInGPU.hitIndices[objHits::kT3 * innerTripletIndex + 3];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 4] =
+        tripletsInGPU.hitIndices[objHits::kT3 * innerTripletIndex + 4];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 5] =
+        tripletsInGPU.hitIndices[objHits::kT3 * innerTripletIndex + 5];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 6] =
+        tripletsInGPU.hitIndices[objHits::kT3 * outerTripletIndex + 2];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 7] =
+        tripletsInGPU.hitIndices[objHits::kT3 * outerTripletIndex + 3];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 8] =
+        tripletsInGPU.hitIndices[objHits::kT3 * outerTripletIndex + 4];
+    quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex + 9] =
+        tripletsInGPU.hitIndices[objHits::kT3 * outerTripletIndex + 5];
     quintupletsInGPU.bridgeRadius[quintupletIndex] = bridgeRadius;
     quintupletsInGPU.rzChiSquared[quintupletIndex] = rzChiSquared;
     quintupletsInGPU.chiSquared[quintupletIndex] = rPhiChiSquared;
@@ -231,7 +232,7 @@ namespace SDL {
                                                                uint16_t& lowerModuleIndex4,
                                                                uint16_t& lowerModuleIndex5,
                                                                float& chiSquared) {
-    //following Philip's layer number prescription
+    // Using sdlLayer numbering convention defined in ModuleMethods.h
     const int layer1 = modulesInGPU.sdlLayers[lowerModuleIndex1];
     const int layer2 = modulesInGPU.sdlLayers[lowerModuleIndex2];
     const int layer3 = modulesInGPU.sdlLayers[lowerModuleIndex3];
@@ -340,7 +341,7 @@ namespace SDL {
     const float& z4 = mdsInGPU.anchorZ[fourthMDIndex] / 100;
     const float& z5 = mdsInGPU.anchorZ[fifthMDIndex] / 100;
 
-    //following Philip's layer number prescription
+    // Using sdl_layer numbering convention defined in ModuleMethods.h
     const int layer1 = modulesInGPU.sdlLayers[lowerModuleIndex1];
     const int layer2 = modulesInGPU.sdlLayers[lowerModuleIndex2];
     const int layer3 = modulesInGPU.sdlLayers[lowerModuleIndex3];
@@ -1526,7 +1527,7 @@ namespace SDL {
     //Cut 1 - z compatibility
     zOut = z_OutLo;
     rtOut = rt_OutLo;
-    if (not((z_OutLo >= zLo) && (z_OutLo <= zHi)))
+    if ((z_OutLo < zLo) || (z_OutLo > zHi))
       return false;
 
     float drt_OutLo_InLo = (rt_OutLo - rt_InLo);
@@ -1539,7 +1540,8 @@ namespace SDL {
     float coshEta = dr3_InSeg / drt_InSeg;
     float dzErr = (zpitch_InLo + zpitch_OutLo) * (zpitch_InLo + zpitch_OutLo) * 2.f;
 
-    float sdlThetaMulsF2 = (0.015f * 0.015f) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (r3_InLo / rt_InLo);
+    float sdlThetaMulsF2 =
+        (kMulsInGev2 * kMulsInGev2) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (r3_InLo / rt_InLo);
     float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
     dzErr += sdlMuls2 * drt_OutLo_InLo * drt_OutLo_InLo / 3.f * coshEta * coshEta;
     dzErr = alpaka::math::sqrt(acc, dzErr);
@@ -1553,7 +1555,7 @@ namespace SDL {
     zHiPointed = z_InLo + dzMean * (z_InLo < 0.f ? 1.f : dzDrtScale) + zWindow;
 
     // Cut #2: Pointed Z (Inner segment two MD points to outer segment inner MD)
-    if (not((z_OutLo >= zLoPointed) && (z_OutLo <= zHiPointed)))
+    if ((z_OutLo < zLoPointed) || (z_OutLo > zHiPointed))
       return false;
 
     float sdlPVoff = 0.1f / rt_OutLo;
@@ -1561,7 +1563,7 @@ namespace SDL {
 
     deltaPhiPos = SDL::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
     // Cut #3: FIXME:deltaPhiPos can be tighter
-    if (not(alpaka::math::abs(acc, deltaPhiPos) <= sdlCut))
+    if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
       return false;
 
     float midPointX = 0.5f * (mdsInGPU.anchorX[firstMDIndex] + mdsInGPU.anchorX[thirdMDIndex]);
@@ -1572,7 +1574,7 @@ namespace SDL {
     dPhi = SDL::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
     // Cut #4: deltaPhiChange
-    if (not(alpaka::math::abs(acc, dPhi) <= sdlCut))
+    if (alpaka::math::abs(acc, dPhi) > sdlCut)
       return false;
 
     // First obtaining the raw betaIn and betaOut values without any correction and just purely based on the mini-doublet hit positions
@@ -1656,7 +1658,7 @@ namespace SDL {
                 (0.02f / drt_InSeg);
 
     //Cut #5: first beta cut
-    if (not(alpaka::math::abs(acc, betaInRHmin) < betaInCut))
+    if (alpaka::math::abs(acc, betaInRHmin) >= betaInCut)
       return false;
 
     float betaAv = 0.5f * (betaIn + betaOut);
@@ -1721,7 +1723,7 @@ namespace SDL {
         (0.02f / sdOut_d) + alpaka::math::sqrt(acc, dBetaLum2 + dBetaMuls2);
 
     //Cut #6: The real beta cut
-    if (not((alpaka::math::abs(acc, betaOut) < betaOutCut)))
+    if (alpaka::math::abs(acc, betaOut) >= betaOutCut)
       return false;
 
     float dBetaRes = 0.02f / alpaka::math::min(acc, sdOut_d, drt_InSeg);
@@ -1733,10 +1735,7 @@ namespace SDL {
 
     float dBeta = betaIn - betaOut;
     deltaBetaCut = alpaka::math::sqrt(acc, dBetaCut2);
-    if (not(dBeta * dBeta <= dBetaCut2))
-      return false;
-
-    return true;
+    return dBeta * dBeta <= dBetaCut2;
   };
 
   template <typename TAcc>
@@ -1793,7 +1792,7 @@ namespace SDL {
     zLo = z_InLo + (z_InLo - SDL::deltaZLum) * (rtRatio_OutLoInLo - 1.f) * (z_InLo > 0.f ? 1.f : dzDrtScale) - zGeom;
 
     // Cut #0: Preliminary (Only here in endcap case)
-    if (not(z_InLo * z_OutLo > 0))
+    if (z_InLo * z_OutLo <= 0)
       return false;
 
     float dLum = SDL::copysignf(SDL::deltaZLum, z_InLo);
@@ -1806,7 +1805,7 @@ namespace SDL {
     rtOut = rt_OutLo;
 
     //Cut #1: rt condition
-    if (not(rtOut >= rtLo))
+    if (rtOut < rtLo)
       return false;
 
     float zInForHi = z_InLo - zGeom1 - dLum;
@@ -1816,7 +1815,7 @@ namespace SDL {
     rtHi = rt_InLo * (1.f + (z_OutLo - z_InLo + zGeom1) / zInForHi) + rtGeom1;
 
     //Cut #2: rt condition
-    if (not((rt_OutLo >= rtLo) && (rt_OutLo <= rtHi)))
+    if ((rt_OutLo < rtLo) || (rt_OutLo > rtHi))
       return false;
 
     float rIn = alpaka::math::sqrt(acc, z_InLo * z_InLo + rt_InLo * rt_InLo);
@@ -1832,13 +1831,14 @@ namespace SDL {
     kZ = (z_OutLo - z_InLo) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
-    const float sdlThetaMulsF2 = (0.015f * 0.015f) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (rIn / rt_InLo);
+    const float sdlThetaMulsF2 =
+        (kMulsInGev2 * kMulsInGev2) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (rIn / rt_InLo);
     const float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
     drtErr += sdlMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
 
     //Cut #3: rt-z pointed
-    if (not((kZ >= 0) && (rtOut >= rtLo) && (rtOut <= rtHi)))
+    if ((kZ < 0) || (rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
     const float sdlPVoff = 0.1f / rt_OutLo;
@@ -1847,7 +1847,7 @@ namespace SDL {
     deltaPhiPos = SDL::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
 
     //Cut #4: deltaPhiPos can be tighter
-    if (not(alpaka::math::abs(acc, deltaPhiPos) <= sdlCut))
+    if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
       return false;
 
     float midPointX = 0.5f * (mdsInGPU.anchorX[firstMDIndex] + mdsInGPU.anchorX[thirdMDIndex]);
@@ -1857,7 +1857,7 @@ namespace SDL {
 
     dPhi = SDL::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
     // Cut #5: deltaPhiChange
-    if (not(alpaka::math::abs(acc, dPhi) <= sdlCut))
+    if (alpaka::math::abs(acc, dPhi) > sdlCut)
       return false;
 
     float sdIn_alpha = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
@@ -1928,7 +1928,7 @@ namespace SDL {
         (0.02f / sdIn_d);
 
     //Cut #6: first beta cut
-    if (not(alpaka::math::abs(acc, betaInRHmin) < betaInCut))
+    if (alpaka::math::abs(acc, betaInRHmin) >= betaInCut)
       return false;
 
     float betaAv = 0.5f * (betaIn + betaOut);
@@ -1993,7 +1993,7 @@ namespace SDL {
                  (0.02f / sdOut_d) + alpaka::math::sqrt(acc, dBetaLum2 + dBetaMuls2);
 
     //Cut #6: The real beta cut
-    if (not(alpaka::math::abs(acc, betaOut) < betaOutCut))
+    if (alpaka::math::abs(acc, betaOut) >= betaOutCut)
       return false;
 
     float dBetaRes = 0.02f / alpaka::math::min(acc, sdOut_d, sdIn_d);
@@ -2005,10 +2005,7 @@ namespace SDL {
     float dBeta = betaIn - betaOut;
     deltaBetaCut = alpaka::math::sqrt(acc, dBetaCut2);
     //Cut #7: Cut on dBet
-    if (not(dBeta * dBeta <= dBetaCut2))
-      return false;
-
-    return true;
+    return dBeta * dBeta <= dBetaCut2;
   };
 
   template <typename TAcc>
@@ -2066,7 +2063,7 @@ namespace SDL {
           zGeom;  //slope-correction only on outer end
 
     // Cut #0: Preliminary (Only here in endcap case)
-    if (not((z_InLo * z_OutLo) > 0))
+    if ((z_InLo * z_OutLo) <= 0)
       return false;
 
     float dLum = SDL::copysignf(SDL::deltaZLum, z_InLo);
@@ -2087,7 +2084,7 @@ namespace SDL {
 
     rtHi = rt_InLo * (1.f + dz / (z_InLo - dLum)) + rtGeom;
 
-    if (not((rtOut >= rtLo) && (rtOut <= rtHi)))
+    if ((rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
     bool isInSgOuterMDPS = modulesInGPU.moduleType[innerOuterLowerModuleIndex] == SDL::PS;
@@ -2101,7 +2098,7 @@ namespace SDL {
     float multDzDr = dzOutInAbs * coshEta / (coshEta * coshEta - 1.f);
 
     kZ = (z_OutLo - z_InLo) / dzSDIn;
-    float sdlThetaMulsF2 = (0.015f * 0.015f) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f);
+    float sdlThetaMulsF2 = (kMulsInGev2 * kMulsInGev2) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f);
 
     float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
 
@@ -2120,7 +2117,7 @@ namespace SDL {
 
     if (isInSgInnerMDPS and isInSgOuterMDPS)  // If both PS then we can point
     {
-      if (not(kZ >= 0 and rtOut >= rtLo_point and rtOut <= rtHi_point))
+      if (kZ < 0 || rtOut < rtLo_point || rtOut > rtHi_point)
         return false;
     }
 
@@ -2129,7 +2126,7 @@ namespace SDL {
 
     deltaPhiPos = SDL::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
 
-    if (not(alpaka::math::abs(acc, deltaPhiPos) <= sdlCut))
+    if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
       return false;
 
     float midPointX = 0.5f * (mdsInGPU.anchorX[firstMDIndex] + mdsInGPU.anchorX[thirdMDIndex]);
@@ -2140,7 +2137,7 @@ namespace SDL {
     dPhi = SDL::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
     // Cut #5: deltaPhiChange
-    if (not((alpaka::math::abs(acc, dPhi) <= sdlCut)))
+    if (alpaka::math::abs(acc, dPhi) > sdlCut)
       return false;
 
     float sdIn_alpha = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
@@ -2198,7 +2195,7 @@ namespace SDL {
         (0.02f / sdIn_d);
 
     //Cut #6: first beta cut
-    if (not(alpaka::math::abs(acc, betaInRHmin) < betaInCut))
+    if (alpaka::math::abs(acc, betaInRHmin) >= betaInCut)
       return false;
 
     float betaAv = 0.5f * (betaIn + betaOut);
@@ -2251,7 +2248,7 @@ namespace SDL {
                  (0.02f / sdOut_d) + alpaka::math::sqrt(acc, dBetaLum2 + dBetaMuls2);
 
     //Cut #6: The real beta cut
-    if (not(alpaka::math::abs(acc, betaOut) < betaOutCut))
+    if (alpaka::math::abs(acc, betaOut) >= betaOutCut)
       return false;
 
     float dBetaRes = 0.02f / alpaka::math::min(acc, sdOut_d, sdIn_d);
@@ -2264,10 +2261,7 @@ namespace SDL {
     //Cut #7: Cut on dBeta
     deltaBetaCut = alpaka::math::sqrt(acc, dBetaCut2);
 
-    if (not(dBeta * dBeta <= dBetaCut2))
-      return false;
-
-    return true;
+    return dBeta * dBeta <= dBetaCut2;
   };
 
   template <typename TAcc>
@@ -2705,7 +2699,7 @@ namespace SDL {
 #else
     rzChiSquared = -1;
 #endif
-    if (not(innerRadius >= 0.95f * ptCut / (2.f * k2Rinv1GeVf)))
+    if (innerRadius < 0.95f * ptCut / (2.f * k2Rinv1GeVf))
       return false;
 
     float innerInvRadiusMin, innerInvRadiusMax, bridgeInvRadiusMin, bridgeInvRadiusMax, outerInvRadiusMin,
@@ -2884,7 +2878,7 @@ namespace SDL {
 
     computeSigmasForRegression(acc, modulesInGPU, lowerModuleIndices, delta1, delta2, slopes, isFlat);
     regressionRadius = computeRadiusUsingRegression(
-        acc, layers_T5, xVec, yVec, delta1, delta2, slopes, isFlat, regressionG, regressionF, sigmas2, chiSquared);
+        acc, objLayers::kT5, xVec, yVec, delta1, delta2, slopes, isFlat, regressionG, regressionF, sigmas2, chiSquared);
 
 #ifdef USE_T5_DNN
     unsigned int mdIndices[] = {firstMDIndex, secondMDIndex, thirdMDIndex, fourthMDIndex, fifthMDIndex};
@@ -2903,7 +2897,7 @@ namespace SDL {
                                           outerRadius,
                                           bridgeRadius);
     TightCutFlag = TightCutFlag and (inference > T5DNN::LSTWP2);  // T5-in-TC cut
-    if (not(inference > T5DNN::LSTWP2))                           // T5-building cut
+    if (inference <= T5DNN::LSTWP2)                               // T5-building cut
       return false;
 #endif
 
@@ -2923,7 +2917,7 @@ namespace SDL {
 
     //compute the other chisquared
     //non anchor is always shifted for tilted and endcap!
-    float nonAnchorDelta1[layers_T5], nonAnchorDelta2[layers_T5], nonAnchorSlopes[layers_T5];
+    float nonAnchorDelta1[objLayers::kT5], nonAnchorDelta2[objLayers::kT5], nonAnchorSlopes[objLayers::kT5];
     float nonAnchorxs[] = {mdsInGPU.outerX[firstMDIndex],
                            mdsInGPU.outerX[secondMDIndex],
                            mdsInGPU.outerX[thirdMDIndex],
@@ -2942,10 +2936,10 @@ namespace SDL {
                                nonAnchorDelta2,
                                nonAnchorSlopes,
                                isFlat,
-                               layers_T5,
+                               objLayers::kT5,
                                false);
     nonAnchorChiSquared = computeChiSquared(acc,
-                                            layers_T5,
+                                            objLayers::kT5,
                                             nonAnchorxs,
                                             nonAnchorys,
                                             nonAnchorDelta1,
@@ -2988,14 +2982,14 @@ namespace SDL {
         for (unsigned int innerTripletArrayIndex = globalThreadIdx[1]; innerTripletArrayIndex < nInnerTriplets;
              innerTripletArrayIndex += gridThreadExtent[1]) {
           unsigned int innerTripletIndex = rangesInGPU.tripletModuleIndices[lowerModule1] + innerTripletArrayIndex;
-          uint16_t lowerModule2 = tripletsInGPU.lowerModuleIndices[layers_T3 * innerTripletIndex + 1];
-          uint16_t lowerModule3 = tripletsInGPU.lowerModuleIndices[layers_T3 * innerTripletIndex + 2];
+          uint16_t lowerModule2 = tripletsInGPU.lowerModuleIndices[objLayers::kT3 * innerTripletIndex + 1];
+          uint16_t lowerModule3 = tripletsInGPU.lowerModuleIndices[objLayers::kT3 * innerTripletIndex + 2];
           unsigned int nOuterTriplets = tripletsInGPU.nTriplets[lowerModule3];
           for (unsigned int outerTripletArrayIndex = globalThreadIdx[2]; outerTripletArrayIndex < nOuterTriplets;
                outerTripletArrayIndex += gridThreadExtent[2]) {
             unsigned int outerTripletIndex = rangesInGPU.tripletModuleIndices[lowerModule3] + outerTripletArrayIndex;
-            uint16_t lowerModule4 = tripletsInGPU.lowerModuleIndices[layers_T3 * outerTripletIndex + 1];
-            uint16_t lowerModule5 = tripletsInGPU.lowerModuleIndices[layers_T3 * outerTripletIndex + 2];
+            uint16_t lowerModule4 = tripletsInGPU.lowerModuleIndices[objLayers::kT3 * outerTripletIndex + 1];
+            uint16_t lowerModule5 = tripletsInGPU.lowerModuleIndices[objLayers::kT3 * outerTripletIndex + 2];
 
             float innerRadius, outerRadius, bridgeRadius, regressionG, regressionF, regressionRadius, rzChiSquared,
                 chiSquared, nonAnchorChiSquared;  //required for making distributions
@@ -3138,13 +3132,13 @@ namespace SDL {
         else
           category_number = -1;
 
-        if (module_eta < 0.75)
+        if (module_eta < 0.75f)
           eta_number = 0;
-        else if (module_eta > 0.75 && module_eta < 1.5)
+        else if (module_eta < 1.5f)
           eta_number = 1;
-        else if (module_eta > 1.5 && module_eta < 2.25)
+        else if (module_eta < 2.25f)
           eta_number = 2;
-        else if (module_eta > 2.25 && module_eta < 3)
+        else if (module_eta < 3.0f)
           eta_number = 3;
         else
           eta_number = -1;

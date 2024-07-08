@@ -397,16 +397,16 @@ std::vector<unsigned int> SDL::LST<SDL::Acc>::getHitIdxs(const short trackCandid
 
   unsigned int maxNHits = 0;
   if (trackCandidateType == 7)
-    maxNHits = hits_pT5;  // pT5
+    maxNHits = objHits::kpT5;  // pT5
   else if (trackCandidateType == 5)
-    maxNHits = hits_pT3;  // pT3
+    maxNHits = objHits::kpT3;  // pT3
   else if (trackCandidateType == 4)
-    maxNHits = hits_T5;  // T5
+    maxNHits = objHits::kT5;  // T5
   else if (trackCandidateType == 8)
-    maxNHits = hits_pLS;  // pLS
+    maxNHits = objHits::kpLS;  // pLS
 
   for (unsigned int i = 0; i < maxNHits; i++) {
-    unsigned int hitIdxInGPU = TCHitIndices[hits_pT5 * TCIdx + i];
+    unsigned int hitIdxInGPU = TCHitIndices[objHits::kpT5 * TCIdx + i];
     unsigned int hitIdx =
         (trackCandidateType == 8)
             ? hitIdxInGPU
