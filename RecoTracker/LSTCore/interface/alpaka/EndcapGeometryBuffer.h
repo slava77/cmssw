@@ -15,7 +15,7 @@
 
 namespace SDL {
 
-  struct endcapGeom {
+  struct EndcapGeometryDev {
     const unsigned int* geoMapDetId;
     const float* geoMapPhi;
 
@@ -27,29 +27,29 @@ namespace SDL {
   };
 
   template <typename TDev>
-  struct endcapGeometryBuffer : endcapGeom {
+  struct EndcapGeometryBuffer : EndcapGeometryDev {
     Buf<TDev, unsigned int> geoMapDetId_buf;
     Buf<TDev, float> geoMapPhi_buf;
 
-    endcapGeometryBuffer(TDev const& dev, unsigned int nEndCapMap)
+    EndcapGeometryBuffer(TDev const& dev, unsigned int nEndCapMap)
         : geoMapDetId_buf(allocBufWrapper<unsigned int>(dev, nEndCapMap)),
           geoMapPhi_buf(allocBufWrapper<float>(dev, nEndCapMap)) {
       setData(*this);
     }
 
     template <typename TQueue, typename TDevSrc>
-    inline void copyFromSrc(TQueue queue, const endcapGeometryBuffer<TDevSrc>& src) {
+    inline void copyFromSrc(TQueue queue, const EndcapGeometryBuffer<TDevSrc>& src) {
       alpaka::memcpy(queue, geoMapDetId_buf, src.geoMapDetId_buf);
       alpaka::memcpy(queue, geoMapPhi_buf, src.geoMapPhi_buf);
     }
 
     template <typename TQueue, typename TDevSrc>
-    endcapGeometryBuffer(TQueue queue, const endcapGeometryBuffer<TDevSrc>& src, unsigned int nEndCapMap)
-        : endcapGeometryBuffer(alpaka::getDev(queue), nEndCapMap) {
+    EndcapGeometryBuffer(TQueue queue, const EndcapGeometryBuffer<TDevSrc>& src, unsigned int nEndCapMap)
+        : EndcapGeometryBuffer(alpaka::getDev(queue), nEndCapMap) {
       copyFromSrc(queue, src);
     }
 
-    inline SDL::endcapGeom const* data() const { return this; }
+    inline SDL::EndcapGeometryDev const* data() const { return this; }
   };
 
 }  // namespace SDL
