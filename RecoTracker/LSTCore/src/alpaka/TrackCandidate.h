@@ -1,13 +1,8 @@
 #ifndef TrackCandidate_cuh
 #define TrackCandidate_cuh
 
-#ifdef LST_IS_CMSSW_PACKAGE
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/Module.h"
-#else
-#include "Constants.h"
-#include "Module.h"
-#endif
 
 #include "Triplet.h"
 #include "Segment.h"
@@ -88,10 +83,10 @@ namespace SDL {
           nTrackCandidatespT5_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
           nTrackCandidatespLS_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
           nTrackCandidatesT5_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, 7 * maxTrackCandidates, queue)),
-          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 14 * maxTrackCandidates, queue)),
+          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, objLayers::kpT5 * maxTrackCandidates, queue)),
+          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, objHits::kpT5 * maxTrackCandidates, queue)),
           pixelSeedIndex_buf(allocBufWrapper<int>(devAccIn, maxTrackCandidates, queue)),
-          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, 7 * maxTrackCandidates, queue)),
+          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, objLayers::kpT5 * maxTrackCandidates, queue)),
           centerX_buf(allocBufWrapper<FPX>(devAccIn, maxTrackCandidates, queue)),
           centerY_buf(allocBufWrapper<FPX>(devAccIn, maxTrackCandidates, queue)),
           radius_buf(allocBufWrapper<FPX>(devAccIn, maxTrackCandidates, queue)) {
@@ -113,18 +108,18 @@ namespace SDL {
                                                                    unsigned int trackCandidateIndex,
                                                                    uint4 hitIndices,
                                                                    int pixelSeedIndex) {
-    trackCandidatesInGPU.trackCandidateType[trackCandidateIndex] = 8;
+    trackCandidatesInGPU.trackCandidateType[trackCandidateIndex] = 8;  // type for pLS
     trackCandidatesInGPU.directObjectIndices[trackCandidateIndex] = trackletIndex;
     trackCandidatesInGPU.pixelSeedIndex[trackCandidateIndex] = pixelSeedIndex;
 
     trackCandidatesInGPU.objectIndices[2 * trackCandidateIndex] = trackletIndex;
     trackCandidatesInGPU.objectIndices[2 * trackCandidateIndex + 1] = trackletIndex;
 
-    trackCandidatesInGPU.hitIndices[14 * trackCandidateIndex + 0] =
+    trackCandidatesInGPU.hitIndices[objHits::kpT5 * trackCandidateIndex + 0] =
         hitIndices.x;  // Order explanation in https://github.com/SegmentLinking/TrackLooper/issues/267
-    trackCandidatesInGPU.hitIndices[14 * trackCandidateIndex + 1] = hitIndices.z;
-    trackCandidatesInGPU.hitIndices[14 * trackCandidateIndex + 2] = hitIndices.y;
-    trackCandidatesInGPU.hitIndices[14 * trackCandidateIndex + 3] = hitIndices.w;
+    trackCandidatesInGPU.hitIndices[objHits::kpT5 * trackCandidateIndex + 1] = hitIndices.z;
+    trackCandidatesInGPU.hitIndices[objHits::kpT5 * trackCandidateIndex + 2] = hitIndices.y;
+    trackCandidatesInGPU.hitIndices[objHits::kpT5 * trackCandidateIndex + 3] = hitIndices.w;
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTrackCandidateToMemory(struct SDL::trackCandidates& trackCandidatesInGPU,
@@ -147,15 +142,16 @@ namespace SDL {
     trackCandidatesInGPU.objectIndices[2 * trackCandidateIndex] = innerTrackletIndex;
     trackCandidatesInGPU.objectIndices[2 * trackCandidateIndex + 1] = outerTrackletIndex;
 
-    size_t limits = trackCandidateType == 7 ? 7 : 5;
+    size_t limits = trackCandidateType == 7 ? objLayers::kpT5
+                                            : objLayers::kpT3;  // 7 means pT5, objLayers::kpT3 = objLayers::kT5 = 5
 
     //send the starting pointer to the logicalLayer and hitIndices
     for (size_t i = 0; i < limits; i++) {
-      trackCandidatesInGPU.logicalLayers[7 * trackCandidateIndex + i] = logicalLayerIndices[i];
-      trackCandidatesInGPU.lowerModuleIndices[7 * trackCandidateIndex + i] = lowerModuleIndices[i];
+      trackCandidatesInGPU.logicalLayers[objLayers::kpT5 * trackCandidateIndex + i] = logicalLayerIndices[i];
+      trackCandidatesInGPU.lowerModuleIndices[objLayers::kpT5 * trackCandidateIndex + i] = lowerModuleIndices[i];
     }
     for (size_t i = 0; i < 2 * limits; i++) {
-      trackCandidatesInGPU.hitIndices[14 * trackCandidateIndex + i] = hitIndices[i];
+      trackCandidatesInGPU.hitIndices[objHits::kpT5 * trackCandidateIndex + i] = hitIndices[i];
     }
     trackCandidatesInGPU.centerX[trackCandidateIndex] = __F2H(centerX);
     trackCandidatesInGPU.centerY[trackCandidateIndex] = __F2H(centerY);
@@ -167,8 +163,9 @@ namespace SDL {
                                                     struct SDL::miniDoublets& mdsInGPU,
                                                     struct SDL::segments& segmentsInGPU,
                                                     struct SDL::hits& hitsInGPU) {
-    int phits1[4] = {-1, -1, -1, -1};
-    int phits2[4] = {-1, -1, -1, -1};
+    int phits1[objHits::kpLS];
+    int phits2[objHits::kpLS];
+
     phits1[0] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[segmentsInGPU.mdIndices[2 * ix]]];
     phits1[1] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[segmentsInGPU.mdIndices[2 * ix + 1]]];
     phits1[2] = hitsInGPU.idxs[mdsInGPU.outerHitIndices[segmentsInGPU.mdIndices[2 * ix]]];
@@ -181,12 +178,12 @@ namespace SDL {
 
     int npMatched = 0;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < objHits::kpLS; i++) {
       bool pmatched = false;
       if (phits1[i] == -1)
         continue;
 
-      for (int j = 0; j < 4; j++) {
+      for (int j = 0; j < objHits::kpLS; j++) {
         if (phits2[j] == -1)
           continue;
 
@@ -418,9 +415,9 @@ namespace SDL {
                                     5 /*track candidate type pT3=5*/,
                                     pixelTripletIndex,
                                     pixelTripletIndex,
-                                    &pixelTripletsInGPU.logicalLayers[5 * pixelTripletIndex],
-                                    &pixelTripletsInGPU.lowerModuleIndices[5 * pixelTripletIndex],
-                                    &pixelTripletsInGPU.hitIndices[10 * pixelTripletIndex],
+                                    &pixelTripletsInGPU.logicalLayers[objLayers::kpT3 * pixelTripletIndex],
+                                    &pixelTripletsInGPU.lowerModuleIndices[objLayers::kpT3 * pixelTripletIndex],
+                                    &pixelTripletsInGPU.hitIndices[objHits::kpT3 * pixelTripletIndex],
                                     segmentsInGPU.seedIdx[pT3PixelIndex - pLS_offset],
                                     __H2F(pixelTripletsInGPU.centerX[pixelTripletIndex]),
                                     __H2F(pixelTripletsInGPU.centerY[pixelTripletIndex]),
@@ -471,9 +468,9 @@ namespace SDL {
                                       4 /*track candidate type T5=4*/,
                                       quintupletIndex,
                                       quintupletIndex,
-                                      &quintupletsInGPU.logicalLayers[5 * quintupletIndex],
-                                      &quintupletsInGPU.lowerModuleIndices[5 * quintupletIndex],
-                                      &quintupletsInGPU.hitIndices[10 * quintupletIndex],
+                                      &quintupletsInGPU.logicalLayers[objLayers::kT5 * quintupletIndex],
+                                      &quintupletsInGPU.lowerModuleIndices[objLayers::kT5 * quintupletIndex],
+                                      &quintupletsInGPU.hitIndices[objHits::kT5 * quintupletIndex],
                                       -1 /*no pixel seed index for T5s*/,
                                       quintupletsInGPU.regressionG[quintupletIndex],
                                       quintupletsInGPU.regressionF[quintupletIndex],
@@ -491,18 +488,15 @@ namespace SDL {
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
                                   struct SDL::trackCandidates trackCandidatesInGPU,
-                                  struct SDL::segments segmentsInGPU) const {
+                                  struct SDL::segments segmentsInGPU,
+                                  bool tc_pls_triplets) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
       unsigned int nPixels = segmentsInGPU.nSegments[nLowerModules];
       for (unsigned int pixelArrayIndex = globalThreadIdx[2]; pixelArrayIndex < nPixels;
            pixelArrayIndex += gridThreadExtent[2]) {
-#ifdef TC_PLS_TRIPLETS
-        if (segmentsInGPU.isDup[pixelArrayIndex])
-#else
-        if ((!segmentsInGPU.isQuad[pixelArrayIndex]) || (segmentsInGPU.isDup[pixelArrayIndex]))
-#endif
+        if ((tc_pls_triplets ? 0 : !segmentsInGPU.isQuad[pixelArrayIndex]) || (segmentsInGPU.isDup[pixelArrayIndex]))
           continue;
 
         unsigned int trackCandidateIdx =
@@ -566,9 +560,9 @@ namespace SDL {
                                     7 /*track candidate type pT5=7*/,
                                     pT5PixelIndex,
                                     pixelQuintupletsInGPU.T5Indices[pixelQuintupletIndex],
-                                    &pixelQuintupletsInGPU.logicalLayers[7 * pixelQuintupletIndex],
-                                    &pixelQuintupletsInGPU.lowerModuleIndices[7 * pixelQuintupletIndex],
-                                    &pixelQuintupletsInGPU.hitIndices[14 * pixelQuintupletIndex],
+                                    &pixelQuintupletsInGPU.logicalLayers[objLayers::kpT5 * pixelQuintupletIndex],
+                                    &pixelQuintupletsInGPU.lowerModuleIndices[objLayers::kpT5 * pixelQuintupletIndex],
+                                    &pixelQuintupletsInGPU.hitIndices[objHits::kpT5 * pixelQuintupletIndex],
                                     segmentsInGPU.seedIdx[pT5PixelIndex - pLS_offset],
                                     __H2F(pixelQuintupletsInGPU.centerX[pixelQuintupletIndex]),
                                     __H2F(pixelQuintupletsInGPU.centerY[pixelQuintupletIndex]),

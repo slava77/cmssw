@@ -1,15 +1,9 @@
 #ifndef Event_cuh
 #define Event_cuh
 
-#ifdef LST_IS_CMSSW_PACKAGE
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/Module.h"
 #include "RecoTracker/LSTCore/interface/alpaka/LST.h"
-#else
-#include "Constants.h"
-#include "Module.h"
-#include "LST.h"
-#endif
 
 #include "Hit.h"
 #include "ModuleMethods.h"
@@ -150,12 +144,12 @@ namespace SDL {
     void createTriplets();
     void createPixelTracklets();
     void createPixelTrackletsWithMap();
-    void createTrackCandidates();
+    void createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets);
     void createExtendedTracks();
     void createQuintuplets();
     void createPixelTriplets();
     void createPixelQuintuplets();
-    void pixelLineSegmentCleaning();
+    void pixelLineSegmentCleaning(bool no_pls_dupclean);
 
     unsigned int getNumberOfHits();
     unsigned int getNumberOfHitsByLayer(unsigned int layer);
