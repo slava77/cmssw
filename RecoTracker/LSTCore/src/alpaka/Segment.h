@@ -676,7 +676,7 @@ namespace SDL {
       return false;
     if (alpaka::math::abs(acc, dAlphaOuterMDSegment) >= dAlphaThresholdValues[1])
       return false;
-    return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaThresholdValues[2]
+    return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaThresholdValues[2];
   };
 
   template <typename TAcc>
@@ -1068,7 +1068,7 @@ namespace SDL {
                           (hitsInGPU.zs[mdsInGPU.anchorHitIndices[outerMDIndex]]);
         score_lsq = score_lsq * score_lsq;
 
-        unsigned int hits1[objHits::kpLS];
+        unsigned int hits1[Params_pLS::kHits];
         hits1[0] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[innerMDIndex]];
         hits1[1] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[outerMDIndex]];
         hits1[2] = hitsInGPU.idxs[mdsInGPU.outerHitIndices[innerMDIndex]];

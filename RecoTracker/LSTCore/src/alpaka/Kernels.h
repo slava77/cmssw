@@ -37,18 +37,18 @@ namespace SDL {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitsT5(unsigned int ix,
                                                  unsigned int jx,
                                                  struct SDL::quintuplets& quintupletsInGPU) {
-    unsigned int hits1[objHits::kT5];
-    unsigned int hits2[objHits::kT5];
+    unsigned int hits1[Params_T5::kHits];
+    unsigned int hits2[Params_T5::kHits];
 
-    for (int i = 0; i < objHits::kT5; i++) {
-      hits1[i] = quintupletsInGPU.hitIndices[objHits::kT5 * ix + i];
-      hits2[i] = quintupletsInGPU.hitIndices[objHits::kT5 * jx + i];
+    for (int i = 0; i < Params_T5::kHits; i++) {
+      hits1[i] = quintupletsInGPU.hitIndices[Params_T5::kHits * ix + i];
+      hits2[i] = quintupletsInGPU.hitIndices[Params_T5::kHits * jx + i];
     }
 
     int nMatched = 0;
-    for (int i = 0; i < objHits::kT5; i++) {
+    for (int i = 0; i < Params_T5::kHits; i++) {
       bool matched = false;
-      for (int j = 0; j < objHits::kT5; j++) {
+      for (int j = 0; j < Params_T5::kHits; j++) {
         if (hits1[i] == hits2[j]) {
           matched = true;
           break;
@@ -64,18 +64,18 @@ namespace SDL {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitspT5(unsigned int ix,
                                                   unsigned int jx,
                                                   struct SDL::pixelQuintuplets& pixelQuintupletsInGPU) {
-    unsigned int hits1[objHits::kpT5];
-    unsigned int hits2[objHits::kpT5];
+    unsigned int hits1[Params_pT5::kHits];
+    unsigned int hits2[Params_pT5::kHits];
 
-    for (int i = 0; i < objHits::kpT5; i++) {
-      hits1[i] = pixelQuintupletsInGPU.hitIndices[objHits::kpT5 * ix + i];
-      hits2[i] = pixelQuintupletsInGPU.hitIndices[objHits::kpT5 * jx + i];
+    for (int i = 0; i < Params_pT5::kHits; i++) {
+      hits1[i] = pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * ix + i];
+      hits2[i] = pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * jx + i];
     }
 
     int nMatched = 0;
-    for (int i = 0; i < objHits::kpT5; i++) {
+    for (int i = 0; i < Params_pT5::kHits; i++) {
       bool matched = false;
-      for (int j = 0; j < objHits::kpT5; j++) {
+      for (int j = 0; j < Params_pT5::kHits; j++) {
         if (hits1[i] == hits2[j]) {
           matched = true;
           break;
@@ -92,18 +92,18 @@ namespace SDL {
                                                    unsigned int jx,
                                                    struct SDL::pixelTriplets& pixelTripletsInGPU,
                                                    int* matched) {
-    int phits1[objHits::kpLS];
-    int phits2[objHits::kpLS];
+    int phits1[Params_pLS::kHits];
+    int phits2[Params_pLS::kHits];
 
-    for (int i = 0; i < objHits::kpLS; i++) {
-      phits1[i] = pixelTripletsInGPU.hitIndices[objHits::kpT3 * ix + i];
-      phits2[i] = pixelTripletsInGPU.hitIndices[objHits::kpT3 * jx + i];
+    for (int i = 0; i < Params_pLS::kHits; i++) {
+      phits1[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * ix + i];
+      phits2[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * jx + i];
     }
 
     int npMatched = 0;
-    for (int i = 0; i < objHits::kpLS; i++) {
+    for (int i = 0; i < Params_pLS::kHits; i++) {
       bool pmatched = false;
-      for (int j = 0; j < objHits::kpLS; j++) {
+      for (int j = 0; j < Params_pLS::kHits; j++) {
         if (phits1[i] == phits2[j]) {
           pmatched = true;
           break;
@@ -114,18 +114,18 @@ namespace SDL {
       }
     }
 
-    int hits1[objHits::kT3];
-    int hits2[objHits::kT3];
+    int hits1[Params_T3::kHits];
+    int hits2[Params_T3::kHits];
 
-    for (int i = 0; i < objHits::kpLS; i++) {
-      hits1[i] = pixelTripletsInGPU.hitIndices[objHits::kpT3 * ix + i + 4];  // Omitting the pLS hits
-      hits2[i] = pixelTripletsInGPU.hitIndices[objHits::kpT3 * jx + i + 4];  // Omitting the pLS hits
+    for (int i = 0; i < Params_pLS::kHits; i++) {
+      hits1[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * ix + i + 4];  // Omitting the pLS hits
+      hits2[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * jx + i + 4];  // Omitting the pLS hits
     }
 
     int nMatched = 0;
-    for (int i = 0; i < objHits::kT3; i++) {
+    for (int i = 0; i < Params_T3::kHits; i++) {
       bool tmatched = false;
-      for (int j = 0; j < objHits::kT3; j++) {
+      for (int j = 0; j < Params_T3::kHits; j++) {
         if (hits1[i] == hits2[j]) {
           tmatched = true;
           break;
@@ -281,17 +281,17 @@ namespace SDL {
           const int minNHitsForDup_pT3 = 5;
           if ((nMatched[0] + nMatched[1]) >= minNHitsForDup_pT3) {
             // Check the layers
-            if (pixelTripletsInGPU.logicalLayers[objLayers::kpT3 * jx + 2] <
-                pixelTripletsInGPU.logicalLayers[objLayers::kpT3 * ix + 2]) {
+            if (pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * jx + 2] <
+                pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * ix + 2]) {
               rmPixelTripletFromMemory(pixelTripletsInGPU, ix);
               break;
-            } else if (pixelTripletsInGPU.logicalLayers[objLayers::kpT3 * ix + 2] ==
-                           pixelTripletsInGPU.logicalLayers[objLayers::kpT3 * jx + 2] &&
+            } else if (pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * ix + 2] ==
+                           pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * jx + 2] &&
                        __H2F(pixelTripletsInGPU.score[ix]) > __H2F(pixelTripletsInGPU.score[jx])) {
               rmPixelTripletFromMemory(pixelTripletsInGPU, ix);
               break;
-            } else if (pixelTripletsInGPU.logicalLayers[objLayers::kpT3 * ix + 2] ==
-                           pixelTripletsInGPU.logicalLayers[objLayers::kpT3 * jx + 2] &&
+            } else if (pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * ix + 2] ==
+                           pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * jx + 2] &&
                        (__H2F(pixelTripletsInGPU.score[ix]) == __H2F(pixelTripletsInGPU.score[jx])) && (ix < jx)) {
               rmPixelTripletFromMemory(pixelTripletsInGPU, ix);
               break;
@@ -348,7 +348,7 @@ namespace SDL {
         if (secondpass && (!segmentsInGPU.isQuad[ix] || (segmentsInGPU.isDup[ix] & 1)))
           continue;
 
-        unsigned int phits1[objHits::kpLS];
+        unsigned int phits1[Params_pLS::kHits];
         phits1[0] = segmentsInGPU.pLSHitsIdxs[ix].x;
         phits1[1] = segmentsInGPU.pLSHitsIdxs[ix].y;
         phits1[2] = segmentsInGPU.pLSHitsIdxs[ix].z;
@@ -381,16 +381,16 @@ namespace SDL {
           else
             idxToRemove = ix;
 
-          unsigned int phits2[objHits::kpLS];
+          unsigned int phits2[Params_pLS::kHits];
           phits2[0] = segmentsInGPU.pLSHitsIdxs[jx].x;
           phits2[1] = segmentsInGPU.pLSHitsIdxs[jx].y;
           phits2[2] = segmentsInGPU.pLSHitsIdxs[jx].z;
           phits2[3] = segmentsInGPU.pLSHitsIdxs[jx].w;
 
           int npMatched = 0;
-          for (int i = 0; i < objHits::kpLS; i++) {
+          for (int i = 0; i < Params_pLS::kHits; i++) {
             bool pmatched = false;
-            for (int j = 0; j < objHits::kpLS; j++) {
+            for (int j = 0; j < Params_pLS::kHits; j++) {
               if (phits1[i] == phits2[j]) {
                 pmatched = true;
                 break;

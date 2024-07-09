@@ -120,28 +120,16 @@ namespace SDL {
   constexpr unsigned int size_superbins = 45000;
 
   //defining the constant host device variables right up here
-  namespace objLayers {
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kpLS =
-        2;  // Currently pixel tracks treated as LSs with 2 double layers (IT layers 1+2 and 3+4). To be potentially handled better in the future.
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kLS = 2;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kT3 = 3;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kpT3 = 5;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kT5 = 5;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kpT5 = 7;
-  }  // namespace objLayers
+  // Currently pixel tracks treated as LSs with 2 double layers (IT layers 1+2 and 3+4) and 4 hits. To be potentially handled better in the future.
+  struct Params_pLS { static constexpr int kLayers = 2, kHits = 4; };
+  struct Params_LS { static constexpr int kLayers = 2, kHits = 4; };
+  struct Params_T3 { static constexpr int kLayers = 3, kHits = 6; };
+  struct Params_pT3 { static constexpr int kLayers = 5, kHits = 10; };
+  struct Params_T5 { static constexpr int kLayers = 5, kHits = 10; };
+  struct Params_pT5 { static constexpr int kLayers = 7, kHits = 14; };
 
-  namespace objHits {
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kpLS =
-        4;  // Currently pixel tracks treated as LSs with 4 hits. To be potentially handled better in the future.
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kLS = 4;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kT3 = 6;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kpT3 = 10;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kT5 = 10;
-    ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr int kpT5 = 14;
-  }  // namespace objHits
-
-  ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr float kMulsInGev2 =
-      0.015;  // 15 MeV constant from the approximate Bethe-Bloch formula
+  // 15 MeV constant from the approximate Bethe-Bloch formula
+  ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr float kMulsInGeV = 0.015;  
   ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr float miniMulsPtScaleBarrel[6] = {
       0.0052, 0.0038, 0.0034, 0.0034, 0.0032, 0.0034};
   ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr float miniMulsPtScaleEndcap[5] = {0.006, 0.006, 0.006, 0.006, 0.006};

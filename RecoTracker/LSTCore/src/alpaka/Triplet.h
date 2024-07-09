@@ -108,12 +108,12 @@ namespace SDL {
     template <typename TQueue, typename TDevAcc>
     tripletsBuffer(unsigned int maxTriplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
         : segmentIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * maxTriplets, queue)),
-          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, objLayers::kT3 * maxTriplets, queue)),
+          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, Params_T3::kLayers * maxTriplets, queue)),
           nTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
           totOccupancyTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
           nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, maxTriplets * objLayers::kT3, queue)),
-          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxTriplets * objHits::kT3, queue)),
+          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, maxTriplets * Params_T3::kLayers, queue)),
+          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxTriplets * Params_T3::kHits, queue)),
           betaIn_buf(allocBufWrapper<FPX>(devAccIn, maxTriplets, queue)),
           circleRadius_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           circleCenterX_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
@@ -191,31 +191,31 @@ namespace SDL {
   {
     tripletsInGPU.segmentIndices[tripletIndex * 2] = innerSegmentIndex;
     tripletsInGPU.segmentIndices[tripletIndex * 2 + 1] = outerSegmentIndex;
-    tripletsInGPU.lowerModuleIndices[tripletIndex * objLayers::kT3] = innerInnerLowerModuleIndex;
-    tripletsInGPU.lowerModuleIndices[tripletIndex * objLayers::kT3 + 1] = middleLowerModuleIndex;
-    tripletsInGPU.lowerModuleIndices[tripletIndex * objLayers::kT3 + 2] = outerOuterLowerModuleIndex;
+    tripletsInGPU.lowerModuleIndices[tripletIndex * Params_T3::kLayers] = innerInnerLowerModuleIndex;
+    tripletsInGPU.lowerModuleIndices[tripletIndex * Params_T3::kLayers + 1] = middleLowerModuleIndex;
+    tripletsInGPU.lowerModuleIndices[tripletIndex * Params_T3::kLayers + 2] = outerOuterLowerModuleIndex;
 
     tripletsInGPU.betaIn[tripletIndex] = __F2H(betaIn);
     tripletsInGPU.circleRadius[tripletIndex] = circleRadius;
     tripletsInGPU.circleCenterX[tripletIndex] = circleCenterX;
     tripletsInGPU.circleCenterY[tripletIndex] = circleCenterY;
-    tripletsInGPU.logicalLayers[tripletIndex * objLayers::kT3] =
+    tripletsInGPU.logicalLayers[tripletIndex * Params_T3::kLayers] =
         modulesInGPU.layers[innerInnerLowerModuleIndex] + (modulesInGPU.subdets[innerInnerLowerModuleIndex] == 4) * 6;
-    tripletsInGPU.logicalLayers[tripletIndex * objLayers::kT3 + 1] =
+    tripletsInGPU.logicalLayers[tripletIndex * Params_T3::kLayers + 1] =
         modulesInGPU.layers[middleLowerModuleIndex] + (modulesInGPU.subdets[middleLowerModuleIndex] == 4) * 6;
-    tripletsInGPU.logicalLayers[tripletIndex * objLayers::kT3 + 2] =
+    tripletsInGPU.logicalLayers[tripletIndex * Params_T3::kLayers + 2] =
         modulesInGPU.layers[outerOuterLowerModuleIndex] + (modulesInGPU.subdets[outerOuterLowerModuleIndex] == 4) * 6;
     //get the hits
     unsigned int firstMDIndex = segmentsInGPU.mdIndices[2 * innerSegmentIndex];
     unsigned int secondMDIndex = segmentsInGPU.mdIndices[2 * innerSegmentIndex + 1];
     unsigned int thirdMDIndex = segmentsInGPU.mdIndices[2 * outerSegmentIndex + 1];
 
-    tripletsInGPU.hitIndices[tripletIndex * objHits::kT3] = mdsInGPU.anchorHitIndices[firstMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * objHits::kT3 + 1] = mdsInGPU.outerHitIndices[firstMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * objHits::kT3 + 2] = mdsInGPU.anchorHitIndices[secondMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * objHits::kT3 + 3] = mdsInGPU.outerHitIndices[secondMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * objHits::kT3 + 4] = mdsInGPU.anchorHitIndices[thirdMDIndex];
-    tripletsInGPU.hitIndices[tripletIndex * objHits::kT3 + 5] = mdsInGPU.outerHitIndices[thirdMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits] = mdsInGPU.anchorHitIndices[firstMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits + 1] = mdsInGPU.outerHitIndices[firstMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits + 2] = mdsInGPU.anchorHitIndices[secondMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits + 3] = mdsInGPU.outerHitIndices[secondMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits + 4] = mdsInGPU.anchorHitIndices[thirdMDIndex];
+    tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits + 5] = mdsInGPU.outerHitIndices[thirdMDIndex];
 #ifdef CUT_VALUE_DEBUG
     tripletsInGPU.zOut[tripletIndex] = zOut;
     tripletsInGPU.rtOut[tripletIndex] = rtOut;
@@ -347,7 +347,7 @@ namespace SDL {
     float coshEta = dr3_InSeg / drt_InSeg;
     float dzErr = (zpitchIn + zpitchOut) * (zpitchIn + zpitchOut) * 2.f;
 
-    float sdlThetaMulsF2 = (kMulsInGev2 * kMulsInGev2) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
+    float sdlThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
     float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
     dzErr += sdlMuls2 * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;
     dzErr = alpaka::math::sqrt(acc, dzErr);
@@ -388,7 +388,7 @@ namespace SDL {
         (0.02f / drt_InSeg);
 
     //Cut #3: first beta cut
-    return alpaka::math::abs(acc, betaIn) < betaInCut
+    return alpaka::math::abs(acc, betaIn) < betaInCut;
   };
 
   template <typename TAcc>
@@ -465,7 +465,7 @@ namespace SDL {
     const float kZ = (zOut - zIn) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
-    const float sdlThetaMulsF2 = (kMulsInGev2 * kMulsInGev2) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
+    const float sdlThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
     const float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
     drtErr += sdlMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
@@ -575,7 +575,7 @@ namespace SDL {
     float multDzDr = dzOutInAbs * coshEta / (coshEta * coshEta - 1.f);
 
     float kZ = (zOut - zIn) / dzSDIn;
-    float sdlThetaMulsF2 = (kMulsInGev2 * kMulsInGev2) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
+    float sdlThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
 
     float sdlMuls2 = sdlThetaMulsF2 * 9.f / (SDL::ptCut * SDL::ptCut) * 16.f;
 
