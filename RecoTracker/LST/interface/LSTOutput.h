@@ -1,5 +1,5 @@
-#ifndef RecoTracker_LST_LSTOutput_h
-#define RecoTracker_LST_LSTOutput_h
+#ifndef RecoTracker_LST_interface_LSTOutput_h
+#define RecoTracker_LST_interface_LSTOutput_h
 
 #include <memory>
 #include <vector>

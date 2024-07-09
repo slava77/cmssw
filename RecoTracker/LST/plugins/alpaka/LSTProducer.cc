@@ -87,7 +87,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   private:
     edm::EDGetTokenT<LSTPixelSeedInput> lstPixelSeedInputToken_;
     edm::EDGetTokenT<LSTPhase2OTHitsInput> lstPhase2OTHitsInputToken_;
-    device::ESGetToken<SDL::LSTESDeviceData<SDL::Dev>, TrackerRecoGeometryRecord> lstESToken_;
+    device::ESGetToken<SDL::LSTESData<Device>, TrackerRecoGeometryRecord> lstESToken_;
     const bool verbose_, nopLSDupClean_, tcpLSTriplets_;
     edm::EDPutTokenT<LSTOutput> lstOutputToken_;
 

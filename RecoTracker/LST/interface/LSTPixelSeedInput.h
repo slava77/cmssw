@@ -1,5 +1,5 @@
-#ifndef RecoTracker_LST_LSTPixelSeedInput_h
-#define RecoTracker_LST_LSTPixelSeedInput_h
+#ifndef RecoTracker_LST_interface_LSTPixelSeedInput_h
+#define RecoTracker_LST_interface_LSTPixelSeedInput_h
 
 #include <memory>
 #include <vector>
