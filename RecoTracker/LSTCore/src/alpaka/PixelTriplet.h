@@ -1989,11 +1989,14 @@ namespace SDL {
     unsigned int pixelInnerMD = segmentsInGPU.mdIndices[Params_pLS::kLayers * pixelIndex];
     unsigned int pixelOuterMD = segmentsInGPU.mdIndices[Params_pLS::kLayers * pixelIndex + 1];
 
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex] = mdsInGPU.anchorHitIndices[pixelInnerMD];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 1] = mdsInGPU.outerHitIndices[pixelInnerMD];
+    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex] =
+        mdsInGPU.anchorHitIndices[pixelInnerMD];
+    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 1] =
+        mdsInGPU.outerHitIndices[pixelInnerMD];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 2] =
         mdsInGPU.anchorHitIndices[pixelOuterMD];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 3] = mdsInGPU.outerHitIndices[pixelOuterMD];
+    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 3] =
+        mdsInGPU.outerHitIndices[pixelOuterMD];
 
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 4] =
         quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index];
@@ -2529,15 +2532,15 @@ namespace SDL {
     float zPix[Params_pLS::kLayers] = {mdsInGPU.anchorZ[pixelInnerMDIndex], mdsInGPU.anchorZ[pixelOuterMDIndex]};
     float rtPix[Params_pLS::kLayers] = {mdsInGPU.anchorRt[pixelInnerMDIndex], mdsInGPU.anchorRt[pixelOuterMDIndex]};
     float zs[Params_T5::kLayers] = {mdsInGPU.anchorZ[firstMDIndex],
-                                mdsInGPU.anchorZ[secondMDIndex],
-                                mdsInGPU.anchorZ[thirdMDIndex],
-                                mdsInGPU.anchorZ[fourthMDIndex],
-                                mdsInGPU.anchorZ[fifthMDIndex]};
+                                    mdsInGPU.anchorZ[secondMDIndex],
+                                    mdsInGPU.anchorZ[thirdMDIndex],
+                                    mdsInGPU.anchorZ[fourthMDIndex],
+                                    mdsInGPU.anchorZ[fifthMDIndex]};
     float rts[Params_T5::kLayers] = {mdsInGPU.anchorRt[firstMDIndex],
-                                 mdsInGPU.anchorRt[secondMDIndex],
-                                 mdsInGPU.anchorRt[thirdMDIndex],
-                                 mdsInGPU.anchorRt[fourthMDIndex],
-                                 mdsInGPU.anchorRt[fifthMDIndex]};
+                                     mdsInGPU.anchorRt[secondMDIndex],
+                                     mdsInGPU.anchorRt[thirdMDIndex],
+                                     mdsInGPU.anchorRt[fourthMDIndex],
+                                     mdsInGPU.anchorRt[fifthMDIndex]};
 
     rzChiSquared = computePT5RZChiSquared(acc, modulesInGPU, lowerModuleIndices, rtPix, zPix, rts, zs);
 
@@ -2554,15 +2557,15 @@ namespace SDL {
 
     //outer T5
     float xs[Params_T5::kLayers] = {mdsInGPU.anchorX[firstMDIndex],
-                                mdsInGPU.anchorX[secondMDIndex],
-                                mdsInGPU.anchorX[thirdMDIndex],
-                                mdsInGPU.anchorX[fourthMDIndex],
-                                mdsInGPU.anchorX[fifthMDIndex]};
+                                    mdsInGPU.anchorX[secondMDIndex],
+                                    mdsInGPU.anchorX[thirdMDIndex],
+                                    mdsInGPU.anchorX[fourthMDIndex],
+                                    mdsInGPU.anchorX[fifthMDIndex]};
     float ys[Params_T5::kLayers] = {mdsInGPU.anchorY[firstMDIndex],
-                                mdsInGPU.anchorY[secondMDIndex],
-                                mdsInGPU.anchorY[thirdMDIndex],
-                                mdsInGPU.anchorY[fourthMDIndex],
-                                mdsInGPU.anchorY[fifthMDIndex]};
+                                    mdsInGPU.anchorY[secondMDIndex],
+                                    mdsInGPU.anchorY[thirdMDIndex],
+                                    mdsInGPU.anchorY[fourthMDIndex],
+                                    mdsInGPU.anchorY[fifthMDIndex]};
 
     //get the appropriate radii and centers
     centerX = segmentsInGPU.circleCenterX[pixelSegmentArrayIndex];

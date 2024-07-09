@@ -2877,8 +2877,18 @@ namespace SDL {
     bool isFlat[5];
 
     computeSigmasForRegression(acc, modulesInGPU, lowerModuleIndices, delta1, delta2, slopes, isFlat);
-    regressionRadius = computeRadiusUsingRegression(
-        acc, Params_T5::kLayers, xVec, yVec, delta1, delta2, slopes, isFlat, regressionG, regressionF, sigmas2, chiSquared);
+    regressionRadius = computeRadiusUsingRegression(acc,
+                                                    Params_T5::kLayers,
+                                                    xVec,
+                                                    yVec,
+                                                    delta1,
+                                                    delta2,
+                                                    slopes,
+                                                    isFlat,
+                                                    regressionG,
+                                                    regressionF,
+                                                    sigmas2,
+                                                    chiSquared);
 
 #ifdef USE_T5_DNN
     unsigned int mdIndices[] = {firstMDIndex, secondMDIndex, thirdMDIndex, fourthMDIndex, fifthMDIndex};

@@ -142,8 +142,9 @@ namespace SDL {
     trackCandidatesInGPU.objectIndices[2 * trackCandidateIndex] = innerTrackletIndex;
     trackCandidatesInGPU.objectIndices[2 * trackCandidateIndex + 1] = outerTrackletIndex;
 
-    size_t limits = trackCandidateType == 7 ? Params_pT5::kLayers
-                                            : Params_pT3::kLayers;  // 7 means pT5, Params_pT3::kLayers = Params_T5::kLayers = 5
+    size_t limits = trackCandidateType == 7
+                        ? Params_pT5::kLayers
+                        : Params_pT3::kLayers;  // 7 means pT5, Params_pT3::kLayers = Params_T5::kLayers = 5
 
     //send the starting pointer to the logicalLayer and hitIndices
     for (size_t i = 0; i < limits; i++) {
@@ -556,19 +557,20 @@ namespace SDL {
           float radius = 0.5f * (__H2F(pixelQuintupletsInGPU.pixelRadius[pixelQuintupletIndex]) +
                                  __H2F(pixelQuintupletsInGPU.quintupletRadius[pixelQuintupletIndex]));
           unsigned int pT5PixelIndex = pixelQuintupletsInGPU.pixelIndices[pixelQuintupletIndex];
-          addTrackCandidateToMemory(trackCandidatesInGPU,
-                                    7 /*track candidate type pT5=7*/,
-                                    pT5PixelIndex,
-                                    pixelQuintupletsInGPU.T5Indices[pixelQuintupletIndex],
-                                    &pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex],
-                                    &pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex],
-                                    &pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex],
-                                    segmentsInGPU.seedIdx[pT5PixelIndex - pLS_offset],
-                                    __H2F(pixelQuintupletsInGPU.centerX[pixelQuintupletIndex]),
-                                    __H2F(pixelQuintupletsInGPU.centerY[pixelQuintupletIndex]),
-                                    radius,
-                                    trackCandidateIdx,
-                                    pixelQuintupletIndex);
+          addTrackCandidateToMemory(
+              trackCandidatesInGPU,
+              7 /*track candidate type pT5=7*/,
+              pT5PixelIndex,
+              pixelQuintupletsInGPU.T5Indices[pixelQuintupletIndex],
+              &pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex],
+              &pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex],
+              &pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex],
+              segmentsInGPU.seedIdx[pT5PixelIndex - pLS_offset],
+              __H2F(pixelQuintupletsInGPU.centerX[pixelQuintupletIndex]),
+              __H2F(pixelQuintupletsInGPU.centerY[pixelQuintupletIndex]),
+              radius,
+              trackCandidateIdx,
+              pixelQuintupletIndex);
         }
       }
     }
