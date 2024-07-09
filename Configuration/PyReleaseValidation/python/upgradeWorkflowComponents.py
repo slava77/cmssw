@@ -485,16 +485,8 @@ class UpgradeWorkflow_lstOnCPUIters01TrackingOnly(UpgradeWorkflowTracking):
         return ('2026' in key)
 upgradeWFs['lstOnCPUIters01TrackingOnly'] = UpgradeWorkflow_lstOnCPUIters01TrackingOnly(
     steps = [
-        'Reco',
-        'RecoFakeHLT',
-        'HARVEST',
-        'HARVESTFakeHLT',
         'RecoGlobal',
         'HARVESTGlobal',
-        'RecoNano',
-        'RecoNanoFakeHLT',
-        'HARVESTNano',
-        'HARVESTNanoFakeHLT',
         # Add ALCA steps explicitly, so that they can be properly removed
         'ALCA',
         'ALCAPhase2'
@@ -518,16 +510,8 @@ class UpgradeWorkflow_lstOnGPUIters01TrackingOnly(UpgradeWorkflowTracking):
         return ('2026' in key)
 upgradeWFs['lstOnGPUIters01TrackingOnly'] = UpgradeWorkflow_lstOnGPUIters01TrackingOnly(
     steps = [
-        'Reco',
-        'RecoFakeHLT',
-        'HARVEST',
-        'HARVESTFakeHLT',
         'RecoGlobal',
         'HARVESTGlobal',
-        'RecoNano',
-        'RecoNanoFakeHLT',
-        'HARVESTNano',
-        'HARVESTNanoFakeHLT',
         # Add ALCA steps explicitly, so that they can be properly removed
         'ALCA',
         'ALCAPhase2'
