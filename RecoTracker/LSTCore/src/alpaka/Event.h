@@ -1,15 +1,9 @@
 #ifndef Event_cuh
 #define Event_cuh
 
-#ifdef LST_IS_CMSSW_PACKAGE
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/Module.h"
 #include "RecoTracker/LSTCore/interface/alpaka/LST.h"
-#else
-#include "Constants.h"
-#include "Module.h"
-#include "LST.h"
-#endif
 
 #include "Hit.h"
 #include "ModuleMethods.h"
@@ -90,23 +84,25 @@ namespace SDL {
     const uint16_t nModules_;
     const uint16_t nLowerModules_;
     const unsigned int nPixels_;
+    const unsigned int nEndCapMap_;
     const std::shared_ptr<const modulesBuffer<Dev>> modulesBuffers_;
     const std::shared_ptr<const pixelMap> pixelMapping_;
-    const std::shared_ptr<const EndcapGeometry<Dev>> endcapGeometry_;
+    const std::shared_ptr<const EndcapGeometryBuffer<Dev>> endcapGeometryBuffers_;
 
   public:
     // Constructor used for CMSSW integration. Uses an external queue.
     template <typename TQueue>
-    Event(bool verbose, TQueue const& q, const LSTESDeviceData<Dev>* deviceESData)
+    Event(bool verbose, TQueue const& q, const LSTESData<Dev>* deviceESData)
         : queue(q),
           devAcc(alpaka::getDev(q)),
           devHost(cms::alpakatools::host()),
           nModules_(deviceESData->nModules),
           nLowerModules_(deviceESData->nLowerModules),
           nPixels_(deviceESData->nPixels),
+          nEndCapMap_(deviceESData->nEndCapMap),
           modulesBuffers_(deviceESData->modulesBuffers),
           pixelMapping_(deviceESData->pixelMapping),
-          endcapGeometry_(deviceESData->endcapGeometry) {
+          endcapGeometryBuffers_(deviceESData->endcapGeometryBuffers) {
       init(verbose);
     }
     void resetEvent();
@@ -148,12 +144,12 @@ namespace SDL {
     void createTriplets();
     void createPixelTracklets();
     void createPixelTrackletsWithMap();
-    void createTrackCandidates();
+    void createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets);
     void createExtendedTracks();
     void createQuintuplets();
     void createPixelTriplets();
     void createPixelQuintuplets();
-    void pixelLineSegmentCleaning();
+    void pixelLineSegmentCleaning(bool no_pls_dupclean);
 
     unsigned int getNumberOfHits();
     unsigned int getNumberOfHitsByLayer(unsigned int layer);

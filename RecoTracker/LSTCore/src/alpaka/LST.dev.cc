@@ -1,8 +1,4 @@
-#ifdef LST_IS_CMSSW_PACKAGE
 #include "RecoTracker/LSTCore/interface/alpaka/LST.h"
-#else
-#include "LST.h"
-#endif
 
 #include "Event.h"
 
@@ -11,7 +7,7 @@ using XYZVector = ROOT::Math::XYZVector;
 
 void SDL::LST<SDL::Acc>::run(SDL::QueueAcc& queue,
                              bool verbose,
-                             const LSTESDeviceData<SDL::Dev>* deviceESData,
+                             const LSTESData<SDL::Dev>* deviceESData,
                              const std::vector<float> see_px,
                              const std::vector<float> see_py,
                              const std::vector<float> see_pz,
@@ -30,7 +26,9 @@ void SDL::LST<SDL::Acc>::run(SDL::QueueAcc& queue,
                              const std::vector<unsigned int> ph2_detId,
                              const std::vector<float> ph2_x,
                              const std::vector<float> ph2_y,
-                             const std::vector<float> ph2_z) {
+                             const std::vector<float> ph2_z,
+                             bool no_pls_dupclean,
+                             bool tc_pls_triplets) {
   auto event = SDL::Event<Acc>(verbose, queue, deviceESData);
   prepareInput(see_px,
                see_py,
@@ -135,7 +133,7 @@ void SDL::LST<SDL::Acc>::run(SDL::QueueAcc& queue,
     printf("# of Quintuplets produced endcap layer 5: %d\n", event.getNumberOfQuintupletsByLayerEndcap(4));
   }
 
-  event.pixelLineSegmentCleaning();
+  event.pixelLineSegmentCleaning(no_pls_dupclean);
 
   event.createPixelQuintuplets();
   if (verbose)
@@ -145,7 +143,7 @@ void SDL::LST<SDL::Acc>::run(SDL::QueueAcc& queue,
   if (verbose)
     printf("# of Pixel T3s produced: %d\n", event.getNumberOfPixelTriplets());
 
-  event.createTrackCandidates();
+  event.createTrackCandidates(no_pls_dupclean, tc_pls_triplets);
   if (verbose) {
     printf("# of TrackCandidates produced: %d\n", event.getNumberOfTrackCandidates());
     printf("        # of Pixel TrackCandidates produced: %d\n", event.getNumberOfPixelTrackCandidates());
@@ -399,16 +397,16 @@ std::vector<unsigned int> SDL::LST<SDL::Acc>::getHitIdxs(const short trackCandid
 
   unsigned int maxNHits = 0;
   if (trackCandidateType == 7)
-    maxNHits = 14;  // pT5
+    maxNHits = Params_pT5::kHits;  // pT5
   else if (trackCandidateType == 5)
-    maxNHits = 10;  // pT3
+    maxNHits = Params_pT3::kHits;  // pT3
   else if (trackCandidateType == 4)
-    maxNHits = 10;  // T5
+    maxNHits = Params_T5::kHits;  // T5
   else if (trackCandidateType == 8)
-    maxNHits = 4;  // pLS
+    maxNHits = Params_pLS::kHits;  // pLS
 
   for (unsigned int i = 0; i < maxNHits; i++) {
-    unsigned int hitIdxInGPU = TCHitIndices[14 * TCIdx + i];
+    unsigned int hitIdxInGPU = TCHitIndices[Params_pT5::kHits * TCIdx + i];
     unsigned int hitIdx =
         (trackCandidateType == 8)
             ? hitIdxInGPU

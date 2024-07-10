@@ -191,9 +191,9 @@ void SDL::Event<SDL::Acc>::addHitToEvent(std::vector<float> x,
                                                          Endcap,
                                                          TwoS,
                                                          nModules_,
-                                                         endcapGeometry_->nEndCapMap,
-                                                         alpaka::getPtrNative(endcapGeometry_->geoMapDetId_buf),
-                                                         alpaka::getPtrNative(endcapGeometry_->geoMapPhi_buf),
+                                                         nEndCapMap_,
+                                                         alpaka::getPtrNative(endcapGeometryBuffers_->geoMapDetId_buf),
+                                                         alpaka::getPtrNative(endcapGeometryBuffers_->geoMapPhi_buf),
                                                          *modulesBuffers_->data(),
                                                          *hitsInGPU,
                                                          nHits));
@@ -617,7 +617,7 @@ void SDL::Event<SDL::Acc>::createTriplets() {
   }
 }
 
-void SDL::Event<SDL::Acc>::createTrackCandidates() {
+void SDL::Event<SDL::Acc>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets) {
   if (trackCandidatesInGPU == nullptr) {
     trackCandidatesInGPU = new SDL::trackCandidates();
     trackCandidatesBuffers = new SDL::trackCandidatesBuffer<Dev>(
@@ -709,18 +709,18 @@ void SDL::Event<SDL::Acc>::createTrackCandidates() {
 
   alpaka::enqueue(queue, addT5asTrackCandidateInGPUTask);
 
-#ifndef NOPLSDUPCLEAN
-  Vec const threadsPerBlockCheckHitspLS = createVec(1, 16, 16);
-  Vec const blocksPerGridCheckHitspLS = createVec(1, MAX_BLOCKS * 4, MAX_BLOCKS / 4);
-  WorkDiv const checkHitspLS_workDiv =
-      createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
+  if (!no_pls_dupclean) {
+    Vec const threadsPerBlockCheckHitspLS = createVec(1, 16, 16);
+    Vec const blocksPerGridCheckHitspLS = createVec(1, MAX_BLOCKS * 4, MAX_BLOCKS / 4);
+    WorkDiv const checkHitspLS_workDiv =
+        createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
-  SDL::checkHitspLS checkHitspLS_kernel;
-  auto const checkHitspLSTask(alpaka::createTaskKernel<Acc>(
-      checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_->data(), *segmentsInGPU, true));
+    SDL::checkHitspLS checkHitspLS_kernel;
+    auto const checkHitspLSTask(alpaka::createTaskKernel<Acc>(
+        checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_->data(), *segmentsInGPU, true));
 
-  alpaka::enqueue(queue, checkHitspLSTask);
-#endif
+    alpaka::enqueue(queue, checkHitspLSTask);
+  }
 
   Vec const threadsPerBlock_crossCleanpLS = createVec(1, 16, 32);
   Vec const blocksPerGrid_crossCleanpLS = createVec(1, 4, 20);
@@ -751,7 +751,8 @@ void SDL::Event<SDL::Acc>::createTrackCandidates() {
                                                                            addpLSasTrackCandidateInGPU_kernel,
                                                                            nLowerModules_,
                                                                            *trackCandidatesInGPU,
-                                                                           *segmentsInGPU));
+                                                                           *segmentsInGPU,
+                                                                           tc_pls_triplets));
 
   alpaka::enqueue(queue, addpLSasTrackCandidateInGPUTask);
 
@@ -990,20 +991,20 @@ void SDL::Event<SDL::Acc>::createQuintuplets() {
   }
 }
 
-void SDL::Event<SDL::Acc>::pixelLineSegmentCleaning() {
-#ifndef NOPLSDUPCLEAN
-  Vec const threadsPerBlockCheckHitspLS = createVec(1, 16, 16);
-  Vec const blocksPerGridCheckHitspLS = createVec(1, MAX_BLOCKS * 4, MAX_BLOCKS / 4);
-  WorkDiv const checkHitspLS_workDiv =
-      createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
+void SDL::Event<SDL::Acc>::pixelLineSegmentCleaning(bool no_pls_dupclean) {
+  if (!no_pls_dupclean) {
+    Vec const threadsPerBlockCheckHitspLS = createVec(1, 16, 16);
+    Vec const blocksPerGridCheckHitspLS = createVec(1, MAX_BLOCKS * 4, MAX_BLOCKS / 4);
+    WorkDiv const checkHitspLS_workDiv =
+        createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
-  SDL::checkHitspLS checkHitspLS_kernel;
-  auto const checkHitspLSTask(alpaka::createTaskKernel<Acc>(
-      checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_->data(), *segmentsInGPU, false));
+    SDL::checkHitspLS checkHitspLS_kernel;
+    auto const checkHitspLSTask(alpaka::createTaskKernel<Acc>(
+        checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_->data(), *segmentsInGPU, false));
 
-  alpaka::enqueue(queue, checkHitspLSTask);
-  alpaka::wait(queue);
-#endif
+    alpaka::enqueue(queue, checkHitspLSTask);
+    alpaka::wait(queue);
+  }
 }
 
 void SDL::Event<SDL::Acc>::createPixelQuintuplets() {
@@ -1622,8 +1623,9 @@ SDL::tripletsBuffer<alpaka::DevCpu>* SDL::Event<SDL::Acc>::getTriplets() {
     alpaka::memcpy(queue, tripletsInCPU->rtLo_buf, tripletsBuffers->rtLo_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->rtHi_buf, tripletsBuffers->rtHi_buf, nMemHost);
 #endif
-    alpaka::memcpy(queue, tripletsInCPU->hitIndices_buf, tripletsBuffers->hitIndices_buf, 6 * nMemHost);
-    alpaka::memcpy(queue, tripletsInCPU->logicalLayers_buf, tripletsBuffers->logicalLayers_buf, 3 * nMemHost);
+    alpaka::memcpy(queue, tripletsInCPU->hitIndices_buf, tripletsBuffers->hitIndices_buf, Params_T3::kHits * nMemHost);
+    alpaka::memcpy(
+        queue, tripletsInCPU->logicalLayers_buf, tripletsBuffers->logicalLayers_buf, Params_T3::kLayers * nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->segmentIndices_buf, tripletsBuffers->segmentIndices_buf, 2 * nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->betaIn_buf, tripletsBuffers->betaIn_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->circleRadius_buf, tripletsBuffers->circleRadius_buf, nMemHost);
@@ -1650,8 +1652,10 @@ SDL::quintupletsBuffer<alpaka::DevCpu>* SDL::Event<SDL::Acc>::getQuintuplets() {
     alpaka::memcpy(
         queue, quintupletsInCPU->totOccupancyQuintuplets_buf, quintupletsBuffers->totOccupancyQuintuplets_buf);
     alpaka::memcpy(queue, quintupletsInCPU->tripletIndices_buf, quintupletsBuffers->tripletIndices_buf, 2 * nMemHost);
-    alpaka::memcpy(
-        queue, quintupletsInCPU->lowerModuleIndices_buf, quintupletsBuffers->lowerModuleIndices_buf, 5 * nMemHost);
+    alpaka::memcpy(queue,
+                   quintupletsInCPU->lowerModuleIndices_buf,
+                   quintupletsBuffers->lowerModuleIndices_buf,
+                   Params_T5::kLayers * nMemHost);
     alpaka::memcpy(queue, quintupletsInCPU->innerRadius_buf, quintupletsBuffers->innerRadius_buf, nMemHost);
     alpaka::memcpy(queue, quintupletsInCPU->bridgeRadius_buf, quintupletsBuffers->bridgeRadius_buf, nMemHost);
     alpaka::memcpy(queue, quintupletsInCPU->outerRadius_buf, quintupletsBuffers->outerRadius_buf, nMemHost);
@@ -1756,12 +1760,16 @@ SDL::trackCandidatesBuffer<alpaka::DevCpu>* SDL::Event<SDL::Acc>::getTrackCandid
     trackCandidatesInCPU->setData(*trackCandidatesInCPU);
 
     *alpaka::getPtrNative(trackCandidatesInCPU->nTrackCandidates_buf) = nTrackCanHost;
-    alpaka::memcpy(
-        queue, trackCandidatesInCPU->hitIndices_buf, trackCandidatesBuffers->hitIndices_buf, 14 * nTrackCanHost);
+    alpaka::memcpy(queue,
+                   trackCandidatesInCPU->hitIndices_buf,
+                   trackCandidatesBuffers->hitIndices_buf,
+                   Params_pT5::kHits * nTrackCanHost);
     alpaka::memcpy(
         queue, trackCandidatesInCPU->pixelSeedIndex_buf, trackCandidatesBuffers->pixelSeedIndex_buf, nTrackCanHost);
-    alpaka::memcpy(
-        queue, trackCandidatesInCPU->logicalLayers_buf, trackCandidatesBuffers->logicalLayers_buf, 7 * nTrackCanHost);
+    alpaka::memcpy(queue,
+                   trackCandidatesInCPU->logicalLayers_buf,
+                   trackCandidatesBuffers->logicalLayers_buf,
+                   Params_pT5::kLayers * nTrackCanHost);
     alpaka::memcpy(queue,
                    trackCandidatesInCPU->directObjectIndices_buf,
                    trackCandidatesBuffers->directObjectIndices_buf,
@@ -1790,8 +1798,10 @@ SDL::trackCandidatesBuffer<alpaka::DevCpu>* SDL::Event<SDL::Acc>::getTrackCandid
     trackCandidatesInCPU->setData(*trackCandidatesInCPU);
 
     *alpaka::getPtrNative(trackCandidatesInCPU->nTrackCandidates_buf) = nTrackCanHost;
-    alpaka::memcpy(
-        queue, trackCandidatesInCPU->hitIndices_buf, trackCandidatesBuffers->hitIndices_buf, 14 * nTrackCanHost);
+    alpaka::memcpy(queue,
+                   trackCandidatesInCPU->hitIndices_buf,
+                   trackCandidatesBuffers->hitIndices_buf,
+                   Params_pT5::kHits * nTrackCanHost);
     alpaka::memcpy(
         queue, trackCandidatesInCPU->pixelSeedIndex_buf, trackCandidatesBuffers->pixelSeedIndex_buf, nTrackCanHost);
     alpaka::memcpy(queue,

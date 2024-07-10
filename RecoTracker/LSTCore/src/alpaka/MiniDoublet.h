@@ -1,13 +1,8 @@
 #ifndef MiniDoublet_cuh
 #define MiniDoublet_cuh
 
-#ifdef LST_IS_CMSSW_PACKAGE
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/Module.h"
-#else
-#include "Constants.h"
-#include "Module.h"
-#endif
 
 #include "EndcapGeometry.h"
 #include "Hit.h"
@@ -275,13 +270,14 @@ namespace SDL {
     short side = modulesInGPU.sides[moduleIndex];
     short rod = modulesInGPU.rods[moduleIndex];
 
-    if ((subdet == Barrel and side != Center and layer == 3) or
-        (subdet == Barrel and side == NegZ and layer == 2 and rod > 5) or
-        (subdet == Barrel and side == PosZ and layer == 2 and rod < 8) or
-        (subdet == Barrel and side == NegZ and layer == 1 and rod > 9) or
-        (subdet == Barrel and side == PosZ and layer == 1 and rod < 4))
-      return true;
-    else
+    if (subdet == Barrel) {
+      if ((side != Center and layer == 3) or (side == NegZ and layer == 2 and rod > 5) or
+          (side == PosZ and layer == 2 and rod < 8) or (side == NegZ and layer == 1 and rod > 9) or
+          (side == PosZ and layer == 1 and rod < 4))
+        return true;
+      else
+        return false;
+    } else
       return false;
   };
 
@@ -372,9 +368,9 @@ namespace SDL {
     } else {
       drdz = 0;
     }
-    const float miniTilt = ((isTilted) ? 0.5f * pixelPSZpitch * drdz / alpaka::math::sqrt(acc, 1.f + drdz * drdz) /
-                                             moduleGapSize(modulesInGPU, moduleIndex)
-                                       : 0);
+    const float miniTilt2 = ((isTilted) ? (0.5f * 0.5f) * (pixelPSZpitch * pixelPSZpitch) * (drdz * drdz) /
+                                              (1.f + drdz * drdz) / moduleGapSize(modulesInGPU, moduleIndex)
+                                        : 0);
 
     // Compute luminous region requirement for endcap
     const float miniLum = alpaka::math::abs(acc, dPhi * deltaZLum / dz);  // Balaji's new error
@@ -391,8 +387,7 @@ namespace SDL {
              modulesInGPU.sides[moduleIndex] != Center)  //all types of tilted modules
     {
       return miniSlope +
-             alpaka::math::sqrt(
-                 acc, miniMuls * miniMuls + miniPVoff * miniPVoff + miniTilt * miniTilt * miniSlope * miniSlope);
+             alpaka::math::sqrt(acc, miniMuls * miniMuls + miniPVoff * miniPVoff + miniTilt2 * miniSlope * miniSlope);
     }
     // If not barrel, it is Endcap
     else {
@@ -665,16 +660,14 @@ namespace SDL {
                                                      float yUpper,
                                                      float zUpper,
                                                      float rtUpper) {
-    bool pass = true;
     dz = zLower - zUpper;
     const float dzCut = modulesInGPU.moduleType[lowerModuleIndex] == SDL::PS ? 2.f : 10.f;
     //const float sign = ((dz > 0) - (dz < 0)) * ((hitsInGPU.zs[lowerHitIndex] > 0) - (hitsInGPU.zs[lowerHitIndex] < 0));
     const float sign = ((dz > 0) - (dz < 0)) * ((zLower > 0) - (zLower < 0));
     const float invertedcrossercut = (alpaka::math::abs(acc, dz) > 2) * sign;
 
-    pass = pass and ((alpaka::math::abs(acc, dz) < dzCut) && (invertedcrossercut <= 0));
-    if (not pass)
-      return pass;
+    if ((alpaka::math::abs(acc, dz) >= dzCut) || (invertedcrossercut > 0))
+      return false;
 
     float miniCut = 0;
 
@@ -685,7 +678,7 @@ namespace SDL {
     // Cut #2: dphi difference
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3085
     float xn = 0.f, yn = 0.f;  // , zn = 0;
-    float shiftedRt;
+    float shiftedRt2;
     if (modulesInGPU.sides[lowerModuleIndex] != Center)  // If barrel and not center it is tilted
     {
       // Shift the hits and calculate new xn, yn position
@@ -713,7 +706,7 @@ namespace SDL {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zUpper;
-        shiftedRt = alpaka::math::sqrt(acc, xn * xn + yn * yn);
+        shiftedRt2 = xn * xn + yn * yn;
 
         dPhi = SDL::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);  //function from Hit.cc
         noShiftedDphi = SDL::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
@@ -721,7 +714,7 @@ namespace SDL {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zLower;
-        shiftedRt = alpaka::math::sqrt(acc, xn * xn + yn * yn);
+        shiftedRt2 = xn * xn + yn * yn;
         dPhi = SDL::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
         noShiftedDphi = SDL::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       }
@@ -733,9 +726,8 @@ namespace SDL {
       noShiftedDphi = dPhi;
     }
 
-    pass = pass && (alpaka::math::abs(acc, dPhi) < miniCut);
-    if (not pass)
-      return pass;
+    if (alpaka::math::abs(acc, dPhi) >= miniCut)
+      return false;
 
     // Cut #3: The dphi change going from lower Hit to upper Hit
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3076
@@ -749,8 +741,8 @@ namespace SDL {
         // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
         // setdeltaPhiChange(lowerHit.rt() < upperHitMod.rt() ? lowerHit.deltaPhiChange(upperHitMod) : upperHitMod.deltaPhiChange(lowerHit));
 
-        dPhiChange = (rtLower < shiftedRt) ? SDL::deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
-                                           : SDL::deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
+        dPhiChange = (rtLower * rtLower < shiftedRt2) ? SDL::deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
+                                                      : SDL::deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
         noShiftedDphiChange = rtLower < rtUpper ? SDL::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
                                                 : SDL::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
       } else {
@@ -759,8 +751,8 @@ namespace SDL {
         // (i.e. the strip hit is shifted to be aligned in the line of sight from interaction point to pixel hit of PS module guaranteeing rt ordering)
         // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
 
-        dPhiChange = (shiftedRt < rtUpper) ? SDL::deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
-                                           : SDL::deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
+        dPhiChange = (shiftedRt2 < rtUpper * rtUpper) ? SDL::deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
+                                                      : SDL::deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
         noShiftedDphiChange = rtLower < rtUpper ? SDL::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
                                                 : SDL::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
       }
@@ -770,9 +762,9 @@ namespace SDL {
       noShiftedDphiChange = dPhiChange;
     }
 
-    pass = pass && (alpaka::math::abs(acc, dPhiChange) < miniCut);
     noShiftedDz = 0;  // not used anywhere
-    return pass;
+
+    return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
 
   template <typename TAcc>
@@ -799,8 +791,6 @@ namespace SDL {
                                                      float yUpper,
                                                      float zUpper,
                                                      float rtUpper) {
-    bool pass = true;
-
     // There are series of cuts that applies to mini-doublet in a "endcap" region
     // Cut #1 : dz cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3093
@@ -810,16 +800,14 @@ namespace SDL {
 
     const float dzCut = 1.f;
 
-    pass = pass && (alpaka::math::abs(acc, dz) < dzCut);
-    if (not pass)
-      return pass;
+    if (alpaka::math::abs(acc, dz) >= dzCut)
+      return false;
     // Cut #2 : drt cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3100
     const float drtCut = modulesInGPU.moduleType[lowerModuleIndex] == SDL::PS ? 2.f : 10.f;
     drt = rtLower - rtUpper;
-    pass = pass && (alpaka::math::abs(acc, drt) < drtCut);
-    if (not pass)
-      return pass;
+    if (alpaka::math::abs(acc, drt) >= drtCut)
+      return false;
     // The new scheme shifts strip hits to be "aligned" along the line of sight from interaction point to the pixel hit (if it is PS modules)
     float xn = 0, yn = 0, zn = 0;
 
@@ -878,9 +866,8 @@ namespace SDL {
                   ? dPhiThreshold(acc, rtLower, modulesInGPU, lowerModuleIndex, dPhi, dz)
                   : dPhiThreshold(acc, rtUpper, modulesInGPU, lowerModuleIndex, dPhi, dz);
 
-    pass = pass && (alpaka::math::abs(acc, dPhi) < miniCut);
-    if (not pass)
-      return pass;
+    if (alpaka::math::abs(acc, dPhi) >= miniCut)
+      return false;
 
     // Cut #4: Another cut on the dphi after some modification
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3119-L3124
@@ -888,9 +875,9 @@ namespace SDL {
     float dzFrac = alpaka::math::abs(acc, dz) / alpaka::math::abs(acc, zLower);
     dPhiChange = dPhi / dzFrac * (1.f + dzFrac);
     noShiftedDphichange = noShiftedDphi / dzFrac * (1.f + dzFrac);
-    pass = pass && (alpaka::math::abs(acc, dPhiChange) < miniCut);
     noShiftedDz = 0;  // not used anywhere
-    return pass;
+
+    return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
 
   struct createMiniDoubletsInGPUv2 {
@@ -1028,13 +1015,13 @@ namespace SDL {
         else
           category_number = -1;
 
-        if (module_eta < 0.75)
+        if (module_eta < 0.75f)
           eta_number = 0;
-        else if (module_eta > 0.75 && module_eta < 1.5)
+        else if (module_eta < 1.5f)
           eta_number = 1;
-        else if (module_eta > 1.5 && module_eta < 2.25)
+        else if (module_eta < 2.25f)
           eta_number = 2;
-        else if (module_eta > 2.25 && module_eta < 3)
+        else if (module_eta < 3.0f)
           eta_number = 3;
         else
           eta_number = -1;
