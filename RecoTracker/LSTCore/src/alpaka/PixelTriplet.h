@@ -1,5 +1,5 @@
-#ifndef PixelTriplet_cuh
-#define PixelTriplet_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_PixelTriplet_h
+#define RecoTracker_LSTCore_src_alpaka_PixelTriplet_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
@@ -1824,8 +1824,8 @@ namespace SDL {
 }  // namespace SDL
 #endif
 
-#ifndef PixelQuintuplet_cuh
-#define PixelQuintuplet_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_PixelQuintuplet_h
+#define RecoTracker_LSTCore_src_alpaka_PixelQuintuplet_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"

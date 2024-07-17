@@ -19,16 +19,19 @@ namespace SDL {
                                                                             TSize nElements,
                                                                             TQueue queue) {
 #ifdef CACHE_ALLOC
-    return cms::alpakatools::allocCachedBuf<T, alpaka_common::Idx>(devAccIn, queue, alpaka_common::Vec1D(static_cast<alpaka_common::Idx>(nElements)));
+    return cms::alpakatools::allocCachedBuf<T, alpaka_common::Idx>(
+        devAccIn, queue, alpaka_common::Vec1D(static_cast<alpaka_common::Idx>(nElements)));
 #else
-    return alpaka::allocBuf<T, alpaka_common::Idx>(devAccIn, alpaka_common::Vec1D(static_cast<alpaka_common::Idx>(nElements)));
+    return alpaka::allocBuf<T, alpaka_common::Idx>(devAccIn,
+                                                   alpaka_common::Vec1D(static_cast<alpaka_common::Idx>(nElements)));
 #endif
   }
 
   // Second allocation wrapper function when queue is not given. Reduces code boilerplate.
   template <typename T, typename TAcc, typename TSize>
   ALPAKA_FN_HOST ALPAKA_FN_INLINE Buf<alpaka::Dev<TAcc>, T> allocBufWrapper(TAcc const& devAccIn, TSize nElements) {
-    return alpaka::allocBuf<T, alpaka_common::Idx>(devAccIn, alpaka_common::Vec1D(static_cast<alpaka_common::Idx>(nElements)));
+    return alpaka::allocBuf<T, alpaka_common::Idx>(devAccIn,
+                                                   alpaka_common::Vec1D(static_cast<alpaka_common::Idx>(nElements)));
   }
 
 // If a compile time flag does not define PT_CUT, default to 0.8 (GeV)

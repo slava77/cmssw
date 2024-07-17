@@ -89,8 +89,8 @@ std::unique_ptr<SDL::LSTESData<alpaka_common::DevHost>> SDL::loadAndFillESHost()
   auto moduleConnectionMap = std::make_shared<ModuleConnectionMap>();
   ::loadMapsHost(*pLStoLayer, endcapGeometry, tiltedGeometry, moduleConnectionMap);
 
-  auto endcapGeometryBuffers =
-      std::make_shared<EndcapGeometryBuffer<alpaka_common::DevHost>>(cms::alpakatools::host(), endcapGeometry->nEndCapMap);
+  auto endcapGeometryBuffers = std::make_shared<EndcapGeometryBuffer<alpaka_common::DevHost>>(
+      cms::alpakatools::host(), endcapGeometry->nEndCapMap);
   alpaka::QueueCpuBlocking queue(cms::alpakatools::host());
   alpaka::memcpy(
       queue, endcapGeometryBuffers->geoMapDetId_buf, endcapGeometry->geoMapDetId_buf, endcapGeometry->nEndCapMap);

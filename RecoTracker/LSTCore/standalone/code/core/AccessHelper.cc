@@ -63,8 +63,8 @@ std::vector<unsigned int> getPixelHitTypesFrompLS(SDL::Event<Device>* event, uns
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompLS(
-    SDL::Event<Device>* event, unsigned pLS) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompLS(SDL::Event<Device>* event,
+                                                                                              unsigned pLS) {
   return convertHitsToHitIdxsAndHitTypes(event, getPixelHitsFrompLS(event, pLS));
 }
 
@@ -81,8 +81,8 @@ std::vector<unsigned int> getHitsFromMD(SDL::Event<Device>* event, unsigned int 
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromMD(
-    SDL::Event<Device>* event, unsigned MD) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromMD(SDL::Event<Device>* event,
+                                                                                             unsigned MD) {
   return convertHitsToHitIdxsAndHitTypes(event, getHitsFromMD(event, MD));
 }
 
@@ -107,8 +107,8 @@ std::vector<unsigned int> getHitsFromLS(SDL::Event<Device>* event, unsigned int 
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromLS(
-    SDL::Event<Device>* event, unsigned LS) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromLS(SDL::Event<Device>* event,
+                                                                                             unsigned LS) {
   return convertHitsToHitIdxsAndHitTypes(event, getHitsFromLS(event, LS));
 }
 
@@ -142,8 +142,8 @@ std::vector<unsigned int> getHitsFromT3(SDL::Event<Device>* event, unsigned int 
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromT3(
-    SDL::Event<Device>* event, unsigned T3) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromT3(SDL::Event<Device>* event,
+                                                                                             unsigned T3) {
   return convertHitsToHitIdxsAndHitTypes(event, getHitsFromT3(event, T3));
 }
 
@@ -214,8 +214,8 @@ std::vector<unsigned int> getHitTypesFromT5(SDL::Event<Device>* event, unsigned 
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromT5(
-    SDL::Event<Device>* event, unsigned T5) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromT5(SDL::Event<Device>* event,
+                                                                                             unsigned T5) {
   return convertHitsToHitIdxsAndHitTypes(event, getHitsFromT5(event, T5));
 }
 
@@ -303,8 +303,8 @@ std::vector<unsigned int> getHitTypesFrompT3(SDL::Event<Device>* event, unsigned
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompT3(
-    SDL::Event<Device>* event, unsigned pT3) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompT3(SDL::Event<Device>* event,
+                                                                                              unsigned pT3) {
   return convertHitsToHitIdxsAndHitTypes(event, getHitsFrompT3(event, pT3));
 }
 
@@ -400,8 +400,8 @@ std::vector<unsigned int> getHitTypesFrompT5(SDL::Event<Device>* event, unsigned
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompT5(
-    SDL::Event<Device>* event, unsigned pT5) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompT5(SDL::Event<Device>* event,
+                                                                                              unsigned pT5) {
   return convertHitsToHitIdxsAndHitTypes(event, getHitsFrompT5(event, pT5));
 }
 
@@ -432,8 +432,8 @@ std::vector<unsigned int> getLSsFromTC(SDL::Event<Device>* event, unsigned int T
 }
 
 //____________________________________________________________________________________________
-std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromTC(
-    SDL::Event<Device>* event, unsigned TC) {
+std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromTC(SDL::Event<Device>* event,
+                                                                                             unsigned TC) {
   // Get the type of the track candidate
   SDL::trackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event->getTrackCandidates());
   short type = trackCandidatesInGPU.trackCandidateType[TC];

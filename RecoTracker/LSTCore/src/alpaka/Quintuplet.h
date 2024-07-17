@@ -1,5 +1,5 @@
-#ifndef Quintuplet_cuh
-#define Quintuplet_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_Quintuplet_h
+#define RecoTracker_LSTCore_src_alpaka_Quintuplet_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"

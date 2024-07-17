@@ -12,9 +12,12 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> convertHitsToHi
     SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, std::vector<unsigned int> hits);
 
 // ----* pLS *----
-std::vector<unsigned int> getPixelHitsFrompLS(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pLS);
-std::vector<unsigned int> getPixelHitIdxsFrompLS(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pLS);
-std::vector<unsigned int> getPixelHitTypesFrompLS(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pLS);
+std::vector<unsigned int> getPixelHitsFrompLS(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                              unsigned int pLS);
+std::vector<unsigned int> getPixelHitIdxsFrompLS(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                                 unsigned int pLS);
+std::vector<unsigned int> getPixelHitTypesFrompLS(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                                  unsigned int pLS);
 std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompLS(
     SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned pLS);
 
@@ -52,12 +55,15 @@ unsigned int getPixelLSFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>*
 unsigned int getT3FrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
 std::vector<unsigned int> getLSsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
 std::vector<unsigned int> getMDsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
-std::vector<unsigned int> getOuterTrackerHitsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
-std::vector<unsigned int> getPixelHitsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
+std::vector<unsigned int> getOuterTrackerHitsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                                     unsigned int pT3);
+std::vector<unsigned int> getPixelHitsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                              unsigned int pT3);
 std::vector<unsigned int> getHitsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
 std::vector<unsigned int> getHitIdxsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
 std::vector<unsigned int> getHitTypesFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
-std::vector<unsigned int> getModuleIdxsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT3);
+std::vector<unsigned int> getModuleIdxsFrompT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                               unsigned int pT3);
 std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompT3(
     SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned pT3);
 
@@ -67,12 +73,15 @@ unsigned int getT5FrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* even
 std::vector<unsigned int> getT3sFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
 std::vector<unsigned int> getLSsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
 std::vector<unsigned int> getMDsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
-std::vector<unsigned int> getOuterTrackerHitsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
-std::vector<unsigned int> getPixelHitsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
+std::vector<unsigned int> getOuterTrackerHitsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                                     unsigned int pT5);
+std::vector<unsigned int> getPixelHitsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                              unsigned int pT5);
 std::vector<unsigned int> getHitsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
 std::vector<unsigned int> getHitIdxsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
 std::vector<unsigned int> getHitTypesFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
-std::vector<unsigned int> getModuleIdxsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int pT5);
+std::vector<unsigned int> getModuleIdxsFrompT5(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
+                                               unsigned int pT5);
 std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFrompT5(
     SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned pT5);
 

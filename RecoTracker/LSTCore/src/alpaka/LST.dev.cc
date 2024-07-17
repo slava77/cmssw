@@ -21,24 +21,24 @@ namespace {
 
 template <>
 void SDL::LST<Device>::prepareInput(const std::vector<float> see_px,
-                                      const std::vector<float> see_py,
-                                      const std::vector<float> see_pz,
-                                      const std::vector<float> see_dxy,
-                                      const std::vector<float> see_dz,
-                                      const std::vector<float> see_ptErr,
-                                      const std::vector<float> see_etaErr,
-                                      const std::vector<float> see_stateTrajGlbX,
-                                      const std::vector<float> see_stateTrajGlbY,
-                                      const std::vector<float> see_stateTrajGlbZ,
-                                      const std::vector<float> see_stateTrajGlbPx,
-                                      const std::vector<float> see_stateTrajGlbPy,
-                                      const std::vector<float> see_stateTrajGlbPz,
-                                      const std::vector<int> see_q,
-                                      const std::vector<std::vector<int>> see_hitIdx,
-                                      const std::vector<unsigned int> ph2_detId,
-                                      const std::vector<float> ph2_x,
-                                      const std::vector<float> ph2_y,
-                                      const std::vector<float> ph2_z) {
+                                    const std::vector<float> see_py,
+                                    const std::vector<float> see_pz,
+                                    const std::vector<float> see_dxy,
+                                    const std::vector<float> see_dz,
+                                    const std::vector<float> see_ptErr,
+                                    const std::vector<float> see_etaErr,
+                                    const std::vector<float> see_stateTrajGlbX,
+                                    const std::vector<float> see_stateTrajGlbY,
+                                    const std::vector<float> see_stateTrajGlbZ,
+                                    const std::vector<float> see_stateTrajGlbPx,
+                                    const std::vector<float> see_stateTrajGlbPy,
+                                    const std::vector<float> see_stateTrajGlbPz,
+                                    const std::vector<int> see_q,
+                                    const std::vector<std::vector<int>> see_hitIdx,
+                                    const std::vector<unsigned int> ph2_detId,
+                                    const std::vector<float> ph2_x,
+                                    const std::vector<float> ph2_y,
+                                    const std::vector<float> ph2_z) {
   unsigned int count = 0;
   auto n_see = see_stateTrajGlbPx.size();
   std::vector<float> px_vec;
@@ -212,11 +212,11 @@ void SDL::LST<Device>::prepareInput(const std::vector<float> see_px,
   in_isQuad_vec_ = isQuad_vec;
 }
 
-template<>
+template <>
 std::vector<unsigned int> SDL::LST<Device>::getHitIdxs(const short trackCandidateType,
-                                                         const unsigned int TCIdx,
-                                                         const unsigned int* TCHitIndices,
-                                                         const unsigned int* hitIndices) {
+                                                       const unsigned int TCIdx,
+                                                       const unsigned int* TCHitIndices,
+                                                       const unsigned int* hitIndices) {
   std::vector<unsigned int> hits;
 
   unsigned int maxNHits = 0;
@@ -279,29 +279,29 @@ void SDL::LST<Device>::getOutput(SDL::Event<Device>& event) {
 template <>
 template <>
 void SDL::LST<Device>::run(Queue& queue,
-                             bool verbose,
-                             const LSTESData<Device>* deviceESData,
-                             const std::vector<float> see_px,
-                             const std::vector<float> see_py,
-                             const std::vector<float> see_pz,
-                             const std::vector<float> see_dxy,
-                             const std::vector<float> see_dz,
-                             const std::vector<float> see_ptErr,
-                             const std::vector<float> see_etaErr,
-                             const std::vector<float> see_stateTrajGlbX,
-                             const std::vector<float> see_stateTrajGlbY,
-                             const std::vector<float> see_stateTrajGlbZ,
-                             const std::vector<float> see_stateTrajGlbPx,
-                             const std::vector<float> see_stateTrajGlbPy,
-                             const std::vector<float> see_stateTrajGlbPz,
-                             const std::vector<int> see_q,
-                             const std::vector<std::vector<int>> see_hitIdx,
-                             const std::vector<unsigned int> ph2_detId,
-                             const std::vector<float> ph2_x,
-                             const std::vector<float> ph2_y,
-                             const std::vector<float> ph2_z,
-                             bool no_pls_dupclean,
-                             bool tc_pls_triplets) {
+                           bool verbose,
+                           const LSTESData<Device>* deviceESData,
+                           const std::vector<float> see_px,
+                           const std::vector<float> see_py,
+                           const std::vector<float> see_pz,
+                           const std::vector<float> see_dxy,
+                           const std::vector<float> see_dz,
+                           const std::vector<float> see_ptErr,
+                           const std::vector<float> see_etaErr,
+                           const std::vector<float> see_stateTrajGlbX,
+                           const std::vector<float> see_stateTrajGlbY,
+                           const std::vector<float> see_stateTrajGlbZ,
+                           const std::vector<float> see_stateTrajGlbPx,
+                           const std::vector<float> see_stateTrajGlbPy,
+                           const std::vector<float> see_stateTrajGlbPz,
+                           const std::vector<int> see_q,
+                           const std::vector<std::vector<int>> see_hitIdx,
+                           const std::vector<unsigned int> ph2_detId,
+                           const std::vector<float> ph2_x,
+                           const std::vector<float> ph2_y,
+                           const std::vector<float> ph2_z,
+                           bool no_pls_dupclean,
+                           bool tc_pls_triplets) {
   auto event = SDL::Event<Device>(verbose, queue, deviceESData);
   prepareInput(see_px,
                see_py,

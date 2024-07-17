@@ -1,5 +1,5 @@
-#ifndef RecoTracker_LSTCore_src_Event_h
-#define RecoTracker_LSTCore_src_Event_h
+#ifndef RecoTracker_LSTCore_src_alpaka_Event_h
+#define RecoTracker_LSTCore_src_alpaka_Event_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"

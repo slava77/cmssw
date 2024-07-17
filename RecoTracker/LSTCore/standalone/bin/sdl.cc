@@ -308,8 +308,7 @@ void run_sdl() {
   TStopwatch full_timer;
   full_timer.Start();
   auto hostESData = SDL::loadAndFillESHost();
-  auto deviceESData =
-      cms::alpakatools::CopyToDevice<SDL::LSTESData<DevHost>>::copyAsync(queues[0], *hostESData.get());
+  auto deviceESData = cms::alpakatools::CopyToDevice<SDL::LSTESData<DevHost>>::copyAsync(queues[0], *hostESData.get());
   float timeForMapLoading = full_timer.RealTime() * 1000;
 
   if (ana.do_write_ntuple) {

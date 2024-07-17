@@ -20,7 +20,9 @@ float runT4(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
 float runT4x(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
 float runpT4(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
 float runT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
-float runTrackCandidate(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event, bool no_pls_dupclean, bool tc_pls_triplets);
+float runTrackCandidate(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event,
+                        bool no_pls_dupclean,
+                        bool tc_pls_triplets);
 float runQuintuplet(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
 float runPixelQuintuplet(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
 float runPixelLineSegment(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event, bool no_pls_dupclean);

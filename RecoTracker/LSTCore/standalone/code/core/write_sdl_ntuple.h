@@ -26,8 +26,8 @@ void setPixelTripletOutputBranches(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Devi
 void setGnnNtupleBranches(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event);
 void setGnnNtupleMiniDoublet(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int MD);
 
-std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event,
-                                                                                unsigned int);
+std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
+    SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int);
 std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(
     SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device>* event, unsigned int);
 std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(

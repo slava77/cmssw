@@ -1,5 +1,5 @@
-#ifndef TrackCandidate_cuh
-#define TrackCandidate_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
+#define RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"

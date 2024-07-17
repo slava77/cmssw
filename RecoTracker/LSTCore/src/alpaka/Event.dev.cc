@@ -151,10 +151,10 @@ void SDL::Event<Device>::resetEvent() {
 }
 
 void SDL::Event<Device>::addHitToEvent(std::vector<float> x,
-                                         std::vector<float> y,
-                                         std::vector<float> z,
-                                         std::vector<unsigned int> detId,
-                                         std::vector<unsigned int> idxInNtuple) {
+                                       std::vector<float> y,
+                                       std::vector<float> z,
+                                       std::vector<unsigned int> detId,
+                                       std::vector<unsigned int> idxInNtuple) {
   // Use the actual number of hits instead of a max.
   unsigned int nHits = x.size();
 
@@ -188,17 +188,18 @@ void SDL::Event<Device>::addHitToEvent(std::vector<float> x,
   WorkDiv3D const hit_loop_workdiv = createWorkDiv(blocksPerGrid1, threadsPerBlock1, elementsPerThread);
 
   hitLoopKernel hit_loop_kernel;
-  auto const hit_loop_task(alpaka::createTaskKernel<Acc3D>(hit_loop_workdiv,
-                                                         hit_loop_kernel,
-                                                         Endcap,
-                                                         TwoS,
-                                                         nModules_,
-                                                         nEndCapMap_,
-                                                         alpaka::getPtrNative(endcapGeometryBuffers_->geoMapDetId_buf),
-                                                         alpaka::getPtrNative(endcapGeometryBuffers_->geoMapPhi_buf),
-                                                         *modulesBuffers_->data(),
-                                                         *hitsInGPU,
-                                                         nHits));
+  auto const hit_loop_task(
+      alpaka::createTaskKernel<Acc3D>(hit_loop_workdiv,
+                                      hit_loop_kernel,
+                                      Endcap,
+                                      TwoS,
+                                      nModules_,
+                                      nEndCapMap_,
+                                      alpaka::getPtrNative(endcapGeometryBuffers_->geoMapDetId_buf),
+                                      alpaka::getPtrNative(endcapGeometryBuffers_->geoMapPhi_buf),
+                                      *modulesBuffers_->data(),
+                                      *hitsInGPU,
+                                      nHits));
 
   alpaka::enqueue(queue, hit_loop_task);
 
@@ -217,23 +218,23 @@ void SDL::Event<Device>::addHitToEvent(std::vector<float> x,
 }
 
 void SDL::Event<Device>::addPixelSegmentToEvent(std::vector<unsigned int> hitIndices0,
-                                                  std::vector<unsigned int> hitIndices1,
-                                                  std::vector<unsigned int> hitIndices2,
-                                                  std::vector<unsigned int> hitIndices3,
-                                                  std::vector<float> dPhiChange,
-                                                  std::vector<float> ptIn,
-                                                  std::vector<float> ptErr,
-                                                  std::vector<float> px,
-                                                  std::vector<float> py,
-                                                  std::vector<float> pz,
-                                                  std::vector<float> eta,
-                                                  std::vector<float> etaErr,
-                                                  std::vector<float> phi,
-                                                  std::vector<int> charge,
-                                                  std::vector<unsigned int> seedIdx,
-                                                  std::vector<int> superbin,
-                                                  std::vector<int8_t> pixelType,
-                                                  std::vector<char> isQuad) {
+                                                std::vector<unsigned int> hitIndices1,
+                                                std::vector<unsigned int> hitIndices2,
+                                                std::vector<unsigned int> hitIndices3,
+                                                std::vector<float> dPhiChange,
+                                                std::vector<float> ptIn,
+                                                std::vector<float> ptErr,
+                                                std::vector<float> px,
+                                                std::vector<float> py,
+                                                std::vector<float> pz,
+                                                std::vector<float> eta,
+                                                std::vector<float> etaErr,
+                                                std::vector<float> phi,
+                                                std::vector<int> charge,
+                                                std::vector<unsigned int> seedIdx,
+                                                std::vector<int> superbin,
+                                                std::vector<int8_t> pixelType,
+                                                std::vector<char> isQuad) {
   unsigned int size = ptIn.size();
 
   if (size > N_MAX_PIXEL_SEGMENTS_PER_MODULE) {
@@ -298,10 +299,10 @@ void SDL::Event<Device>::addPixelSegmentToEvent(std::vector<unsigned int> hitInd
 
     SDL::createSegmentArrayRanges createSegmentArrayRanges_kernel;
     auto const createSegmentArrayRangesTask(alpaka::createTaskKernel<Acc3D>(createSegmentArrayRanges_workDiv,
-                                                                          createSegmentArrayRanges_kernel,
-                                                                          *modulesBuffers_->data(),
-                                                                          *rangesInGPU,
-                                                                          *mdsInGPU));
+                                                                            createSegmentArrayRanges_kernel,
+                                                                            *modulesBuffers_->data(),
+                                                                            *rangesInGPU,
+                                                                            *mdsInGPU));
 
     alpaka::enqueue(queue, createSegmentArrayRangesTask);
     alpaka::wait(queue);
@@ -374,19 +375,19 @@ void SDL::Event<Device>::addPixelSegmentToEvent(std::vector<unsigned int> hitInd
 
   addPixelSegmentToEventKernel addPixelSegmentToEvent_kernel;
   auto const addPixelSegmentToEvent_task(alpaka::createTaskKernel<Acc3D>(addPixelSegmentToEvent_workdiv,
-                                                                       addPixelSegmentToEvent_kernel,
-                                                                       *modulesBuffers_->data(),
-                                                                       *rangesInGPU,
-                                                                       *hitsInGPU,
-                                                                       *mdsInGPU,
-                                                                       *segmentsInGPU,
-                                                                       alpaka::getPtrNative(hitIndices0_dev),
-                                                                       alpaka::getPtrNative(hitIndices1_dev),
-                                                                       alpaka::getPtrNative(hitIndices2_dev),
-                                                                       alpaka::getPtrNative(hitIndices3_dev),
-                                                                       alpaka::getPtrNative(dPhiChange_dev),
-                                                                       pixelModuleIndex,
-                                                                       size));
+                                                                         addPixelSegmentToEvent_kernel,
+                                                                         *modulesBuffers_->data(),
+                                                                         *rangesInGPU,
+                                                                         *hitsInGPU,
+                                                                         *mdsInGPU,
+                                                                         *segmentsInGPU,
+                                                                         alpaka::getPtrNative(hitIndices0_dev),
+                                                                         alpaka::getPtrNative(hitIndices1_dev),
+                                                                         alpaka::getPtrNative(hitIndices2_dev),
+                                                                         alpaka::getPtrNative(hitIndices3_dev),
+                                                                         alpaka::getPtrNative(dPhiChange_dev),
+                                                                         pixelModuleIndex,
+                                                                         size));
 
   alpaka::enqueue(queue, addPixelSegmentToEvent_task);
   alpaka::wait(queue);
@@ -438,11 +439,11 @@ void SDL::Event<Device>::createMiniDoublets() {
 
   SDL::createMiniDoubletsInGPUv2 createMiniDoubletsInGPUv2_kernel;
   auto const createMiniDoubletsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createMiniDoubletsInGPUv2_workDiv,
-                                                                         createMiniDoubletsInGPUv2_kernel,
-                                                                         *modulesBuffers_->data(),
-                                                                         *hitsInGPU,
-                                                                         *mdsInGPU,
-                                                                         *rangesInGPU));
+                                                                           createMiniDoubletsInGPUv2_kernel,
+                                                                           *modulesBuffers_->data(),
+                                                                           *hitsInGPU,
+                                                                           *mdsInGPU,
+                                                                           *rangesInGPU));
 
   alpaka::enqueue(queue, createMiniDoubletsInGPUv2Task);
 
@@ -454,11 +455,11 @@ void SDL::Event<Device>::createMiniDoublets() {
   SDL::addMiniDoubletRangesToEventExplicit addMiniDoubletRangesToEventExplicit_kernel;
   auto const addMiniDoubletRangesToEventExplicitTask(
       alpaka::createTaskKernel<Acc3D>(addMiniDoubletRangesToEventExplicit_workDiv,
-                                    addMiniDoubletRangesToEventExplicit_kernel,
-                                    *modulesBuffers_->data(),
-                                    *mdsInGPU,
-                                    *rangesInGPU,
-                                    *hitsInGPU));
+                                      addMiniDoubletRangesToEventExplicit_kernel,
+                                      *modulesBuffers_->data(),
+                                      *mdsInGPU,
+                                      *rangesInGPU,
+                                      *hitsInGPU));
 
   alpaka::enqueue(queue, addMiniDoubletRangesToEventExplicitTask);
   alpaka::wait(queue);
@@ -483,11 +484,11 @@ void SDL::Event<Device>::createSegmentsWithModuleMap() {
 
   SDL::createSegmentsInGPUv2 createSegmentsInGPUv2_kernel;
   auto const createSegmentsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createSegmentsInGPUv2_workDiv,
-                                                                     createSegmentsInGPUv2_kernel,
-                                                                     *modulesBuffers_->data(),
-                                                                     *mdsInGPU,
-                                                                     *segmentsInGPU,
-                                                                     *rangesInGPU));
+                                                                       createSegmentsInGPUv2_kernel,
+                                                                       *modulesBuffers_->data(),
+                                                                       *mdsInGPU,
+                                                                       *segmentsInGPU,
+                                                                       *rangesInGPU));
 
   alpaka::enqueue(queue, createSegmentsInGPUv2Task);
 
@@ -497,11 +498,12 @@ void SDL::Event<Device>::createSegmentsWithModuleMap() {
       createWorkDiv(blocksPerGridAddSeg, threadsPerBlockAddSeg, elementsPerThread);
 
   SDL::addSegmentRangesToEventExplicit addSegmentRangesToEventExplicit_kernel;
-  auto const addSegmentRangesToEventExplicitTask(alpaka::createTaskKernel<Acc3D>(addSegmentRangesToEventExplicit_workDiv,
-                                                                               addSegmentRangesToEventExplicit_kernel,
-                                                                               *modulesBuffers_->data(),
-                                                                               *segmentsInGPU,
-                                                                               *rangesInGPU));
+  auto const addSegmentRangesToEventExplicitTask(
+      alpaka::createTaskKernel<Acc3D>(addSegmentRangesToEventExplicit_workDiv,
+                                      addSegmentRangesToEventExplicit_kernel,
+                                      *modulesBuffers_->data(),
+                                      *segmentsInGPU,
+                                      *rangesInGPU));
 
   alpaka::enqueue(queue, addSegmentRangesToEventExplicitTask);
   alpaka::wait(queue);
@@ -520,10 +522,10 @@ void SDL::Event<Device>::createTriplets() {
 
     SDL::createTripletArrayRanges createTripletArrayRanges_kernel;
     auto const createTripletArrayRangesTask(alpaka::createTaskKernel<Acc3D>(createTripletArrayRanges_workDiv,
-                                                                          createTripletArrayRanges_kernel,
-                                                                          *modulesBuffers_->data(),
-                                                                          *rangesInGPU,
-                                                                          *segmentsInGPU));
+                                                                            createTripletArrayRanges_kernel,
+                                                                            *modulesBuffers_->data(),
+                                                                            *rangesInGPU,
+                                                                            *segmentsInGPU));
 
     alpaka::enqueue(queue, createTripletArrayRangesTask);
     alpaka::wait(queue);
@@ -588,14 +590,14 @@ void SDL::Event<Device>::createTriplets() {
 
   SDL::createTripletsInGPUv2 createTripletsInGPUv2_kernel;
   auto const createTripletsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createTripletsInGPUv2_workDiv,
-                                                                     createTripletsInGPUv2_kernel,
-                                                                     *modulesBuffers_->data(),
-                                                                     *mdsInGPU,
-                                                                     *segmentsInGPU,
-                                                                     *tripletsInGPU,
-                                                                     *rangesInGPU,
-                                                                     alpaka::getPtrNative(index_gpu_buf),
-                                                                     nonZeroModules));
+                                                                       createTripletsInGPUv2_kernel,
+                                                                       *modulesBuffers_->data(),
+                                                                       *mdsInGPU,
+                                                                       *segmentsInGPU,
+                                                                       *tripletsInGPU,
+                                                                       *rangesInGPU,
+                                                                       alpaka::getPtrNative(index_gpu_buf),
+                                                                       nonZeroModules));
 
   alpaka::enqueue(queue, createTripletsInGPUv2Task);
 
@@ -605,11 +607,12 @@ void SDL::Event<Device>::createTriplets() {
       createWorkDiv(blocksPerGridAddTrip, threadsPerBlockAddTrip, elementsPerThread);
 
   SDL::addTripletRangesToEventExplicit addTripletRangesToEventExplicit_kernel;
-  auto const addTripletRangesToEventExplicitTask(alpaka::createTaskKernel<Acc3D>(addTripletRangesToEventExplicit_workDiv,
-                                                                               addTripletRangesToEventExplicit_kernel,
-                                                                               *modulesBuffers_->data(),
-                                                                               *tripletsInGPU,
-                                                                               *rangesInGPU));
+  auto const addTripletRangesToEventExplicitTask(
+      alpaka::createTaskKernel<Acc3D>(addTripletRangesToEventExplicit_workDiv,
+                                      addTripletRangesToEventExplicit_kernel,
+                                      *modulesBuffers_->data(),
+                                      *tripletsInGPU,
+                                      *rangesInGPU));
 
   alpaka::enqueue(queue, addTripletRangesToEventExplicitTask);
   alpaka::wait(queue);
@@ -640,12 +643,12 @@ void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls
 
   SDL::crossCleanpT3 crossCleanpT3_kernel;
   auto const crossCleanpT3Task(alpaka::createTaskKernel<Acc3D>(crossCleanpT3_workDiv,
-                                                             crossCleanpT3_kernel,
-                                                             *modulesBuffers_->data(),
-                                                             *rangesInGPU,
-                                                             *pixelTripletsInGPU,
-                                                             *segmentsInGPU,
-                                                             *pixelQuintupletsInGPU));
+                                                               crossCleanpT3_kernel,
+                                                               *modulesBuffers_->data(),
+                                                               *rangesInGPU,
+                                                               *pixelTripletsInGPU,
+                                                               *segmentsInGPU,
+                                                               *pixelQuintupletsInGPU));
 
   alpaka::enqueue(queue, crossCleanpT3Task);
 
@@ -656,12 +659,12 @@ void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls
 
   SDL::addpT3asTrackCandidatesInGPU addpT3asTrackCandidatesInGPU_kernel;
   auto const addpT3asTrackCandidatesInGPUTask(alpaka::createTaskKernel<Acc3D>(addpT3asTrackCandidatesInGPU_workDiv,
-                                                                            addpT3asTrackCandidatesInGPU_kernel,
-                                                                            nLowerModules_,
-                                                                            *pixelTripletsInGPU,
-                                                                            *trackCandidatesInGPU,
-                                                                            *segmentsInGPU,
-                                                                            *rangesInGPU));
+                                                                              addpT3asTrackCandidatesInGPU_kernel,
+                                                                              nLowerModules_,
+                                                                              *pixelTripletsInGPU,
+                                                                              *trackCandidatesInGPU,
+                                                                              *segmentsInGPU,
+                                                                              *rangesInGPU));
 
   alpaka::enqueue(queue, addpT3asTrackCandidatesInGPUTask);
 
@@ -674,9 +677,9 @@ void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls
   SDL::removeDupQuintupletsInGPUBeforeTC removeDupQuintupletsInGPUBeforeTC_kernel;
   auto const removeDupQuintupletsInGPUBeforeTCTask(
       alpaka::createTaskKernel<Acc3D>(removeDupQuintupletsInGPUBeforeTC_workDiv,
-                                    removeDupQuintupletsInGPUBeforeTC_kernel,
-                                    *quintupletsInGPU,
-                                    *rangesInGPU));
+                                      removeDupQuintupletsInGPUBeforeTC_kernel,
+                                      *quintupletsInGPU,
+                                      *rangesInGPU));
 
   alpaka::enqueue(queue, removeDupQuintupletsInGPUBeforeTCTask);
 
@@ -687,12 +690,12 @@ void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls
 
   SDL::crossCleanT5 crossCleanT5_kernel;
   auto const crossCleanT5Task(alpaka::createTaskKernel<Acc3D>(crossCleanT5_workDiv,
-                                                            crossCleanT5_kernel,
-                                                            *modulesBuffers_->data(),
-                                                            *quintupletsInGPU,
-                                                            *pixelQuintupletsInGPU,
-                                                            *pixelTripletsInGPU,
-                                                            *rangesInGPU));
+                                                              crossCleanT5_kernel,
+                                                              *modulesBuffers_->data(),
+                                                              *quintupletsInGPU,
+                                                              *pixelQuintupletsInGPU,
+                                                              *pixelTripletsInGPU,
+                                                              *rangesInGPU));
 
   alpaka::enqueue(queue, crossCleanT5Task);
 
@@ -703,11 +706,11 @@ void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls
 
   SDL::addT5asTrackCandidateInGPU addT5asTrackCandidateInGPU_kernel;
   auto const addT5asTrackCandidateInGPUTask(alpaka::createTaskKernel<Acc3D>(addT5asTrackCandidateInGPU_workDiv,
-                                                                          addT5asTrackCandidateInGPU_kernel,
-                                                                          nLowerModules_,
-                                                                          *quintupletsInGPU,
-                                                                          *trackCandidatesInGPU,
-                                                                          *rangesInGPU));
+                                                                            addT5asTrackCandidateInGPU_kernel,
+                                                                            nLowerModules_,
+                                                                            *quintupletsInGPU,
+                                                                            *trackCandidatesInGPU,
+                                                                            *rangesInGPU));
 
   alpaka::enqueue(queue, addT5asTrackCandidateInGPUTask);
 
@@ -731,15 +734,15 @@ void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls
 
   SDL::crossCleanpLS crossCleanpLS_kernel;
   auto const crossCleanpLSTask(alpaka::createTaskKernel<Acc3D>(crossCleanpLS_workDiv,
-                                                             crossCleanpLS_kernel,
-                                                             *modulesBuffers_->data(),
-                                                             *rangesInGPU,
-                                                             *pixelTripletsInGPU,
-                                                             *trackCandidatesInGPU,
-                                                             *segmentsInGPU,
-                                                             *mdsInGPU,
-                                                             *hitsInGPU,
-                                                             *quintupletsInGPU));
+                                                               crossCleanpLS_kernel,
+                                                               *modulesBuffers_->data(),
+                                                               *rangesInGPU,
+                                                               *pixelTripletsInGPU,
+                                                               *trackCandidatesInGPU,
+                                                               *segmentsInGPU,
+                                                               *mdsInGPU,
+                                                               *hitsInGPU,
+                                                               *quintupletsInGPU));
 
   alpaka::enqueue(queue, crossCleanpLSTask);
 
@@ -750,11 +753,11 @@ void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls
 
   SDL::addpLSasTrackCandidateInGPU addpLSasTrackCandidateInGPU_kernel;
   auto const addpLSasTrackCandidateInGPUTask(alpaka::createTaskKernel<Acc3D>(addpLSasTrackCandidateInGPU_workDiv,
-                                                                           addpLSasTrackCandidateInGPU_kernel,
-                                                                           nLowerModules_,
-                                                                           *trackCandidatesInGPU,
-                                                                           *segmentsInGPU,
-                                                                           tc_pls_triplets));
+                                                                             addpLSasTrackCandidateInGPU_kernel,
+                                                                             nLowerModules_,
+                                                                             *trackCandidatesInGPU,
+                                                                             *segmentsInGPU,
+                                                                             tc_pls_triplets));
 
   alpaka::enqueue(queue, addpLSasTrackCandidateInGPUTask);
 
@@ -865,16 +868,16 @@ void SDL::Event<Device>::createPixelTriplets() {
   SDL::createPixelTripletsInGPUFromMapv2 createPixelTripletsInGPUFromMapv2_kernel;
   auto const createPixelTripletsInGPUFromMapv2Task(
       alpaka::createTaskKernel<Acc3D>(createPixelTripletsInGPUFromMapv2_workDiv,
-                                    createPixelTripletsInGPUFromMapv2_kernel,
-                                    *modulesBuffers_->data(),
-                                    *rangesInGPU,
-                                    *mdsInGPU,
-                                    *segmentsInGPU,
-                                    *tripletsInGPU,
-                                    *pixelTripletsInGPU,
-                                    alpaka::getPtrNative(connectedPixelSize_dev_buf),
-                                    alpaka::getPtrNative(connectedPixelIndex_dev_buf),
-                                    nInnerSegments));
+                                      createPixelTripletsInGPUFromMapv2_kernel,
+                                      *modulesBuffers_->data(),
+                                      *rangesInGPU,
+                                      *mdsInGPU,
+                                      *segmentsInGPU,
+                                      *tripletsInGPU,
+                                      *pixelTripletsInGPU,
+                                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
+                                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
+                                      nInnerSegments));
 
   alpaka::enqueue(queue, createPixelTripletsInGPUFromMapv2Task);
   alpaka::wait(queue);
@@ -912,10 +915,10 @@ void SDL::Event<Device>::createQuintuplets() {
   SDL::createEligibleModulesListForQuintupletsGPU createEligibleModulesListForQuintupletsGPU_kernel;
   auto const createEligibleModulesListForQuintupletsGPUTask(
       alpaka::createTaskKernel<Acc3D>(createEligibleModulesListForQuintupletsGPU_workDiv,
-                                    createEligibleModulesListForQuintupletsGPU_kernel,
-                                    *modulesBuffers_->data(),
-                                    *tripletsInGPU,
-                                    *rangesInGPU));
+                                      createEligibleModulesListForQuintupletsGPU_kernel,
+                                      *modulesBuffers_->data(),
+                                      *tripletsInGPU,
+                                      *rangesInGPU));
 
   alpaka::enqueue(queue, createEligibleModulesListForQuintupletsGPUTask);
   alpaka::wait(queue);
@@ -946,14 +949,14 @@ void SDL::Event<Device>::createQuintuplets() {
 
   SDL::createQuintupletsInGPUv2 createQuintupletsInGPUv2_kernel;
   auto const createQuintupletsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createQuintupletsInGPUv2_workDiv,
-                                                                        createQuintupletsInGPUv2_kernel,
-                                                                        *modulesBuffers_->data(),
-                                                                        *mdsInGPU,
-                                                                        *segmentsInGPU,
-                                                                        *tripletsInGPU,
-                                                                        *quintupletsInGPU,
-                                                                        *rangesInGPU,
-                                                                        nEligibleT5Modules));
+                                                                          createQuintupletsInGPUv2_kernel,
+                                                                          *modulesBuffers_->data(),
+                                                                          *mdsInGPU,
+                                                                          *segmentsInGPU,
+                                                                          *tripletsInGPU,
+                                                                          *quintupletsInGPU,
+                                                                          *rangesInGPU,
+                                                                          nEligibleT5Modules));
 
   alpaka::enqueue(queue, createQuintupletsInGPUv2Task);
 
@@ -965,10 +968,10 @@ void SDL::Event<Device>::createQuintuplets() {
   SDL::removeDupQuintupletsInGPUAfterBuild removeDupQuintupletsInGPUAfterBuild_kernel;
   auto const removeDupQuintupletsInGPUAfterBuildTask(
       alpaka::createTaskKernel<Acc3D>(removeDupQuintupletsInGPUAfterBuild_workDiv,
-                                    removeDupQuintupletsInGPUAfterBuild_kernel,
-                                    *modulesBuffers_->data(),
-                                    *quintupletsInGPU,
-                                    *rangesInGPU));
+                                      removeDupQuintupletsInGPUAfterBuild_kernel,
+                                      *modulesBuffers_->data(),
+                                      *quintupletsInGPU,
+                                      *rangesInGPU));
 
   alpaka::enqueue(queue, removeDupQuintupletsInGPUAfterBuildTask);
 
@@ -980,10 +983,10 @@ void SDL::Event<Device>::createQuintuplets() {
   SDL::addQuintupletRangesToEventExplicit addQuintupletRangesToEventExplicit_kernel;
   auto const addQuintupletRangesToEventExplicitTask(
       alpaka::createTaskKernel<Acc3D>(addQuintupletRangesToEventExplicit_workDiv,
-                                    addQuintupletRangesToEventExplicit_kernel,
-                                    *modulesBuffers_->data(),
-                                    *quintupletsInGPU,
-                                    *rangesInGPU));
+                                      addQuintupletRangesToEventExplicit_kernel,
+                                      *modulesBuffers_->data(),
+                                      *quintupletsInGPU,
+                                      *rangesInGPU));
 
   alpaka::enqueue(queue, addQuintupletRangesToEventExplicitTask);
   alpaka::wait(queue);
@@ -1094,17 +1097,17 @@ void SDL::Event<Device>::createPixelQuintuplets() {
   SDL::createPixelQuintupletsInGPUFromMapv2 createPixelQuintupletsInGPUFromMapv2_kernel;
   auto const createPixelQuintupletsInGPUFromMapv2Task(
       alpaka::createTaskKernel<Acc3D>(createPixelQuintupletsInGPUFromMapv2_workDiv,
-                                    createPixelQuintupletsInGPUFromMapv2_kernel,
-                                    *modulesBuffers_->data(),
-                                    *mdsInGPU,
-                                    *segmentsInGPU,
-                                    *tripletsInGPU,
-                                    *quintupletsInGPU,
-                                    *pixelQuintupletsInGPU,
-                                    alpaka::getPtrNative(connectedPixelSize_dev_buf),
-                                    alpaka::getPtrNative(connectedPixelIndex_dev_buf),
-                                    nInnerSegments,
-                                    *rangesInGPU));
+                                      createPixelQuintupletsInGPUFromMapv2_kernel,
+                                      *modulesBuffers_->data(),
+                                      *mdsInGPU,
+                                      *segmentsInGPU,
+                                      *tripletsInGPU,
+                                      *quintupletsInGPU,
+                                      *pixelQuintupletsInGPU,
+                                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
+                                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
+                                      nInnerSegments,
+                                      *rangesInGPU));
 
   alpaka::enqueue(queue, createPixelQuintupletsInGPUFromMapv2Task);
 
@@ -1116,8 +1119,8 @@ void SDL::Event<Device>::createPixelQuintuplets() {
   SDL::removeDupPixelQuintupletsInGPUFromMap removeDupPixelQuintupletsInGPUFromMap_kernel;
   auto const removeDupPixelQuintupletsInGPUFromMapTask(
       alpaka::createTaskKernel<Acc3D>(removeDupPixelQuintupletsInGPUFromMap_workDiv,
-                                    removeDupPixelQuintupletsInGPUFromMap_kernel,
-                                    *pixelQuintupletsInGPU));
+                                      removeDupPixelQuintupletsInGPUFromMap_kernel,
+                                      *pixelQuintupletsInGPU));
 
   alpaka::enqueue(queue, removeDupPixelQuintupletsInGPUFromMapTask);
 
@@ -1128,12 +1131,12 @@ void SDL::Event<Device>::createPixelQuintuplets() {
 
   SDL::addpT5asTrackCandidateInGPU addpT5asTrackCandidateInGPU_kernel;
   auto const addpT5asTrackCandidateInGPUTask(alpaka::createTaskKernel<Acc3D>(addpT5asTrackCandidateInGPU_workDiv,
-                                                                           addpT5asTrackCandidateInGPU_kernel,
-                                                                           nLowerModules_,
-                                                                           *pixelQuintupletsInGPU,
-                                                                           *trackCandidatesInGPU,
-                                                                           *segmentsInGPU,
-                                                                           *rangesInGPU));
+                                                                             addpT5asTrackCandidateInGPU_kernel,
+                                                                             nLowerModules_,
+                                                                             *pixelQuintupletsInGPU,
+                                                                             *trackCandidatesInGPU,
+                                                                             *segmentsInGPU,
+                                                                             *rangesInGPU));
 
   alpaka::enqueue(queue, addpT5asTrackCandidateInGPUTask);
   alpaka::wait(queue);
@@ -1574,8 +1577,8 @@ SDL::segmentsBuffer<DevHost>* SDL::Event<Device>::getSegments() {
     alpaka::wait(queue);
 
     unsigned int nMemHost = *alpaka::getPtrNative(nMemHost_buf);
-    segmentsInCPU = new SDL::segmentsBuffer<DevHost>(
-        nMemHost, nLowerModules_, N_MAX_PIXEL_SEGMENTS_PER_MODULE, devHost, queue);
+    segmentsInCPU =
+        new SDL::segmentsBuffer<DevHost>(nMemHost, nLowerModules_, N_MAX_PIXEL_SEGMENTS_PER_MODULE, devHost, queue);
     segmentsInCPU->setData(*segmentsInCPU);
 
     *alpaka::getPtrNative(segmentsInCPU->nMemoryLocations_buf) = nMemHost;

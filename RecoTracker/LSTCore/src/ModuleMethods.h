@@ -1,5 +1,5 @@
-#ifndef ModuleMethods_cuh
-#define ModuleMethods_cuh
+#ifndef RecoTracker_LSTCore_src_ModuleMethods_h
+#define RecoTracker_LSTCore_src_ModuleMethods_h
 
 #include <map>
 #include <iostream>

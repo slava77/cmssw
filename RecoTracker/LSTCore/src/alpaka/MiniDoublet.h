@@ -1,5 +1,5 @@
-#ifndef MiniDoublet_cuh
-#define MiniDoublet_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_MiniDoublet_h
+#define RecoTracker_LSTCore_src_alpaka_MiniDoublet_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
