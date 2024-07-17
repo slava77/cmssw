@@ -1,5 +1,7 @@
 #include "trkCore.h"
 
+using namespace ALPAKA_ACCELERATOR_NAMESPACE;
+
 //___________________________________________________________________________________________________________________________________________________________________________________________
 bool goodEvent() {
   if (ana.specific_event_index >= 0) {
@@ -20,7 +22,7 @@ bool goodEvent() {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runMiniDoublet(SDL::Event<SDL::Acc> *event, int evt) {
+float runMiniDoublet(SDL::Event<Device> *event, int evt) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Mini-Doublet start " << evt << std::endl;
@@ -72,7 +74,7 @@ float runMiniDoublet(SDL::Event<SDL::Acc> *event, int evt) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runSegment(SDL::Event<SDL::Acc> *event) {
+float runSegment(SDL::Event<Device> *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Segment start" << std::endl;
@@ -109,7 +111,7 @@ float runSegment(SDL::Event<SDL::Acc> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runT3(SDL::Event<SDL::Acc> *event) {
+float runT3(SDL::Event<Device> *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco T3 start" << std::endl;
@@ -150,7 +152,7 @@ float runT3(SDL::Event<SDL::Acc> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runpT3(SDL::Event<SDL::Acc> *event) {
+float runpT3(SDL::Event<Device> *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Triplet pT3 start" << std::endl;
@@ -166,7 +168,7 @@ float runpT3(SDL::Event<SDL::Acc> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runQuintuplet(SDL::Event<SDL::Acc> *event) {
+float runQuintuplet(SDL::Event<Device> *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Quintuplet start" << std::endl;
@@ -211,7 +213,7 @@ float runQuintuplet(SDL::Event<SDL::Acc> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runPixelLineSegment(SDL::Event<SDL::Acc> *event, bool no_pls_dupclean) {
+float runPixelLineSegment(SDL::Event<Device> *event, bool no_pls_dupclean) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Line Segment start" << std::endl;
@@ -225,7 +227,7 @@ float runPixelLineSegment(SDL::Event<SDL::Acc> *event, bool no_pls_dupclean) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runPixelQuintuplet(SDL::Event<SDL::Acc> *event) {
+float runPixelQuintuplet(SDL::Event<Device> *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Quintuplet start" << std::endl;
@@ -241,7 +243,7 @@ float runPixelQuintuplet(SDL::Event<SDL::Acc> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runTrackCandidate(SDL::Event<SDL::Acc> *event, bool no_pls_dupclean, bool tc_pls_triplets) {
+float runTrackCandidate(SDL::Event<Device> *event, bool no_pls_dupclean, bool tc_pls_triplets) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco TrackCandidate start" << std::endl;
@@ -837,7 +839,7 @@ void addInputsToLineSegmentTrackingPreLoad(std::vector<std::vector<float>> &out_
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float addInputsToEventPreLoad(SDL::Event<SDL::Acc> *event,
+float addInputsToEventPreLoad(SDL::Event<Device> *event,
                               bool useOMP,
                               std::vector<float> trkX,
                               std::vector<float> trkY,
@@ -1141,7 +1143,7 @@ void writeMetaData() {
 // DEPRECATED FUNCTIONS
 
 //__________________________________________________________________________________________
-[[deprecated]] float addInputsToLineSegmentTracking(SDL::Event<SDL::Acc> &event, bool useOMP) {
+[[deprecated]] float addInputsToLineSegmentTracking(SDL::Event<Device> &event, bool useOMP) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Loading Inputs (i.e. outer tracker hits, and pixel line segements) to the Line Segment Tracking.... "
@@ -1336,6 +1338,6 @@ void writeMetaData() {
 }
 
 //__________________________________________________________________________________________
-[[deprecated]] float addInputsToLineSegmentTrackingUsingExplicitMemory(SDL::Event<SDL::Acc> &event) {
+[[deprecated]] float addInputsToLineSegmentTrackingUsingExplicitMemory(SDL::Event<Device> &event) {
   return addInputsToLineSegmentTracking(event, true);
 }

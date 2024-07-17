@@ -2,10 +2,11 @@
 # stuff to make
 #
 
-CCSOURCES=$(filter-out ../../src.alpaka/LST.dev.cc, $(wildcard ../../src/alpaka/*.dev.cc))
-CCOBJECTS_CPU=$(patsubst ../../src/alpaka/%.dev.cc, %_cpu.o, $(CCSOURCES))
-CCOBJECTS_CUDA=$(patsubst ../../src/alpaka/%.dev.cc, %_cuda.o, $(CCSOURCES))
-CCOBJECTS_ROCM=$(patsubst ../../src/alpaka/%.dev.cc, %_rocm.o, $(CCSOURCES))
+CCSOURCES=$(wildcard ../../src/*.cc)
+ALPAKACCSOURCES=$(filter-out ../../src.alpaka/LST.dev.cc, $(wildcard ../../src/alpaka/*.dev.cc))
+CCOBJECTS_CPU=$(patsubst ../../src/alpaka/%.dev.cc, %_cpu.o, $(ALPAKACCSOURCES)) $(patsubst ../../src/%.cc, %_cpu.o, $(CCSOURCES))
+CCOBJECTS_CUDA=$(patsubst ../../src/alpaka/%.dev.cc, %_cuda.o, $(ALPAKACCSOURCES)) $(patsubst ../../src/%.cc, %_cuda.o, $(CCSOURCES))
+CCOBJECTS_ROCM=$(patsubst ../../src/alpaka/%.dev.cc, %_rocm.o, $(ALPAKACCSOURCES)) $(patsubst ../../src/%.cc, %_rocm.o, $(CCSOURCES))
 
 LSTSOURCES=../../src/alpaka/LST.dev.cc
 LSTOBJECTS_CPU=$(patsubst ../../src/alpaka/%.dev.cc, %_cpu.o, $(LSTSOURCES))
@@ -97,6 +98,15 @@ CUTVALUEFLAG_FLAGS = -DCUT_VALUE_DEBUG
 	$(COMPILE_CMD_CUDA) $(CXXFLAGS_CUDA) $(ROOTINCLUDE) $(PRINTFLAG) $(CACHEFLAG) $(CUTVALUEFLAG) $(LSTWARNINGSFLAG) $(CMSSW_WERRORS_CUDA) $(T5CUTFLAGS) $(PTCUTFLAG) $(DUPLICATES) $(ALPAKAINCLUDE) $(ALPAKABACKEND_CUDA) $< -o $@
 
 %_rocm.o: ../../src/alpaka/%.dev.cc
+	$(COMPILE_CMD_ROCM) $(CXXFLAGS_ROCM) $(ROOTINCLUDE) $(PRINTFLAG) $(CACHEFLAG) $(CUTVALUEFLAG) $(LSTWARNINGSFLAG) $(CMSSW_WERRORS_ROCM) $(T5CUTFLAGS) $(PTCUTFLAG) $(DUPLICATES) $(ALPAKAINCLUDE) $(ALPAKABACKEND_ROCM) $< -o $@
+
+%_cpu.o: ../../src/%.cc
+	$(COMPILE_CMD_CPU) $(CXXFLAGS_CPU) $(ROOTINCLUDE) $(PRINTFLAG) $(CACHEFLAG) $(CUTVALUEFLAG) $(LSTWARNINGSFLAG) $(CMSSW_WERRORS_CPU) $(T5CUTFLAGS) $(PTCUTFLAG) $(DUPLICATES) $(ALPAKAINCLUDE) $(ALPAKABACKEND_CPU) $< -o $@
+
+%_cuda.o: ../../src/%.cc
+	$(COMPILE_CMD_CUDA) $(CXXFLAGS_CUDA) $(ROOTINCLUDE) $(PRINTFLAG) $(CACHEFLAG) $(CUTVALUEFLAG) $(LSTWARNINGSFLAG) $(CMSSW_WERRORS_CUDA) $(T5CUTFLAGS) $(PTCUTFLAG) $(DUPLICATES) $(ALPAKAINCLUDE) $(ALPAKABACKEND_CUDA) $< -o $@
+
+%_rocm.o: ../../src/%.cc
 	$(COMPILE_CMD_ROCM) $(CXXFLAGS_ROCM) $(ROOTINCLUDE) $(PRINTFLAG) $(CACHEFLAG) $(CUTVALUEFLAG) $(LSTWARNINGSFLAG) $(CMSSW_WERRORS_ROCM) $(T5CUTFLAGS) $(PTCUTFLAG) $(DUPLICATES) $(ALPAKAINCLUDE) $(ALPAKABACKEND_ROCM) $< -o $@
 
 $(LIB_CPU): $(CCOBJECTS_CPU) $(LSTOBJECTS_CPU)

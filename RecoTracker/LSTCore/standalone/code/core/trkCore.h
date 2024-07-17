@@ -14,17 +14,17 @@
 // --------------------- ======================== ---------------------
 
 bool goodEvent();
-float runMiniDoublet(SDL::Event<SDL::Acc> *event, int evt);
-float runSegment(SDL::Event<SDL::Acc> *event);
-float runT4(SDL::Event<SDL::Acc> *event);
-float runT4x(SDL::Event<SDL::Acc> *event);
-float runpT4(SDL::Event<SDL::Acc> *event);
-float runT3(SDL::Event<SDL::Acc> *event);
-float runTrackCandidate(SDL::Event<SDL::Acc> *event, bool no_pls_dupclean, bool tc_pls_triplets);
-float runQuintuplet(SDL::Event<SDL::Acc> *event);
-float runPixelQuintuplet(SDL::Event<SDL::Acc> *event);
-float runPixelLineSegment(SDL::Event<SDL::Acc> *event, bool no_pls_dupclean);
-float runpT3(SDL::Event<SDL::Acc> *event);
+float runMiniDoublet(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event, int evt);
+float runSegment(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
+float runT4(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
+float runT4x(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
+float runpT4(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
+float runT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
+float runTrackCandidate(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event, bool no_pls_dupclean, bool tc_pls_triplets);
+float runQuintuplet(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
+float runPixelQuintuplet(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
+float runPixelLineSegment(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event, bool no_pls_dupclean);
+float runpT3(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event);
 
 // --------------------- ======================== ---------------------
 
@@ -69,7 +69,7 @@ void addInputsToLineSegmentTrackingPreLoad(std::vector<std::vector<float>> &out_
                                            std::vector<std::vector<int8_t>> &out_pixelType_vec,
                                            std::vector<std::vector<char>> &out_isQuad_vec);
 
-float addInputsToEventPreLoad(SDL::Event<SDL::Acc> *event,
+float addInputsToEventPreLoad(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> *event,
                               bool useOMP,
                               std::vector<float> trkX,
                               std::vector<float> trkY,
@@ -105,7 +105,7 @@ void writeMetaData();
 // --------------------- ======================== ---------------------
 
 // DEPRECATED FUNCTION
-float addInputsToLineSegmentTrackingUsingExplicitMemory(SDL::Event<SDL::Acc> &event);
-float addInputsToLineSegmentTracking(SDL::Event<SDL::Acc> &event, bool useOMP);
+float addInputsToLineSegmentTrackingUsingExplicitMemory(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> &event);
+float addInputsToLineSegmentTracking(SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> &event, bool useOMP);
 
 #endif
