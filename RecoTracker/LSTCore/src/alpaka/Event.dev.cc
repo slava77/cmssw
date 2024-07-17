@@ -2,7 +2,7 @@
 
 using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::init(bool verbose) {
+void SDL::Event<Device>::init(bool verbose) {
   addObjects = verbose;
   hitsInGPU = nullptr;
   mdsInGPU = nullptr;
@@ -44,7 +44,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::init(bool verbose) {
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::resetEvent() {
+void SDL::Event<Device>::resetEvent() {
   //reset the arrays
   for (int i = 0; i < 6; i++) {
     n_hits_by_layer_barrel_[i] = 0;
@@ -150,7 +150,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::resetEvent() {
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addHitToEvent(std::vector<float> x,
+void SDL::Event<Device>::addHitToEvent(std::vector<float> x,
                                          std::vector<float> y,
                                          std::vector<float> z,
                                          std::vector<unsigned int> detId,
@@ -184,7 +184,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addHitToEvent(std::vector<
   alpaka::wait(queue);
 
   Vec3D const threadsPerBlock1 = createVec(1, 1, 256);
-  Vec3D const blocksPerGrid1 = createVec(1, 1, ::SDL::MAX_BLOCKS);
+  Vec3D const blocksPerGrid1 = createVec(1, 1, MAX_BLOCKS);
   WorkDiv3D const hit_loop_workdiv = createWorkDiv(blocksPerGrid1, threadsPerBlock1, elementsPerThread);
 
   hitLoopKernel hit_loop_kernel;
@@ -203,7 +203,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addHitToEvent(std::vector<
   alpaka::enqueue(queue, hit_loop_task);
 
   Vec3D const threadsPerBlock2 = createVec(1, 1, 256);
-  Vec3D const blocksPerGrid2 = createVec(1, 1, ::SDL::MAX_BLOCKS);
+  Vec3D const blocksPerGrid2 = createVec(1, 1, MAX_BLOCKS);
   WorkDiv3D const module_ranges_workdiv = createWorkDiv(blocksPerGrid2, threadsPerBlock2, elementsPerThread);
 
   moduleRangesKernel module_ranges_kernel;
@@ -216,7 +216,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addHitToEvent(std::vector<
   alpaka::enqueue(queue, module_ranges_task);
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> hitIndices0,
+void SDL::Event<Device>::addPixelSegmentToEvent(std::vector<unsigned int> hitIndices0,
                                                   std::vector<unsigned int> hitIndices1,
                                                   std::vector<unsigned int> hitIndices2,
                                                   std::vector<unsigned int> hitIndices3,
@@ -236,13 +236,13 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addPixelSegmentToEvent(std
                                                   std::vector<char> isQuad) {
   unsigned int size = ptIn.size();
 
-  if (size > ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE) {
+  if (size > N_MAX_PIXEL_SEGMENTS_PER_MODULE) {
     printf(
         "*********************************************************\n"
         "* Warning: Pixel line segments will be truncated.       *\n"
         "* You need to increase N_MAX_PIXEL_SEGMENTS_PER_MODULE. *\n"
         "*********************************************************\n");
-    size = ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE;
+    size = N_MAX_PIXEL_SEGMENTS_PER_MODULE;
   }
 
   unsigned int mdSize = 2 * size;
@@ -254,7 +254,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addPixelSegmentToEvent(std
         alpaka::createSubView(rangesBuffers->miniDoubletModuleOccupancy_buf, (Idx)1u, (Idx)nLowerModules_);
 
     // Create a source view for the value to be set
-    int value = ::SDL::N_MAX_PIXEL_MD_PER_MODULES;
+    int value = N_MAX_PIXEL_MD_PER_MODULES;
     auto src_view_value = alpaka::createView(devHost, &value, (Idx)1u);
 
     alpaka::memcpy(queue, dst_view_miniDoubletModuleOccupancy, src_view_value);
@@ -278,7 +278,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addPixelSegmentToEvent(std
     alpaka::memcpy(queue, nTotalMDs_view, rangesBuffers->device_nTotalMDs_buf);
     alpaka::wait(queue);
 
-    nTotalMDs += ::SDL::N_MAX_PIXEL_MD_PER_MODULES;
+    nTotalMDs += N_MAX_PIXEL_MD_PER_MODULES;
 
     mdsInGPU = new SDL::miniDoublets();
     miniDoubletsBuffers = new SDL::miniDoubletsBuffer<Device>(nTotalMDs, nLowerModules_, devAcc, queue);
@@ -311,11 +311,11 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addPixelSegmentToEvent(std
     alpaka::memcpy(queue, nTotalSegments_view, rangesBuffers->device_nTotalSegs_buf);
     alpaka::wait(queue);
 
-    nTotalSegments += ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE;
+    nTotalSegments += N_MAX_PIXEL_SEGMENTS_PER_MODULE;
 
     segmentsInGPU = new SDL::segments();
     segmentsBuffers =
-        new SDL::segmentsBuffer<Device>(nTotalSegments, nLowerModules_, ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE, devAcc, queue);
+        new SDL::segmentsBuffer<Device>(nTotalSegments, nLowerModules_, N_MAX_PIXEL_SEGMENTS_PER_MODULE, devAcc, queue);
     segmentsInGPU->setData(*segmentsBuffers);
 
     alpaka::memcpy(queue, segmentsBuffers->nMemoryLocations_buf, nTotalSegments_view);
@@ -369,7 +369,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addPixelSegmentToEvent(std
   alpaka::wait(queue);
 
   Vec3D const threadsPerBlock = createVec(1, 1, 256);
-  Vec3D const blocksPerGrid = createVec(1, 1, ::SDL::MAX_BLOCKS);
+  Vec3D const blocksPerGrid = createVec(1, 1, MAX_BLOCKS);
   WorkDiv3D const addPixelSegmentToEvent_workdiv = createWorkDiv(blocksPerGrid, threadsPerBlock, elementsPerThread);
 
   addPixelSegmentToEventKernel addPixelSegmentToEvent_kernel;
@@ -392,13 +392,13 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addPixelSegmentToEvent(std
   alpaka::wait(queue);
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createMiniDoublets() {
+void SDL::Event<Device>::createMiniDoublets() {
   // Create a view for the element nLowerModules_ inside rangesBuffers->miniDoubletModuleOccupancy
   auto dst_view_miniDoubletModuleOccupancy =
       alpaka::createSubView(rangesBuffers->miniDoubletModuleOccupancy_buf, (Idx)1u, (Idx)nLowerModules_);
 
   // Create a source view for the value to be set
-  int value = ::SDL::N_MAX_PIXEL_MD_PER_MODULES;
+  int value = N_MAX_PIXEL_MD_PER_MODULES;
   auto src_view_value = alpaka::createView(devHost, &value, (Idx)1u);
 
   alpaka::memcpy(queue, dst_view_miniDoubletModuleOccupancy, src_view_value);
@@ -423,7 +423,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createMiniDoublets() {
 
   unsigned int nTotalMDs = *alpaka::getPtrNative(nTotalMDs_buf);
 
-  nTotalMDs += ::SDL::N_MAX_PIXEL_MD_PER_MODULES;
+  nTotalMDs += N_MAX_PIXEL_MD_PER_MODULES;
 
   if (mdsInGPU == nullptr) {
     mdsInGPU = new SDL::miniDoublets();
@@ -468,11 +468,11 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createMiniDoublets() {
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createSegmentsWithModuleMap() {
+void SDL::Event<Device>::createSegmentsWithModuleMap() {
   if (segmentsInGPU == nullptr) {
     segmentsInGPU = new SDL::segments();
     segmentsBuffers =
-        new SDL::segmentsBuffer<Device>(nTotalSegments, nLowerModules_, ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE, devAcc, queue);
+        new SDL::segmentsBuffer<Device>(nTotalSegments, nLowerModules_, N_MAX_PIXEL_SEGMENTS_PER_MODULE, devAcc, queue);
     segmentsInGPU->setData(*segmentsBuffers);
   }
 
@@ -511,7 +511,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createSegmentsWithModuleMa
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTriplets() {
+void SDL::Event<Device>::createTriplets() {
   if (tripletsInGPU == nullptr) {
     Vec3D const threadsPerBlockCreateTrip = createVec(1, 1, 1024);
     Vec3D const blocksPerGridCreateTrip = createVec(1, 1, 1);
@@ -582,7 +582,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTriplets() {
   alpaka::wait(queue);
 
   Vec3D const threadsPerBlockCreateTrip = createVec(1, 16, 16);
-  Vec3D const blocksPerGridCreateTrip = createVec(::SDL::MAX_BLOCKS, 1, 1);
+  Vec3D const blocksPerGridCreateTrip = createVec(MAX_BLOCKS, 1, 1);
   WorkDiv3D const createTripletsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridCreateTrip, threadsPerBlockCreateTrip, elementsPerThread);
 
@@ -619,11 +619,11 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTriplets() {
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets) {
+void SDL::Event<Device>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets) {
   if (trackCandidatesInGPU == nullptr) {
     trackCandidatesInGPU = new SDL::trackCandidates();
     trackCandidatesBuffers = new SDL::trackCandidatesBuffer<Device>(
-        ::SDL::N_MAX_NONPIXEL_TRACK_CANDIDATES + ::SDL::N_MAX_PIXEL_TRACK_CANDIDATES, devAcc, queue);
+        N_MAX_NONPIXEL_TRACK_CANDIDATES + N_MAX_PIXEL_TRACK_CANDIDATES, devAcc, queue);
     trackCandidatesInGPU->setData(*trackCandidatesBuffers);
   }
 
@@ -681,7 +681,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTrackCandidates(bool
   alpaka::enqueue(queue, removeDupQuintupletsInGPUBeforeTCTask);
 
   Vec3D const threadsPerBlock_crossCleanT5 = createVec(32, 1, 32);
-  Vec3D const blocksPerGrid_crossCleanT5 = createVec((13296 / 32) + 1, 1, ::SDL::MAX_BLOCKS);
+  Vec3D const blocksPerGrid_crossCleanT5 = createVec((13296 / 32) + 1, 1, MAX_BLOCKS);
   WorkDiv3D const crossCleanT5_workDiv =
       createWorkDiv(blocksPerGrid_crossCleanT5, threadsPerBlock_crossCleanT5, elementsPerThread);
 
@@ -713,7 +713,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTrackCandidates(bool
 
   if (!no_pls_dupclean) {
     Vec3D const threadsPerBlockCheckHitspLS = createVec(1, 16, 16);
-    Vec3D const blocksPerGridCheckHitspLS = createVec(1, ::SDL::MAX_BLOCKS * 4, ::SDL::MAX_BLOCKS / 4);
+    Vec3D const blocksPerGridCheckHitspLS = createVec(1, MAX_BLOCKS * 4, MAX_BLOCKS / 4);
     WorkDiv3D const checkHitspLS_workDiv =
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
@@ -744,7 +744,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTrackCandidates(bool
   alpaka::enqueue(queue, crossCleanpLSTask);
 
   Vec3D const threadsPerBlock_addpLSasTrackCandidateInGPU = createVec(1, 1, 384);
-  Vec3D const blocksPerGrid_addpLSasTrackCandidateInGPU = createVec(1, 1, ::SDL::MAX_BLOCKS);
+  Vec3D const blocksPerGrid_addpLSasTrackCandidateInGPU = createVec(1, 1, MAX_BLOCKS);
   WorkDiv3D const addpLSasTrackCandidateInGPU_workDiv = createWorkDiv(
       blocksPerGrid_addpLSasTrackCandidateInGPU, threadsPerBlock_addpLSasTrackCandidateInGPU, elementsPerThread);
 
@@ -758,7 +758,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTrackCandidates(bool
 
   alpaka::enqueue(queue, addpLSasTrackCandidateInGPUTask);
 
-  // Check if either ::SDL::N_MAX_PIXEL_TRACK_CANDIDATES or ::SDL::N_MAX_NONPIXEL_TRACK_CANDIDATES was reached
+  // Check if either N_MAX_PIXEL_TRACK_CANDIDATES or N_MAX_NONPIXEL_TRACK_CANDIDATES was reached
   auto nTrackCanpT5Host_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
   auto nTrackCanpT3Host_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
   auto nTrackCanpLSHost_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -773,8 +773,8 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTrackCandidates(bool
   int nTrackCandidatespT3 = *alpaka::getPtrNative(nTrackCanpT3Host_buf);
   int nTrackCandidatespLS = *alpaka::getPtrNative(nTrackCanpLSHost_buf);
   int nTrackCandidatesT5 = *alpaka::getPtrNative(nTrackCanT5Host_buf);
-  if ((nTrackCandidatespT5 + nTrackCandidatespT3 + nTrackCandidatespLS == ::SDL::N_MAX_PIXEL_TRACK_CANDIDATES) ||
-      (nTrackCandidatesT5 == ::SDL::N_MAX_NONPIXEL_TRACK_CANDIDATES)) {
+  if ((nTrackCandidatespT5 + nTrackCandidatespT3 + nTrackCandidatespLS == N_MAX_PIXEL_TRACK_CANDIDATES) ||
+      (nTrackCandidatesT5 == N_MAX_NONPIXEL_TRACK_CANDIDATES)) {
     printf(
         "****************************************************************************************************\n"
         "* Warning: Track candidates were possibly truncated.                                               *\n"
@@ -784,10 +784,10 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createTrackCandidates(bool
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelTriplets() {
+void SDL::Event<Device>::createPixelTriplets() {
   if (pixelTripletsInGPU == nullptr) {
     pixelTripletsInGPU = new SDL::pixelTriplets();
-    pixelTripletsBuffers = new SDL::pixelTripletsBuffer<Device>(::SDL::N_MAX_PIXEL_TRIPLETS, devAcc, queue);
+    pixelTripletsBuffers = new SDL::pixelTripletsBuffer<Device>(N_MAX_PIXEL_TRIPLETS, devAcc, queue);
     pixelTripletsInGPU->setData(*pixelTripletsBuffers);
   }
 
@@ -799,8 +799,8 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelTriplets() {
   alpaka::memcpy(queue, nInnerSegments_src_view, dev_view_nSegments);
   alpaka::wait(queue);
 
-  auto superbins_buf = allocBufWrapper<int>(devHost, ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
-  auto pixelTypes_buf = allocBufWrapper<int8_t>(devHost, ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
+  auto superbins_buf = allocBufWrapper<int>(devHost, N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
+  auto pixelTypes_buf = allocBufWrapper<int8_t>(devHost, N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
 
   alpaka::memcpy(queue, superbins_buf, segmentsBuffers->superbin_buf);
   alpaka::memcpy(queue, pixelTypes_buf, segmentsBuffers->pixelType_buf);
@@ -818,16 +818,16 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelTriplets() {
   alpaka::wait(queue);
 
   int pixelIndexOffsetPos =
-      pixelMapping_->connectedPixelsIndex[::SDL::size_superbins - 1] + pixelMapping_->connectedPixelsSizes[::SDL::size_superbins - 1];
-  int pixelIndexOffsetNeg = pixelMapping_->connectedPixelsIndexPos[::SDL::size_superbins - 1] +
-                            pixelMapping_->connectedPixelsSizesPos[::SDL::size_superbins - 1] + pixelIndexOffsetPos;
+      pixelMapping_->connectedPixelsIndex[size_superbins - 1] + pixelMapping_->connectedPixelsSizes[size_superbins - 1];
+  int pixelIndexOffsetNeg = pixelMapping_->connectedPixelsIndexPos[size_superbins - 1] +
+                            pixelMapping_->connectedPixelsSizesPos[size_superbins - 1] + pixelIndexOffsetPos;
 
   // TODO: check if a map/reduction to just eligible pLSs would speed up the kernel
   // the current selection still leaves a significant fraction of unmatchable pLSs
   for (unsigned int i = 0; i < nInnerSegments; i++) {  // loop over # pLS
     int8_t pixelType = pixelTypes[i];                  // Get pixel type for this pLS
     int superbin = superbins[i];                       // Get superbin for this pixel
-    if ((superbin < 0) or (superbin >= (int)::SDL::size_superbins) or (pixelType > 2) or (pixelType < 0)) {
+    if ((superbin < 0) or (superbin >= (int)size_superbins) or (pixelType > 2) or (pixelType < 0)) {
       connectedPixelSize_host[i] = 0;
       connectedPixelIndex_host[i] = 0;
       continue;
@@ -903,7 +903,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelTriplets() {
   alpaka::wait(queue);
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createQuintuplets() {
+void SDL::Event<Device>::createQuintuplets() {
   Vec3D const threadsPerBlockCreateQuints = createVec(1, 1, 1024);
   Vec3D const blocksPerGridCreateQuints = createVec(1, 1, 1);
   WorkDiv3D const createEligibleModulesListForQuintupletsGPU_workDiv =
@@ -958,7 +958,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createQuintuplets() {
   alpaka::enqueue(queue, createQuintupletsInGPUv2Task);
 
   Vec3D const threadsPerBlockDupQuint = createVec(1, 16, 16);
-  Vec3D const blocksPerGridDupQuint = createVec(::SDL::MAX_BLOCKS, 1, 1);
+  Vec3D const blocksPerGridDupQuint = createVec(MAX_BLOCKS, 1, 1);
   WorkDiv3D const removeDupQuintupletsInGPUAfterBuild_workDiv =
       createWorkDiv(blocksPerGridDupQuint, threadsPerBlockDupQuint, elementsPerThread);
 
@@ -993,10 +993,10 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createQuintuplets() {
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::pixelLineSegmentCleaning(bool no_pls_dupclean) {
+void SDL::Event<Device>::pixelLineSegmentCleaning(bool no_pls_dupclean) {
   if (!no_pls_dupclean) {
     Vec3D const threadsPerBlockCheckHitspLS = createVec(1, 16, 16);
-    Vec3D const blocksPerGridCheckHitspLS = createVec(1, ::SDL::MAX_BLOCKS * 4, ::SDL::MAX_BLOCKS / 4);
+    Vec3D const blocksPerGridCheckHitspLS = createVec(1, MAX_BLOCKS * 4, MAX_BLOCKS / 4);
     WorkDiv3D const checkHitspLS_workDiv =
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
@@ -1009,16 +1009,16 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::pixelLineSegmentCleaning(b
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelQuintuplets() {
+void SDL::Event<Device>::createPixelQuintuplets() {
   if (pixelQuintupletsInGPU == nullptr) {
     pixelQuintupletsInGPU = new SDL::pixelQuintuplets();
-    pixelQuintupletsBuffers = new SDL::pixelQuintupletsBuffer<Device>(::SDL::N_MAX_PIXEL_QUINTUPLETS, devAcc, queue);
+    pixelQuintupletsBuffers = new SDL::pixelQuintupletsBuffer<Device>(N_MAX_PIXEL_QUINTUPLETS, devAcc, queue);
     pixelQuintupletsInGPU->setData(*pixelQuintupletsBuffers);
   }
   if (trackCandidatesInGPU == nullptr) {
     trackCandidatesInGPU = new SDL::trackCandidates();
     trackCandidatesBuffers = new SDL::trackCandidatesBuffer<Device>(
-        ::SDL::N_MAX_NONPIXEL_TRACK_CANDIDATES + ::SDL::N_MAX_PIXEL_TRACK_CANDIDATES, devAcc, queue);
+        N_MAX_NONPIXEL_TRACK_CANDIDATES + N_MAX_PIXEL_TRACK_CANDIDATES, devAcc, queue);
     trackCandidatesInGPU->setData(*trackCandidatesBuffers);
   }
 
@@ -1031,8 +1031,8 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelQuintuplets() {
   alpaka::memcpy(queue, nInnerSegments_src_view, dev_view_nSegments);
   alpaka::wait(queue);
 
-  auto superbins_buf = allocBufWrapper<int>(devHost, ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
-  auto pixelTypes_buf = allocBufWrapper<int8_t>(devHost, ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
+  auto superbins_buf = allocBufWrapper<int>(devHost, N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
+  auto pixelTypes_buf = allocBufWrapper<int8_t>(devHost, N_MAX_PIXEL_SEGMENTS_PER_MODULE, queue);
 
   alpaka::memcpy(queue, superbins_buf, segmentsBuffers->superbin_buf);
   alpaka::memcpy(queue, pixelTypes_buf, segmentsBuffers->pixelType_buf);
@@ -1050,15 +1050,15 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelQuintuplets() {
   alpaka::wait(queue);
 
   int pixelIndexOffsetPos =
-      pixelMapping_->connectedPixelsIndex[::SDL::size_superbins - 1] + pixelMapping_->connectedPixelsSizes[::SDL::size_superbins - 1];
-  int pixelIndexOffsetNeg = pixelMapping_->connectedPixelsIndexPos[::SDL::size_superbins - 1] +
-                            pixelMapping_->connectedPixelsSizesPos[::SDL::size_superbins - 1] + pixelIndexOffsetPos;
+      pixelMapping_->connectedPixelsIndex[size_superbins - 1] + pixelMapping_->connectedPixelsSizes[size_superbins - 1];
+  int pixelIndexOffsetNeg = pixelMapping_->connectedPixelsIndexPos[size_superbins - 1] +
+                            pixelMapping_->connectedPixelsSizesPos[size_superbins - 1] + pixelIndexOffsetPos;
 
   // Loop over # pLS
   for (unsigned int i = 0; i < nInnerSegments; i++) {
     int8_t pixelType = pixelTypes[i];  // Get pixel type for this pLS
     int superbin = superbins[i];       // Get superbin for this pixel
-    if ((superbin < 0) or (superbin >= (int)::SDL::size_superbins) or (pixelType > 2) or (pixelType < 0)) {
+    if ((superbin < 0) or (superbin >= (int)size_superbins) or (pixelType > 2) or (pixelType < 0)) {
       connectedPixelIndex_host[i] = 0;
       connectedPixelSize_host[i] = 0;
       continue;
@@ -1087,7 +1087,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelQuintuplets() {
   alpaka::wait(queue);
 
   Vec3D const threadsPerBlockCreatePixQuints = createVec(1, 16, 16);
-  Vec3D const blocksPerGridCreatePixQuints = createVec(16, ::SDL::MAX_BLOCKS, 1);
+  Vec3D const blocksPerGridCreatePixQuints = createVec(16, MAX_BLOCKS, 1);
   WorkDiv3D const createPixelQuintupletsInGPUFromMapv2_workDiv =
       createWorkDiv(blocksPerGridCreatePixQuints, threadsPerBlockCreatePixQuints, elementsPerThread);
 
@@ -1109,7 +1109,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelQuintuplets() {
   alpaka::enqueue(queue, createPixelQuintupletsInGPUFromMapv2Task);
 
   Vec3D const threadsPerBlockDupPix = createVec(1, 16, 16);
-  Vec3D const blocksPerGridDupPix = createVec(1, ::SDL::MAX_BLOCKS, 1);
+  Vec3D const blocksPerGridDupPix = createVec(1, MAX_BLOCKS, 1);
   WorkDiv3D const removeDupPixelQuintupletsInGPUFromMap_workDiv =
       createWorkDiv(blocksPerGridDupPix, threadsPerBlockDupPix, elementsPerThread);
 
@@ -1148,7 +1148,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::createPixelQuintuplets() {
 #endif
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addMiniDoubletsToEventExplicit() {
+void SDL::Event<Device>::addMiniDoubletsToEventExplicit() {
   auto nMDsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nMDsCPU_buf, miniDoubletsBuffers->nMDs_buf, nLowerModules_);
 
@@ -1179,7 +1179,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addMiniDoubletsToEventExpl
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addSegmentsToEventExplicit() {
+void SDL::Event<Device>::addSegmentsToEventExplicit() {
   auto nSegmentsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nSegmentsCPU_buf, segmentsBuffers->nSegments_buf, nLowerModules_);
 
@@ -1206,7 +1206,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addSegmentsToEventExplicit
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addQuintupletsToEventExplicit() {
+void SDL::Event<Device>::addQuintupletsToEventExplicit() {
   auto nQuintupletsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nQuintupletsCPU_buf, quintupletsBuffers->nQuintuplets_buf);
 
@@ -1237,7 +1237,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addQuintupletsToEventExpli
   }
 }
 
-void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addTripletsToEventExplicit() {
+void SDL::Event<Device>::addTripletsToEventExplicit() {
   auto nTripletsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nTripletsCPU_buf, tripletsBuffers->nTriplets_buf);
 
@@ -1263,7 +1263,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::addTripletsToEventExplicit
   }
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfHits() {
+unsigned int SDL::Event<Device>::getNumberOfHits() {
   unsigned int hits = 0;
   for (auto& it : n_hits_by_layer_barrel_) {
     hits += it;
@@ -1275,22 +1275,22 @@ unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfHits() 
   return hits;
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfHitsByLayer(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfHitsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_hits_by_layer_barrel_[layer];
   else
     return n_hits_by_layer_barrel_[layer] + n_hits_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfHitsByLayerBarrel(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfHitsByLayerBarrel(unsigned int layer) {
   return n_hits_by_layer_barrel_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfHitsByLayerEndcap(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfHitsByLayerEndcap(unsigned int layer) {
   return n_hits_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfMiniDoublets() {
+unsigned int SDL::Event<Device>::getNumberOfMiniDoublets() {
   unsigned int miniDoublets = 0;
   for (auto& it : n_minidoublets_by_layer_barrel_) {
     miniDoublets += it;
@@ -1302,22 +1302,22 @@ unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfMiniDou
   return miniDoublets;
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfMiniDoubletsByLayer(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfMiniDoubletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_minidoublets_by_layer_barrel_[layer];
   else
     return n_minidoublets_by_layer_barrel_[layer] + n_minidoublets_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfMiniDoubletsByLayerBarrel(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfMiniDoubletsByLayerBarrel(unsigned int layer) {
   return n_minidoublets_by_layer_barrel_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfMiniDoubletsByLayerEndcap(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfMiniDoubletsByLayerEndcap(unsigned int layer) {
   return n_minidoublets_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfSegments() {
+unsigned int SDL::Event<Device>::getNumberOfSegments() {
   unsigned int segments = 0;
   for (auto& it : n_segments_by_layer_barrel_) {
     segments += it;
@@ -1329,22 +1329,22 @@ unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfSegment
   return segments;
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfSegmentsByLayer(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfSegmentsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_segments_by_layer_barrel_[layer];
   else
     return n_segments_by_layer_barrel_[layer] + n_segments_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfSegmentsByLayerBarrel(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfSegmentsByLayerBarrel(unsigned int layer) {
   return n_segments_by_layer_barrel_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfSegmentsByLayerEndcap(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfSegmentsByLayerEndcap(unsigned int layer) {
   return n_segments_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfTriplets() {
+unsigned int SDL::Event<Device>::getNumberOfTriplets() {
   unsigned int triplets = 0;
   for (auto& it : n_triplets_by_layer_barrel_) {
     triplets += it;
@@ -1356,22 +1356,22 @@ unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfTriplet
   return triplets;
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfTripletsByLayer(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfTripletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_triplets_by_layer_barrel_[layer];
   else
     return n_triplets_by_layer_barrel_[layer] + n_triplets_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfTripletsByLayerBarrel(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfTripletsByLayerBarrel(unsigned int layer) {
   return n_triplets_by_layer_barrel_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfTripletsByLayerEndcap(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfTripletsByLayerEndcap(unsigned int layer) {
   return n_triplets_by_layer_endcap_[layer];
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPixelTriplets() {
+int SDL::Event<Device>::getNumberOfPixelTriplets() {
   auto nPixelTriplets_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
   alpaka::memcpy(queue, nPixelTriplets_buf, pixelTripletsBuffers->nPixelTriplets_buf);
@@ -1382,7 +1382,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPixelTriplets() 
   return nPixelTriplets;
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPixelQuintuplets() {
+int SDL::Event<Device>::getNumberOfPixelQuintuplets() {
   auto nPixelQuintuplets_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
   alpaka::memcpy(queue, nPixelQuintuplets_buf, pixelQuintupletsBuffers->nPixelQuintuplets_buf);
@@ -1393,7 +1393,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPixelQuintuplets
   return nPixelQuintuplets;
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfQuintuplets() {
+unsigned int SDL::Event<Device>::getNumberOfQuintuplets() {
   unsigned int quintuplets = 0;
   for (auto& it : n_quintuplets_by_layer_barrel_) {
     quintuplets += it;
@@ -1405,22 +1405,22 @@ unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfQuintup
   return quintuplets;
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfQuintupletsByLayer(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfQuintupletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_quintuplets_by_layer_barrel_[layer];
   else
     return n_quintuplets_by_layer_barrel_[layer] + n_quintuplets_by_layer_endcap_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfQuintupletsByLayerBarrel(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfQuintupletsByLayerBarrel(unsigned int layer) {
   return n_quintuplets_by_layer_barrel_[layer];
 }
 
-unsigned int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfQuintupletsByLayerEndcap(unsigned int layer) {
+unsigned int SDL::Event<Device>::getNumberOfQuintupletsByLayerEndcap(unsigned int layer) {
   return n_quintuplets_by_layer_endcap_[layer];
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfTrackCandidates() {
+int SDL::Event<Device>::getNumberOfTrackCandidates() {
   auto nTrackCandidates_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
   alpaka::memcpy(queue, nTrackCandidates_buf, trackCandidatesBuffers->nTrackCandidates_buf);
@@ -1431,7 +1431,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfTrackCandidates(
   return nTrackCandidates;
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPT5TrackCandidates() {
+int SDL::Event<Device>::getNumberOfPT5TrackCandidates() {
   auto nTrackCandidatesPT5_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
   alpaka::memcpy(queue, nTrackCandidatesPT5_buf, trackCandidatesBuffers->nTrackCandidatespT5_buf);
@@ -1442,7 +1442,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPT5TrackCandidat
   return nTrackCandidatesPT5;
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPT3TrackCandidates() {
+int SDL::Event<Device>::getNumberOfPT3TrackCandidates() {
   auto nTrackCandidatesPT3_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
   alpaka::memcpy(queue, nTrackCandidatesPT3_buf, trackCandidatesBuffers->nTrackCandidatespT3_buf);
@@ -1453,7 +1453,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPT3TrackCandidat
   return nTrackCandidatesPT3;
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPLSTrackCandidates() {
+int SDL::Event<Device>::getNumberOfPLSTrackCandidates() {
   auto nTrackCandidatesPLS_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
   alpaka::memcpy(queue, nTrackCandidatesPLS_buf, trackCandidatesBuffers->nTrackCandidatespLS_buf);
@@ -1464,7 +1464,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPLSTrackCandidat
   return nTrackCandidatesPLS;
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPixelTrackCandidates() {
+int SDL::Event<Device>::getNumberOfPixelTrackCandidates() {
   auto nTrackCandidates_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
   auto nTrackCandidatesT5_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
@@ -1478,7 +1478,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfPixelTrackCandid
   return nTrackCandidates - nTrackCandidatesT5;
 }
 
-int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfT5TrackCandidates() {
+int SDL::Event<Device>::getNumberOfT5TrackCandidates() {
   auto nTrackCandidatesT5_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
 
   alpaka::memcpy(queue, nTrackCandidatesT5_buf, trackCandidatesBuffers->nTrackCandidatesT5_buf);
@@ -1489,7 +1489,7 @@ int ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getNumberOfT5TrackCandidate
   return nTrackCandidatesT5;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::hitsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getHits()  //std::shared_ptr should take care of garbage collection
+SDL::hitsBuffer<DevHost>* SDL::Event<Device>::getHits()  //std::shared_ptr should take care of garbage collection
 {
   if (hitsInCPU == nullptr) {
     auto nHits_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1512,7 +1512,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::hitsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMES
   return hitsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::hitsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getHitsInCMSSW() {
+SDL::hitsBuffer<DevHost>* SDL::Event<Device>::getHitsInCMSSW() {
   if (hitsInCPU == nullptr) {
     auto nHits_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
     alpaka::memcpy(queue, nHits_buf, hitsBuffers->nHits_buf);
@@ -1529,7 +1529,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::hitsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMES
   return hitsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::objectRangesBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getRanges() {
+SDL::objectRangesBuffer<DevHost>* SDL::Event<Device>::getRanges() {
   if (rangesInCPU == nullptr) {
     rangesInCPU = new SDL::objectRangesBuffer<DevHost>(nModules_, nLowerModules_, devHost, queue);
     rangesInCPU->setData(*rangesInCPU);
@@ -1544,7 +1544,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::objectRangesBuffer<DevHost>* ALPAKA_ACCELERAT
   return rangesInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::miniDoubletsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getMiniDoublets() {
+SDL::miniDoubletsBuffer<DevHost>* SDL::Event<Device>::getMiniDoublets() {
   if (mdsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based mdsInCPU
     auto nMemHost_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1566,7 +1566,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::miniDoubletsBuffer<DevHost>* ALPAKA_ACCELERAT
   return mdsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::segmentsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getSegments() {
+SDL::segmentsBuffer<DevHost>* SDL::Event<Device>::getSegments() {
   if (segmentsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based segmentsInCPU
     auto nMemHost_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1575,7 +1575,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::segmentsBuffer<DevHost>* ALPAKA_ACCELERATOR_N
 
     unsigned int nMemHost = *alpaka::getPtrNative(nMemHost_buf);
     segmentsInCPU = new SDL::segmentsBuffer<DevHost>(
-        nMemHost, nLowerModules_, ::SDL::N_MAX_PIXEL_SEGMENTS_PER_MODULE, devHost, queue);
+        nMemHost, nLowerModules_, N_MAX_PIXEL_SEGMENTS_PER_MODULE, devHost, queue);
     segmentsInCPU->setData(*segmentsInCPU);
 
     *alpaka::getPtrNative(segmentsInCPU->nMemoryLocations_buf) = nMemHost;
@@ -1602,7 +1602,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::segmentsBuffer<DevHost>* ALPAKA_ACCELERATOR_N
   return segmentsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::tripletsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getTriplets() {
+SDL::tripletsBuffer<DevHost>* SDL::Event<Device>::getTriplets() {
   if (tripletsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based tripletsInCPU
     auto nMemHost_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1625,9 +1625,9 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::tripletsBuffer<DevHost>* ALPAKA_ACCELERATOR_N
     alpaka::memcpy(queue, tripletsInCPU->rtLo_buf, tripletsBuffers->rtLo_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->rtHi_buf, tripletsBuffers->rtHi_buf, nMemHost);
 #endif
-    alpaka::memcpy(queue, tripletsInCPU->hitIndices_buf, tripletsBuffers->hitIndices_buf, ::SDL::Params_T3::kHits * nMemHost);
+    alpaka::memcpy(queue, tripletsInCPU->hitIndices_buf, tripletsBuffers->hitIndices_buf, Params_T3::kHits * nMemHost);
     alpaka::memcpy(
-        queue, tripletsInCPU->logicalLayers_buf, tripletsBuffers->logicalLayers_buf, ::SDL::Params_T3::kLayers * nMemHost);
+        queue, tripletsInCPU->logicalLayers_buf, tripletsBuffers->logicalLayers_buf, Params_T3::kLayers * nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->segmentIndices_buf, tripletsBuffers->segmentIndices_buf, 2 * nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->betaIn_buf, tripletsBuffers->betaIn_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->circleRadius_buf, tripletsBuffers->circleRadius_buf, nMemHost);
@@ -1638,7 +1638,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::tripletsBuffer<DevHost>* ALPAKA_ACCELERATOR_N
   return tripletsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::quintupletsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getQuintuplets() {
+SDL::quintupletsBuffer<DevHost>* SDL::Event<Device>::getQuintuplets() {
   if (quintupletsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based quintupletsInCPU
     auto nMemHost_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1657,7 +1657,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::quintupletsBuffer<DevHost>* ALPAKA_ACCELERATO
     alpaka::memcpy(queue,
                    quintupletsInCPU->lowerModuleIndices_buf,
                    quintupletsBuffers->lowerModuleIndices_buf,
-                   ::SDL::Params_T5::kLayers * nMemHost);
+                   Params_T5::kLayers * nMemHost);
     alpaka::memcpy(queue, quintupletsInCPU->innerRadius_buf, quintupletsBuffers->innerRadius_buf, nMemHost);
     alpaka::memcpy(queue, quintupletsInCPU->bridgeRadius_buf, quintupletsBuffers->bridgeRadius_buf, nMemHost);
     alpaka::memcpy(queue, quintupletsInCPU->outerRadius_buf, quintupletsBuffers->outerRadius_buf, nMemHost);
@@ -1674,7 +1674,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::quintupletsBuffer<DevHost>* ALPAKA_ACCELERATO
   return quintupletsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::pixelTripletsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getPixelTriplets() {
+SDL::pixelTripletsBuffer<DevHost>* SDL::Event<Device>::getPixelTriplets() {
   if (pixelTripletsInCPU == nullptr) {
     // Get nPixelTriplets parameter to initialize host based quintupletsInCPU
     auto nPixelTriplets_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1713,7 +1713,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::pixelTripletsBuffer<DevHost>* ALPAKA_ACCELERA
   return pixelTripletsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::pixelQuintupletsBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getPixelQuintuplets() {
+SDL::pixelQuintupletsBuffer<DevHost>* SDL::Event<Device>::getPixelQuintuplets() {
   if (pixelQuintupletsInCPU == nullptr) {
     // Get nPixelQuintuplets parameter to initialize host based quintupletsInCPU
     auto nPixelQuintuplets_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1749,7 +1749,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::pixelQuintupletsBuffer<DevHost>* ALPAKA_ACCEL
   return pixelQuintupletsInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::trackCandidatesBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getTrackCandidates() {
+SDL::trackCandidatesBuffer<DevHost>* SDL::Event<Device>::getTrackCandidates() {
   if (trackCandidatesInCPU == nullptr) {
     // Get nTrackCanHost parameter to initialize host based trackCandidatesInCPU
     auto nTrackCanHost_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1758,20 +1758,20 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::trackCandidatesBuffer<DevHost>* ALPAKA_ACCELE
 
     unsigned int nTrackCanHost = *alpaka::getPtrNative(nTrackCanHost_buf);
     trackCandidatesInCPU = new SDL::trackCandidatesBuffer<DevHost>(
-        ::SDL::N_MAX_NONPIXEL_TRACK_CANDIDATES + ::SDL::N_MAX_PIXEL_TRACK_CANDIDATES, devHost, queue);
+        N_MAX_NONPIXEL_TRACK_CANDIDATES + N_MAX_PIXEL_TRACK_CANDIDATES, devHost, queue);
     trackCandidatesInCPU->setData(*trackCandidatesInCPU);
 
     *alpaka::getPtrNative(trackCandidatesInCPU->nTrackCandidates_buf) = nTrackCanHost;
     alpaka::memcpy(queue,
                    trackCandidatesInCPU->hitIndices_buf,
                    trackCandidatesBuffers->hitIndices_buf,
-                   ::SDL::Params_pT5::kHits * nTrackCanHost);
+                   Params_pT5::kHits * nTrackCanHost);
     alpaka::memcpy(
         queue, trackCandidatesInCPU->pixelSeedIndex_buf, trackCandidatesBuffers->pixelSeedIndex_buf, nTrackCanHost);
     alpaka::memcpy(queue,
                    trackCandidatesInCPU->logicalLayers_buf,
                    trackCandidatesBuffers->logicalLayers_buf,
-                   ::SDL::Params_pT5::kLayers * nTrackCanHost);
+                   Params_pT5::kLayers * nTrackCanHost);
     alpaka::memcpy(queue,
                    trackCandidatesInCPU->directObjectIndices_buf,
                    trackCandidatesBuffers->directObjectIndices_buf,
@@ -1787,7 +1787,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::trackCandidatesBuffer<DevHost>* ALPAKA_ACCELE
   return trackCandidatesInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::trackCandidatesBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getTrackCandidatesInCMSSW() {
+SDL::trackCandidatesBuffer<DevHost>* SDL::Event<Device>::getTrackCandidatesInCMSSW() {
   if (trackCandidatesInCPU == nullptr) {
     // Get nTrackCanHost parameter to initialize host based trackCandidatesInCPU
     auto nTrackCanHost_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -1796,14 +1796,14 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::trackCandidatesBuffer<DevHost>* ALPAKA_ACCELE
 
     unsigned int nTrackCanHost = *alpaka::getPtrNative(nTrackCanHost_buf);
     trackCandidatesInCPU = new SDL::trackCandidatesBuffer<DevHost>(
-        ::SDL::N_MAX_NONPIXEL_TRACK_CANDIDATES + ::SDL::N_MAX_PIXEL_TRACK_CANDIDATES, devHost, queue);
+        N_MAX_NONPIXEL_TRACK_CANDIDATES + N_MAX_PIXEL_TRACK_CANDIDATES, devHost, queue);
     trackCandidatesInCPU->setData(*trackCandidatesInCPU);
 
     *alpaka::getPtrNative(trackCandidatesInCPU->nTrackCandidates_buf) = nTrackCanHost;
     alpaka::memcpy(queue,
                    trackCandidatesInCPU->hitIndices_buf,
                    trackCandidatesBuffers->hitIndices_buf,
-                   ::SDL::Params_pT5::kHits * nTrackCanHost);
+                   Params_pT5::kHits * nTrackCanHost);
     alpaka::memcpy(
         queue, trackCandidatesInCPU->pixelSeedIndex_buf, trackCandidatesBuffers->pixelSeedIndex_buf, nTrackCanHost);
     alpaka::memcpy(queue,
@@ -1815,7 +1815,7 @@ ALPAKA_ACCELERATOR_NAMESPACE::SDL::trackCandidatesBuffer<DevHost>* ALPAKA_ACCELE
   return trackCandidatesInCPU;
 }
 
-ALPAKA_ACCELERATOR_NAMESPACE::SDL::modulesBuffer<DevHost>* ALPAKA_ACCELERATOR_NAMESPACE::SDL::Event<Acc3D>::getModules(bool isFull) {
+SDL::modulesBuffer<DevHost>* SDL::Event<Device>::getModules(bool isFull) {
   if (modulesInCPU == nullptr) {
     // The last input here is just a small placeholder for the allocation.
     modulesInCPU = new SDL::modulesBuffer<DevHost>(devHost, nModules_, nPixels_);

@@ -1,11 +1,9 @@
-#ifndef RecoTracker_LSTCore_interface_alpaka_Module_h
-#define RecoTracker_LSTCore_interface_alpaka_Module_h
+#ifndef RecoTracker_LSTCore_interface_Module_h
+#define RecoTracker_LSTCore_interface_Module_h
 
-#include <alpaka/alpaka.hpp>
+#include "RecoTracker/LSTCore/interface/Constants.h"
 
-#include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-
-namespace ALPAKA_ACCELERATOR_NAMESPACE::SDL {
+namespace SDL {
   enum SubDet { InnerPixel = 0, Barrel = 5, Endcap = 4 };
 
   enum Side { NegZ = 1, PosZ = 2, Center = 3 };
@@ -286,7 +284,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::SDL {
 
     modulesBuffer(TDev const& dev, unsigned int nMod, unsigned int nPixs)
         : detIds_buf(allocBufWrapper<unsigned int>(dev, nMod)),
-          moduleMap_buf(allocBufWrapper<uint16_t>(dev, nMod * ::SDL::MAX_CONNECTED_MODULES)),
+          moduleMap_buf(allocBufWrapper<uint16_t>(dev, nMod * MAX_CONNECTED_MODULES)),
           mapdetId_buf(allocBufWrapper<unsigned int>(dev, nMod)),
           mapIdx_buf(allocBufWrapper<uint16_t>(dev, nMod)),
           nConnectedModules_buf(allocBufWrapper<uint16_t>(dev, nMod)),

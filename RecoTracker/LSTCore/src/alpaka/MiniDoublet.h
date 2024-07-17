@@ -2,12 +2,12 @@
 #define MiniDoublet_cuh
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/Module.h"
+#include "RecoTracker/LSTCore/interface/Module.h"
 #include "RecoTracker/LSTCore/interface/EndcapGeometry.h"
 
 #include "Hit.h"
 
-namespace ALPAKA_ACCELERATOR_NAMESPACE::SDL {
+namespace SDL {
   struct miniDoublets {
     unsigned int* nMemoryLocations;
 

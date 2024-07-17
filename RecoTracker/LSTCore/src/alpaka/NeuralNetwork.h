@@ -2,7 +2,7 @@
 #define NeuralNetwork_cuh
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/Module.h"
+#include "RecoTracker/LSTCore/interface/Module.h"
 
 #include "NeuralNetworkWeights.h"
 #include "Segment.h"
@@ -10,7 +10,7 @@
 #include "Hit.h"
 #include "Triplet.h"
 
-namespace ALPAKA_ACCELERATOR_NAMESPACE::T5DNN {
+namespace T5DNN {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float runInference(TAcc const& acc,

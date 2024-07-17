@@ -1,29 +1,30 @@
-#ifndef RecoTracker_LSTCore_interface_alpaka_LST_h
-#define RecoTracker_LSTCore_interface_alpaka_LST_h
+#ifndef RecoTracker_LSTCore_interface_LST_h
+#define RecoTracker_LSTCore_interface_LST_h
 
-#include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/LSTESData.h"
+#include "RecoTracker/LSTCore/interface/Constants.h"
+#include "RecoTracker/LSTCore/interface/LSTESData.h"
 
 #include <cstdlib>
 #include <numeric>
 #include <mutex>
 #include <alpaka/alpaka.hpp>
 
-namespace ALPAKA_ACCELERATOR_NAMESPACE::SDL {
+namespace SDL {
   template <typename>
   class Event;
 
   template <typename>
   class LST;
 
-  template <>
-  class LST<Acc3D> {
+  template <typename TDev>
+  class LST {
   public:
     LST() = default;
 
-    void run(Queue& queue,
+    template <typename TQueue>
+    void run(TQueue& queue,
              bool verbose,
-             const LSTESData<Device>* deviceESData,
+             const LSTESData<TDev>* deviceESData,
              const std::vector<float> see_px,
              const std::vector<float> see_py,
              const std::vector<float> see_pz,
@@ -71,7 +72,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::SDL {
                       const std::vector<float> ph2_y,
                       const std::vector<float> ph2_z);
 
-    void getOutput(SDL::Event<Acc3D>& event);
+    void getOutput(SDL::Event<TDev>& event);
     std::vector<unsigned int> getHitIdxs(const short trackCandidateType,
                                          const unsigned int TCIdx,
                                          const unsigned int* TCHitIndices,

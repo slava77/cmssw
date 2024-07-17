@@ -2,9 +2,9 @@
 #define Hit_cuh
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/Module.h"
+#include "RecoTracker/LSTCore/interface/Module.h"
 
-namespace ALPAKA_ACCELERATOR_NAMESPACE::SDL {
+namespace SDL {
   struct hits {
     unsigned int* nHits;
     float* xs;

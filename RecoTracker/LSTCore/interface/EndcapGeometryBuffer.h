@@ -1,5 +1,5 @@
-#ifndef RecoTracker_LSTCore_interface_alpaka_EndcapGeometryBuffers_h
-#define RecoTracker_LSTCore_interface_alpaka_EndcapGeometryBuffers_h
+#ifndef RecoTracker_LSTCore_interface_EndcapGeometryBuffers_h
+#define RecoTracker_LSTCore_interface_EndcapGeometryBuffers_h
 
 #include <map>
 #include <iostream>
@@ -9,11 +9,9 @@
 #include <vector>
 #include <stdexcept>
 
-#include "HeterogeneousCore/AlpakaInterface/interface/host.h"
+#include "RecoTracker/LSTCore/interface/Constants.h"
 
-#include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-
-namespace ALPAKA_ACCELERATOR_NAMESPACE::SDL {
+namespace SDL {
 
   struct EndcapGeometryDev {
     const unsigned int* geoMapDetId;
