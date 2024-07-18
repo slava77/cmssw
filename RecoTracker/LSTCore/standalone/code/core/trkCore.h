@@ -22,9 +22,7 @@ float runT4(SDLEvent *event);
 float runT4x(SDLEvent *event);
 float runpT4(SDLEvent *event);
 float runT3(SDLEvent *event);
-float runTrackCandidate(SDLEvent *event,
-                        bool no_pls_dupclean,
-                        bool tc_pls_triplets);
+float runTrackCandidate(SDLEvent *event, bool no_pls_dupclean, bool tc_pls_triplets);
 float runQuintuplet(SDLEvent *event);
 float runPixelQuintuplet(SDLEvent *event);
 float runPixelLineSegment(SDLEvent *event, bool no_pls_dupclean);

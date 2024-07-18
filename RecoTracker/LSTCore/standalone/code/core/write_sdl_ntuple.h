@@ -28,16 +28,15 @@ void setPixelTripletOutputBranches(SDLEvent* event);
 void setGnnNtupleBranches(SDLEvent* event);
 void setGnnNtupleMiniDoublet(SDLEvent* event, unsigned int MD);
 
-std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
-    SDLEvent* event, unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(
-    SDLEvent* event, unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(
-    SDLEvent* event, unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(
-    SDLEvent* event, unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(
-    SDLEvent* event, unsigned int);
+std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(SDLEvent* event, unsigned int);
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(SDLEvent* event,
+                                                                                               unsigned int);
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(SDLEvent* event,
+                                                                                               unsigned int);
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(SDLEvent* event,
+                                                                                              unsigned int);
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(SDLEvent* event,
+                                                                                               unsigned int);
 
 // Print multiplicities
 void printMiniDoubletMultiplicities(SDLEvent* event);

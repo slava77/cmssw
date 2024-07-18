@@ -151,10 +151,10 @@ void SDL::Event<Acc3D>::resetEvent() {
 }
 
 void SDL::Event<Acc3D>::addHitToEvent(std::vector<float> x,
-                                       std::vector<float> y,
-                                       std::vector<float> z,
-                                       std::vector<unsigned int> detId,
-                                       std::vector<unsigned int> idxInNtuple) {
+                                      std::vector<float> y,
+                                      std::vector<float> z,
+                                      std::vector<unsigned int> detId,
+                                      std::vector<unsigned int> idxInNtuple) {
   // Use the actual number of hits instead of a max.
   unsigned int nHits = x.size();
 
@@ -218,23 +218,23 @@ void SDL::Event<Acc3D>::addHitToEvent(std::vector<float> x,
 }
 
 void SDL::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> hitIndices0,
-                                                std::vector<unsigned int> hitIndices1,
-                                                std::vector<unsigned int> hitIndices2,
-                                                std::vector<unsigned int> hitIndices3,
-                                                std::vector<float> dPhiChange,
-                                                std::vector<float> ptIn,
-                                                std::vector<float> ptErr,
-                                                std::vector<float> px,
-                                                std::vector<float> py,
-                                                std::vector<float> pz,
-                                                std::vector<float> eta,
-                                                std::vector<float> etaErr,
-                                                std::vector<float> phi,
-                                                std::vector<int> charge,
-                                                std::vector<unsigned int> seedIdx,
-                                                std::vector<int> superbin,
-                                                std::vector<int8_t> pixelType,
-                                                std::vector<char> isQuad) {
+                                               std::vector<unsigned int> hitIndices1,
+                                               std::vector<unsigned int> hitIndices2,
+                                               std::vector<unsigned int> hitIndices3,
+                                               std::vector<float> dPhiChange,
+                                               std::vector<float> ptIn,
+                                               std::vector<float> ptErr,
+                                               std::vector<float> px,
+                                               std::vector<float> py,
+                                               std::vector<float> pz,
+                                               std::vector<float> eta,
+                                               std::vector<float> etaErr,
+                                               std::vector<float> phi,
+                                               std::vector<int> charge,
+                                               std::vector<unsigned int> seedIdx,
+                                               std::vector<int> superbin,
+                                               std::vector<int8_t> pixelType,
+                                               std::vector<char> isQuad) {
   unsigned int size = ptIn.size();
 
   if (size > N_MAX_PIXEL_SEGMENTS_PER_MODULE) {

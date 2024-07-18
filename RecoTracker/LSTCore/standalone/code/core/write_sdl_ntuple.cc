@@ -744,8 +744,8 @@ std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(
-    SDL::Event<Acc3D>* event, unsigned int idx) {
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(SDL::Event<Acc3D>* event,
+                                                                                               unsigned int idx) {
   // Get relevant information
   SDL::trackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event->getTrackCandidates());
   SDL::quintupletsBuffer<alpaka::DevCpu>& quintupletsInGPU = (*event->getQuintuplets());
@@ -856,8 +856,8 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(
-    SDL::Event<Acc3D>* event, unsigned int idx) {
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(SDL::Event<Acc3D>* event,
+                                                                                               unsigned int idx) {
   // Get relevant information
   SDL::trackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event->getTrackCandidates());
   SDL::tripletsBuffer<alpaka::DevCpu>& tripletsInGPU = (*event->getTriplets());
@@ -925,8 +925,8 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(
-    SDL::Event<Acc3D>* event, unsigned int idx) {
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(SDL::Event<Acc3D>* event,
+                                                                                               unsigned int idx) {
   SDL::trackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event->getTrackCandidates());
   SDL::segmentsBuffer<alpaka::DevCpu>& segmentsInGPU = (*event->getSegments());
 
