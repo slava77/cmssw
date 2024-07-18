@@ -8,6 +8,9 @@
 #endif
 
 namespace SDL {
+
+  using namespace ALPAKA_ACCELERATOR_NAMESPACE;
+
 // Half precision wrapper functions.
 #if defined(FP16_Base)
 #define __F2H __float2half
@@ -19,7 +22,7 @@ namespace SDL {
   typedef float FPX;
 #endif
 
-  alpaka_common::Vec3D const elementsPerThread(alpaka_common::Vec3D::all(static_cast<alpaka_common::Idx>(1)));
+  Vec3D constexpr elementsPerThread(Vec3D::all(static_cast<Idx>(1)));
 
 // Needed for files that are compiled by g++ to not throw an error.
 // uint4 is defined only for CUDA, so we will have to revisit this soon when running on other backends.
@@ -33,14 +36,14 @@ namespace SDL {
 #endif
 
   // Wrapper function to reduce code boilerplate for defining grid/block sizes.
-  ALPAKA_FN_HOST ALPAKA_FN_INLINE alpaka_common::Vec3D createVec(int x, int y, int z) {
-    return alpaka_common::Vec3D(
-        static_cast<alpaka_common::Idx>(x), static_cast<alpaka_common::Idx>(y), static_cast<alpaka_common::Idx>(z));
+  ALPAKA_FN_HOST ALPAKA_FN_INLINE Vec3D createVec(int x, int y, int z) {
+    return Vec3D(
+        static_cast<Idx>(x), static_cast<Idx>(y), static_cast<Idx>(z));
   }
 
   // Adjust grid and block sizes based on backend configuration
   template <typename Vec>
-  ALPAKA_FN_HOST ALPAKA_FN_INLINE alpaka_common::WorkDiv3D createWorkDiv(const Vec& blocksPerGrid,
+  ALPAKA_FN_HOST ALPAKA_FN_INLINE WorkDiv3D createWorkDiv(const Vec& blocksPerGrid,
                                                                          const Vec& threadsPerBlock,
                                                                          const Vec& elementsPerThreadArg) {
     Vec adjustedBlocks = blocksPerGrid;
@@ -48,16 +51,16 @@ namespace SDL {
 
     // Serial execution, so all launch parameters set to 1.
 #if defined(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED)
-    adjustedBlocks = Vec::all(static_cast<alpaka_common::Idx>(1));
-    adjustedThreads = Vec::all(static_cast<alpaka_common::Idx>(1));
+    adjustedBlocks = Vec::all(static_cast<Idx>(1));
+    adjustedThreads = Vec::all(static_cast<Idx>(1));
 #endif
 
     // Threads enabled, set number of blocks to 1.
 #if defined(ALPAKA_ACC_CPU_B_SEQ_T_THREADS_ENABLED)
-    adjustedBlocks = Vec::all(static_cast<alpaka_common::Idx>(1));
+    adjustedBlocks = Vec::all(static_cast<Idx>(1));
 #endif
 
-    return alpaka_common::WorkDiv3D(adjustedBlocks, adjustedThreads, elementsPerThreadArg);
+    return WorkDiv3D(adjustedBlocks, adjustedThreads, elementsPerThreadArg);
   }
 
   // 15 MeV constant from the approximate Bethe-Bloch formula

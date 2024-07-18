@@ -18,15 +18,17 @@
 
 namespace SDL {
 
-  template <typename TDev>
+  using namespace ALPAKA_ACCELERATOR_NAMESPACE;
+
+  template <typename TAcc>
   class Event;
 
   template <>
-  class Event<ALPAKA_ACCELERATOR_NAMESPACE::Device> {
+  class Event<Acc3D> {
   private:
-    ALPAKA_ACCELERATOR_NAMESPACE::Queue queue;
-    ALPAKA_ACCELERATOR_NAMESPACE::Device devAcc;
-    alpaka_common::DevHost devHost;
+    Queue queue;
+    Device devAcc;
+    DevHost devHost;
     bool addObjects;
 
     std::array<unsigned int, 6> n_hits_by_layer_barrel_;
@@ -45,35 +47,35 @@ namespace SDL {
     //Device stuff
     unsigned int nTotalSegments;
     struct objectRanges* rangesInGPU;
-    struct objectRangesBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* rangesBuffers;
+    struct objectRangesBuffer<Device>* rangesBuffers;
     struct hits* hitsInGPU;
-    struct hitsBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* hitsBuffers;
+    struct hitsBuffer<Device>* hitsBuffers;
     struct miniDoublets* mdsInGPU;
-    struct miniDoubletsBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* miniDoubletsBuffers;
+    struct miniDoubletsBuffer<Device>* miniDoubletsBuffers;
     struct segments* segmentsInGPU;
-    struct segmentsBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* segmentsBuffers;
+    struct segmentsBuffer<Device>* segmentsBuffers;
     struct triplets* tripletsInGPU;
-    struct tripletsBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* tripletsBuffers;
+    struct tripletsBuffer<Device>* tripletsBuffers;
     struct quintuplets* quintupletsInGPU;
-    struct quintupletsBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* quintupletsBuffers;
+    struct quintupletsBuffer<Device>* quintupletsBuffers;
     struct trackCandidates* trackCandidatesInGPU;
-    struct trackCandidatesBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* trackCandidatesBuffers;
+    struct trackCandidatesBuffer<Device>* trackCandidatesBuffers;
     struct pixelTriplets* pixelTripletsInGPU;
-    struct pixelTripletsBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* pixelTripletsBuffers;
+    struct pixelTripletsBuffer<Device>* pixelTripletsBuffers;
     struct pixelQuintuplets* pixelQuintupletsInGPU;
-    struct pixelQuintupletsBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>* pixelQuintupletsBuffers;
+    struct pixelQuintupletsBuffer<Device>* pixelQuintupletsBuffers;
 
     //CPU interface stuff
-    objectRangesBuffer<alpaka_common::DevHost>* rangesInCPU;
-    hitsBuffer<alpaka_common::DevHost>* hitsInCPU;
-    miniDoubletsBuffer<alpaka_common::DevHost>* mdsInCPU;
-    segmentsBuffer<alpaka_common::DevHost>* segmentsInCPU;
-    tripletsBuffer<alpaka_common::DevHost>* tripletsInCPU;
-    trackCandidatesBuffer<alpaka_common::DevHost>* trackCandidatesInCPU;
-    modulesBuffer<alpaka_common::DevHost>* modulesInCPU;
-    quintupletsBuffer<alpaka_common::DevHost>* quintupletsInCPU;
-    pixelTripletsBuffer<alpaka_common::DevHost>* pixelTripletsInCPU;
-    pixelQuintupletsBuffer<alpaka_common::DevHost>* pixelQuintupletsInCPU;
+    objectRangesBuffer<DevHost>* rangesInCPU;
+    hitsBuffer<DevHost>* hitsInCPU;
+    miniDoubletsBuffer<DevHost>* mdsInCPU;
+    segmentsBuffer<DevHost>* segmentsInCPU;
+    tripletsBuffer<DevHost>* tripletsInCPU;
+    trackCandidatesBuffer<DevHost>* trackCandidatesInCPU;
+    modulesBuffer<DevHost>* modulesInCPU;
+    quintupletsBuffer<DevHost>* quintupletsInCPU;
+    pixelTripletsBuffer<DevHost>* pixelTripletsInCPU;
+    pixelQuintupletsBuffer<DevHost>* pixelQuintupletsInCPU;
 
     void init(bool verbose);
 
@@ -85,14 +87,14 @@ namespace SDL {
     const uint16_t nLowerModules_;
     const unsigned int nPixels_;
     const unsigned int nEndCapMap_;
-    const std::shared_ptr<const modulesBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>> modulesBuffers_;
+    const std::shared_ptr<const modulesBuffer<Device>> modulesBuffers_;
     const std::shared_ptr<const pixelMap> pixelMapping_;
-    const std::shared_ptr<const EndcapGeometryBuffer<ALPAKA_ACCELERATOR_NAMESPACE::Device>> endcapGeometryBuffers_;
+    const std::shared_ptr<const EndcapGeometryBuffer<Device>> endcapGeometryBuffers_;
 
   public:
     // Constructor used for CMSSW integration. Uses an external queue.
     template <typename TQueue>
-    Event(bool verbose, TQueue const& q, const LSTESData<ALPAKA_ACCELERATOR_NAMESPACE::Device>* deviceESData)
+    Event(bool verbose, TQueue const& q, const LSTESData<Device>* deviceESData)
         : queue(q),
           devAcc(alpaka::getDev(q)),
           devHost(cms::alpakatools::host()),
@@ -186,18 +188,18 @@ namespace SDL {
     int getNumberOfPixelTriplets();
     int getNumberOfPixelQuintuplets();
 
-    objectRangesBuffer<alpaka_common::DevHost>* getRanges();
-    hitsBuffer<alpaka_common::DevHost>* getHits();
-    hitsBuffer<alpaka_common::DevHost>* getHitsInCMSSW();
-    miniDoubletsBuffer<alpaka_common::DevHost>* getMiniDoublets();
-    segmentsBuffer<alpaka_common::DevHost>* getSegments();
-    tripletsBuffer<alpaka_common::DevHost>* getTriplets();
-    quintupletsBuffer<alpaka_common::DevHost>* getQuintuplets();
-    trackCandidatesBuffer<alpaka_common::DevHost>* getTrackCandidates();
-    trackCandidatesBuffer<alpaka_common::DevHost>* getTrackCandidatesInCMSSW();
-    pixelTripletsBuffer<alpaka_common::DevHost>* getPixelTriplets();
-    pixelQuintupletsBuffer<alpaka_common::DevHost>* getPixelQuintuplets();
-    modulesBuffer<alpaka_common::DevHost>* getModules(bool isFull = false);
+    objectRangesBuffer<DevHost>* getRanges();
+    hitsBuffer<DevHost>* getHits();
+    hitsBuffer<DevHost>* getHitsInCMSSW();
+    miniDoubletsBuffer<DevHost>* getMiniDoublets();
+    segmentsBuffer<DevHost>* getSegments();
+    tripletsBuffer<DevHost>* getTriplets();
+    quintupletsBuffer<DevHost>* getQuintuplets();
+    trackCandidatesBuffer<DevHost>* getTrackCandidates();
+    trackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW();
+    pixelTripletsBuffer<DevHost>* getPixelTriplets();
+    pixelQuintupletsBuffer<DevHost>* getPixelQuintuplets();
+    modulesBuffer<DevHost>* getModules(bool isFull = false);
   };
 
 }  // namespace SDL

@@ -20,7 +20,7 @@ namespace {
 }  // namespace
 
 template <>
-void SDL::LST<Device>::prepareInput(const std::vector<float> see_px,
+void SDL::LST<Acc3D>::prepareInput(const std::vector<float> see_px,
                                     const std::vector<float> see_py,
                                     const std::vector<float> see_pz,
                                     const std::vector<float> see_dxy,
@@ -213,7 +213,7 @@ void SDL::LST<Device>::prepareInput(const std::vector<float> see_px,
 }
 
 template <>
-std::vector<unsigned int> SDL::LST<Device>::getHitIdxs(const short trackCandidateType,
+std::vector<unsigned int> SDL::LST<Acc3D>::getHitIdxs(const short trackCandidateType,
                                                        const unsigned int TCIdx,
                                                        const unsigned int* TCHitIndices,
                                                        const unsigned int* hitIndices) {
@@ -249,7 +249,7 @@ std::vector<unsigned int> SDL::LST<Device>::getHitIdxs(const short trackCandidat
 }
 
 template <>
-void SDL::LST<Device>::getOutput(SDL::Event<Device>& event) {
+void SDL::LST<Acc3D>::getOutput(SDL::Event<Acc3D>& event) {
   std::vector<std::vector<unsigned int>> tc_hitIdxs;
   std::vector<unsigned int> tc_len;
   std::vector<int> tc_seedIdx;
@@ -278,7 +278,7 @@ void SDL::LST<Device>::getOutput(SDL::Event<Device>& event) {
 
 template <>
 template <>
-void SDL::LST<Device>::run(Queue& queue,
+void SDL::LST<Acc3D>::run(Queue& queue,
                            bool verbose,
                            const LSTESData<Device>* deviceESData,
                            const std::vector<float> see_px,
@@ -302,7 +302,7 @@ void SDL::LST<Device>::run(Queue& queue,
                            const std::vector<float> ph2_z,
                            bool no_pls_dupclean,
                            bool tc_pls_triplets) {
-  auto event = SDL::Event<Device>(verbose, queue, deviceESData);
+  auto event = SDL::Event<Acc3D>(verbose, queue, deviceESData);
   prepareInput(see_px,
                see_py,
                see_pz,
