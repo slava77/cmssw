@@ -1,9 +1,7 @@
-#ifndef RecoTracker_LSTCore_interface_alpaka_Module_h
-#define RecoTracker_LSTCore_interface_alpaka_Module_h
+#ifndef RecoTracker_LSTCore_interface_Module_h
+#define RecoTracker_LSTCore_interface_Module_h
 
-#include <alpaka/alpaka.hpp>
-
-#include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
+#include "RecoTracker/LSTCore/interface/Constants.h"
 
 namespace SDL {
   enum SubDet { InnerPixel = 0, Barrel = 5, Endcap = 4 };

@@ -1,8 +1,8 @@
-#ifndef RecoTracker_LSTCore_interface_alpaka_LST_h
-#define RecoTracker_LSTCore_interface_alpaka_LST_h
+#ifndef RecoTracker_LSTCore_interface_LST_h
+#define RecoTracker_LSTCore_interface_LST_h
 
-#include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/LSTESData.h"
+#include "RecoTracker/LSTCore/interface/Constants.h"
+#include "RecoTracker/LSTCore/interface/LSTESData.h"
 
 #include <cstdlib>
 #include <numeric>
@@ -16,14 +16,15 @@ namespace SDL {
   template <typename>
   class LST;
 
-  template <>
-  class LST<SDL::Acc> {
+  template <typename TAcc>
+  class LST {
   public:
     LST() = default;
 
-    void run(QueueAcc& queue,
+    template <typename TQueue>
+    void run(TQueue& queue,
              bool verbose,
-             const LSTESData<Dev>* deviceESData,
+             const LSTESData<alpaka::Dev<TAcc>>* deviceESData,
              const std::vector<float> see_px,
              const std::vector<float> see_py,
              const std::vector<float> see_pz,
@@ -71,7 +72,7 @@ namespace SDL {
                       const std::vector<float> ph2_y,
                       const std::vector<float> ph2_z);
 
-    void getOutput(SDL::Event<Acc>& event);
+    void getOutput(SDL::Event<TAcc>& event);
     std::vector<unsigned int> getHitIdxs(const short trackCandidateType,
                                          const unsigned int TCIdx,
                                          const unsigned int* TCHitIndices,

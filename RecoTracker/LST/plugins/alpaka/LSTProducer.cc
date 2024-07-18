@@ -19,7 +19,7 @@
 
 #include "RecoTracker/Record/interface/TrackerRecoGeometryRecord.h"
 
-#include "RecoTracker/LSTCore/interface/alpaka/LST.h"
+#include "RecoTracker/LSTCore/interface/LST.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
@@ -91,7 +91,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const bool verbose_, nopLSDupClean_, tcpLSTriplets_;
     edm::EDPutTokenT<LSTOutput> lstOutputToken_;
 
-    SDL::LST<SDL::Acc> lst_;
+    SDL::LST<Acc3D> lst_;
   };
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE

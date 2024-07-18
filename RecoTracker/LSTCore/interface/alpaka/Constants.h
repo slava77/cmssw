@@ -1,19 +1,16 @@
 #ifndef RecoTracker_LSTCore_interface_alpaka_Constants_h
 #define RecoTracker_LSTCore_interface_alpaka_Constants_h
 
-#include <alpaka/alpaka.hpp>
-
-#include "HeterogeneousCore/AlpakaInterface/interface/config.h"
-
-#ifdef CACHE_ALLOC
-#include "HeterogeneousCore/AlpakaInterface/interface/CachedBufAlloc.h"
-#endif
+#include "RecoTracker/LSTCore/interface/Constants.h"
 
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
 #include <cuda_fp16.h>
 #endif
 
 namespace SDL {
+
+  using namespace ALPAKA_ACCELERATOR_NAMESPACE;
+
 // Half precision wrapper functions.
 #if defined(FP16_Base)
 #define __F2H __float2half
@@ -25,19 +22,7 @@ namespace SDL {
   typedef float FPX;
 #endif
 
-  using Idx = alpaka_common::Idx;
-  using Dim = alpaka_common::Dim3D;
-  using Dim1d = alpaka_common::Dim1D;
-  using Vec = alpaka_common::Vec3D;
-  using Vec1d = alpaka_common::Vec1D;
-  using WorkDiv = alpaka_common::WorkDiv3D;
-
-  using Acc = ALPAKA_ACCELERATOR_NAMESPACE::Acc3D;
-  using Dev = ALPAKA_ACCELERATOR_NAMESPACE::Device;
-  using DevHost = ALPAKA_ACCELERATOR_NAMESPACE::DevHost;
-  using QueueAcc = ALPAKA_ACCELERATOR_NAMESPACE::Queue;
-
-  Vec const elementsPerThread(Vec::all(static_cast<Idx>(1)));
+  Vec3D constexpr elementsPerThread(Vec3D::all(static_cast<Idx>(1)));
 
 // Needed for files that are compiled by g++ to not throw an error.
 // uint4 is defined only for CUDA, so we will have to revisit this soon when running on other backends.
@@ -50,38 +35,16 @@ namespace SDL {
   };
 #endif
 
-  // Buffer type for allocations where auto type can't be used.
-  template <typename TDev, typename TData>
-  using Buf = alpaka::Buf<TDev, TData, Dim1d, Idx>;
-
-  // Allocation wrapper function to make integration of the caching allocator easier and reduce code boilerplate.
-  template <typename T, typename TAcc, typename TSize, typename TQueue>
-  ALPAKA_FN_HOST ALPAKA_FN_INLINE Buf<alpaka::Dev<TAcc>, T> allocBufWrapper(TAcc const& devAccIn,
-                                                                            TSize nElements,
-                                                                            TQueue queue) {
-#ifdef CACHE_ALLOC
-    return cms::alpakatools::allocCachedBuf<T, Idx>(devAccIn, queue, Vec1d(static_cast<Idx>(nElements)));
-#else
-    return alpaka::allocBuf<T, Idx>(devAccIn, Vec1d(static_cast<Idx>(nElements)));
-#endif
-  }
-
-  // Second allocation wrapper function when queue is not given. Reduces code boilerplate.
-  template <typename T, typename TAcc, typename TSize>
-  ALPAKA_FN_HOST ALPAKA_FN_INLINE Buf<alpaka::Dev<TAcc>, T> allocBufWrapper(TAcc const& devAccIn, TSize nElements) {
-    return alpaka::allocBuf<T, Idx>(devAccIn, Vec1d(static_cast<Idx>(nElements)));
-  }
-
   // Wrapper function to reduce code boilerplate for defining grid/block sizes.
-  ALPAKA_FN_HOST ALPAKA_FN_INLINE Vec createVec(int x, int y, int z) {
-    return Vec(static_cast<Idx>(x), static_cast<Idx>(y), static_cast<Idx>(z));
+  ALPAKA_FN_HOST ALPAKA_FN_INLINE Vec3D createVec(int x, int y, int z) {
+    return Vec3D(static_cast<Idx>(x), static_cast<Idx>(y), static_cast<Idx>(z));
   }
 
   // Adjust grid and block sizes based on backend configuration
   template <typename Vec>
-  ALPAKA_FN_HOST ALPAKA_FN_INLINE WorkDiv createWorkDiv(const Vec& blocksPerGrid,
-                                                        const Vec& threadsPerBlock,
-                                                        const Vec& elementsPerThreadArg) {
+  ALPAKA_FN_HOST ALPAKA_FN_INLINE WorkDiv3D createWorkDiv(const Vec& blocksPerGrid,
+                                                          const Vec& threadsPerBlock,
+                                                          const Vec& elementsPerThreadArg) {
     Vec adjustedBlocks = blocksPerGrid;
     Vec adjustedThreads = threadsPerBlock;
 
@@ -96,49 +59,8 @@ namespace SDL {
     adjustedBlocks = Vec::all(static_cast<Idx>(1));
 #endif
 
-    return WorkDiv(adjustedBlocks, adjustedThreads, elementsPerThreadArg);
+    return WorkDiv3D(adjustedBlocks, adjustedThreads, elementsPerThreadArg);
   }
-
-// If a compile time flag does not define PT_CUT, default to 0.8 (GeV)
-#ifndef PT_CUT
-  constexpr float PT_CUT = 0.8f;
-#endif
-
-  constexpr unsigned int MAX_BLOCKS = 80;
-  constexpr unsigned int MAX_CONNECTED_MODULES = 40;
-
-  constexpr unsigned int N_MAX_PIXEL_SEGMENTS_PER_MODULE = 50000;
-
-  constexpr unsigned int N_MAX_PIXEL_MD_PER_MODULES = 2 * N_MAX_PIXEL_SEGMENTS_PER_MODULE;
-
-  constexpr unsigned int N_MAX_PIXEL_TRIPLETS = 5000;
-  constexpr unsigned int N_MAX_PIXEL_QUINTUPLETS = 15000;
-
-  constexpr unsigned int N_MAX_PIXEL_TRACK_CANDIDATES = 30000;
-  constexpr unsigned int N_MAX_NONPIXEL_TRACK_CANDIDATES = 1000;
-
-  constexpr unsigned int size_superbins = 45000;
-
-  //defining the constant host device variables right up here
-  // Currently pixel tracks treated as LSs with 2 double layers (IT layers 1+2 and 3+4) and 4 hits. To be potentially handled better in the future.
-  struct Params_pLS {
-    static constexpr int kLayers = 2, kHits = 4;
-  };
-  struct Params_LS {
-    static constexpr int kLayers = 2, kHits = 4;
-  };
-  struct Params_T3 {
-    static constexpr int kLayers = 3, kHits = 6;
-  };
-  struct Params_pT3 {
-    static constexpr int kLayers = 5, kHits = 10;
-  };
-  struct Params_T5 {
-    static constexpr int kLayers = 5, kHits = 10;
-  };
-  struct Params_pT5 {
-    static constexpr int kLayers = 7, kHits = 14;
-  };
 
   // 15 MeV constant from the approximate Bethe-Bloch formula
   ALPAKA_STATIC_ACC_MEM_GLOBAL constexpr float kMulsInGeV = 0.015;

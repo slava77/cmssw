@@ -1,8 +1,8 @@
-#ifndef Hit_cuh
-#define Hit_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_Hit_h
+#define RecoTracker_LSTCore_src_alpaka_Hit_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/Module.h"
+#include "RecoTracker/LSTCore/interface/Module.h"
 
 namespace SDL {
   struct hits {

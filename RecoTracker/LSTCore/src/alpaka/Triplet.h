@@ -1,8 +1,8 @@
-#ifndef Triplet_cuh
-#define Triplet_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_Triplet_h
+#define RecoTracker_LSTCore_src_alpaka_Triplet_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/Module.h"
+#include "RecoTracker/LSTCore/interface/Module.h"
 
 #include "Segment.h"
 #include "MiniDoublet.h"

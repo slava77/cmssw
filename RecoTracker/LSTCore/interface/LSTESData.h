@@ -1,9 +1,10 @@
-#ifndef RecoTracker_LSTCore_interface_alpaka_LSTESData_h
-#define RecoTracker_LSTCore_interface_alpaka_LSTESData_h
+#ifndef RecoTracker_LSTCore_interface_LSTESData_h
+#define RecoTracker_LSTCore_interface_LSTESData_h
 
-#include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/EndcapGeometryBuffer.h"
-#include "RecoTracker/LSTCore/interface/alpaka/Module.h"
+#include "RecoTracker/LSTCore/interface/Constants.h"
+#include "RecoTracker/LSTCore/interface/EndcapGeometryBuffer.h"
+#include "RecoTracker/LSTCore/interface/Module.h"
+#include "RecoTracker/LSTCore/interface/PixelMap.h"
 
 #include "HeterogeneousCore/AlpakaInterface/interface/CopyToDevice.h"
 
@@ -11,8 +12,6 @@
 #include <memory>
 
 namespace SDL {
-
-  struct pixelMap;
 
   template <typename TDev>
   struct LSTESData {

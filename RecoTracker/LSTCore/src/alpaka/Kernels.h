@@ -1,8 +1,8 @@
-#ifndef Kernels_cuh
-#define Kernels_cuh
+#ifndef RecoTracker_LSTCore_src_alpaka_Kernels_h
+#define RecoTracker_LSTCore_src_alpaka_Kernels_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
-#include "RecoTracker/LSTCore/interface/alpaka/Module.h"
+#include "RecoTracker/LSTCore/interface/Module.h"
 
 #include "Hit.h"
 #include "MiniDoublet.h"
