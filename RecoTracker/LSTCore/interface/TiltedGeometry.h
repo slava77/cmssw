@@ -9,7 +9,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace SDL {
+namespace lst {
   class TiltedGeometry {
   private:
     std::map<unsigned int, float> drdzs_;  // dr/dz slope
@@ -26,6 +26,6 @@ namespace SDL {
     float getDxDy(unsigned int detid) const;
   };
 
-}  // namespace SDL
+}  // namespace lst
 
 #endif

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <algorithm>
 
-namespace SDL {
+namespace lst {
   class ModuleConnectionMap {
   private:
     std::map<unsigned int, std::vector<unsigned int>> moduleConnections_;
@@ -27,6 +27,6 @@ namespace SDL {
   };
 
   using MapPLStoLayer = std::array<std::array<ModuleConnectionMap, 4>, 3>;
-}  // namespace SDL
+}  // namespace lst
 
 #endif

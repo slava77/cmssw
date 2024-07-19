@@ -39,10 +39,10 @@ namespace {
     return fullpath.string();
   }
 
-  void loadMapsHost(SDL::MapPLStoLayer& pLStoLayer,
-                    std::shared_ptr<SDL::EndcapGeometry> endcapGeometry,
-                    std::shared_ptr<SDL::TiltedGeometry> tiltedGeometry,
-                    std::shared_ptr<SDL::ModuleConnectionMap> moduleConnectionMap) {
+  void loadMapsHost(lst::MapPLStoLayer& pLStoLayer,
+                    std::shared_ptr<lst::EndcapGeometry> endcapGeometry,
+                    std::shared_ptr<lst::TiltedGeometry> tiltedGeometry,
+                    std::shared_ptr<lst::ModuleConnectionMap> moduleConnectionMap) {
     // Module orientation information (DrDz or phi angles)
     auto endcap_geom =
         get_absolute_path_after_check_file_exists(trackLooperDir() + "/data/OT800_IT615_pt0.8/endcap_orientation.bin");
@@ -66,22 +66,22 @@ namespace {
       auto connectData = connects[i].data();
 
       path = pLSMapDir + connectData + ".bin";
-      pLStoLayer[0][i] = SDL::ModuleConnectionMap(get_absolute_path_after_check_file_exists(path));
+      pLStoLayer[0][i] = lst::ModuleConnectionMap(get_absolute_path_after_check_file_exists(path));
 
       path = pLSMapDir + "_pos" + connectData + ".bin";
-      pLStoLayer[1][i] = SDL::ModuleConnectionMap(get_absolute_path_after_check_file_exists(path));
+      pLStoLayer[1][i] = lst::ModuleConnectionMap(get_absolute_path_after_check_file_exists(path));
 
       path = pLSMapDir + "_neg" + connectData + ".bin";
-      pLStoLayer[2][i] = SDL::ModuleConnectionMap(get_absolute_path_after_check_file_exists(path));
+      pLStoLayer[2][i] = lst::ModuleConnectionMap(get_absolute_path_after_check_file_exists(path));
     }
   }
 }  // namespace
 
-std::unique_ptr<SDL::LSTESData<alpaka_common::DevHost>> SDL::loadAndFillESHost() {
+std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::loadAndFillESHost() {
   uint16_t nModules;
   uint16_t nLowerModules;
   unsigned int nPixels;
-  std::shared_ptr<SDL::ModulesBuffer<alpaka_common::DevHost>> modulesBuffers = nullptr;
+  std::shared_ptr<lst::ModulesBuffer<alpaka_common::DevHost>> modulesBuffers = nullptr;
   auto pLStoLayer = std::make_shared<MapPLStoLayer>();
   auto endcapGeometry = std::make_shared<EndcapGeometry>();
   auto tiltedGeometry = std::make_shared<TiltedGeometry>();
@@ -99,7 +99,7 @@ std::unique_ptr<SDL::LSTESData<alpaka_common::DevHost>> SDL::loadAndFillESHost()
 
   auto path =
       get_absolute_path_after_check_file_exists(trackLooperDir() + "/data/OT800_IT615_pt0.8/sensor_centroids.bin");
-  SDL::loadModulesFromFile(pLStoLayer.get(),
+  lst::loadModulesFromFile(pLStoLayer.get(),
                            path.c_str(),
                            nModules,
                            nLowerModules,

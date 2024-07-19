@@ -7,7 +7,7 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/CachedBufAlloc.h"
 #endif
 
-namespace SDL {
+namespace lst {
 
   // Buffer type for allocations where auto type can't be used.
   template <typename TDev, typename TData>
@@ -75,6 +75,6 @@ namespace SDL {
     static constexpr int kLayers = 7, kHits = 14;
   };
 
-}  //namespace SDL
+}  //namespace lst
 
 #endif

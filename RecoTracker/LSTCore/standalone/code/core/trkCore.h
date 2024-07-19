@@ -6,27 +6,27 @@
 #include "TSystem.h"
 #include "AnalysisConfig.h"
 #include "ModuleConnectionMap.h"
-#include "SDLMath.h"
+#include "lstMath.h"
 #include "Event.h"
 #include <numeric>
 #include <filesystem>
 
-using SDLEvent = SDL::Event<ALPAKA_ACCELERATOR_NAMESPACE::Acc3D>;
+using lstEvent = lst::Event<ALPAKA_ACCELERATOR_NAMESPACE::Acc3D>;
 
 // --------------------- ======================== ---------------------
 
 bool goodEvent();
-float runMiniDoublet(SDLEvent *event, int evt);
-float runSegment(SDLEvent *event);
-float runT4(SDLEvent *event);
-float runT4x(SDLEvent *event);
-float runpT4(SDLEvent *event);
-float runT3(SDLEvent *event);
-float runTrackCandidate(SDLEvent *event, bool no_pls_dupclean, bool tc_pls_triplets);
-float runQuintuplet(SDLEvent *event);
-float runPixelQuintuplet(SDLEvent *event);
-float runPixelLineSegment(SDLEvent *event, bool no_pls_dupclean);
-float runpT3(SDLEvent *event);
+float runMiniDoublet(lstEvent *event, int evt);
+float runSegment(lstEvent *event);
+float runT4(lstEvent *event);
+float runT4x(lstEvent *event);
+float runpT4(lstEvent *event);
+float runT3(lstEvent *event);
+float runTrackCandidate(lstEvent *event, bool no_pls_dupclean, bool tc_pls_triplets);
+float runQuintuplet(lstEvent *event);
+float runPixelQuintuplet(lstEvent *event);
+float runPixelLineSegment(lstEvent *event, bool no_pls_dupclean);
+float runpT3(lstEvent *event);
 
 // --------------------- ======================== ---------------------
 
@@ -40,9 +40,9 @@ int getDenomSimTrkType(std::vector<int> simidxs);
 // --------------------- ======================== ---------------------
 
 float drfracSimHitConsistentWithHelix(int isimtrk, int isimhitidx);
-float drfracSimHitConsistentWithHelix(SDLMath::Helix &helix, int isimhitidx);
+float drfracSimHitConsistentWithHelix(lstMath::Helix &helix, int isimhitidx);
 float distxySimHitConsistentWithHelix(int isimtrk, int isimhitidx);
-float distxySimHitConsistentWithHelix(SDLMath::Helix &helix, int isimhitidx);
+float distxySimHitConsistentWithHelix(lstMath::Helix &helix, int isimhitidx);
 TVector3 calculateR3FromPCA(const TVector3 &p3, const float dxy, const float dz);
 
 // --------------------- ======================== ---------------------
@@ -71,7 +71,7 @@ void addInputsToLineSegmentTrackingPreLoad(std::vector<std::vector<float>> &out_
                                            std::vector<std::vector<int8_t>> &out_pixelType_vec,
                                            std::vector<std::vector<char>> &out_isQuad_vec);
 
-float addInputsToEventPreLoad(SDLEvent *event,
+float addInputsToEventPreLoad(lstEvent *event,
                               bool useOMP,
                               std::vector<float> trkX,
                               std::vector<float> trkY,
@@ -107,7 +107,7 @@ void writeMetaData();
 // --------------------- ======================== ---------------------
 
 // DEPRECATED FUNCTION
-float addInputsToLineSegmentTrackingUsingExplicitMemory(SDLEvent &event);
-float addInputsToLineSegmentTracking(SDLEvent &event, bool useOMP);
+float addInputsToLineSegmentTrackingUsingExplicitMemory(lstEvent &event);
+float addInputsToLineSegmentTracking(lstEvent &event, bool useOMP);
 
 #endif

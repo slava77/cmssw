@@ -11,7 +11,7 @@
 #include <filesystem>
 #include <memory>
 
-namespace SDL {
+namespace lst {
 
   template <typename TDev>
   struct LSTESData {
@@ -41,22 +41,22 @@ namespace SDL {
 
   std::unique_ptr<LSTESData<alpaka_common::DevHost>> loadAndFillESHost();
 
-}  // namespace SDL
+}  // namespace lst
 
 namespace cms::alpakatools {
   template <>
-  struct CopyToDevice<SDL::LSTESData<alpaka_common::DevHost>> {
+  struct CopyToDevice<lst::LSTESData<alpaka_common::DevHost>> {
     template <typename TQueue>
-    static SDL::LSTESData<alpaka::Dev<TQueue>> copyAsync(TQueue& queue,
-                                                         SDL::LSTESData<alpaka_common::DevHost> const& srcData) {
-      auto deviceModulesBuffers = std::make_shared<SDL::ModulesBuffer<alpaka::Dev<TQueue>>>(
+    static lst::LSTESData<alpaka::Dev<TQueue>> copyAsync(TQueue& queue,
+                                                         lst::LSTESData<alpaka_common::DevHost> const& srcData) {
+      auto deviceModulesBuffers = std::make_shared<lst::ModulesBuffer<alpaka::Dev<TQueue>>>(
           alpaka::getDev(queue), srcData.nModules, srcData.nPixels);
       deviceModulesBuffers->copyFromSrc(queue, *srcData.modulesBuffers);
       auto deviceEndcapGeometryBuffers =
-          std::make_shared<SDL::EndcapGeometryBuffer<alpaka::Dev<TQueue>>>(alpaka::getDev(queue), srcData.nEndCapMap);
+          std::make_shared<lst::EndcapGeometryBuffer<alpaka::Dev<TQueue>>>(alpaka::getDev(queue), srcData.nEndCapMap);
       deviceEndcapGeometryBuffers->copyFromSrc(queue, *srcData.endcapGeometryBuffers);
 
-      return SDL::LSTESData<alpaka::Dev<TQueue>>(srcData.nModules,
+      return lst::LSTESData<alpaka::Dev<TQueue>>(srcData.nModules,
                                                  srcData.nLowerModules,
                                                  srcData.nPixels,
                                                  srcData.nEndCapMap,

@@ -6,7 +6,7 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-namespace SDL {
+namespace lst {
   struct pixelMap {
     uint16_t pixelModuleIndex;
 
@@ -28,6 +28,6 @@ namespace SDL {
           connectedPixelsIndexNeg(sizef),
           connectedPixelsSizesNeg(sizef) {}
   };
-}  // namespace SDL
+}  // namespace lst
 
 #endif

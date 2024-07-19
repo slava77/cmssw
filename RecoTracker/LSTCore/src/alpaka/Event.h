@@ -16,7 +16,7 @@
 
 #include "HeterogeneousCore/AlpakaInterface/interface/host.h"
 
-namespace SDL {
+namespace lst {
 
   using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 
@@ -202,5 +202,5 @@ namespace SDL {
     ModulesBuffer<DevHost>* getModules(bool isFull = false);
   };
 
-}  // namespace SDL
+}  // namespace lst
 #endif

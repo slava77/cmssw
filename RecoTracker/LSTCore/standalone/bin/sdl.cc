@@ -304,11 +304,11 @@ void run_sdl() {
     queues.push_back(Queue(devAcc));
   }
 
-  // Load various maps used in the SDL reconstruction
+  // Load various maps used in the lst reconstruction
   TStopwatch full_timer;
   full_timer.Start();
-  auto hostESData = SDL::loadAndFillESHost();
-  auto deviceESData = cms::alpakatools::CopyToDevice<SDL::LSTESData<DevHost>>::copyAsync(queues[0], *hostESData.get());
+  auto hostESData = lst::loadAndFillESHost();
+  auto deviceESData = cms::alpakatools::CopyToDevice<lst::LSTESData<DevHost>>::copyAsync(queues[0], *hostESData.get());
   float timeForMapLoading = full_timer.RealTime() * 1000;
 
   if (ana.do_write_ntuple) {
@@ -384,9 +384,9 @@ void run_sdl() {
 
   full_timer.Reset();
   full_timer.Start();
-  std::vector<SDL::Event<Acc3D> *> events;
+  std::vector<lst::Event<Acc3D> *> events;
   for (int s = 0; s < ana.streams; s++) {
-    SDL::Event<Acc3D> *event = new SDL::Event<Acc3D>(ana.verbose >= 2, queues[s], &deviceESData);
+    lst::Event<Acc3D> *event = new lst::Event<Acc3D>(ana.verbose >= 2, queues[s], &deviceESData);
     events.push_back(event);
   }
   float timeForEventCreation = full_timer.RealTime() * 1000;

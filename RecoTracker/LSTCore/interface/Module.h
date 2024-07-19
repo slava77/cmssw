@@ -3,7 +3,7 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-namespace SDL {
+namespace lst {
   enum SubDet { InnerPixel = 0, Barrel = 5, Endcap = 4 };
 
   enum Side { NegZ = 1, PosZ = 2, Center = 3 };
@@ -224,5 +224,5 @@ namespace SDL {
     inline Modules const* data() const { return &data_; }
   };
 
-}  // namespace SDL
+}  // namespace lst
 #endif

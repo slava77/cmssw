@@ -9,7 +9,7 @@ void createOutputBranches() {
 }
 
 //________________________________________________________________________________________________________________________________
-void fillOutputBranches(SDL::Event<Acc3D>* event) {
+void fillOutputBranches(lst::Event<Acc3D>* event) {
   setOutputBranches(event);
   setOptionalOutputBranches(event);
   if (ana.gnn_ntuple)
@@ -183,7 +183,7 @@ void createGnnNtupleBranches() {
 }
 
 //________________________________________________________________________________________________________________________________
-void setOutputBranches(SDL::Event<Acc3D>* event) {
+void setOutputBranches(lst::Event<Acc3D>* event) {
   // ============ Sim tracks =============
   int n_accepted_simtrk = 0;
   for (unsigned int isimtrk = 0; isimtrk < trk.sim_pt().size(); ++isimtrk) {
@@ -226,7 +226,7 @@ void setOutputBranches(SDL::Event<Acc3D>* event) {
   std::vector<std::vector<int>> tc_matched_simIdx;
 
   // ============ Track candidates =============
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {
     // Compute reco quantities of track candidate based on final object
@@ -278,7 +278,7 @@ void setOutputBranches(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setOptionalOutputBranches(SDL::Event<Acc3D>* event) {
+void setOptionalOutputBranches(lst::Event<Acc3D>* event) {
 #ifdef CUT_VALUE_DEBUG
 
   setPixelQuintupletOutputBranches(event);
@@ -289,12 +289,12 @@ void setOptionalOutputBranches(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setPixelQuintupletOutputBranches(SDL::Event<Acc3D>* event) {
+void setPixelQuintupletOutputBranches(lst::Event<Acc3D>* event) {
   // ============ pT5 =============
-  SDL::PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets()->data();
-  SDL::Quintuplets const* quintuplets = event->getQuintuplets()->data();
-  SDL::Segments const* segments = event->getSegments()->data();
-  SDL::Modules const* modules = event->getModules()->data();
+  lst::PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets()->data();
+  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  lst::Segments const* segments = event->getSegments()->data();
+  lst::Modules const* modules = event->getModules()->data();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
   unsigned int nPixelQuintuplets =
@@ -365,10 +365,10 @@ void setPixelQuintupletOutputBranches(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setQuintupletOutputBranches(SDL::Event<Acc3D>* event) {
-  SDL::Quintuplets const* quintuplets = event->getQuintuplets()->data();
-  SDL::ObjectRanges const* ranges = event->getRanges()->data();
-  SDL::Modules const* modules = event->getModules()->data();
+void setQuintupletOutputBranches(lst::Event<Acc3D>* event) {
+  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  lst::ObjectRanges const* ranges = event->getRanges()->data();
+  lst::Modules const* modules = event->getModules()->data();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
   std::vector<int> sim_t5_matched(n_accepted_simtrk);
@@ -378,7 +378,7 @@ void setQuintupletOutputBranches(SDL::Event<Acc3D>* event) {
     int nQuintuplets = quintuplets->nQuintuplets[lowerModuleIdx];
     for (unsigned int idx = 0; idx < nQuintuplets; idx++) {
       unsigned int quintupletIndex = ranges->quintupletModuleIndices[lowerModuleIdx] + idx;
-      float pt = __H2F(quintuplets->innerRadius[quintupletIndex]) * SDL::k2Rinv1GeVf * 2;
+      float pt = __H2F(quintuplets->innerRadius[quintupletIndex]) * lst::k2Rinv1GeVf * 2;
       float eta = __H2F(quintuplets->eta[quintupletIndex]);
       float phi = __H2F(quintuplets->phi[quintupletIndex]);
 
@@ -436,10 +436,10 @@ void setQuintupletOutputBranches(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setPixelTripletOutputBranches(SDL::Event<Acc3D>* event) {
-  SDL::PixelTriplets const* pixelTriplets = event->getPixelTriplets()->data();
-  SDL::Modules const* modules = event->getModules()->data();
-  SDL::Segments const* segments = event->getSegments()->data();
+void setPixelTripletOutputBranches(lst::Event<Acc3D>* event) {
+  lst::PixelTriplets const* pixelTriplets = event->getPixelTriplets()->data();
+  lst::Modules const* modules = event->getModules()->data();
+  lst::Segments const* segments = event->getSegments()->data();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
   unsigned int nPixelTriplets = *pixelTriplets->nPixelTriplets;
@@ -499,14 +499,14 @@ void setPixelTripletOutputBranches(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setGnnNtupleBranches(SDL::Event<Acc3D>* event) {
+void setGnnNtupleBranches(lst::Event<Acc3D>* event) {
   // Get relevant information
-  SDL::Segments const* segments = event->getSegments()->data();
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Hits const* hitsEvt = event->getHits()->data();
-  SDL::Modules const* modules = event->getModules()->data();
-  SDL::ObjectRanges const* ranges = event->getRanges()->data();
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::Segments const* segments = event->getSegments()->data();
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Hits const* hitsEvt = event->getHits()->data();
+  lst::Modules const* modules = event->getModules()->data();
+  lst::ObjectRanges const* ranges = event->getRanges()->data();
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
 
   std::set<unsigned int> mds_used_in_sg;
   std::map<unsigned int, unsigned int> md_index_map;
@@ -581,11 +581,11 @@ void setGnnNtupleBranches(SDL::Event<Acc3D>* event) {
       std::vector<unsigned int> hits = getHitsFromLS(event, sgIdx);
 
       // Computing line segment pt estimate (assuming beam spot is at zero)
-      SDLMath::Hit hitA(0, 0, 0);
-      SDLMath::Hit hitB(hitsEvt->xs[hits[0]], hitsEvt->ys[hits[0]], hitsEvt->zs[hits[0]]);
-      SDLMath::Hit hitC(hitsEvt->xs[hits[2]], hitsEvt->ys[hits[2]], hitsEvt->zs[hits[2]]);
-      SDLMath::Hit center = SDLMath::getCenterFromThreePoints(hitA, hitB, hitC);
-      float pt = SDLMath::ptEstimateFromRadius(center.rt());
+      lst_math::Hit hitA(0, 0, 0);
+      lst_math::Hit hitB(hitsEvt->xs[hits[0]], hitsEvt->ys[hits[0]], hitsEvt->zs[hits[0]]);
+      lst_math::Hit hitC(hitsEvt->xs[hits[2]], hitsEvt->ys[hits[2]], hitsEvt->zs[hits[2]]);
+      lst_math::Hit center = lst_math::getCenterFromThreePoints(hitA, hitB, hitC);
+      float pt = lst_math::ptEstimateFromRadius(center.rt());
       float eta = hitC.eta();
       float phi = hitB.phi();
 
@@ -621,7 +621,7 @@ void setGnnNtupleBranches(SDL::Event<Acc3D>* event) {
       sg_index_map[sgIdx] = ana.tx->getBranch<std::vector<int>>("LS_isFake").size() - 1;
 
       // // T5 eta and phi are computed using outer and innermost hits
-      // SDLMath::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
+      // lstMath::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
       // const float phi = hitA.phi();
       // const float eta = hitA.eta();
     }
@@ -640,10 +640,10 @@ void setGnnNtupleBranches(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setGnnNtupleMiniDoublet(SDL::Event<Acc3D>* event, unsigned int MD) {
+void setGnnNtupleMiniDoublet(lst::Event<Acc3D>* event, unsigned int MD) {
   // Get relevant information
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Hits const* hitsEvt = event->getHits()->data();
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Hits const* hitsEvt = event->getHits()->data();
 
   // Get the hit indices
   unsigned int hit0 = miniDoublets->anchorHitIndices[MD];
@@ -680,10 +680,10 @@ void setGnnNtupleMiniDoublet(SDL::Event<Acc3D>* event, unsigned int MD) {
   float dphichange = miniDoublets->dphichanges[MD];
 
   // Computing pt
-  float pt = hit0_r * SDL::k2Rinv1GeVf / sin(dphichange);
+  float pt = hit0_r * lst::k2Rinv1GeVf / sin(dphichange);
 
   // T5 eta and phi are computed using outer and innermost hits
-  SDLMath::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
+  lstMath::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
   const float phi = hitA.phi();
   const float eta = hitA.eta();
 
@@ -708,10 +708,10 @@ void setGnnNtupleMiniDoublet(SDL::Event<Acc3D>* event, unsigned int MD) {
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(SDL::Event<Acc3D>* event,
+std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(lst::Event<Acc3D>* event,
                                                                                 unsigned int idx) {
   // Get the type of the track candidate
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   short type = trackCandidates->trackCandidateType[idx];
 
   enum { pT5 = 7, pT3 = 5, T5 = 4, pLS = 8 };
@@ -742,12 +742,12 @@ std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(SDL::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(lst::Event<Acc3D>* event,
                                                                                                unsigned int idx) {
   // Get relevant information
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  SDL::Quintuplets const* quintuplets = event->getQuintuplets()->data();
-  SDL::Segments const* segments = event->getSegments()->data();
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  lst::Segments const* segments = event->getSegments()->data();
 
   //
   // pictorial representation of a pT5
@@ -843,7 +843,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   const float pt_pLS = segments->ptIn[pLS];
   const float eta_pLS = segments->eta[pLS];
   const float phi_pLS = segments->phi[pLS];
-  float pt_T5 = __H2F(quintuplets->innerRadius[T5Index]) * 2 * SDL::k2Rinv1GeVf;
+  float pt_T5 = __H2F(quintuplets->innerRadius[T5Index]) * 2 * lst::k2Rinv1GeVf;
   const float pt = (pt_T5 + pt_pLS) / 2;
 
   // Form the hit idx/type std::vector
@@ -854,12 +854,12 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(SDL::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(lst::Event<Acc3D>* event,
                                                                                                unsigned int idx) {
   // Get relevant information
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  SDL::Triplets const* triplets = event->getTriplets()->data();
-  SDL::Segments const* segments = event->getSegments()->data();
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::Triplets const* triplets = event->getTriplets()->data();
+  lst::Segments const* segments = event->getSegments()->data();
 
   //
   // pictorial representation of a pT3
@@ -876,7 +876,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   const float pt_pLS = segments->ptIn[pLS];
   const float eta_pLS = segments->eta[pLS];
   const float phi_pLS = segments->phi[pLS];
-  float pt_T3 = triplets->circleRadius[T3] * 2 * SDL::k2Rinv1GeVf;
+  float pt_T3 = triplets->circleRadius[T3] * 2 * lst::k2Rinv1GeVf;
 
   // average pt
   const float pt = (pt_pLS + pt_T3) / 2;
@@ -889,10 +889,10 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(SDL::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(lst::Event<Acc3D>* event,
                                                                                               unsigned int idx) {
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  SDL::Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
   unsigned int T5 = trackCandidates->directObjectIndices[idx];
   std::vector<unsigned int> hits = getHitsFromT5(event, T5);
 
@@ -908,11 +908,11 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   unsigned int Hit_8 = hits[8];
 
   // T5 radius is average of the inner and outer radius
-  const float pt = quintuplets->innerRadius[T5] * SDL::k2Rinv1GeVf * 2;
+  const float pt = quintuplets->innerRadius[T5] * lst::k2Rinv1GeVf * 2;
 
   // T5 eta and phi are computed using outer and innermost hits
-  SDLMath::Hit hitA(trk.ph2_x()[Hit_0], trk.ph2_y()[Hit_0], trk.ph2_z()[Hit_0]);
-  SDLMath::Hit hitB(trk.ph2_x()[Hit_8], trk.ph2_y()[Hit_8], trk.ph2_z()[Hit_8]);
+  lstMath::Hit hitA(trk.ph2_x()[Hit_0], trk.ph2_y()[Hit_0], trk.ph2_z()[Hit_0]);
+  lstMath::Hit hitB(trk.ph2_x()[Hit_8], trk.ph2_y()[Hit_8], trk.ph2_z()[Hit_8]);
   const float phi = hitA.phi();
   const float eta = hitB.eta();
 
@@ -923,10 +923,10 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(SDL::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(lst::Event<Acc3D>* event,
                                                                                                unsigned int idx) {
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  SDL::Segments const* segments = event->getSegments()->data();
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::Segments const* segments = event->getSegments()->data();
 
   // Getting pLS index
   unsigned int pLS = trackCandidates->directObjectIndices[idx];
@@ -944,9 +944,9 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-void printHitMultiplicities(SDL::Event<Acc3D>* event) {
-  SDL::Modules const* modules = event->getModules()->data();
-  SDL::ObjectRanges const* ranges = event->getRanges()->data();
+void printHitMultiplicities(lst::Event<Acc3D>* event) {
+  lst::Modules const* modules = event->getModules()->data();
+  lst::ObjectRanges const* ranges = event->getRanges()->data();
 
   int nHits = 0;
   for (unsigned int idx = 0; idx <= *(modules->nLowerModules);
@@ -959,9 +959,9 @@ void printHitMultiplicities(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printMiniDoubletMultiplicities(SDL::Event<Acc3D>* event) {
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Modules const* modules = event->getModules()->data();
+void printMiniDoubletMultiplicities(lst::Event<Acc3D>* event) {
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Modules const* modules = event->getModules()->data();
 
   int nMiniDoublets = 0;
   int totOccupancyMiniDoublets = 0;
@@ -978,7 +978,7 @@ void printMiniDoubletMultiplicities(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printAllObjects(SDL::Event<Acc3D>* event) {
+void printAllObjects(lst::Event<Acc3D>* event) {
   printMDs(event);
   printLSs(event);
   printpLSs(event);
@@ -986,11 +986,11 @@ void printAllObjects(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printMDs(SDL::Event<Acc3D>* event) {
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Hits const* hitsEvt = event->getHits()->data();
-  SDL::Modules const* modules = event->getModules()->data();
-  SDL::ObjectRanges const* ranges = event->getRanges()->data();
+void printMDs(lst::Event<Acc3D>* event) {
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Hits const* hitsEvt = event->getHits()->data();
+  lst::Modules const* modules = event->getModules()->data();
+  lst::ObjectRanges const* ranges = event->getRanges()->data();
 
   // Then obtain the lower module index
   for (unsigned int idx = 0; idx <= *(modules->nLowerModules); ++idx) {
@@ -1008,12 +1008,12 @@ void printMDs(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printLSs(SDL::Event<Acc3D>* event) {
-  SDL::Segments const* segments = event->getSegments()->data();
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Hits const* hitsEvt = event->getHits()->data();
-  SDL::Modules const* modules = event->getModules()->data();
-  SDL::ObjectRanges const* ranges = event->getRanges()->data();
+void printLSs(lst::Event<Acc3D>* event) {
+  lst::Segments const* segments = event->getSegments()->data();
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Hits const* hitsEvt = event->getHits()->data();
+  lst::Modules const* modules = event->getModules()->data();
+  lst::ObjectRanges const* ranges = event->getRanges()->data();
 
   int nSegments = 0;
   for (unsigned int i = 0; i < *(modules->nLowerModules); ++i) {
@@ -1040,12 +1040,12 @@ void printLSs(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printpLSs(SDL::Event<Acc3D>* event) {
-  SDL::Segments const* segments = event->getSegments()->data();
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Hits const* hitsEvt = event->getHits()->data();
-  SDL::Modules const* modules = event->getModules()->data();
-  SDL::ObjectRanges const* ranges = event->getRanges()->data();
+void printpLSs(lst::Event<Acc3D>* event) {
+  lst::Segments const* segments = event->getSegments()->data();
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Hits const* hitsEvt = event->getHits()->data();
+  lst::Modules const* modules = event->getModules()->data();
+  lst::ObjectRanges const* ranges = event->getRanges()->data();
 
   unsigned int i = *(modules->nLowerModules);
   unsigned int idx = i;  //modules->lowerModuleIndices[i];
@@ -1070,12 +1070,12 @@ void printpLSs(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printT3s(SDL::Event<Acc3D>* event) {
-  SDL::Triplets const* triplets = event->getTriplets()->data();
-  SDL::Segments const* segments = event->getSegments()->data();
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Hits const* hitsEvt = event->getHits()->data();
-  SDL::Modules const* modules = event->getModules()->data();
+void printT3s(lst::Event<Acc3D>* event) {
+  lst::Triplets const* triplets = event->getTriplets()->data();
+  lst::Segments const* segments = event->getSegments()->data();
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Hits const* hitsEvt = event->getHits()->data();
+  lst::Modules const* modules = event->getModules()->data();
   int nTriplets = 0;
   for (unsigned int i = 0; i < *(modules->nLowerModules); ++i) {
     // unsigned int idx = modules->lowerModuleIndices[i];
@@ -1112,13 +1112,13 @@ void printT3s(SDL::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void debugPrintOutlierMultiplicities(SDL::Event<Acc3D>* event) {
-  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  SDL::Triplets const* triplets = event->getTriplets()->data();
-  SDL::Segments const* segments = event->getSegments()->data();
-  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  SDL::Modules const* modules = event->getModules()->data();
-  SDL::ObjectRanges const* ranges = event->getRanges()->data();
+void debugPrintOutlierMultiplicities(lst::Event<Acc3D>* event) {
+  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  lst::Triplets const* triplets = event->getTriplets()->data();
+  lst::Segments const* segments = event->getSegments()->data();
+  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  lst::Modules const* modules = event->getModules()->data();
+  lst::ObjectRanges const* ranges = event->getRanges()->data();
   //int nTrackCandidates = 0;
   for (unsigned int idx = 0; idx <= *(modules->nLowerModules); ++idx) {
     if (trackCandidates->nTrackCandidates[idx] > 50000) {
