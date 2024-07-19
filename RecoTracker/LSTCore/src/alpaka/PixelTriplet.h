@@ -8,11 +8,12 @@
 #include "Segment.h"
 #include "MiniDoublet.h"
 #include "Hit.h"
+#include "ObjectRanges.h"
 #include "Quintuplet.h"
 
 namespace SDL {
   // One pixel segment, one outer tracker triplet!
-  struct pixelTriplets {
+  struct PixelTriplets {
     unsigned int* pixelSegmentIndices;
     unsigned int* tripletIndices;
     unsigned int* nPixelTriplets;
@@ -41,35 +42,35 @@ namespace SDL {
     FPX* centerY;
 
     template <typename TBuff>
-    void setData(TBuff& pixelTripletsBuffer) {
-      pixelSegmentIndices = alpaka::getPtrNative(pixelTripletsBuffer.pixelSegmentIndices_buf);
-      tripletIndices = alpaka::getPtrNative(pixelTripletsBuffer.tripletIndices_buf);
-      nPixelTriplets = alpaka::getPtrNative(pixelTripletsBuffer.nPixelTriplets_buf);
-      totOccupancyPixelTriplets = alpaka::getPtrNative(pixelTripletsBuffer.totOccupancyPixelTriplets_buf);
-      pixelRadius = alpaka::getPtrNative(pixelTripletsBuffer.pixelRadius_buf);
-      tripletRadius = alpaka::getPtrNative(pixelTripletsBuffer.tripletRadius_buf);
-      pt = alpaka::getPtrNative(pixelTripletsBuffer.pt_buf);
-      eta = alpaka::getPtrNative(pixelTripletsBuffer.eta_buf);
-      phi = alpaka::getPtrNative(pixelTripletsBuffer.phi_buf);
-      eta_pix = alpaka::getPtrNative(pixelTripletsBuffer.eta_pix_buf);
-      phi_pix = alpaka::getPtrNative(pixelTripletsBuffer.phi_pix_buf);
-      score = alpaka::getPtrNative(pixelTripletsBuffer.score_buf);
-      isDup = alpaka::getPtrNative(pixelTripletsBuffer.isDup_buf);
-      partOfPT5 = alpaka::getPtrNative(pixelTripletsBuffer.partOfPT5_buf);
-      logicalLayers = alpaka::getPtrNative(pixelTripletsBuffer.logicalLayers_buf);
-      hitIndices = alpaka::getPtrNative(pixelTripletsBuffer.hitIndices_buf);
-      lowerModuleIndices = alpaka::getPtrNative(pixelTripletsBuffer.lowerModuleIndices_buf);
-      centerX = alpaka::getPtrNative(pixelTripletsBuffer.centerX_buf);
-      centerY = alpaka::getPtrNative(pixelTripletsBuffer.centerY_buf);
-      pixelRadiusError = alpaka::getPtrNative(pixelTripletsBuffer.pixelRadiusError_buf);
-      rPhiChiSquared = alpaka::getPtrNative(pixelTripletsBuffer.rPhiChiSquared_buf);
-      rPhiChiSquaredInwards = alpaka::getPtrNative(pixelTripletsBuffer.rPhiChiSquaredInwards_buf);
-      rzChiSquared = alpaka::getPtrNative(pixelTripletsBuffer.rzChiSquared_buf);
+    void setData(TBuff& buf) {
+      pixelSegmentIndices = alpaka::getPtrNative(buf.pixelSegmentIndices_buf);
+      tripletIndices = alpaka::getPtrNative(buf.tripletIndices_buf);
+      nPixelTriplets = alpaka::getPtrNative(buf.nPixelTriplets_buf);
+      totOccupancyPixelTriplets = alpaka::getPtrNative(buf.totOccupancyPixelTriplets_buf);
+      pixelRadius = alpaka::getPtrNative(buf.pixelRadius_buf);
+      tripletRadius = alpaka::getPtrNative(buf.tripletRadius_buf);
+      pt = alpaka::getPtrNative(buf.pt_buf);
+      eta = alpaka::getPtrNative(buf.eta_buf);
+      phi = alpaka::getPtrNative(buf.phi_buf);
+      eta_pix = alpaka::getPtrNative(buf.eta_pix_buf);
+      phi_pix = alpaka::getPtrNative(buf.phi_pix_buf);
+      score = alpaka::getPtrNative(buf.score_buf);
+      isDup = alpaka::getPtrNative(buf.isDup_buf);
+      partOfPT5 = alpaka::getPtrNative(buf.partOfPT5_buf);
+      logicalLayers = alpaka::getPtrNative(buf.logicalLayers_buf);
+      hitIndices = alpaka::getPtrNative(buf.hitIndices_buf);
+      lowerModuleIndices = alpaka::getPtrNative(buf.lowerModuleIndices_buf);
+      centerX = alpaka::getPtrNative(buf.centerX_buf);
+      centerY = alpaka::getPtrNative(buf.centerY_buf);
+      pixelRadiusError = alpaka::getPtrNative(buf.pixelRadiusError_buf);
+      rPhiChiSquared = alpaka::getPtrNative(buf.rPhiChiSquared_buf);
+      rPhiChiSquaredInwards = alpaka::getPtrNative(buf.rPhiChiSquaredInwards_buf);
+      rzChiSquared = alpaka::getPtrNative(buf.rzChiSquared_buf);
     }
   };
 
   template <typename TDev>
-  struct pixelTripletsBuffer : pixelTriplets {
+  struct PixelTripletsBuffer {
     Buf<TDev, unsigned int> pixelSegmentIndices_buf;
     Buf<TDev, unsigned int> tripletIndices_buf;
     Buf<TDev, unsigned int> nPixelTriplets_buf;
@@ -94,8 +95,10 @@ namespace SDL {
     Buf<TDev, float> rPhiChiSquaredInwards_buf;
     Buf<TDev, float> rzChiSquared_buf;
 
+    PixelTriplets data_;
+
     template <typename TQueue, typename TDevAcc>
-    pixelTripletsBuffer(unsigned int maxPixelTriplets, TDevAcc const& devAccIn, TQueue& queue)
+    PixelTripletsBuffer(unsigned int maxPixelTriplets, TDevAcc const& devAccIn, TQueue& queue)
         : pixelSegmentIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelTriplets, queue)),
           tripletIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelTriplets, queue)),
           nPixelTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
@@ -124,13 +127,16 @@ namespace SDL {
       alpaka::memset(queue, partOfPT5_buf, false);
       alpaka::wait(queue);
     }
+
+    inline PixelTriplets const* data() const { return &data_; }
+    inline void setData(PixelTripletsBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelTripletToMemory(struct SDL::modules& modulesInGPU,
-                                                              struct SDL::miniDoublets& mdsInGPU,
-                                                              struct SDL::segments& segmentsInGPU,
-                                                              struct SDL::triplets& tripletsInGPU,
-                                                              struct SDL::pixelTriplets& pixelTripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelTripletToMemory(struct SDL::Modules& modulesInGPU,
+                                                              struct SDL::MiniDoublets& mdsInGPU,
+                                                              struct SDL::Segments& segmentsInGPU,
+                                                              struct SDL::Triplets& tripletsInGPU,
+                                                              struct SDL::PixelTriplets& pixelTripletsInGPU,
                                                               unsigned int pixelSegmentIndex,
                                                               unsigned int tripletIndex,
                                                               float pixelRadius,
@@ -208,10 +214,10 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runPixelTrackletDefaultAlgopT3(TAcc const& acc,
-                                                                     struct SDL::modules& modulesInGPU,
-                                                                     struct SDL::objectRanges& rangesInGPU,
-                                                                     struct SDL::miniDoublets& mdsInGPU,
-                                                                     struct SDL::segments& segmentsInGPU,
+                                                                     struct SDL::Modules& modulesInGPU,
+                                                                     struct SDL::ObjectRanges& rangesInGPU,
+                                                                     struct SDL::MiniDoublets& mdsInGPU,
+                                                                     struct SDL::Segments& segmentsInGPU,
                                                                      uint16_t& pixelLowerModuleIndex,
                                                                      uint16_t& outerInnerLowerModuleIndex,
                                                                      uint16_t& outerOuterLowerModuleIndex,
@@ -317,7 +323,7 @@ namespace SDL {
     return false;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RZChiSquaredCuts(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RZChiSquaredCuts(struct SDL::Modules& modulesInGPU,
                                                               uint16_t& lowerModuleIndex1,
                                                               uint16_t& lowerModuleIndex2,
                                                               uint16_t& lowerModuleIndex3,
@@ -420,7 +426,7 @@ namespace SDL {
   //TODO: merge this one and the pT5 function later into a single function
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT3RPhiChiSquared(TAcc const& acc,
-                                                                struct SDL::modules& modulesInGPU,
+                                                                struct SDL::Modules& modulesInGPU,
                                                                 uint16_t* lowerModuleIndices,
                                                                 float& g,
                                                                 float& f,
@@ -490,7 +496,7 @@ namespace SDL {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT3RPhiChiSquaredInwards(
-      struct SDL::modules& modulesInGPU, float& g, float& f, float& r, float* xPix, float* yPix) {
+      struct SDL::Modules& modulesInGPU, float& g, float& f, float& r, float* xPix, float* yPix) {
     float residual = (xPix[0] - g) * (xPix[0] - g) + (yPix[0] - f) * (yPix[0] - f) - r * r;
     float chiSquared = residual * residual;
     residual = (xPix[1] - g) * (xPix[1] - g) + (yPix[1] - f) * (yPix[1] - f) - r * r;
@@ -501,7 +507,7 @@ namespace SDL {
   };
 
   //90pc threshold
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RPhiChiSquaredCuts(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RPhiChiSquaredCuts(struct SDL::Modules& modulesInGPU,
                                                                 uint16_t& lowerModuleIndex1,
                                                                 uint16_t& lowerModuleIndex2,
                                                                 uint16_t& lowerModuleIndex3,
@@ -548,7 +554,7 @@ namespace SDL {
     return true;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RPhiChiSquaredInwardsCuts(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RPhiChiSquaredInwardsCuts(struct SDL::Modules& modulesInGPU,
                                                                        uint16_t& lowerModuleIndex1,
                                                                        uint16_t& lowerModuleIndex2,
                                                                        uint16_t& lowerModuleIndex3,
@@ -717,7 +723,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRadiusCriterion(TAcc const& acc,
-                                                          struct SDL::modules const& modulesInGPU,
+                                                          struct SDL::Modules const& modulesInGPU,
                                                           float const& pixelRadius,
                                                           float const& pixelRadiusError,
                                                           float const& tripletRadius,
@@ -737,7 +743,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT3RZChiSquared(TAcc const& acc,
-                                                              struct SDL::modules const& modulesInGPU,
+                                                              struct SDL::Modules const& modulesInGPU,
                                                               const uint16_t* lowerModuleIndices,
                                                               const float* rtPix,
                                                               const float* xPix,
@@ -826,11 +832,11 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runPixelTripletDefaultAlgo(TAcc const& acc,
-                                                                 struct SDL::modules& modulesInGPU,
-                                                                 struct SDL::objectRanges& rangesInGPU,
-                                                                 struct SDL::miniDoublets& mdsInGPU,
-                                                                 struct SDL::segments& segmentsInGPU,
-                                                                 struct SDL::triplets& tripletsInGPU,
+                                                                 struct SDL::Modules& modulesInGPU,
+                                                                 struct SDL::ObjectRanges& rangesInGPU,
+                                                                 struct SDL::MiniDoublets& mdsInGPU,
+                                                                 struct SDL::Segments& segmentsInGPU,
+                                                                 struct SDL::Triplets& tripletsInGPU,
                                                                  unsigned int& pixelSegmentIndex,
                                                                  unsigned int tripletIndex,
                                                                  float& pixelRadius,
@@ -1023,12 +1029,12 @@ namespace SDL {
   struct createPixelTripletsInGPUFromMapv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::objectRanges rangesInGPU,
-                                  struct SDL::miniDoublets mdsInGPU,
-                                  struct SDL::segments segmentsInGPU,
-                                  struct SDL::triplets tripletsInGPU,
-                                  struct SDL::pixelTriplets pixelTripletsInGPU,
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU,
+                                  struct SDL::MiniDoublets mdsInGPU,
+                                  struct SDL::Segments segmentsInGPU,
+                                  struct SDL::Triplets tripletsInGPU,
+                                  struct SDL::PixelTriplets pixelTripletsInGPU,
                                   unsigned int* connectedPixelSize,
                                   unsigned int* connectedPixelIndex,
                                   unsigned int nPixelSegments) const {
@@ -1259,10 +1265,10 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPBB(TAcc const& acc,
-                                                                struct SDL::modules& modulesInGPU,
-                                                                struct SDL::objectRanges& rangesInGPU,
-                                                                struct SDL::miniDoublets& mdsInGPU,
-                                                                struct SDL::segments& segmentsInGPU,
+                                                                struct SDL::Modules& modulesInGPU,
+                                                                struct SDL::ObjectRanges& rangesInGPU,
+                                                                struct SDL::MiniDoublets& mdsInGPU,
+                                                                struct SDL::Segments& segmentsInGPU,
                                                                 uint16_t& pixelModuleIndex,
                                                                 uint16_t& outerInnerLowerModuleIndex,
                                                                 uint16_t& outerOuterLowerModuleIndex,
@@ -1538,10 +1544,10 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPEE(TAcc const& acc,
-                                                                struct SDL::modules& modulesInGPU,
-                                                                struct SDL::objectRanges& rangesInGPU,
-                                                                struct SDL::miniDoublets& mdsInGPU,
-                                                                struct SDL::segments& segmentsInGPU,
+                                                                struct SDL::Modules& modulesInGPU,
+                                                                struct SDL::ObjectRanges& rangesInGPU,
+                                                                struct SDL::MiniDoublets& mdsInGPU,
+                                                                struct SDL::Segments& segmentsInGPU,
                                                                 uint16_t& pixelModuleIndex,
                                                                 uint16_t& outerInnerLowerModuleIndex,
                                                                 uint16_t& outerOuterLowerModuleIndex,
@@ -1838,7 +1844,7 @@ namespace SDL {
 #include "PixelTriplet.h"
 
 namespace SDL {
-  struct pixelQuintuplets {
+  struct PixelQuintuplets {
     unsigned int* pixelIndices;
     unsigned int* T5Indices;
     unsigned int* nPixelQuintuplets;
@@ -1859,30 +1865,30 @@ namespace SDL {
     float* rPhiChiSquaredInwards;
 
     template <typename TBuff>
-    void setData(TBuff& pixelQuintupletsBuffer) {
-      pixelIndices = alpaka::getPtrNative(pixelQuintupletsBuffer.pixelIndices_buf);
-      T5Indices = alpaka::getPtrNative(pixelQuintupletsBuffer.T5Indices_buf);
-      nPixelQuintuplets = alpaka::getPtrNative(pixelQuintupletsBuffer.nPixelQuintuplets_buf);
-      totOccupancyPixelQuintuplets = alpaka::getPtrNative(pixelQuintupletsBuffer.totOccupancyPixelQuintuplets_buf);
-      isDup = alpaka::getPtrNative(pixelQuintupletsBuffer.isDup_buf);
-      score = alpaka::getPtrNative(pixelQuintupletsBuffer.score_buf);
-      eta = alpaka::getPtrNative(pixelQuintupletsBuffer.eta_buf);
-      phi = alpaka::getPtrNative(pixelQuintupletsBuffer.phi_buf);
-      logicalLayers = alpaka::getPtrNative(pixelQuintupletsBuffer.logicalLayers_buf);
-      hitIndices = alpaka::getPtrNative(pixelQuintupletsBuffer.hitIndices_buf);
-      lowerModuleIndices = alpaka::getPtrNative(pixelQuintupletsBuffer.lowerModuleIndices_buf);
-      pixelRadius = alpaka::getPtrNative(pixelQuintupletsBuffer.pixelRadius_buf);
-      quintupletRadius = alpaka::getPtrNative(pixelQuintupletsBuffer.quintupletRadius_buf);
-      centerX = alpaka::getPtrNative(pixelQuintupletsBuffer.centerX_buf);
-      centerY = alpaka::getPtrNative(pixelQuintupletsBuffer.centerY_buf);
-      rzChiSquared = alpaka::getPtrNative(pixelQuintupletsBuffer.rzChiSquared_buf);
-      rPhiChiSquared = alpaka::getPtrNative(pixelQuintupletsBuffer.rPhiChiSquared_buf);
-      rPhiChiSquaredInwards = alpaka::getPtrNative(pixelQuintupletsBuffer.rPhiChiSquaredInwards_buf);
+    void setData(TBuff& buf) {
+      pixelIndices = alpaka::getPtrNative(buf.pixelIndices_buf);
+      T5Indices = alpaka::getPtrNative(buf.T5Indices_buf);
+      nPixelQuintuplets = alpaka::getPtrNative(buf.nPixelQuintuplets_buf);
+      totOccupancyPixelQuintuplets = alpaka::getPtrNative(buf.totOccupancyPixelQuintuplets_buf);
+      isDup = alpaka::getPtrNative(buf.isDup_buf);
+      score = alpaka::getPtrNative(buf.score_buf);
+      eta = alpaka::getPtrNative(buf.eta_buf);
+      phi = alpaka::getPtrNative(buf.phi_buf);
+      logicalLayers = alpaka::getPtrNative(buf.logicalLayers_buf);
+      hitIndices = alpaka::getPtrNative(buf.hitIndices_buf);
+      lowerModuleIndices = alpaka::getPtrNative(buf.lowerModuleIndices_buf);
+      pixelRadius = alpaka::getPtrNative(buf.pixelRadius_buf);
+      quintupletRadius = alpaka::getPtrNative(buf.quintupletRadius_buf);
+      centerX = alpaka::getPtrNative(buf.centerX_buf);
+      centerY = alpaka::getPtrNative(buf.centerY_buf);
+      rzChiSquared = alpaka::getPtrNative(buf.rzChiSquared_buf);
+      rPhiChiSquared = alpaka::getPtrNative(buf.rPhiChiSquared_buf);
+      rPhiChiSquaredInwards = alpaka::getPtrNative(buf.rPhiChiSquaredInwards_buf);
     }
   };
 
   template <typename TDev>
-  struct pixelQuintupletsBuffer : pixelQuintuplets {
+  struct PixelQuintupletsBuffer {
     Buf<TDev, unsigned int> pixelIndices_buf;
     Buf<TDev, unsigned int> T5Indices_buf;
     Buf<TDev, unsigned int> nPixelQuintuplets_buf;
@@ -1902,8 +1908,10 @@ namespace SDL {
     Buf<TDev, float> rPhiChiSquared_buf;
     Buf<TDev, float> rPhiChiSquaredInwards_buf;
 
+    PixelQuintuplets data_;
+
     template <typename TQueue, typename TDevAcc>
-    pixelQuintupletsBuffer(unsigned int maxPixelQuintuplets, TDevAcc const& devAccIn, TQueue& queue)
+    PixelQuintupletsBuffer(unsigned int maxPixelQuintuplets, TDevAcc const& devAccIn, TQueue& queue)
         : pixelIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelQuintuplets, queue)),
           T5Indices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelQuintuplets, queue)),
           nPixelQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
@@ -1926,13 +1934,16 @@ namespace SDL {
       alpaka::memset(queue, totOccupancyPixelQuintuplets_buf, 0u);
       alpaka::wait(queue);
     }
+
+    inline PixelQuintuplets const* data() const { return &data_; }
+    inline void setData(PixelQuintupletsBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelQuintupletToMemory(struct SDL::modules& modulesInGPU,
-                                                                 struct SDL::miniDoublets& mdsInGPU,
-                                                                 struct SDL::segments& segmentsInGPU,
-                                                                 struct SDL::quintuplets& quintupletsInGPU,
-                                                                 struct SDL::pixelQuintuplets& pixelQuintupletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelQuintupletToMemory(struct SDL::Modules& modulesInGPU,
+                                                                 struct SDL::MiniDoublets& mdsInGPU,
+                                                                 struct SDL::Segments& segmentsInGPU,
+                                                                 struct SDL::Quintuplets& quintupletsInGPU,
+                                                                 struct SDL::PixelQuintuplets& pixelQuintupletsInGPU,
                                                                  unsigned int pixelIndex,
                                                                  unsigned int T5Index,
                                                                  unsigned int pixelQuintupletIndex,
@@ -2024,7 +2035,7 @@ namespace SDL {
     pixelQuintupletsInGPU.rPhiChiSquaredInwards[pixelQuintupletIndex] = rPhiChiSquaredInwards;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RZChiSquaredCuts(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RZChiSquaredCuts(struct SDL::Modules& modulesInGPU,
                                                               uint16_t& lowerModuleIndex1,
                                                               uint16_t& lowerModuleIndex2,
                                                               uint16_t& lowerModuleIndex3,
@@ -2114,7 +2125,7 @@ namespace SDL {
     return true;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredCuts(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredCuts(struct SDL::Modules& modulesInGPU,
                                                                 uint16_t& lowerModuleIndex1,
                                                                 uint16_t& lowerModuleIndex2,
                                                                 uint16_t& lowerModuleIndex3,
@@ -2252,7 +2263,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void computeSigmasForRegression_pT5(TAcc const& acc,
-                                                                     SDL::modules& modulesInGPU,
+                                                                     SDL::Modules& modulesInGPU,
                                                                      const uint16_t* lowerModuleIndices,
                                                                      float* delta1,
                                                                      float* delta2,
@@ -2338,7 +2349,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT5RPhiChiSquared(TAcc const& acc,
-                                                                struct SDL::modules& modulesInGPU,
+                                                                struct SDL::Modules& modulesInGPU,
                                                                 uint16_t* lowerModuleIndices,
                                                                 float& g,
                                                                 float& f,
@@ -2360,7 +2371,7 @@ namespace SDL {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT5RPhiChiSquaredInwards(
-      struct SDL::modules& modulesInGPU, float& g, float& f, float& r, float* xPix, float* yPix) {
+      struct SDL::Modules& modulesInGPU, float& g, float& f, float& r, float* xPix, float* yPix) {
     /*
         Using the computed regression center and radius, compute the chi squared for the pixels
         */
@@ -2374,7 +2385,7 @@ namespace SDL {
     return chiSquared;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredInwardsCuts(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredInwardsCuts(struct SDL::Modules& modulesInGPU,
                                                                        uint16_t& lowerModuleIndex1,
                                                                        uint16_t& lowerModuleIndex2,
                                                                        uint16_t& lowerModuleIndex3,
@@ -2466,12 +2477,12 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runPixelQuintupletDefaultAlgo(TAcc const& acc,
-                                                                    struct SDL::modules& modulesInGPU,
-                                                                    struct SDL::objectRanges& rangesInGPU,
-                                                                    struct SDL::miniDoublets& mdsInGPU,
-                                                                    struct SDL::segments& segmentsInGPU,
-                                                                    struct SDL::triplets& tripletsInGPU,
-                                                                    struct SDL::quintuplets& quintupletsInGPU,
+                                                                    struct SDL::Modules& modulesInGPU,
+                                                                    struct SDL::ObjectRanges& rangesInGPU,
+                                                                    struct SDL::MiniDoublets& mdsInGPU,
+                                                                    struct SDL::Segments& segmentsInGPU,
+                                                                    struct SDL::Triplets& tripletsInGPU,
+                                                                    struct SDL::Quintuplets& quintupletsInGPU,
                                                                     unsigned int& pixelSegmentIndex,
                                                                     unsigned int& quintupletIndex,
                                                                     float& rzChiSquared,
@@ -2614,7 +2625,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT5RZChiSquared(TAcc const& acc,
-                                                              struct SDL::modules& modulesInGPU,
+                                                              struct SDL::Modules& modulesInGPU,
                                                               uint16_t* lowerModuleIndices,
                                                               float* rtPix,
                                                               float* zPix,
@@ -2659,16 +2670,16 @@ namespace SDL {
   struct createPixelQuintupletsInGPUFromMapv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::miniDoublets mdsInGPU,
-                                  struct SDL::segments segmentsInGPU,
-                                  struct SDL::triplets tripletsInGPU,
-                                  struct SDL::quintuplets quintupletsInGPU,
-                                  struct SDL::pixelQuintuplets pixelQuintupletsInGPU,
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::MiniDoublets mdsInGPU,
+                                  struct SDL::Segments segmentsInGPU,
+                                  struct SDL::Triplets tripletsInGPU,
+                                  struct SDL::Quintuplets quintupletsInGPU,
+                                  struct SDL::PixelQuintuplets pixelQuintupletsInGPU,
                                   unsigned int* connectedPixelSize,
                                   unsigned int* connectedPixelIndex,
                                   unsigned int nPixelSegments,
-                                  struct SDL::objectRanges rangesInGPU) const {
+                                  struct SDL::ObjectRanges rangesInGPU) const {
       auto const globalBlockIdx = alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc);
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridBlockExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc);

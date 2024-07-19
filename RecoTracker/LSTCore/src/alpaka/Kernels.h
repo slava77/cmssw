@@ -6,29 +6,30 @@
 
 #include "Hit.h"
 #include "MiniDoublet.h"
+#include "ObjectRanges.h"
 #include "Segment.h"
 #include "Triplet.h"
 #include "Quintuplet.h"
 #include "PixelTriplet.h"
 
 namespace SDL {
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(struct SDL::quintuplets& quintupletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(struct SDL::Quintuplets& quintupletsInGPU,
                                                              unsigned int quintupletIndex,
                                                              bool secondpass = false) {
     quintupletsInGPU.isDup[quintupletIndex] |= 1 + secondpass;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(struct SDL::pixelTriplets& pixelTripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(struct SDL::PixelTriplets& pixelTripletsInGPU,
                                                                unsigned int pixelTripletIndex) {
     pixelTripletsInGPU.isDup[pixelTripletIndex] = true;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelQuintupletFromMemory(struct SDL::pixelQuintuplets& pixelQuintupletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelQuintupletFromMemory(struct SDL::PixelQuintuplets& pixelQuintupletsInGPU,
                                                                   unsigned int pixelQuintupletIndex) {
     pixelQuintupletsInGPU.isDup[pixelQuintupletIndex] = true;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelSegmentFromMemory(struct SDL::segments& segmentsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelSegmentFromMemory(struct SDL::Segments& segmentsInGPU,
                                                                unsigned int pixelSegmentArrayIndex,
                                                                bool secondpass = false) {
     segmentsInGPU.isDup[pixelSegmentArrayIndex] |= 1 + secondpass;
@@ -36,7 +37,7 @@ namespace SDL {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitsT5(unsigned int ix,
                                                  unsigned int jx,
-                                                 struct SDL::quintuplets& quintupletsInGPU) {
+                                                 struct SDL::Quintuplets& quintupletsInGPU) {
     unsigned int hits1[Params_T5::kHits];
     unsigned int hits2[Params_T5::kHits];
 
@@ -63,7 +64,7 @@ namespace SDL {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitspT5(unsigned int ix,
                                                   unsigned int jx,
-                                                  struct SDL::pixelQuintuplets& pixelQuintupletsInGPU) {
+                                                  struct SDL::PixelQuintuplets& pixelQuintupletsInGPU) {
     unsigned int hits1[Params_pT5::kHits];
     unsigned int hits2[Params_pT5::kHits];
 
@@ -90,7 +91,7 @@ namespace SDL {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void checkHitspT3(unsigned int ix,
                                                    unsigned int jx,
-                                                   struct SDL::pixelTriplets& pixelTripletsInGPU,
+                                                   struct SDL::PixelTriplets& pixelTripletsInGPU,
                                                    int* matched) {
     int phits1[Params_pLS::kHits];
     int phits2[Params_pLS::kHits];
@@ -143,9 +144,9 @@ namespace SDL {
   struct removeDupQuintupletsInGPUAfterBuild {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::quintuplets quintupletsInGPU,
-                                  struct SDL::objectRanges rangesInGPU) const {
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::Quintuplets quintupletsInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -193,8 +194,8 @@ namespace SDL {
   struct removeDupQuintupletsInGPUBeforeTC {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::quintuplets quintupletsInGPU,
-                                  struct SDL::objectRanges rangesInGPU) const {
+                                  struct SDL::Quintuplets quintupletsInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -267,7 +268,7 @@ namespace SDL {
 
   struct removeDupPixelTripletsInGPUFromMap {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, struct SDL::pixelTriplets pixelTripletsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, struct SDL::PixelTriplets pixelTripletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -304,7 +305,7 @@ namespace SDL {
 
   struct removeDupPixelQuintupletsInGPUFromMap {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, struct SDL::pixelQuintuplets pixelQuintupletsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, struct SDL::PixelQuintuplets pixelQuintupletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -332,8 +333,8 @@ namespace SDL {
   struct checkHitspLS {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::segments segmentsInGPU,
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::Segments segmentsInGPU,
                                   bool secondpass) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);

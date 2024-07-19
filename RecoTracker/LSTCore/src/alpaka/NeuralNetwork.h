@@ -14,10 +14,10 @@ namespace T5DNN {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float runInference(TAcc const& acc,
-                                                    struct SDL::modules& modulesInGPU,
-                                                    struct SDL::miniDoublets& mdsInGPU,
-                                                    struct SDL::segments& segmentsInGPU,
-                                                    struct SDL::triplets& tripletsInGPU,
+                                                    struct SDL::Modules& modulesInGPU,
+                                                    struct SDL::MiniDoublets& mdsInGPU,
+                                                    struct SDL::Segments& segmentsInGPU,
+                                                    struct SDL::Triplets& tripletsInGPU,
                                                     const float* xVec,
                                                     const float* yVec,
                                                     const unsigned int* mdIndices,

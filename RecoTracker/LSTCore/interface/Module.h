@@ -12,147 +12,7 @@ namespace SDL {
 
   enum ModuleLayerType { Pixel, Strip, InnerPixelLayer };
 
-  struct objectRanges {
-    int* hitRanges;
-    int* hitRangesLower;
-    int* hitRangesUpper;
-    int8_t* hitRangesnLower;
-    int8_t* hitRangesnUpper;
-    int* mdRanges;
-    int* segmentRanges;
-    int* trackletRanges;
-    int* tripletRanges;
-    int* trackCandidateRanges;
-    // Others will be added later
-    int* quintupletRanges;
-
-    // This number is just nEligibleModules - 1, but still we want this to be independent of the TC kernel
-    uint16_t* nEligibleT5Modules;
-    // Will be allocated in createQuintuplets kernel!
-    uint16_t* indicesOfEligibleT5Modules;
-    // To store different starting points for variable occupancy stuff
-    int* quintupletModuleIndices;
-    int* quintupletModuleOccupancy;
-    int* miniDoubletModuleIndices;
-    int* miniDoubletModuleOccupancy;
-    int* segmentModuleIndices;
-    int* segmentModuleOccupancy;
-    int* tripletModuleIndices;
-    int* tripletModuleOccupancy;
-
-    unsigned int* device_nTotalMDs;
-    unsigned int* device_nTotalSegs;
-    unsigned int* device_nTotalTrips;
-    unsigned int* device_nTotalQuints;
-
-    template <typename TBuff>
-    void setData(TBuff& objectRangesbuf) {
-      hitRanges = alpaka::getPtrNative(objectRangesbuf.hitRanges_buf);
-      hitRangesLower = alpaka::getPtrNative(objectRangesbuf.hitRangesLower_buf);
-      hitRangesUpper = alpaka::getPtrNative(objectRangesbuf.hitRangesUpper_buf);
-      hitRangesnLower = alpaka::getPtrNative(objectRangesbuf.hitRangesnLower_buf);
-      hitRangesnUpper = alpaka::getPtrNative(objectRangesbuf.hitRangesnUpper_buf);
-      mdRanges = alpaka::getPtrNative(objectRangesbuf.mdRanges_buf);
-      segmentRanges = alpaka::getPtrNative(objectRangesbuf.segmentRanges_buf);
-      trackletRanges = alpaka::getPtrNative(objectRangesbuf.trackletRanges_buf);
-      tripletRanges = alpaka::getPtrNative(objectRangesbuf.tripletRanges_buf);
-      trackCandidateRanges = alpaka::getPtrNative(objectRangesbuf.trackCandidateRanges_buf);
-      quintupletRanges = alpaka::getPtrNative(objectRangesbuf.quintupletRanges_buf);
-
-      nEligibleT5Modules = alpaka::getPtrNative(objectRangesbuf.nEligibleT5Modules_buf);
-      indicesOfEligibleT5Modules = alpaka::getPtrNative(objectRangesbuf.indicesOfEligibleT5Modules_buf);
-
-      quintupletModuleIndices = alpaka::getPtrNative(objectRangesbuf.quintupletModuleIndices_buf);
-      quintupletModuleOccupancy = alpaka::getPtrNative(objectRangesbuf.quintupletModuleOccupancy_buf);
-      miniDoubletModuleIndices = alpaka::getPtrNative(objectRangesbuf.miniDoubletModuleIndices_buf);
-      miniDoubletModuleOccupancy = alpaka::getPtrNative(objectRangesbuf.miniDoubletModuleOccupancy_buf);
-      segmentModuleIndices = alpaka::getPtrNative(objectRangesbuf.segmentModuleIndices_buf);
-      segmentModuleOccupancy = alpaka::getPtrNative(objectRangesbuf.segmentModuleOccupancy_buf);
-      tripletModuleIndices = alpaka::getPtrNative(objectRangesbuf.tripletModuleIndices_buf);
-      tripletModuleOccupancy = alpaka::getPtrNative(objectRangesbuf.tripletModuleOccupancy_buf);
-
-      device_nTotalMDs = alpaka::getPtrNative(objectRangesbuf.device_nTotalMDs_buf);
-      device_nTotalSegs = alpaka::getPtrNative(objectRangesbuf.device_nTotalSegs_buf);
-      device_nTotalTrips = alpaka::getPtrNative(objectRangesbuf.device_nTotalTrips_buf);
-      device_nTotalQuints = alpaka::getPtrNative(objectRangesbuf.device_nTotalQuints_buf);
-    }
-  };
-
-  template <typename TDev>
-  struct objectRangesBuffer : objectRanges {
-    Buf<TDev, int> hitRanges_buf;
-    Buf<TDev, int> hitRangesLower_buf;
-    Buf<TDev, int> hitRangesUpper_buf;
-    Buf<TDev, int8_t> hitRangesnLower_buf;
-    Buf<TDev, int8_t> hitRangesnUpper_buf;
-    Buf<TDev, int> mdRanges_buf;
-    Buf<TDev, int> segmentRanges_buf;
-    Buf<TDev, int> trackletRanges_buf;
-    Buf<TDev, int> tripletRanges_buf;
-    Buf<TDev, int> trackCandidateRanges_buf;
-    Buf<TDev, int> quintupletRanges_buf;
-
-    Buf<TDev, uint16_t> nEligibleT5Modules_buf;
-    Buf<TDev, uint16_t> indicesOfEligibleT5Modules_buf;
-
-    Buf<TDev, int> quintupletModuleIndices_buf;
-    Buf<TDev, int> quintupletModuleOccupancy_buf;
-    Buf<TDev, int> miniDoubletModuleIndices_buf;
-    Buf<TDev, int> miniDoubletModuleOccupancy_buf;
-    Buf<TDev, int> segmentModuleIndices_buf;
-    Buf<TDev, int> segmentModuleOccupancy_buf;
-    Buf<TDev, int> tripletModuleIndices_buf;
-    Buf<TDev, int> tripletModuleOccupancy_buf;
-
-    Buf<TDev, unsigned int> device_nTotalMDs_buf;
-    Buf<TDev, unsigned int> device_nTotalSegs_buf;
-    Buf<TDev, unsigned int> device_nTotalTrips_buf;
-    Buf<TDev, unsigned int> device_nTotalQuints_buf;
-
-    template <typename TQueue, typename TDevAcc>
-    objectRangesBuffer(unsigned int nMod, unsigned int nLowerMod, TDevAcc const& devAccIn, TQueue& queue)
-        : hitRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
-          hitRangesLower_buf(allocBufWrapper<int>(devAccIn, nMod, queue)),
-          hitRangesUpper_buf(allocBufWrapper<int>(devAccIn, nMod, queue)),
-          hitRangesnLower_buf(allocBufWrapper<int8_t>(devAccIn, nMod, queue)),
-          hitRangesnUpper_buf(allocBufWrapper<int8_t>(devAccIn, nMod, queue)),
-          mdRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
-          segmentRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
-          trackletRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
-          tripletRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
-          trackCandidateRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
-          quintupletRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
-          nEligibleT5Modules_buf(allocBufWrapper<uint16_t>(devAccIn, 1, queue)),
-          indicesOfEligibleT5Modules_buf(allocBufWrapper<uint16_t>(devAccIn, nLowerMod, queue)),
-          quintupletModuleIndices_buf(allocBufWrapper<int>(devAccIn, nLowerMod, queue)),
-          quintupletModuleOccupancy_buf(allocBufWrapper<int>(devAccIn, nLowerMod, queue)),
-          miniDoubletModuleIndices_buf(allocBufWrapper<int>(devAccIn, nLowerMod + 1, queue)),
-          miniDoubletModuleOccupancy_buf(allocBufWrapper<int>(devAccIn, nLowerMod + 1, queue)),
-          segmentModuleIndices_buf(allocBufWrapper<int>(devAccIn, nLowerMod + 1, queue)),
-          segmentModuleOccupancy_buf(allocBufWrapper<int>(devAccIn, nLowerMod + 1, queue)),
-          tripletModuleIndices_buf(allocBufWrapper<int>(devAccIn, nLowerMod, queue)),
-          tripletModuleOccupancy_buf(allocBufWrapper<int>(devAccIn, nLowerMod, queue)),
-          device_nTotalMDs_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          device_nTotalSegs_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          device_nTotalTrips_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          device_nTotalQuints_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)) {
-      alpaka::memset(queue, hitRanges_buf, 0xff);
-      alpaka::memset(queue, hitRangesLower_buf, 0xff);
-      alpaka::memset(queue, hitRangesUpper_buf, 0xff);
-      alpaka::memset(queue, hitRangesnLower_buf, 0xff);
-      alpaka::memset(queue, hitRangesnUpper_buf, 0xff);
-      alpaka::memset(queue, mdRanges_buf, 0xff);
-      alpaka::memset(queue, segmentRanges_buf, 0xff);
-      alpaka::memset(queue, trackletRanges_buf, 0xff);
-      alpaka::memset(queue, tripletRanges_buf, 0xff);
-      alpaka::memset(queue, trackCandidateRanges_buf, 0xff);
-      alpaka::memset(queue, quintupletRanges_buf, 0xff);
-      alpaka::memset(queue, quintupletModuleIndices_buf, 0xff);
-      alpaka::wait(queue);
-    }
-  };
-
-  struct modules {
+  struct Modules {
     const unsigned int* detIds;
     const uint16_t* moduleMap;
     const unsigned int* mapdetId;
@@ -223,38 +83,38 @@ namespace SDL {
     };
 
     template <typename TBuff>
-    void setData(const TBuff& modulesbuf) {
-      detIds = alpaka::getPtrNative(modulesbuf.detIds_buf);
-      moduleMap = alpaka::getPtrNative(modulesbuf.moduleMap_buf);
-      mapdetId = alpaka::getPtrNative(modulesbuf.mapdetId_buf);
-      mapIdx = alpaka::getPtrNative(modulesbuf.mapIdx_buf);
-      nConnectedModules = alpaka::getPtrNative(modulesbuf.nConnectedModules_buf);
-      drdzs = alpaka::getPtrNative(modulesbuf.drdzs_buf);
-      dxdys = alpaka::getPtrNative(modulesbuf.dxdys_buf);
-      nModules = alpaka::getPtrNative(modulesbuf.nModules_buf);
-      nLowerModules = alpaka::getPtrNative(modulesbuf.nLowerModules_buf);
-      partnerModuleIndices = alpaka::getPtrNative(modulesbuf.partnerModuleIndices_buf);
+    void setData(const TBuff& buf) {
+      detIds = alpaka::getPtrNative(buf.detIds_buf);
+      moduleMap = alpaka::getPtrNative(buf.moduleMap_buf);
+      mapdetId = alpaka::getPtrNative(buf.mapdetId_buf);
+      mapIdx = alpaka::getPtrNative(buf.mapIdx_buf);
+      nConnectedModules = alpaka::getPtrNative(buf.nConnectedModules_buf);
+      drdzs = alpaka::getPtrNative(buf.drdzs_buf);
+      dxdys = alpaka::getPtrNative(buf.dxdys_buf);
+      nModules = alpaka::getPtrNative(buf.nModules_buf);
+      nLowerModules = alpaka::getPtrNative(buf.nLowerModules_buf);
+      partnerModuleIndices = alpaka::getPtrNative(buf.partnerModuleIndices_buf);
 
-      layers = alpaka::getPtrNative(modulesbuf.layers_buf);
-      rings = alpaka::getPtrNative(modulesbuf.rings_buf);
-      modules = alpaka::getPtrNative(modulesbuf.modules_buf);
-      rods = alpaka::getPtrNative(modulesbuf.rods_buf);
-      subdets = alpaka::getPtrNative(modulesbuf.subdets_buf);
-      sides = alpaka::getPtrNative(modulesbuf.sides_buf);
-      eta = alpaka::getPtrNative(modulesbuf.eta_buf);
-      r = alpaka::getPtrNative(modulesbuf.r_buf);
-      isInverted = alpaka::getPtrNative(modulesbuf.isInverted_buf);
-      isLower = alpaka::getPtrNative(modulesbuf.isLower_buf);
-      isAnchor = alpaka::getPtrNative(modulesbuf.isAnchor_buf);
-      moduleType = alpaka::getPtrNative(modulesbuf.moduleType_buf);
-      moduleLayerType = alpaka::getPtrNative(modulesbuf.moduleLayerType_buf);
-      sdlLayers = alpaka::getPtrNative(modulesbuf.sdlLayers_buf);
-      connectedPixels = alpaka::getPtrNative(modulesbuf.connectedPixels_buf);
+      layers = alpaka::getPtrNative(buf.layers_buf);
+      rings = alpaka::getPtrNative(buf.rings_buf);
+      modules = alpaka::getPtrNative(buf.modules_buf);
+      rods = alpaka::getPtrNative(buf.rods_buf);
+      subdets = alpaka::getPtrNative(buf.subdets_buf);
+      sides = alpaka::getPtrNative(buf.sides_buf);
+      eta = alpaka::getPtrNative(buf.eta_buf);
+      r = alpaka::getPtrNative(buf.r_buf);
+      isInverted = alpaka::getPtrNative(buf.isInverted_buf);
+      isLower = alpaka::getPtrNative(buf.isLower_buf);
+      isAnchor = alpaka::getPtrNative(buf.isAnchor_buf);
+      moduleType = alpaka::getPtrNative(buf.moduleType_buf);
+      moduleLayerType = alpaka::getPtrNative(buf.moduleLayerType_buf);
+      sdlLayers = alpaka::getPtrNative(buf.sdlLayers_buf);
+      connectedPixels = alpaka::getPtrNative(buf.connectedPixels_buf);
     }
   };
 
   template <typename TDev>
-  struct modulesBuffer : modules {
+  struct ModulesBuffer {
     Buf<TDev, unsigned int> detIds_buf;
     Buf<TDev, uint16_t> moduleMap_buf;
     Buf<TDev, unsigned int> mapdetId_buf;
@@ -282,7 +142,9 @@ namespace SDL {
     Buf<TDev, int> sdlLayers_buf;
     Buf<TDev, unsigned int> connectedPixels_buf;
 
-    modulesBuffer(TDev const& dev, unsigned int nMod, unsigned int nPixs)
+    Modules data_;
+
+    ModulesBuffer(TDev const& dev, unsigned int nMod, unsigned int nPixs)
         : detIds_buf(allocBufWrapper<unsigned int>(dev, nMod)),
           moduleMap_buf(allocBufWrapper<uint16_t>(dev, nMod * MAX_CONNECTED_MODULES)),
           mapdetId_buf(allocBufWrapper<unsigned int>(dev, nMod)),
@@ -309,11 +171,11 @@ namespace SDL {
           moduleLayerType_buf(allocBufWrapper<ModuleLayerType>(dev, nMod)),
           sdlLayers_buf(allocBufWrapper<int>(dev, nMod)),
           connectedPixels_buf(allocBufWrapper<unsigned int>(dev, nPixs)) {
-      setData(*this);
+      data_.setData(*this);
     }
 
     template <typename TQueue, typename TDevSrc>
-    inline void copyFromSrc(TQueue queue, const modulesBuffer<TDevSrc>& src, bool isFull = true) {
+    inline void copyFromSrc(TQueue queue, const ModulesBuffer<TDevSrc>& src, bool isFull = true) {
       alpaka::memcpy(queue, detIds_buf, src.detIds_buf);
       if (isFull) {
         alpaka::memcpy(queue, moduleMap_buf, src.moduleMap_buf);
@@ -354,12 +216,12 @@ namespace SDL {
     }
 
     template <typename TQueue, typename TDevSrc>
-    modulesBuffer(TQueue queue, const modulesBuffer<TDevSrc>& src, unsigned int nMod, unsigned int nPixs)
-        : modulesBuffer(alpaka::getDev(queue), nMod, nPixs) {
+    ModulesBuffer(TQueue queue, const ModulesBuffer<TDevSrc>& src, unsigned int nMod, unsigned int nPixs)
+        : ModulesBuffer(alpaka::getDev(queue), nMod, nPixs) {
       copyFromSrc(queue, src);
     }
 
-    inline SDL::modules const* data() const { return this; }
+    inline Modules const* data() const { return &data_; }
   };
 
 }  // namespace SDL

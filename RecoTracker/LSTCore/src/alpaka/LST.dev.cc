@@ -255,18 +255,18 @@ void SDL::LST<Acc3D>::getOutput(SDL::Event<Acc3D>& event) {
   std::vector<int> tc_seedIdx;
   std::vector<short> tc_trackCandidateType;
 
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW());
-  SDL::trackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event.getTrackCandidatesInCMSSW());
+  SDL::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW());
+  SDL::TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
 
-  unsigned int nTrackCandidates = *trackCandidatesInGPU.nTrackCandidates;
+  unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {
-    short trackCandidateType = trackCandidatesInGPU.trackCandidateType[idx];
+    short trackCandidateType = trackCandidates->trackCandidateType[idx];
     std::vector<unsigned int> hit_idx =
-        getHitIdxs(trackCandidateType, idx, trackCandidatesInGPU.hitIndices, hitsInGPU.idxs);
+        getHitIdxs(trackCandidateType, idx, trackCandidates->hitIndices, hitsInGPU.data()->idxs);
 
     tc_hitIdxs.push_back(hit_idx);
     tc_len.push_back(hit_idx.size());
-    tc_seedIdx.push_back(trackCandidatesInGPU.pixelSeedIndex[idx]);
+    tc_seedIdx.push_back(trackCandidates->pixelSeedIndex[idx]);
     tc_trackCandidateType.push_back(trackCandidateType);
   }
 

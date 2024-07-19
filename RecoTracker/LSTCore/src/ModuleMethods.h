@@ -24,7 +24,7 @@ namespace SDL {
   };
 
   template <typename TQueue>
-  inline void fillPixelMap(std::shared_ptr<modulesBuffer<alpaka_common::DevHost>>& modulesBuf,
+  inline void fillPixelMap(std::shared_ptr<ModulesBuffer<alpaka_common::DevHost>>& modulesBuf,
                            uint16_t nModules,
                            unsigned int& nPixels,
                            pixelMap& pixelMapping,
@@ -84,7 +84,7 @@ namespace SDL {
     // Now we can initialize modulesBuf
     alpaka_common::DevHost const& devHost = cms::alpakatools::host();
     if (modulesBuf == nullptr) {
-      modulesBuf = std::make_shared<modulesBuffer<alpaka_common::DevHost>>(devHost, nModules, nPixels);
+      modulesBuf = std::make_shared<ModulesBuffer<alpaka_common::DevHost>>(devHost, nModules, nPixels);
     }
 
     auto connectedPixels_buf = allocBufWrapper<unsigned int>(devHost, connectedPix_size);
@@ -105,7 +105,7 @@ namespace SDL {
   };
 
   template <typename TQueue, typename TDev>
-  inline void fillConnectedModuleArrayExplicit(struct modulesBuffer<TDev>* modulesBuf,
+  inline void fillConnectedModuleArrayExplicit(struct ModulesBuffer<TDev>* modulesBuf,
                                                unsigned int nMod,
                                                TQueue queue,
                                                struct ModuleMetaData& mmd,
@@ -133,7 +133,7 @@ namespace SDL {
   };
 
   template <typename TQueue, typename TDev>
-  inline void fillMapArraysExplicit(struct modulesBuffer<TDev>* modulesBuf,
+  inline void fillMapArraysExplicit(struct ModulesBuffer<TDev>* modulesBuf,
                                     unsigned int nMod,
                                     TQueue queue,
                                     struct ModuleMetaData& mmd) {
@@ -223,7 +223,7 @@ namespace SDL {
                                   uint16_t& nModules,
                                   uint16_t& nLowerModules,
                                   unsigned int& nPixels,
-                                  std::shared_ptr<modulesBuffer<alpaka_common::DevHost>>& modulesBuf,
+                                  std::shared_ptr<ModulesBuffer<alpaka_common::DevHost>>& modulesBuf,
                                   pixelMap* pixelMapping,
                                   const EndcapGeometry* endcapGeometry,
                                   const TiltedGeometry* tiltedGeometry,
@@ -302,8 +302,8 @@ namespace SDL {
         r = 0;
       } else {
         setDerivedQuantities(detId, layer, ring, rod, module, subdet, side, m_x, m_y, m_z, eta, r);
-        isInverted = SDL::modules::parseIsInverted(subdet, side, module, layer);
-        isLower = SDL::modules::parseIsLower(isInverted, detId);
+        isInverted = SDL::Modules::parseIsInverted(subdet, side, module, layer);
+        isLower = SDL::Modules::parseIsLower(isInverted, detId);
       }
       if (isLower) {
         index = lowerModuleCounter;
@@ -361,7 +361,7 @@ namespace SDL {
       auto& index = it->second;
       if (detId != 1) {
         host_partnerModuleIndices[index] =
-            mmd.detIdToIndex[SDL::modules::parsePartnerModuleId(detId, host_isLower[index], host_isInverted[index])];
+            mmd.detIdToIndex[SDL::Modules::parsePartnerModuleId(detId, host_isLower[index], host_isInverted[index])];
         //add drdz and slope importing stuff here!
         if (host_drdzs[index] == 0) {
           host_drdzs[index] = host_drdzs[host_partnerModuleIndices[index]];

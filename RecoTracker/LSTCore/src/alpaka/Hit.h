@@ -5,7 +5,7 @@
 #include "RecoTracker/LSTCore/interface/Module.h"
 
 namespace SDL {
-  struct hits {
+  struct Hits {
     unsigned int* nHits;
     float* xs;
     float* ys;
@@ -27,31 +27,31 @@ namespace SDL {
     int8_t* hitRangesnUpper;
 
     template <typename TBuff>
-    void setData(TBuff& hitsbuf) {
-      nHits = alpaka::getPtrNative(hitsbuf.nHits_buf);
-      xs = alpaka::getPtrNative(hitsbuf.xs_buf);
-      ys = alpaka::getPtrNative(hitsbuf.ys_buf);
-      zs = alpaka::getPtrNative(hitsbuf.zs_buf);
-      moduleIndices = alpaka::getPtrNative(hitsbuf.moduleIndices_buf);
-      idxs = alpaka::getPtrNative(hitsbuf.idxs_buf);
-      detid = alpaka::getPtrNative(hitsbuf.detid_buf);
-      rts = alpaka::getPtrNative(hitsbuf.rts_buf);
-      phis = alpaka::getPtrNative(hitsbuf.phis_buf);
-      etas = alpaka::getPtrNative(hitsbuf.etas_buf);
-      highEdgeXs = alpaka::getPtrNative(hitsbuf.highEdgeXs_buf);
-      highEdgeYs = alpaka::getPtrNative(hitsbuf.highEdgeYs_buf);
-      lowEdgeXs = alpaka::getPtrNative(hitsbuf.lowEdgeXs_buf);
-      lowEdgeYs = alpaka::getPtrNative(hitsbuf.lowEdgeYs_buf);
-      hitRanges = alpaka::getPtrNative(hitsbuf.hitRanges_buf);
-      hitRangesLower = alpaka::getPtrNative(hitsbuf.hitRangesLower_buf);
-      hitRangesUpper = alpaka::getPtrNative(hitsbuf.hitRangesUpper_buf);
-      hitRangesnLower = alpaka::getPtrNative(hitsbuf.hitRangesnLower_buf);
-      hitRangesnUpper = alpaka::getPtrNative(hitsbuf.hitRangesnUpper_buf);
+    void setData(TBuff& buf) {
+      nHits = alpaka::getPtrNative(buf.nHits_buf);
+      xs = alpaka::getPtrNative(buf.xs_buf);
+      ys = alpaka::getPtrNative(buf.ys_buf);
+      zs = alpaka::getPtrNative(buf.zs_buf);
+      moduleIndices = alpaka::getPtrNative(buf.moduleIndices_buf);
+      idxs = alpaka::getPtrNative(buf.idxs_buf);
+      detid = alpaka::getPtrNative(buf.detid_buf);
+      rts = alpaka::getPtrNative(buf.rts_buf);
+      phis = alpaka::getPtrNative(buf.phis_buf);
+      etas = alpaka::getPtrNative(buf.etas_buf);
+      highEdgeXs = alpaka::getPtrNative(buf.highEdgeXs_buf);
+      highEdgeYs = alpaka::getPtrNative(buf.highEdgeYs_buf);
+      lowEdgeXs = alpaka::getPtrNative(buf.lowEdgeXs_buf);
+      lowEdgeYs = alpaka::getPtrNative(buf.lowEdgeYs_buf);
+      hitRanges = alpaka::getPtrNative(buf.hitRanges_buf);
+      hitRangesLower = alpaka::getPtrNative(buf.hitRangesLower_buf);
+      hitRangesUpper = alpaka::getPtrNative(buf.hitRangesUpper_buf);
+      hitRangesnLower = alpaka::getPtrNative(buf.hitRangesnLower_buf);
+      hitRangesnUpper = alpaka::getPtrNative(buf.hitRangesnUpper_buf);
     }
   };
 
   template <typename TDev>
-  struct hitsBuffer : hits {
+  struct HitsBuffer {
     Buf<TDev, unsigned int> nHits_buf;
     Buf<TDev, float> xs_buf;
     Buf<TDev, float> ys_buf;
@@ -72,8 +72,10 @@ namespace SDL {
     Buf<TDev, int8_t> hitRangesnLower_buf;
     Buf<TDev, int8_t> hitRangesnUpper_buf;
 
+    Hits data_;
+
     template <typename TQueue, typename TDevAcc>
-    hitsBuffer(unsigned int nModules, unsigned int nMaxHits, TDevAcc const& devAccIn, TQueue& queue)
+    HitsBuffer(unsigned int nModules, unsigned int nMaxHits, TDevAcc const& devAccIn, TQueue& queue)
         : nHits_buf(allocBufWrapper<unsigned int>(devAccIn, 1u, queue)),
           xs_buf(allocBufWrapper<float>(devAccIn, nMaxHits, queue)),
           ys_buf(allocBufWrapper<float>(devAccIn, nMaxHits, queue)),
@@ -100,6 +102,9 @@ namespace SDL {
       alpaka::memset(queue, hitRangesnUpper_buf, 0xff);
       alpaka::wait(queue);
     }
+
+    inline Hits const* data() const { return &data_; }
+    inline void setData(HitsBuffer& buf) { data_.setData(buf); }
   };
 
   // Alpaka does not support log10 natively right now.
@@ -189,8 +194,8 @@ namespace SDL {
   struct moduleRangesKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::hits hitsInGPU,
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::Hits hitsInGPU,
                                   int const& nLowerModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
@@ -218,8 +223,8 @@ namespace SDL {
                                   unsigned int nEndCapMap,          // Number of elements in endcap map
                                   const unsigned int* geoMapDetId,  // DetId's from endcap map
                                   const float* geoMapPhi,           // Phi values from endcap map
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::hits hitsInGPU,
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::Hits hitsInGPU,
                                   unsigned int const& nHits) const  // Total number of hits in event
     {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);

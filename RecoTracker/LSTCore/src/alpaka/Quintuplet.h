@@ -9,10 +9,11 @@
 #include "Segment.h"
 #include "MiniDoublet.h"
 #include "Hit.h"
+#include "ObjectRanges.h"
 #include "Triplet.h"
 
 namespace SDL {
-  struct quintuplets {
+  struct Quintuplets {
     unsigned int* tripletIndices;
     uint16_t* lowerModuleIndices;
     unsigned int* nQuintuplets;
@@ -42,36 +43,36 @@ namespace SDL {
     float* nonAnchorChiSquared;
 
     template <typename TBuff>
-    void setData(TBuff& quintupletsbuf) {
-      tripletIndices = alpaka::getPtrNative(quintupletsbuf.tripletIndices_buf);
-      lowerModuleIndices = alpaka::getPtrNative(quintupletsbuf.lowerModuleIndices_buf);
-      nQuintuplets = alpaka::getPtrNative(quintupletsbuf.nQuintuplets_buf);
-      totOccupancyQuintuplets = alpaka::getPtrNative(quintupletsbuf.totOccupancyQuintuplets_buf);
-      nMemoryLocations = alpaka::getPtrNative(quintupletsbuf.nMemoryLocations_buf);
-      innerRadius = alpaka::getPtrNative(quintupletsbuf.innerRadius_buf);
-      bridgeRadius = alpaka::getPtrNative(quintupletsbuf.bridgeRadius_buf);
-      outerRadius = alpaka::getPtrNative(quintupletsbuf.outerRadius_buf);
-      pt = alpaka::getPtrNative(quintupletsbuf.pt_buf);
-      eta = alpaka::getPtrNative(quintupletsbuf.eta_buf);
-      phi = alpaka::getPtrNative(quintupletsbuf.phi_buf);
-      score_rphisum = alpaka::getPtrNative(quintupletsbuf.score_rphisum_buf);
-      layer = alpaka::getPtrNative(quintupletsbuf.layer_buf);
-      isDup = alpaka::getPtrNative(quintupletsbuf.isDup_buf);
-      TightCutFlag = alpaka::getPtrNative(quintupletsbuf.TightCutFlag_buf);
-      partOfPT5 = alpaka::getPtrNative(quintupletsbuf.partOfPT5_buf);
-      regressionRadius = alpaka::getPtrNative(quintupletsbuf.regressionRadius_buf);
-      regressionG = alpaka::getPtrNative(quintupletsbuf.regressionG_buf);
-      regressionF = alpaka::getPtrNative(quintupletsbuf.regressionF_buf);
-      logicalLayers = alpaka::getPtrNative(quintupletsbuf.logicalLayers_buf);
-      hitIndices = alpaka::getPtrNative(quintupletsbuf.hitIndices_buf);
-      rzChiSquared = alpaka::getPtrNative(quintupletsbuf.rzChiSquared_buf);
-      chiSquared = alpaka::getPtrNative(quintupletsbuf.chiSquared_buf);
-      nonAnchorChiSquared = alpaka::getPtrNative(quintupletsbuf.nonAnchorChiSquared_buf);
+    void setData(TBuff& buf) {
+      tripletIndices = alpaka::getPtrNative(buf.tripletIndices_buf);
+      lowerModuleIndices = alpaka::getPtrNative(buf.lowerModuleIndices_buf);
+      nQuintuplets = alpaka::getPtrNative(buf.nQuintuplets_buf);
+      totOccupancyQuintuplets = alpaka::getPtrNative(buf.totOccupancyQuintuplets_buf);
+      nMemoryLocations = alpaka::getPtrNative(buf.nMemoryLocations_buf);
+      innerRadius = alpaka::getPtrNative(buf.innerRadius_buf);
+      bridgeRadius = alpaka::getPtrNative(buf.bridgeRadius_buf);
+      outerRadius = alpaka::getPtrNative(buf.outerRadius_buf);
+      pt = alpaka::getPtrNative(buf.pt_buf);
+      eta = alpaka::getPtrNative(buf.eta_buf);
+      phi = alpaka::getPtrNative(buf.phi_buf);
+      score_rphisum = alpaka::getPtrNative(buf.score_rphisum_buf);
+      layer = alpaka::getPtrNative(buf.layer_buf);
+      isDup = alpaka::getPtrNative(buf.isDup_buf);
+      TightCutFlag = alpaka::getPtrNative(buf.TightCutFlag_buf);
+      partOfPT5 = alpaka::getPtrNative(buf.partOfPT5_buf);
+      regressionRadius = alpaka::getPtrNative(buf.regressionRadius_buf);
+      regressionG = alpaka::getPtrNative(buf.regressionG_buf);
+      regressionF = alpaka::getPtrNative(buf.regressionF_buf);
+      logicalLayers = alpaka::getPtrNative(buf.logicalLayers_buf);
+      hitIndices = alpaka::getPtrNative(buf.hitIndices_buf);
+      rzChiSquared = alpaka::getPtrNative(buf.rzChiSquared_buf);
+      chiSquared = alpaka::getPtrNative(buf.chiSquared_buf);
+      nonAnchorChiSquared = alpaka::getPtrNative(buf.nonAnchorChiSquared_buf);
     }
   };
 
   template <typename TDev>
-  struct quintupletsBuffer : quintuplets {
+  struct QuintupletsBuffer {
     Buf<TDev, unsigned int> tripletIndices_buf;
     Buf<TDev, uint16_t> lowerModuleIndices_buf;
     Buf<TDev, unsigned int> nQuintuplets_buf;
@@ -100,8 +101,10 @@ namespace SDL {
     Buf<TDev, float> chiSquared_buf;
     Buf<TDev, float> nonAnchorChiSquared_buf;
 
+    Quintuplets data_;
+
     template <typename TQueue, typename TDevAcc>
-    quintupletsBuffer(unsigned int nTotalQuintuplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
+    QuintupletsBuffer(unsigned int nTotalQuintuplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
         : tripletIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * nTotalQuintuplets, queue)),
           lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, Params_T5::kLayers * nTotalQuintuplets, queue)),
           nQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
@@ -133,6 +136,9 @@ namespace SDL {
       alpaka::memset(queue, partOfPT5_buf, false);
       alpaka::wait(queue);
     }
+
+    inline Quintuplets const* data() const { return &data_; }
+    inline void setData(QuintupletsBuffer& buf) { data_.setData(buf); }
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlap(const float& firstMin,
@@ -142,8 +148,8 @@ namespace SDL {
     return ((firstMin <= secondMin) && (secondMin < firstMax)) || ((secondMin < firstMin) && (firstMin < secondMax));
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addQuintupletToMemory(struct SDL::triplets& tripletsInGPU,
-                                                            struct SDL::quintuplets& quintupletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addQuintupletToMemory(struct SDL::Triplets& tripletsInGPU,
+                                                            struct SDL::Quintuplets& quintupletsInGPU,
                                                             unsigned int innerTripletIndex,
                                                             unsigned int outerTripletIndex,
                                                             uint16_t& lowerModule1,
@@ -225,7 +231,7 @@ namespace SDL {
   };
 
   //90% constraint
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passChiSquaredConstraint(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passChiSquaredConstraint(struct SDL::Modules& modulesInGPU,
                                                                uint16_t& lowerModuleIndex1,
                                                                uint16_t& lowerModuleIndex2,
                                                                uint16_t& lowerModuleIndex3,
@@ -310,8 +316,8 @@ namespace SDL {
   //bounds can be found at http://uaf-10.t2.ucsd.edu/~bsathian/SDL/T5_RZFix/t5_rz_thresholds.txt
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passT5RZConstraint(TAcc const& acc,
-                                                         struct SDL::modules& modulesInGPU,
-                                                         struct SDL::miniDoublets& mdsInGPU,
+                                                         struct SDL::Modules& modulesInGPU,
+                                                         struct SDL::MiniDoublets& mdsInGPU,
                                                          unsigned int firstMDIndex,
                                                          unsigned int secondMDIndex,
                                                          unsigned int thirdMDIndex,
@@ -744,8 +750,8 @@ namespace SDL {
   };
 
   template <typename TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool T5HasCommonMiniDoublet(struct SDL::triplets& tripletsInGPU,
-                                                             struct SDL::segments& segmentsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool T5HasCommonMiniDoublet(struct SDL::Triplets& tripletsInGPU,
+                                                             struct SDL::Segments& segmentsInGPU,
                                                              unsigned int innerTripletIndex,
                                                              unsigned int outerTripletIndex) {
     unsigned int innerOuterSegmentIndex = tripletsInGPU.segmentIndices[2 * innerTripletIndex + 1];
@@ -1143,7 +1149,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void computeSigmasForRegression(TAcc const& acc,
-                                                                 SDL::modules& modulesInGPU,
+                                                                 SDL::Modules& modulesInGPU,
                                                                  const uint16_t* lowerModuleIndices,
                                                                  float* delta1,
                                                                  float* delta2,
@@ -1471,9 +1477,9 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runQuintupletDefaultAlgoBBBB(TAcc const& acc,
-                                                                   struct SDL::modules& modulesInGPU,
-                                                                   struct SDL::miniDoublets& mdsInGPU,
-                                                                   struct SDL::segments& segmentsInGPU,
+                                                                   struct SDL::Modules& modulesInGPU,
+                                                                   struct SDL::MiniDoublets& mdsInGPU,
+                                                                   struct SDL::Segments& segmentsInGPU,
                                                                    uint16_t& innerInnerLowerModuleIndex,
                                                                    uint16_t& innerOuterLowerModuleIndex,
                                                                    uint16_t& outerInnerLowerModuleIndex,
@@ -1740,9 +1746,9 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runQuintupletDefaultAlgoBBEE(TAcc const& acc,
-                                                                   struct SDL::modules& modulesInGPU,
-                                                                   struct SDL::miniDoublets& mdsInGPU,
-                                                                   struct SDL::segments& segmentsInGPU,
+                                                                   struct SDL::Modules& modulesInGPU,
+                                                                   struct SDL::MiniDoublets& mdsInGPU,
+                                                                   struct SDL::Segments& segmentsInGPU,
                                                                    uint16_t& innerInnerLowerModuleIndex,
                                                                    uint16_t& innerOuterLowerModuleIndex,
                                                                    uint16_t& outerInnerLowerModuleIndex,
@@ -2010,9 +2016,9 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runQuintupletDefaultAlgoEEEE(TAcc const& acc,
-                                                                   struct SDL::modules& modulesInGPU,
-                                                                   struct SDL::miniDoublets& mdsInGPU,
-                                                                   struct SDL::segments& segmentsInGPU,
+                                                                   struct SDL::Modules& modulesInGPU,
+                                                                   struct SDL::MiniDoublets& mdsInGPU,
+                                                                   struct SDL::Segments& segmentsInGPU,
                                                                    uint16_t& innerInnerLowerModuleIndex,
                                                                    uint16_t& innerOuterLowerModuleIndex,
                                                                    uint16_t& outerInnerLowerModuleIndex,
@@ -2266,9 +2272,9 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runQuintupletAlgoSelector(TAcc const& acc,
-                                                                struct SDL::modules& modulesInGPU,
-                                                                struct SDL::miniDoublets& mdsInGPU,
-                                                                struct SDL::segments& segmentsInGPU,
+                                                                struct SDL::Modules& modulesInGPU,
+                                                                struct SDL::MiniDoublets& mdsInGPU,
+                                                                struct SDL::Segments& segmentsInGPU,
                                                                 uint16_t& innerInnerLowerModuleIndex,
                                                                 uint16_t& innerOuterLowerModuleIndex,
                                                                 uint16_t& outerInnerLowerModuleIndex,
@@ -2473,10 +2479,10 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runQuintupletDefaultAlgo(TAcc const& acc,
-                                                               struct SDL::modules& modulesInGPU,
-                                                               struct SDL::miniDoublets& mdsInGPU,
-                                                               struct SDL::segments& segmentsInGPU,
-                                                               struct SDL::triplets& tripletsInGPU,
+                                                               struct SDL::Modules& modulesInGPU,
+                                                               struct SDL::MiniDoublets& mdsInGPU,
+                                                               struct SDL::Segments& segmentsInGPU,
+                                                               struct SDL::Triplets& tripletsInGPU,
                                                                uint16_t& lowerModuleIndex1,
                                                                uint16_t& lowerModuleIndex2,
                                                                uint16_t& lowerModuleIndex3,
@@ -2965,12 +2971,12 @@ namespace SDL {
   struct createQuintupletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::miniDoublets mdsInGPU,
-                                  struct SDL::segments segmentsInGPU,
-                                  struct SDL::triplets tripletsInGPU,
-                                  struct SDL::quintuplets quintupletsInGPU,
-                                  struct SDL::objectRanges rangesInGPU,
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::MiniDoublets mdsInGPU,
+                                  struct SDL::Segments segmentsInGPU,
+                                  struct SDL::Triplets tripletsInGPU,
+                                  struct SDL::Quintuplets quintupletsInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU,
                                   uint16_t nEligibleT5Modules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
@@ -3094,9 +3100,9 @@ namespace SDL {
   struct createEligibleModulesListForQuintupletsGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::triplets tripletsInGPU,
-                                  struct SDL::objectRanges rangesInGPU) const {
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::Triplets tripletsInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -3192,9 +3198,9 @@ namespace SDL {
   struct addQuintupletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::quintuplets quintupletsInGPU,
-                                  struct SDL::objectRanges rangesInGPU) const {
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::Quintuplets quintupletsInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
