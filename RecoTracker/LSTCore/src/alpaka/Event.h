@@ -46,36 +46,36 @@ namespace SDL {
 
     //Device stuff
     unsigned int nTotalSegments;
-    struct objectRanges* rangesInGPU;
-    struct objectRangesBuffer<Device>* rangesBuffers;
-    struct hits* hitsInGPU;
-    struct hitsBuffer<Device>* hitsBuffers;
-    struct miniDoublets* mdsInGPU;
-    struct miniDoubletsBuffer<Device>* miniDoubletsBuffers;
-    struct segments* segmentsInGPU;
-    struct segmentsBuffer<Device>* segmentsBuffers;
-    struct triplets* tripletsInGPU;
-    struct tripletsBuffer<Device>* tripletsBuffers;
-    struct quintuplets* quintupletsInGPU;
-    struct quintupletsBuffer<Device>* quintupletsBuffers;
-    struct trackCandidates* trackCandidatesInGPU;
-    struct trackCandidatesBuffer<Device>* trackCandidatesBuffers;
-    struct pixelTriplets* pixelTripletsInGPU;
-    struct pixelTripletsBuffer<Device>* pixelTripletsBuffers;
-    struct pixelQuintuplets* pixelQuintupletsInGPU;
-    struct pixelQuintupletsBuffer<Device>* pixelQuintupletsBuffers;
+    struct ObjectRanges* rangesInGPU;
+    struct ObjectRangesBuffer<Device>* rangesBuffers;
+    struct Hits* hitsInGPU;
+    struct HitsBuffer<Device>* hitsBuffers;
+    struct MiniDoublets* mdsInGPU;
+    struct MiniDoubletsBuffer<Device>* miniDoubletsBuffers;
+    struct Segments* segmentsInGPU;
+    struct SegmentsBuffer<Device>* segmentsBuffers;
+    struct Triplets* tripletsInGPU;
+    struct TripletsBuffer<Device>* tripletsBuffers;
+    struct Quintuplets* quintupletsInGPU;
+    struct QuintupletsBuffer<Device>* quintupletsBuffers;
+    struct TrackCandidates* trackCandidatesInGPU;
+    struct TrackCandidatesBuffer<Device>* trackCandidatesBuffers;
+    struct PixelTriplets* pixelTripletsInGPU;
+    struct PixelTripletsBuffer<Device>* pixelTripletsBuffers;
+    struct PixelQuintuplets* pixelQuintupletsInGPU;
+    struct PixelQuintupletsBuffer<Device>* pixelQuintupletsBuffers;
 
     //CPU interface stuff
-    objectRangesBuffer<DevHost>* rangesInCPU;
-    hitsBuffer<DevHost>* hitsInCPU;
-    miniDoubletsBuffer<DevHost>* mdsInCPU;
-    segmentsBuffer<DevHost>* segmentsInCPU;
-    tripletsBuffer<DevHost>* tripletsInCPU;
-    trackCandidatesBuffer<DevHost>* trackCandidatesInCPU;
-    modulesBuffer<DevHost>* modulesInCPU;
-    quintupletsBuffer<DevHost>* quintupletsInCPU;
-    pixelTripletsBuffer<DevHost>* pixelTripletsInCPU;
-    pixelQuintupletsBuffer<DevHost>* pixelQuintupletsInCPU;
+    ObjectRangesBuffer<DevHost>* rangesInCPU;
+    HitsBuffer<DevHost>* hitsInCPU;
+    MiniDoubletsBuffer<DevHost>* mdsInCPU;
+    SegmentsBuffer<DevHost>* segmentsInCPU;
+    TripletsBuffer<DevHost>* tripletsInCPU;
+    TrackCandidatesBuffer<DevHost>* trackCandidatesInCPU;
+    ModulesBuffer<DevHost>* modulesInCPU;
+    QuintupletsBuffer<DevHost>* quintupletsInCPU;
+    PixelTripletsBuffer<DevHost>* pixelTripletsInCPU;
+    PixelQuintupletsBuffer<DevHost>* pixelQuintupletsInCPU;
 
     void init(bool verbose);
 
@@ -87,7 +87,7 @@ namespace SDL {
     const uint16_t nLowerModules_;
     const unsigned int nPixels_;
     const unsigned int nEndCapMap_;
-    const std::shared_ptr<const modulesBuffer<Device>> modulesBuffers_;
+    const std::shared_ptr<const ModulesBuffer<Device>> modulesBuffers_;
     const std::shared_ptr<const pixelMap> pixelMapping_;
     const std::shared_ptr<const EndcapGeometryBuffer<Device>> endcapGeometryBuffers_;
 
@@ -188,18 +188,18 @@ namespace SDL {
     int getNumberOfPixelTriplets();
     int getNumberOfPixelQuintuplets();
 
-    objectRangesBuffer<DevHost>* getRanges();
-    hitsBuffer<DevHost>* getHits();
-    hitsBuffer<DevHost>* getHitsInCMSSW();
-    miniDoubletsBuffer<DevHost>* getMiniDoublets();
-    segmentsBuffer<DevHost>* getSegments();
-    tripletsBuffer<DevHost>* getTriplets();
-    quintupletsBuffer<DevHost>* getQuintuplets();
-    trackCandidatesBuffer<DevHost>* getTrackCandidates();
-    trackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW();
-    pixelTripletsBuffer<DevHost>* getPixelTriplets();
-    pixelQuintupletsBuffer<DevHost>* getPixelQuintuplets();
-    modulesBuffer<DevHost>* getModules(bool isFull = false);
+    ObjectRangesBuffer<DevHost>* getRanges();
+    HitsBuffer<DevHost>* getHits();
+    HitsBuffer<DevHost>* getHitsInCMSSW();
+    MiniDoubletsBuffer<DevHost>* getMiniDoublets();
+    SegmentsBuffer<DevHost>* getSegments();
+    TripletsBuffer<DevHost>* getTriplets();
+    QuintupletsBuffer<DevHost>* getQuintuplets();
+    TrackCandidatesBuffer<DevHost>* getTrackCandidates();
+    TrackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW();
+    PixelTripletsBuffer<DevHost>* getPixelTriplets();
+    PixelQuintupletsBuffer<DevHost>* getPixelQuintuplets();
+    ModulesBuffer<DevHost>* getModules(bool isFull = false);
   };
 
 }  // namespace SDL

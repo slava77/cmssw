@@ -18,21 +18,22 @@ namespace SDL {
     const float* geoMapPhi;
 
     template <typename TBuff>
-    void setData(const TBuff& endcapgeombuf) {
-      geoMapDetId = alpaka::getPtrNative(endcapgeombuf.geoMapDetId_buf);
-      geoMapPhi = alpaka::getPtrNative(endcapgeombuf.geoMapPhi_buf);
+    void setData(const TBuff& buf) {
+      geoMapDetId = alpaka::getPtrNative(buf.geoMapDetId_buf);
+      geoMapPhi = alpaka::getPtrNative(buf.geoMapPhi_buf);
     }
   };
 
   template <typename TDev>
-  struct EndcapGeometryBuffer : EndcapGeometryDev {
+  struct EndcapGeometryBuffer {
     Buf<TDev, unsigned int> geoMapDetId_buf;
     Buf<TDev, float> geoMapPhi_buf;
+    EndcapGeometryDev data_;
 
     EndcapGeometryBuffer(TDev const& dev, unsigned int nEndCapMap)
         : geoMapDetId_buf(allocBufWrapper<unsigned int>(dev, nEndCapMap)),
           geoMapPhi_buf(allocBufWrapper<float>(dev, nEndCapMap)) {
-      setData(*this);
+      data_.setData(*this);
     }
 
     template <typename TQueue, typename TDevSrc>
@@ -47,7 +48,7 @@ namespace SDL {
       copyFromSrc(queue, src);
     }
 
-    inline EndcapGeometryDev const* data() const { return this; }
+    inline EndcapGeometryDev const* data() const { return &data_; }
   };
 
 }  // namespace SDL

@@ -19,7 +19,7 @@ namespace SDL {
     uint16_t nLowerModules;
     unsigned int nPixels;
     unsigned int nEndCapMap;
-    std::shared_ptr<const modulesBuffer<TDev>> modulesBuffers;
+    std::shared_ptr<const ModulesBuffer<TDev>> modulesBuffers;
     std::shared_ptr<const EndcapGeometryBuffer<TDev>> endcapGeometryBuffers;
     std::shared_ptr<const pixelMap> pixelMapping;
 
@@ -27,7 +27,7 @@ namespace SDL {
               uint16_t const& nLowerModulesIn,
               unsigned int const& nPixelsIn,
               unsigned int const& nEndCapMapIn,
-              std::shared_ptr<const modulesBuffer<TDev>> const& modulesBuffersIn,
+              std::shared_ptr<const ModulesBuffer<TDev>> const& modulesBuffersIn,
               std::shared_ptr<const EndcapGeometryBuffer<TDev>> const& endcapGeometryBuffersIn,
               std::shared_ptr<const pixelMap> const& pixelMappingIn)
         : nModules(nModulesIn),
@@ -49,7 +49,7 @@ namespace cms::alpakatools {
     template <typename TQueue>
     static SDL::LSTESData<alpaka::Dev<TQueue>> copyAsync(TQueue& queue,
                                                          SDL::LSTESData<alpaka_common::DevHost> const& srcData) {
-      auto deviceModulesBuffers = std::make_shared<SDL::modulesBuffer<alpaka::Dev<TQueue>>>(
+      auto deviceModulesBuffers = std::make_shared<SDL::ModulesBuffer<alpaka::Dev<TQueue>>>(
           alpaka::getDev(queue), srcData.nModules, srcData.nPixels);
       deviceModulesBuffers->copyFromSrc(queue, *srcData.modulesBuffers);
       auto deviceEndcapGeometryBuffers =

@@ -81,7 +81,7 @@ std::unique_ptr<SDL::LSTESData<alpaka_common::DevHost>> SDL::loadAndFillESHost()
   uint16_t nModules;
   uint16_t nLowerModules;
   unsigned int nPixels;
-  std::shared_ptr<SDL::modulesBuffer<alpaka_common::DevHost>> modulesBuffers = nullptr;
+  std::shared_ptr<SDL::ModulesBuffer<alpaka_common::DevHost>> modulesBuffers = nullptr;
   auto pLStoLayer = std::make_shared<MapPLStoLayer>();
   auto endcapGeometry = std::make_shared<EndcapGeometry>();
   auto tiltedGeometry = std::make_shared<TiltedGeometry>();

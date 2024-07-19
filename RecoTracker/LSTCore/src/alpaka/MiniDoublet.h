@@ -6,9 +6,10 @@
 #include "RecoTracker/LSTCore/interface/EndcapGeometry.h"
 
 #include "Hit.h"
+#include "ObjectRanges.h"
 
 namespace SDL {
-  struct miniDoublets {
+  struct MiniDoublets {
     unsigned int* nMemoryLocations;
 
     unsigned int* anchorHitIndices;
@@ -53,49 +54,49 @@ namespace SDL {
     float* outerLowEdgeY;
 
     template <typename TBuf>
-    void setData(TBuf& mdsbuf) {
-      nMemoryLocations = alpaka::getPtrNative(mdsbuf.nMemoryLocations_buf);
-      anchorHitIndices = alpaka::getPtrNative(mdsbuf.anchorHitIndices_buf);
-      outerHitIndices = alpaka::getPtrNative(mdsbuf.outerHitIndices_buf);
-      moduleIndices = alpaka::getPtrNative(mdsbuf.moduleIndices_buf);
-      nMDs = alpaka::getPtrNative(mdsbuf.nMDs_buf);
-      totOccupancyMDs = alpaka::getPtrNative(mdsbuf.totOccupancyMDs_buf);
-      dphichanges = alpaka::getPtrNative(mdsbuf.dphichanges_buf);
-      dzs = alpaka::getPtrNative(mdsbuf.dzs_buf);
-      dphis = alpaka::getPtrNative(mdsbuf.dphis_buf);
-      shiftedXs = alpaka::getPtrNative(mdsbuf.shiftedXs_buf);
-      shiftedYs = alpaka::getPtrNative(mdsbuf.shiftedYs_buf);
-      shiftedZs = alpaka::getPtrNative(mdsbuf.shiftedZs_buf);
-      noShiftedDzs = alpaka::getPtrNative(mdsbuf.noShiftedDzs_buf);
-      noShiftedDphis = alpaka::getPtrNative(mdsbuf.noShiftedDphis_buf);
-      noShiftedDphiChanges = alpaka::getPtrNative(mdsbuf.noShiftedDphiChanges_buf);
-      anchorX = alpaka::getPtrNative(mdsbuf.anchorX_buf);
-      anchorY = alpaka::getPtrNative(mdsbuf.anchorY_buf);
-      anchorZ = alpaka::getPtrNative(mdsbuf.anchorZ_buf);
-      anchorRt = alpaka::getPtrNative(mdsbuf.anchorRt_buf);
-      anchorPhi = alpaka::getPtrNative(mdsbuf.anchorPhi_buf);
-      anchorEta = alpaka::getPtrNative(mdsbuf.anchorEta_buf);
-      anchorHighEdgeX = alpaka::getPtrNative(mdsbuf.anchorHighEdgeX_buf);
-      anchorHighEdgeY = alpaka::getPtrNative(mdsbuf.anchorHighEdgeY_buf);
-      anchorLowEdgeX = alpaka::getPtrNative(mdsbuf.anchorLowEdgeX_buf);
-      anchorLowEdgeY = alpaka::getPtrNative(mdsbuf.anchorLowEdgeY_buf);
-      outerX = alpaka::getPtrNative(mdsbuf.outerX_buf);
-      outerY = alpaka::getPtrNative(mdsbuf.outerY_buf);
-      outerZ = alpaka::getPtrNative(mdsbuf.outerZ_buf);
-      outerRt = alpaka::getPtrNative(mdsbuf.outerRt_buf);
-      outerPhi = alpaka::getPtrNative(mdsbuf.outerPhi_buf);
-      outerEta = alpaka::getPtrNative(mdsbuf.outerEta_buf);
-      outerHighEdgeX = alpaka::getPtrNative(mdsbuf.outerHighEdgeX_buf);
-      outerHighEdgeY = alpaka::getPtrNative(mdsbuf.outerHighEdgeY_buf);
-      outerLowEdgeX = alpaka::getPtrNative(mdsbuf.outerLowEdgeX_buf);
-      outerLowEdgeY = alpaka::getPtrNative(mdsbuf.outerLowEdgeY_buf);
-      anchorLowEdgePhi = alpaka::getPtrNative(mdsbuf.anchorLowEdgePhi_buf);
-      anchorHighEdgePhi = alpaka::getPtrNative(mdsbuf.anchorHighEdgePhi_buf);
+    void setData(TBuf& buf) {
+      nMemoryLocations = alpaka::getPtrNative(buf.nMemoryLocations_buf);
+      anchorHitIndices = alpaka::getPtrNative(buf.anchorHitIndices_buf);
+      outerHitIndices = alpaka::getPtrNative(buf.outerHitIndices_buf);
+      moduleIndices = alpaka::getPtrNative(buf.moduleIndices_buf);
+      nMDs = alpaka::getPtrNative(buf.nMDs_buf);
+      totOccupancyMDs = alpaka::getPtrNative(buf.totOccupancyMDs_buf);
+      dphichanges = alpaka::getPtrNative(buf.dphichanges_buf);
+      dzs = alpaka::getPtrNative(buf.dzs_buf);
+      dphis = alpaka::getPtrNative(buf.dphis_buf);
+      shiftedXs = alpaka::getPtrNative(buf.shiftedXs_buf);
+      shiftedYs = alpaka::getPtrNative(buf.shiftedYs_buf);
+      shiftedZs = alpaka::getPtrNative(buf.shiftedZs_buf);
+      noShiftedDzs = alpaka::getPtrNative(buf.noShiftedDzs_buf);
+      noShiftedDphis = alpaka::getPtrNative(buf.noShiftedDphis_buf);
+      noShiftedDphiChanges = alpaka::getPtrNative(buf.noShiftedDphiChanges_buf);
+      anchorX = alpaka::getPtrNative(buf.anchorX_buf);
+      anchorY = alpaka::getPtrNative(buf.anchorY_buf);
+      anchorZ = alpaka::getPtrNative(buf.anchorZ_buf);
+      anchorRt = alpaka::getPtrNative(buf.anchorRt_buf);
+      anchorPhi = alpaka::getPtrNative(buf.anchorPhi_buf);
+      anchorEta = alpaka::getPtrNative(buf.anchorEta_buf);
+      anchorHighEdgeX = alpaka::getPtrNative(buf.anchorHighEdgeX_buf);
+      anchorHighEdgeY = alpaka::getPtrNative(buf.anchorHighEdgeY_buf);
+      anchorLowEdgeX = alpaka::getPtrNative(buf.anchorLowEdgeX_buf);
+      anchorLowEdgeY = alpaka::getPtrNative(buf.anchorLowEdgeY_buf);
+      outerX = alpaka::getPtrNative(buf.outerX_buf);
+      outerY = alpaka::getPtrNative(buf.outerY_buf);
+      outerZ = alpaka::getPtrNative(buf.outerZ_buf);
+      outerRt = alpaka::getPtrNative(buf.outerRt_buf);
+      outerPhi = alpaka::getPtrNative(buf.outerPhi_buf);
+      outerEta = alpaka::getPtrNative(buf.outerEta_buf);
+      outerHighEdgeX = alpaka::getPtrNative(buf.outerHighEdgeX_buf);
+      outerHighEdgeY = alpaka::getPtrNative(buf.outerHighEdgeY_buf);
+      outerLowEdgeX = alpaka::getPtrNative(buf.outerLowEdgeX_buf);
+      outerLowEdgeY = alpaka::getPtrNative(buf.outerLowEdgeY_buf);
+      anchorLowEdgePhi = alpaka::getPtrNative(buf.anchorLowEdgePhi_buf);
+      anchorHighEdgePhi = alpaka::getPtrNative(buf.anchorHighEdgePhi_buf);
     }
   };
 
   template <typename TDev>
-  struct miniDoubletsBuffer : miniDoublets {
+  struct MiniDoubletsBuffer {
     Buf<TDev, unsigned int> nMemoryLocations_buf;
 
     Buf<TDev, unsigned int> anchorHitIndices_buf;
@@ -139,8 +140,10 @@ namespace SDL {
     Buf<TDev, float> outerLowEdgeX_buf;
     Buf<TDev, float> outerLowEdgeY_buf;
 
+    MiniDoublets data_;
+
     template <typename TQueue, typename TDevAcc>
-    miniDoubletsBuffer(unsigned int nMemoryLoc, uint16_t nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
+    MiniDoubletsBuffer(unsigned int nMemoryLoc, uint16_t nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
         : nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
           anchorHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
           outerHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
@@ -182,13 +185,16 @@ namespace SDL {
       alpaka::memset(queue, totOccupancyMDs_buf, 0u);
       alpaka::wait(queue);
     }
+
+    inline MiniDoublets const* data() const { return &data_; }
+    inline void setData(MiniDoubletsBuffer& buf) { data_.setData(buf); }
   };
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addMDToMemory(TAcc const& acc,
-                                                    struct SDL::miniDoublets& mdsInGPU,
-                                                    struct SDL::hits& hitsInGPU,
-                                                    struct SDL::modules& modulesInGPU,
+                                                    struct SDL::MiniDoublets& mdsInGPU,
+                                                    struct SDL::Hits& hitsInGPU,
+                                                    struct SDL::Modules& modulesInGPU,
                                                     unsigned int lowerHitIdx,
                                                     unsigned int upperHitIdx,
                                                     uint16_t& lowerModuleIdx,
@@ -260,7 +266,7 @@ namespace SDL {
     mdsInGPU.outerLowEdgeY[idx] = hitsInGPU.lowEdgeYs[outerHitIndex];
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(struct SDL::modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(struct SDL::Modules& modulesInGPU,
                                                               uint16_t& moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
@@ -281,7 +287,7 @@ namespace SDL {
       return false;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct SDL::modules& modulesInGPU, uint16_t& moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct SDL::Modules& modulesInGPU, uint16_t& moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -335,7 +341,7 @@ namespace SDL {
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(TAcc const& acc,
                                                      float rt,
-                                                     struct SDL::modules& modulesInGPU,
+                                                     struct SDL::Modules& modulesInGPU,
                                                      uint16_t& moduleIndex,
                                                      float dPhi = 0,
                                                      float dz = 0) {
@@ -397,7 +403,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_INLINE ALPAKA_FN_ACC void shiftStripHits(TAcc const& acc,
-                                                     struct SDL::modules& modulesInGPU,
+                                                     struct SDL::Modules& modulesInGPU,
                                                      uint16_t& lowerModuleIndex,
                                                      uint16_t& upperModuleIndex,
                                                      unsigned int lowerHitIndex,
@@ -563,7 +569,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgo(TAcc const& acc,
-                                               struct SDL::modules& modulesInGPU,
+                                               struct SDL::Modules& modulesInGPU,
                                                uint16_t& lowerModuleIndex,
                                                uint16_t& upperModuleIndex,
                                                unsigned int lowerHitIndex,
@@ -638,7 +644,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
-                                                     struct SDL::modules& modulesInGPU,
+                                                     struct SDL::Modules& modulesInGPU,
                                                      uint16_t& lowerModuleIndex,
                                                      uint16_t& upperModuleIndex,
                                                      unsigned int lowerHitIndex,
@@ -769,7 +775,7 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
-                                                     struct SDL::modules& modulesInGPU,
+                                                     struct SDL::Modules& modulesInGPU,
                                                      uint16_t& lowerModuleIndex,
                                                      uint16_t& upperModuleIndex,
                                                      unsigned int lowerHitIndex,
@@ -883,10 +889,10 @@ namespace SDL {
   struct createMiniDoubletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::hits hitsInGPU,
-                                  struct SDL::miniDoublets mdsInGPU,
-                                  struct SDL::objectRanges rangesInGPU) const {
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::Hits hitsInGPU,
+                                  struct SDL::MiniDoublets mdsInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -981,8 +987,8 @@ namespace SDL {
   struct createMDArrayRangesGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::objectRanges rangesInGPU) const {
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -1071,10 +1077,10 @@ namespace SDL {
   struct addMiniDoubletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::modules modulesInGPU,
-                                  struct SDL::miniDoublets mdsInGPU,
-                                  struct SDL::objectRanges rangesInGPU,
-                                  struct SDL::hits hitsInGPU) const {
+                                  struct SDL::Modules modulesInGPU,
+                                  struct SDL::MiniDoublets mdsInGPU,
+                                  struct SDL::ObjectRanges rangesInGPU,
+                                  struct SDL::Hits hitsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 

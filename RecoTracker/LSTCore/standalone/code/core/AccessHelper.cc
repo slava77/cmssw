@@ -9,12 +9,12 @@ using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 //____________________________________________________________________________________________
 std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> convertHitsToHitIdxsAndHitTypes(
     SDL::Event<Acc3D>* event, std::vector<unsigned int> hits) {
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   std::vector<unsigned int> hitidxs;
   std::vector<unsigned int> hittypes;
   for (auto& hit : hits) {
-    hitidxs.push_back(hitsInGPU.idxs[hit]);
-    if (hitsInGPU.detid[hit] == 1)
+    hitidxs.push_back(hitsEvt->idxs[hit]);
+    if (hitsEvt->detid[hit] == 1)
       hittypes.push_back(0);
     else
       hittypes.push_back(4);
@@ -28,17 +28,17 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> convertHitsToHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getPixelHitsFrompLS(SDL::Event<Acc3D>* event, unsigned int pLS) {
-  SDL::segmentsBuffer<alpaka::DevCpu>& segments_ = *(event->getSegments());
-  SDL::miniDoubletsBuffer<alpaka::DevCpu>& miniDoublets_ = *(event->getMiniDoublets());
-  SDL::objectRangesBuffer<alpaka::DevCpu>& rangesInGPU = (*event->getRanges());
-  SDL::modulesBuffer<alpaka::DevCpu>& modulesInGPU = (*event->getModules());
-  const unsigned int pLS_offset = rangesInGPU.segmentModuleIndices[*(modulesInGPU.nLowerModules)];
-  unsigned int MD_1 = segments_.mdIndices[2 * (pLS + pLS_offset)];
-  unsigned int MD_2 = segments_.mdIndices[2 * (pLS + pLS_offset) + 1];
-  unsigned int hit_1 = miniDoublets_.anchorHitIndices[MD_1];
-  unsigned int hit_2 = miniDoublets_.outerHitIndices[MD_1];
-  unsigned int hit_3 = miniDoublets_.anchorHitIndices[MD_2];
-  unsigned int hit_4 = miniDoublets_.outerHitIndices[MD_2];
+  SDL::Segments const* segments = event->getSegments()->data();
+  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  SDL::ObjectRanges const* rangesEvt = event->getRanges()->data();
+  SDL::Modules const* modulesEvt = event->getModules()->data();
+  const unsigned int pLS_offset = rangesEvt->segmentModuleIndices[*(modulesEvt->nLowerModules)];
+  unsigned int MD_1 = segments->mdIndices[2 * (pLS + pLS_offset)];
+  unsigned int MD_2 = segments->mdIndices[2 * (pLS + pLS_offset) + 1];
+  unsigned int hit_1 = miniDoublets->anchorHitIndices[MD_1];
+  unsigned int hit_2 = miniDoublets->outerHitIndices[MD_1];
+  unsigned int hit_3 = miniDoublets->anchorHitIndices[MD_2];
+  unsigned int hit_4 = miniDoublets->outerHitIndices[MD_2];
   if (hit_3 == hit_4)
     return {hit_1, hit_2, hit_3};
   else
@@ -47,11 +47,11 @@ std::vector<unsigned int> getPixelHitsFrompLS(SDL::Event<Acc3D>* event, unsigned
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getPixelHitIdxsFrompLS(SDL::Event<Acc3D>* event, unsigned int pLS) {
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   std::vector<unsigned int> hits = getPixelHitsFrompLS(event, pLS);
   std::vector<unsigned int> hitidxs;
   for (auto& hit : hits)
-    hitidxs.push_back(hitsInGPU.idxs[hit]);
+    hitidxs.push_back(hitsEvt->idxs[hit]);
   return hitidxs;
 }
 
@@ -74,9 +74,9 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getHitsFromMD(SDL::Event<Acc3D>* event, unsigned int MD) {
-  SDL::miniDoubletsBuffer<alpaka::DevCpu>& miniDoublets_ = *(event->getMiniDoublets());
-  unsigned int hit_1 = miniDoublets_.anchorHitIndices[MD];
-  unsigned int hit_2 = miniDoublets_.outerHitIndices[MD];
+  SDL::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  unsigned int hit_1 = miniDoublets->anchorHitIndices[MD];
+  unsigned int hit_2 = miniDoublets->outerHitIndices[MD];
   return {hit_1, hit_2};
 }
 
@@ -92,9 +92,9 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getMDsFromLS(SDL::Event<Acc3D>* event, unsigned int LS) {
-  SDL::segmentsBuffer<alpaka::DevCpu>& segments_ = *(event->getSegments());
-  unsigned int MD_1 = segments_.mdIndices[2 * LS];
-  unsigned int MD_2 = segments_.mdIndices[2 * LS + 1];
+  SDL::Segments const* segments = event->getSegments()->data();
+  unsigned int MD_1 = segments->mdIndices[2 * LS];
+  unsigned int MD_2 = segments->mdIndices[2 * LS + 1];
   return {MD_1, MD_2};
 }
 
@@ -118,9 +118,9 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getLSsFromT3(SDL::Event<Acc3D>* event, unsigned int T3) {
-  SDL::tripletsBuffer<alpaka::DevCpu>& triplets_ = *(event->getTriplets());
-  unsigned int LS_1 = triplets_.segmentIndices[2 * T3];
-  unsigned int LS_2 = triplets_.segmentIndices[2 * T3 + 1];
+  SDL::Triplets const* triplets = event->getTriplets()->data();
+  unsigned int LS_1 = triplets->segmentIndices[2 * T3];
+  unsigned int LS_2 = triplets->segmentIndices[2 * T3 + 1];
   return {LS_1, LS_2};
 }
 
@@ -153,9 +153,9 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getT3sFromT5(SDL::Event<Acc3D>* event, unsigned int T5) {
-  SDL::quintupletsBuffer<alpaka::DevCpu>& quintuplets_ = *(event->getQuintuplets());
-  unsigned int T3_1 = quintuplets_.tripletIndices[2 * T5];
-  unsigned int T3_2 = quintuplets_.tripletIndices[2 * T5 + 1];
+  SDL::Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  unsigned int T3_1 = quintuplets->tripletIndices[2 * T5];
+  unsigned int T3_2 = quintuplets->tripletIndices[2 * T5 + 1];
   return {T3_1, T3_2};
 }
 
@@ -190,20 +190,20 @@ std::vector<unsigned int> getHitsFromT5(SDL::Event<Acc3D>* event, unsigned int T
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getHitIdxsFromT5(SDL::Event<Acc3D>* event, unsigned int T5) {
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   std::vector<unsigned int> hits = getHitsFromT5(event, T5);
   std::vector<unsigned int> hitidxs;
   for (auto& hit : hits)
-    hitidxs.push_back(hitsInGPU.idxs[hit]);
+    hitidxs.push_back(hitsEvt->idxs[hit]);
   return hitidxs;
 }
 //____________________________________________________________________________________________
 std::vector<unsigned int> getModuleIdxsFromT5(SDL::Event<Acc3D>* event, unsigned int T5) {
   std::vector<unsigned int> hits = getHitsFromT5(event, T5);
   std::vector<unsigned int> module_idxs;
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   for (auto& hitIdx : hits) {
-    module_idxs.push_back(hitsInGPU.moduleIndices[hitIdx]);
+    module_idxs.push_back(hitsEvt->moduleIndices[hitIdx]);
   }
   return module_idxs;
 }
@@ -225,17 +225,17 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 unsigned int getPixelLSFrompT3(SDL::Event<Acc3D>* event, unsigned int pT3) {
-  SDL::pixelTripletsBuffer<alpaka::DevCpu>& pixelTriplets_ = *(event->getPixelTriplets());
-  SDL::objectRangesBuffer<alpaka::DevCpu>& rangesInGPU = (*event->getRanges());
-  SDL::modulesBuffer<alpaka::DevCpu>& modulesInGPU = (*event->getModules());
-  const unsigned int pLS_offset = rangesInGPU.segmentModuleIndices[*(modulesInGPU.nLowerModules)];
-  return pixelTriplets_.pixelSegmentIndices[pT3] - pLS_offset;
+  SDL::PixelTriplets const* pixelTriplets = event->getPixelTriplets()->data();
+  SDL::ObjectRanges const* rangesEvt = event->getRanges()->data();
+  SDL::Modules const* modulesEvt = event->getModules()->data();
+  const unsigned int pLS_offset = rangesEvt->segmentModuleIndices[*(modulesEvt->nLowerModules)];
+  return pixelTriplets->pixelSegmentIndices[pT3] - pLS_offset;
 }
 
 //____________________________________________________________________________________________
 unsigned int getT3FrompT3(SDL::Event<Acc3D>* event, unsigned int pT3) {
-  SDL::pixelTriplets& pixelTriplets_ = *(event->getPixelTriplets());
-  return pixelTriplets_.tripletIndices[pT3];
+  SDL::PixelTriplets const* pixelTriplets = event->getPixelTriplets()->data();
+  return pixelTriplets->tripletIndices[pT3];
 }
 
 //____________________________________________________________________________________________
@@ -274,20 +274,20 @@ std::vector<unsigned int> getHitsFrompT3(SDL::Event<Acc3D>* event, unsigned int 
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getHitIdxsFrompT3(SDL::Event<Acc3D>* event, unsigned int pT3) {
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   std::vector<unsigned int> hits = getHitsFrompT3(event, pT3);
   std::vector<unsigned int> hitidxs;
   for (auto& hit : hits)
-    hitidxs.push_back(hitsInGPU.idxs[hit]);
+    hitidxs.push_back(hitsEvt->idxs[hit]);
   return hitidxs;
 }
 //____________________________________________________________________________________________
 std::vector<unsigned int> getModuleIdxsFrompT3(SDL::Event<Acc3D>* event, unsigned int pT3) {
   std::vector<unsigned int> hits = getOuterTrackerHitsFrompT3(event, pT3);
   std::vector<unsigned int> module_idxs;
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   for (auto& hitIdx : hits) {
-    module_idxs.push_back(hitsInGPU.moduleIndices[hitIdx]);
+    module_idxs.push_back(hitsEvt->moduleIndices[hitIdx]);
   }
   return module_idxs;
 }
@@ -314,17 +314,17 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 unsigned int getPixelLSFrompT5(SDL::Event<Acc3D>* event, unsigned int pT5) {
-  SDL::pixelQuintupletsBuffer<alpaka::DevCpu>& pixelQuintuplets_ = *(event->getPixelQuintuplets());
-  SDL::objectRangesBuffer<alpaka::DevCpu>& rangesInGPU = (*event->getRanges());
-  SDL::modulesBuffer<alpaka::DevCpu>& modulesInGPU = (*event->getModules());
-  const unsigned int pLS_offset = rangesInGPU.segmentModuleIndices[*(modulesInGPU.nLowerModules)];
-  return pixelQuintuplets_.pixelIndices[pT5] - pLS_offset;
+  SDL::PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets()->data();
+  SDL::ObjectRanges const* rangesEvt = event->getRanges()->data();
+  SDL::Modules const* modulesEvt = event->getModules()->data();
+  const unsigned int pLS_offset = rangesEvt->segmentModuleIndices[*(modulesEvt->nLowerModules)];
+  return pixelQuintuplets->pixelIndices[pT5] - pLS_offset;
 }
 
 //____________________________________________________________________________________________
 unsigned int getT5FrompT5(SDL::Event<Acc3D>* event, unsigned int pT5) {
-  SDL::pixelQuintupletsBuffer<alpaka::DevCpu>& pixelQuintuplets_ = *(event->getPixelQuintuplets());
-  return pixelQuintuplets_.T5Indices[pT5];
+  SDL::PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets()->data();
+  return pixelQuintuplets->T5Indices[pT5];
 }
 
 //____________________________________________________________________________________________
@@ -369,11 +369,11 @@ std::vector<unsigned int> getHitsFrompT5(SDL::Event<Acc3D>* event, unsigned int 
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getHitIdxsFrompT5(SDL::Event<Acc3D>* event, unsigned int pT5) {
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   std::vector<unsigned int> hits = getHitsFrompT5(event, pT5);
   std::vector<unsigned int> hitidxs;
   for (auto& hit : hits)
-    hitidxs.push_back(hitsInGPU.idxs[hit]);
+    hitidxs.push_back(hitsEvt->idxs[hit]);
   return hitidxs;
 }
 
@@ -381,9 +381,9 @@ std::vector<unsigned int> getHitIdxsFrompT5(SDL::Event<Acc3D>* event, unsigned i
 std::vector<unsigned int> getModuleIdxsFrompT5(SDL::Event<Acc3D>* event, unsigned int pT5) {
   std::vector<unsigned int> hits = getOuterTrackerHitsFrompT5(event, pT5);
   std::vector<unsigned int> module_idxs;
-  SDL::hitsBuffer<alpaka::DevCpu>& hitsInGPU = *(event->getHits());
+  SDL::Hits const* hitsEvt = event->getHits()->data();
   for (auto& hitIdx : hits) {
-    module_idxs.push_back(hitsInGPU.moduleIndices[hitIdx]);
+    module_idxs.push_back(hitsEvt->moduleIndices[hitIdx]);
   }
   return module_idxs;
 }
@@ -412,9 +412,9 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 //____________________________________________________________________________________________
 std::vector<unsigned int> getLSsFromTC(SDL::Event<Acc3D>* event, unsigned int TC) {
   // Get the type of the track candidate
-  SDL::trackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event->getTrackCandidates());
-  short type = trackCandidatesInGPU.trackCandidateType[TC];
-  unsigned int objidx = trackCandidatesInGPU.directObjectIndices[TC];
+  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  short type = trackCandidates->trackCandidateType[TC];
+  unsigned int objidx = trackCandidates->directObjectIndices[TC];
   switch (type) {
     case kpT5:
       return getLSsFrompT5(event, objidx);
@@ -435,9 +435,9 @@ std::vector<unsigned int> getLSsFromTC(SDL::Event<Acc3D>* event, unsigned int TC
 std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHitTypesFromTC(SDL::Event<Acc3D>* event,
                                                                                              unsigned TC) {
   // Get the type of the track candidate
-  SDL::trackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event->getTrackCandidates());
-  short type = trackCandidatesInGPU.trackCandidateType[TC];
-  unsigned int objidx = trackCandidatesInGPU.directObjectIndices[TC];
+  SDL::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  short type = trackCandidates->trackCandidateType[TC];
+  unsigned int objidx = trackCandidates->directObjectIndices[TC];
   switch (type) {
     case kpT5:
       return getHitIdxsAndHitTypesFrompT5(event, objidx);
