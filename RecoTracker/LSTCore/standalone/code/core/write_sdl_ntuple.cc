@@ -621,7 +621,7 @@ void setGnnNtupleBranches(lst::Event<Acc3D>* event) {
       sg_index_map[sgIdx] = ana.tx->getBranch<std::vector<int>>("LS_isFake").size() - 1;
 
       // // T5 eta and phi are computed using outer and innermost hits
-      // lstMath::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
+      // lst_math::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
       // const float phi = hitA.phi();
       // const float eta = hitA.eta();
     }
@@ -683,7 +683,7 @@ void setGnnNtupleMiniDoublet(lst::Event<Acc3D>* event, unsigned int MD) {
   float pt = hit0_r * lst::k2Rinv1GeVf / sin(dphichange);
 
   // T5 eta and phi are computed using outer and innermost hits
-  lstMath::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
+  lst_math::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
   const float phi = hitA.phi();
   const float eta = hitA.eta();
 
@@ -911,8 +911,8 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   const float pt = quintuplets->innerRadius[T5] * lst::k2Rinv1GeVf * 2;
 
   // T5 eta and phi are computed using outer and innermost hits
-  lstMath::Hit hitA(trk.ph2_x()[Hit_0], trk.ph2_y()[Hit_0], trk.ph2_z()[Hit_0]);
-  lstMath::Hit hitB(trk.ph2_x()[Hit_8], trk.ph2_y()[Hit_8], trk.ph2_z()[Hit_8]);
+  lst_math::Hit hitA(trk.ph2_x()[Hit_0], trk.ph2_y()[Hit_0], trk.ph2_z()[Hit_0]);
+  lst_math::Hit hitB(trk.ph2_x()[Hit_8], trk.ph2_y()[Hit_8], trk.ph2_z()[Hit_8]);
   const float phi = hitA.phi();
   const float eta = hitB.eta();
 

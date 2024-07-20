@@ -501,13 +501,13 @@ float drfracSimHitConsistentWithHelix(int isimtrk, int isimhitidx) {
   int charge = trk.sim_q()[isimtrk];
 
   // Construct helix object
-  lstMath::Helix helix(pt, eta, phi, vx, vy, vz, charge);
+  lst_math::Helix helix(pt, eta, phi, vx, vy, vz, charge);
 
   return drfracSimHitConsistentWithHelix(helix, isimhitidx);
 }
 
 //__________________________________________________________________________________________
-float drfracSimHitConsistentWithHelix(lstMath::Helix &helix, int isimhitidx) {
+float drfracSimHitConsistentWithHelix(lst_math::Helix &helix, int isimhitidx) {
   // Sim hit vector
   std::vector<float> point = {trk.simhit_x()[isimhitidx], trk.simhit_y()[isimhitidx], trk.simhit_z()[isimhitidx]};
 
@@ -539,13 +539,13 @@ float distxySimHitConsistentWithHelix(int isimtrk, int isimhitidx) {
   int charge = trk.sim_q()[isimtrk];
 
   // Construct helix object
-  lstMath::Helix helix(pt, eta, phi, vx, vy, vz, charge);
+  lst_math::Helix helix(pt, eta, phi, vx, vy, vz, charge);
 
   return distxySimHitConsistentWithHelix(helix, isimhitidx);
 }
 
 //__________________________________________________________________________________________
-float distxySimHitConsistentWithHelix(lstMath::Helix &helix, int isimhitidx) {
+float distxySimHitConsistentWithHelix(lst_math::Helix &helix, int isimhitidx) {
   // Sim hit vector
   std::vector<float> point = {trk.simhit_x()[isimhitidx], trk.simhit_y()[isimhitidx], trk.simhit_z()[isimhitidx]};
 

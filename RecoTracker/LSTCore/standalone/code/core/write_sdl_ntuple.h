@@ -4,14 +4,14 @@
 #include <iostream>
 #include <tuple>
 
-#include "lstMath.h"
+#include "lst_math.h"
 #include "Event.h"
 
 #include "AnalysisConfig.h"
 #include "trkCore.h"
 #include "AccessHelper.h"
 
-using lstEvent = lst::Event<ALPAKA_ACCELERATOR_NAMESPACE::Acc3D>;
+using LSTEvent = lst::Event<ALPAKA_ACCELERATOR_NAMESPACE::Acc3D>;
 
 // Common
 void createOutputBranches();
@@ -19,40 +19,40 @@ void createRequiredOutputBranches();
 void createOptionalOutputBranches();
 void createGnnNtupleBranches();
 
-void fillOutputBranches(lstEvent* event);
-void setOutputBranches(lstEvent* event);
-void setOptionalOutputBranches(lstEvent* event);
-void setPixelQuintupletOutputBranches(lstEvent* event);
-void setQuintupletOutputBranches(lstEvent* event);
-void setPixelTripletOutputBranches(lstEvent* event);
-void setGnnNtupleBranches(lstEvent* event);
-void setGnnNtupleMiniDoublet(lstEvent* event, unsigned int MD);
+void fillOutputBranches(LSTEvent* event);
+void setOutputBranches(LSTEvent* event);
+void setOptionalOutputBranches(LSTEvent* event);
+void setPixelQuintupletOutputBranches(LSTEvent* event);
+void setQuintupletOutputBranches(LSTEvent* event);
+void setPixelTripletOutputBranches(LSTEvent* event);
+void setGnnNtupleBranches(LSTEvent* event);
+void setGnnNtupleMiniDoublet(LSTEvent* event, unsigned int MD);
 
-std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(lstEvent* event, unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(lstEvent* event,
+std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(LSTEvent* event, unsigned int);
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(LSTEvent* event,
                                                                                                unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(lstEvent* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(LSTEvent* event,
                                                                                                unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(lstEvent* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(LSTEvent* event,
                                                                                               unsigned int);
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(lstEvent* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(LSTEvent* event,
                                                                                                unsigned int);
 
 // Print multiplicities
-void printMiniDoubletMultiplicities(lstEvent* event);
-void printHitMultiplicities(lstEvent* event);
+void printMiniDoubletMultiplicities(LSTEvent* event);
+void printHitMultiplicities(LSTEvent* event);
 
 // Print objects (GPU)
-void printAllObjects(lstEvent* event);
-void printpT4s(lstEvent* event);
-void printMDs(lstEvent* event);
-void printLSs(lstEvent* event);
-void printpLSs(lstEvent* event);
-void printT3s(lstEvent* event);
-void printT4s(lstEvent* event);
-void printTCs(lstEvent* event);
+void printAllObjects(LSTEvent* event);
+void printpT4s(LSTEvent* event);
+void printMDs(LSTEvent* event);
+void printLSs(LSTEvent* event);
+void printpLSs(LSTEvent* event);
+void printT3s(LSTEvent* event);
+void printT4s(LSTEvent* event);
+void printTCs(LSTEvent* event);
 
 // Print anomalous multiplicities
-void debugPrintOutlierMultiplicities(lstEvent* event);
+void debugPrintOutlierMultiplicities(LSTEvent* event);
 
 #endif
