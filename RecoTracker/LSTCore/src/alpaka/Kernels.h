@@ -118,7 +118,7 @@ namespace lst {
     int hits1[Params_T3::kHits];
     int hits2[Params_T3::kHits];
 
-    for (int i = 0; i < Params_pLS::kHits; i++) {
+    for (int i = 0; i < Params_T3::kHits; i++) {
       hits1[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * ix + i + 4];  // Omitting the pLS hits
       hits2[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * jx + i + 4];  // Omitting the pLS hits
     }
