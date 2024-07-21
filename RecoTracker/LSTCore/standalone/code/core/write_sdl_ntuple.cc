@@ -305,7 +305,7 @@ void setPixelQuintupletOutputBranches(lst::Event<Acc3D>* event) {
   for (unsigned int pT5 = 0; pT5 < nPixelQuintuplets; pT5++) {
     unsigned int T5Index = getT5FrompT5(event, pT5);
     unsigned int pLSIndex = getPixelLSFrompT5(event, pT5);
-    float pt = (__H2F(quintuplets->innerRadius[T5Index]) * SDL::k2Rinv1GeVf * 2 + segments->ptIn[pLSIndex]) / 2;
+    float pt = (__H2F(quintuplets->innerRadius[T5Index]) * lst::k2Rinv1GeVf * 2 + segments->ptIn[pLSIndex]) / 2;
     float eta = segments->eta[pLSIndex];
     float phi = segments->phi[pLSIndex];
 

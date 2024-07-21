@@ -256,7 +256,7 @@ void lst::LST<Acc3D>::getOutput(lst::Event<Acc3D>& event) {
   std::vector<short> tc_trackCandidateType;
 
   lst::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW());
-  lst::TrackCandidatesBuffer<alpaka::DevCpu>& trackCandidatesInGPU = (*event.getTrackCandidatesInCMSSW());
+  lst::TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
 
   unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {

@@ -1818,7 +1818,6 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSS
   return trackCandidatesInCPU;
 }
 
-<<<<<<< HEAD
 lst::ModulesBuffer<DevHost>* lst::Event<Acc3D>::getModules(bool isFull) {
   if (modulesInCPU == nullptr) {
     // The last input here is just a small placeholder for the allocation.
