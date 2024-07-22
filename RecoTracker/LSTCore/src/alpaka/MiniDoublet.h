@@ -953,7 +953,7 @@ namespace lst {
             int totOccupancyMDs =
                 alpaka::atomicOp<alpaka::AtomicAdd>(acc, &mdsInGPU.totOccupancyMDs[lowerModuleIndex], 1u);
             if (totOccupancyMDs >= (rangesInGPU.miniDoubletModuleOccupancy[lowerModuleIndex])) {
-#ifdef Warnings
+#ifdef WARNINGS
               printf("Mini-doublet excess alert! Module index =  %d\n", lowerModuleIndex);
 #endif
             } else {
@@ -992,7 +992,7 @@ namespace lst {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      // Initialize variables in shared memory and set to 0
+      // Declare variables in shared memory and set to 0
       int& nTotalMDs = alpaka::declareSharedVar<int, __COUNTER__>(acc);
       nTotalMDs = 0;
       alpaka::syncBlockThreads(acc);
@@ -1054,7 +1054,7 @@ namespace lst {
           occupancy = 25;
         else {
           occupancy = 0;
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Unhandled case in createMDArrayRangesGPU! Module index = %i\n", i);
 #endif
         }

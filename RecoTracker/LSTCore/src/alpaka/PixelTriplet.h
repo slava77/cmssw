@@ -481,7 +481,7 @@ namespace lst {
         delta2[i] = 500 * inv1;
         isFlat[i] = false;
       }
-#ifdef Warnings
+#ifdef WARNINGS
       else {
         printf("ERROR!!!!! I SHOULDN'T BE HERE!!!! subdet = %d, type = %d, side = %d\n",
                moduleSubdet,
@@ -1051,7 +1051,7 @@ namespace lst {
           uint16_t tripletLowerModuleIndex =
               modulesInGPU
                   .connectedPixels[iLSModule];  //connected pixels will have the appropriate lower module index by default!
-#ifdef Warnings
+#ifdef WARNINGS
           if (tripletLowerModuleIndex >= *modulesInGPU.nLowerModules) {
             printf("tripletLowerModuleIndex %d >= modulesInGPU.nLowerModules %d \n",
                    tripletLowerModuleIndex,
@@ -1129,8 +1129,8 @@ namespace lst {
               float score = rPhiChiSquared + rPhiChiSquaredInwards;
               unsigned int totOccupancyPixelTriplets =
                   alpaka::atomicOp<alpaka::AtomicAdd>(acc, pixelTripletsInGPU.totOccupancyPixelTriplets, 1u);
-              if (totOccupancyPixelTriplets >= N_MAX_PIXEL_TRIPLETS) {
-#ifdef Warnings
+              if (totOccupancyPixelTriplets >= n_max_pixel_triplets) {
+#ifdef WARNINGS
                 printf("Pixel Triplet excess alert!\n");
 #endif
               } else {
@@ -2336,7 +2336,7 @@ namespace lst {
         delta2[i] = 500.f * inv1;
         isFlat[i] = false;
       }
-#ifdef Warnings
+#ifdef WARNINGS
       else {
         printf("ERROR!!!!! I SHOULDN'T BE HERE!!!! subdet = %d, type = %d, side = %d\n",
                moduleSubdet,
@@ -2737,8 +2737,8 @@ namespace lst {
             if (success) {
               unsigned int totOccupancyPixelQuintuplets =
                   alpaka::atomicOp<alpaka::AtomicAdd>(acc, pixelQuintupletsInGPU.totOccupancyPixelQuintuplets, 1u);
-              if (totOccupancyPixelQuintuplets >= N_MAX_PIXEL_QUINTUPLETS) {
-#ifdef Warnings
+              if (totOccupancyPixelQuintuplets >= n_max_pixel_quintuplets) {
+#ifdef WARNINGS
                 printf("Pixel Quintuplet excess alert!\n");
 #endif
               } else {

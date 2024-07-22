@@ -27,7 +27,7 @@ namespace lst {
   inline void fillPixelMap(std::shared_ptr<ModulesBuffer<alpaka_common::DevHost>>& modulesBuf,
                            uint16_t nModules,
                            unsigned int& nPixels,
-                           pixelMap& pixelMapping,
+                           PixelMap& pixelMapping,
                            TQueue queue,
                            const MapPLStoLayer& pLStoLayer,
                            struct ModuleMetaData& mmd) {
@@ -111,7 +111,7 @@ namespace lst {
                                                struct ModuleMetaData& mmd,
                                                const ModuleConnectionMap* moduleConnectionMap) {
     alpaka_common::DevHost const& devHost = cms::alpakatools::host();
-    auto moduleMap_buf = allocBufWrapper<uint16_t>(devHost, nMod * MAX_CONNECTED_MODULES);
+    auto moduleMap_buf = allocBufWrapper<uint16_t>(devHost, nMod * max_connected_modules);
     uint16_t* moduleMap = alpaka::getPtrNative(moduleMap_buf);
 
     auto nConnectedModules_buf = allocBufWrapper<uint16_t>(devHost, nMod);
@@ -123,7 +123,7 @@ namespace lst {
       auto& connectedModules = moduleConnectionMap->getConnectedModuleDetIds(detId);
       nConnectedModules[index] = connectedModules.size();
       for (uint16_t i = 0; i < nConnectedModules[index]; i++) {
-        moduleMap[index * MAX_CONNECTED_MODULES + i] = mmd.detIdToIndex[connectedModules[i]];
+        moduleMap[index * max_connected_modules + i] = mmd.detIdToIndex[connectedModules[i]];
       }
     }
 
@@ -224,7 +224,7 @@ namespace lst {
                                   uint16_t& nLowerModules,
                                   unsigned int& nPixels,
                                   std::shared_ptr<ModulesBuffer<alpaka_common::DevHost>>& modulesBuf,
-                                  pixelMap* pixelMapping,
+                                  PixelMap* pixelMapping,
                                   const EndcapGeometry* endcapGeometry,
                                   const TiltedGeometry* tiltedGeometry,
                                   const ModuleConnectionMap* moduleConnectionMap) {

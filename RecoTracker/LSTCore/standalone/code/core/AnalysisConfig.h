@@ -3,7 +3,7 @@
 
 #include "TString.h"
 #include "rooutil.h"
-#include "trktree.h"
+#include "Trktree.h"
 #include "ModuleConnectionMap.h"
 
 class AnalysisConfig {
@@ -78,7 +78,7 @@ public:
   int job_index;
 
   // Custom Looper object to facilitate looping over many files
-  RooUtil::Looper<trktree> looper;
+  RooUtil::Looper<Trktree> looper;
 
   // Custom Cutflow framework
   RooUtil::Cutflow cutflow;

@@ -800,7 +800,7 @@ namespace lst {
         for (uint16_t outerLowerModuleArrayIdx = blockThreadIdx[1]; outerLowerModuleArrayIdx < nConnectedModules;
              outerLowerModuleArrayIdx += blockThreadExtent[1]) {
           uint16_t outerLowerModuleIndex =
-              modulesInGPU.moduleMap[innerLowerModuleIndex * MAX_CONNECTED_MODULES + outerLowerModuleArrayIdx];
+              modulesInGPU.moduleMap[innerLowerModuleIndex * max_connected_modules + outerLowerModuleArrayIdx];
 
           unsigned int nOuterMDs = mdsInGPU.nMDs[outerLowerModuleIndex];
 
@@ -859,7 +859,7 @@ namespace lst {
               unsigned int totOccupancySegments = alpaka::atomicOp<alpaka::AtomicAdd>(
                   acc, &segmentsInGPU.totOccupancySegments[innerLowerModuleIndex], 1u);
               if (static_cast<int>(totOccupancySegments) >= rangesInGPU.segmentModuleOccupancy[innerLowerModuleIndex]) {
-#ifdef Warnings
+#ifdef WARNINGS
                 printf("Segment excess alert! Module index = %d\n", innerLowerModuleIndex);
 #endif
               } else {
@@ -968,7 +968,7 @@ namespace lst {
           occupancy = 85;
         else {
           occupancy = 0;
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Unhandled case in createSegmentArrayRanges! Module index = %i\n", i);
 #endif
         }

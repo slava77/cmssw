@@ -1,7 +1,7 @@
 #ifndef trkCore_h
 #define trkCore_h
 
-#include "trktree.h"
+#include "Trktree.h"
 #include "TCanvas.h"
 #include "TSystem.h"
 #include "AnalysisConfig.h"

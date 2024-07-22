@@ -10,7 +10,7 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "trktree.h"
+#include "Trktree.h"
 #include "rooutil.h"
 #include "cxxopts.h"
 

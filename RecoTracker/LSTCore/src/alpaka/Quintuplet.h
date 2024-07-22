@@ -1224,7 +1224,7 @@ namespace lst {
         delta2[i] = 500.f * inv1;
         isFlat[i] = false;
       } else {
-#ifdef Warnings
+#ifdef WARNINGS
         printf("ERROR!!!!! I SHOULDN'T BE HERE!!!! subdet = %d, type = %d, side = %d\n",
                moduleSubdet,
                moduleType,
@@ -1315,7 +1315,7 @@ namespace lst {
     g = 0.5f * twoG;
     f = 0.5f * twoF;
     if (g * g + f * f - c < 0) {
-#ifdef Warnings
+#ifdef WARNINGS
       printf("FATAL! r^2 < 0!\n");
 #endif
       chiSquared = -1;
@@ -2912,8 +2912,8 @@ namespace lst {
                                                innerRadius,
                                                outerRadius,
                                                bridgeRadius);
-    TightCutFlag = TightCutFlag and (inference > lst::t5dnn::LSTWP2);  // T5-in-TC cut
-    if (inference <= lst::t5dnn::LSTWP2)                               // T5-building cut
+    TightCutFlag = TightCutFlag and (inference > lst::t5dnn::lstwp2);  // T5-in-TC cut
+    if (inference <= lst::t5dnn::lstwp2)                               // T5-building cut
       return false;
 #endif
 
@@ -3038,7 +3038,7 @@ namespace lst {
               int totOccupancyQuintuplets =
                   alpaka::atomicOp<alpaka::AtomicAdd>(acc, &quintupletsInGPU.totOccupancyQuintuplets[lowerModule1], 1u);
               if (totOccupancyQuintuplets >= rangesInGPU.quintupletModuleOccupancy[lowerModule1]) {
-#ifdef Warnings
+#ifdef WARNINGS
                 printf("Quintuplet excess alert! Module index = %d\n", lowerModule1);
 #endif
               } else {
@@ -3046,7 +3046,7 @@ namespace lst {
                     alpaka::atomicOp<alpaka::AtomicAdd>(acc, &quintupletsInGPU.nQuintuplets[lowerModule1], 1u);
                 //this if statement should never get executed!
                 if (rangesInGPU.quintupletModuleIndices[lowerModule1] == -1) {
-#ifdef Warnings
+#ifdef WARNINGS
                   printf("Quintuplets : no memory for module at module index = %d\n", lowerModule1);
 #endif
                 } else {
@@ -3175,7 +3175,7 @@ namespace lst {
           occupancy = 106;
         else {
           occupancy = 0;
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Unhandled case in createEligibleModulesListForQuintupletsGPU! Module index = %i\n", i);
 #endif
         }

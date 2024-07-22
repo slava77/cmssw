@@ -342,8 +342,8 @@ namespace lst {
       int pixelModuleIndex = *modulesInGPU.nLowerModules;
       unsigned int nPixelSegments = segmentsInGPU.nSegments[pixelModuleIndex];
 
-      if (nPixelSegments > N_MAX_PIXEL_SEGMENTS_PER_MODULE)
-        nPixelSegments = N_MAX_PIXEL_SEGMENTS_PER_MODULE;
+      if (nPixelSegments > n_max_pixel_segments_per_module)
+        nPixelSegments = n_max_pixel_segments_per_module;
 
       for (unsigned int ix = globalThreadIdx[1]; ix < nPixelSegments; ix += gridThreadExtent[1]) {
         if (secondpass && (!segmentsInGPU.isQuad[ix] || (segmentsInGPU.isDup[ix] & 1)))

@@ -7,7 +7,7 @@
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
 namespace lst {
-  struct pixelMap {
+  struct PixelMap {
     uint16_t pixelModuleIndex;
 
     std::vector<unsigned int> connectedPixelsIndex;
@@ -19,7 +19,7 @@ namespace lst {
 
     int* pixelType;
 
-    pixelMap(unsigned int sizef = size_superbins)
+    PixelMap(unsigned int sizef = size_superbins)
         : pixelModuleIndex(0),
           connectedPixelsIndex(sizef),
           connectedPixelsSizes(sizef),

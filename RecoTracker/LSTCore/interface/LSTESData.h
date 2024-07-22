@@ -21,7 +21,7 @@ namespace lst {
     unsigned int nEndCapMap;
     std::shared_ptr<const ModulesBuffer<TDev>> modulesBuffers;
     std::shared_ptr<const EndcapGeometryBuffer<TDev>> endcapGeometryBuffers;
-    std::shared_ptr<const pixelMap> pixelMapping;
+    std::shared_ptr<const PixelMap> pixelMapping;
 
     LSTESData(uint16_t const& nModulesIn,
               uint16_t const& nLowerModulesIn,
@@ -29,7 +29,7 @@ namespace lst {
               unsigned int const& nEndCapMapIn,
               std::shared_ptr<const ModulesBuffer<TDev>> const& modulesBuffersIn,
               std::shared_ptr<const EndcapGeometryBuffer<TDev>> const& endcapGeometryBuffersIn,
-              std::shared_ptr<const pixelMap> const& pixelMappingIn)
+              std::shared_ptr<const PixelMap> const& pixelMappingIn)
         : nModules(nModulesIn),
           nLowerModules(nLowerModulesIn),
           nPixels(nPixelsIn),

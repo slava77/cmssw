@@ -85,7 +85,7 @@ std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::loadAndFillESHost()
   auto pLStoLayer = std::make_shared<MapPLStoLayer>();
   auto endcapGeometry = std::make_shared<EndcapGeometry>();
   auto tiltedGeometry = std::make_shared<TiltedGeometry>();
-  auto pixelMapping = std::make_shared<pixelMap>();
+  auto pixelMapping = std::make_shared<PixelMap>();
   auto moduleConnectionMap = std::make_shared<ModuleConnectionMap>();
   ::loadMapsHost(*pLStoLayer, endcapGeometry, tiltedGeometry, moduleConnectionMap);
 

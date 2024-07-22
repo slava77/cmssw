@@ -46,24 +46,24 @@ namespace lst {
 
     //Device stuff
     unsigned int nTotalSegments;
-    struct ObjectRanges* rangesInGPU;
-    struct ObjectRangesBuffer<Device>* rangesBuffers;
-    struct Hits* hitsInGPU;
-    struct HitsBuffer<Device>* hitsBuffers;
-    struct MiniDoublets* mdsInGPU;
-    struct MiniDoubletsBuffer<Device>* miniDoubletsBuffers;
-    struct Segments* segmentsInGPU;
-    struct SegmentsBuffer<Device>* segmentsBuffers;
-    struct Triplets* tripletsInGPU;
-    struct TripletsBuffer<Device>* tripletsBuffers;
-    struct Quintuplets* quintupletsInGPU;
-    struct QuintupletsBuffer<Device>* quintupletsBuffers;
-    struct TrackCandidates* trackCandidatesInGPU;
-    struct TrackCandidatesBuffer<Device>* trackCandidatesBuffers;
-    struct PixelTriplets* pixelTripletsInGPU;
-    struct PixelTripletsBuffer<Device>* pixelTripletsBuffers;
-    struct PixelQuintuplets* pixelQuintupletsInGPU;
-    struct PixelQuintupletsBuffer<Device>* pixelQuintupletsBuffers;
+    ObjectRanges* rangesInGPU;
+    ObjectRangesBuffer<Device>* rangesBuffers;
+    Hits* hitsInGPU;
+    HitsBuffer<Device>* hitsBuffers;
+    MiniDoublets* mdsInGPU;
+    MiniDoubletsBuffer<Device>* miniDoubletsBuffers;
+    Segments* segmentsInGPU;
+    SegmentsBuffer<Device>* segmentsBuffers;
+    Triplets* tripletsInGPU;
+    TripletsBuffer<Device>* tripletsBuffers;
+    Quintuplets* quintupletsInGPU;
+    QuintupletsBuffer<Device>* quintupletsBuffers;
+    TrackCandidates* trackCandidatesInGPU;
+    TrackCandidatesBuffer<Device>* trackCandidatesBuffers;
+    PixelTriplets* pixelTripletsInGPU;
+    PixelTripletsBuffer<Device>* pixelTripletsBuffers;
+    PixelQuintuplets* pixelQuintupletsInGPU;
+    PixelQuintupletsBuffer<Device>* pixelQuintupletsBuffers;
 
     //CPU interface stuff
     ObjectRangesBuffer<DevHost>* rangesInCPU;
@@ -88,7 +88,7 @@ namespace lst {
     const unsigned int nPixels_;
     const unsigned int nEndCapMap_;
     const std::shared_ptr<const ModulesBuffer<Device>> modulesBuffers_;
-    const std::shared_ptr<const pixelMap> pixelMapping_;
+    const std::shared_ptr<const PixelMap> pixelMapping_;
     const std::shared_ptr<const EndcapGeometryBuffer<Device>> endcapGeometryBuffers_;
 
   public:

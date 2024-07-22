@@ -404,9 +404,9 @@ namespace lst {
 
         unsigned int trackCandidateIdx =
             alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
-        if (trackCandidateIdx >= N_MAX_PIXEL_TRACK_CANDIDATES)  // This is done before any non-pixel TCs are added
+        if (trackCandidateIdx >= n_max_pixel_track_candidates)  // This is done before any non-pixel TCs are added
         {
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Track Candidate excess alert! Type = pT3");
 #endif
           alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
@@ -462,9 +462,9 @@ namespace lst {
               alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
           if (trackCandidateIdx - *trackCandidatesInGPU.nTrackCandidatespT5 -
                   *trackCandidatesInGPU.nTrackCandidatespT3 >=
-              N_MAX_NONPIXEL_TRACK_CANDIDATES)  // pT5 and pT3 TCs have been added, but not pLS TCs
+              n_max_nonpixel_track_candidates)  // pT5 and pT3 TCs have been added, but not pLS TCs
           {
-#ifdef Warnings
+#ifdef WARNINGS
             printf("Track Candidate excess alert! Type = T5");
 #endif
             alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
@@ -509,9 +509,9 @@ namespace lst {
         unsigned int trackCandidateIdx =
             alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
         if (trackCandidateIdx - *trackCandidatesInGPU.nTrackCandidatesT5 >=
-            N_MAX_PIXEL_TRACK_CANDIDATES)  // T5 TCs have already been added
+            n_max_pixel_track_candidates)  // T5 TCs have already been added
         {
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Track Candidate excess alert! Type = pLS");
 #endif
           alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
@@ -549,9 +549,9 @@ namespace lst {
 
         unsigned int trackCandidateIdx =
             alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
-        if (trackCandidateIdx >= N_MAX_PIXEL_TRACK_CANDIDATES)  // No other TCs have been added yet
+        if (trackCandidateIdx >= n_max_pixel_track_candidates)  // No other TCs have been added yet
         {
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Track Candidate excess alert! Type = pT5");
 #endif
           alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);

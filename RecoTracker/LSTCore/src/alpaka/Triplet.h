@@ -768,7 +768,7 @@ namespace lst {
     float c = ((x2 * y3 - x3 * y2) * xy1sqr + (x3 * y1 - x1 * y3) * xy2sqr + (x1 * y2 - x2 * y1) * xy3sqr) * denomInv;
 
     if (((y1 - y3) * (x2 - x3) - (x1 - x3) * (y2 - y3) == 0) || (g * g + f * f - c < 0)) {
-#ifdef Warnings
+#ifdef WARNINGS
       printf("three collinear points or FATAL! r^2 < 0!\n");
 #endif
       radius = -1.f;
@@ -927,7 +927,7 @@ namespace lst {
                   acc, &tripletsInGPU.totOccupancyTriplets[innerInnerLowerModuleIndex], 1u);
               if (static_cast<int>(totOccupancyTriplets) >=
                   rangesInGPU.tripletModuleOccupancy[innerInnerLowerModuleIndex]) {
-#ifdef Warnings
+#ifdef WARNINGS
                 printf("Triplet excess alert! Module index = %d\n", innerInnerLowerModuleIndex);
 #endif
               } else {
@@ -1065,7 +1065,7 @@ namespace lst {
           occupancy = 39;
         else {
           occupancy = 0;
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Unhandled case in createTripletArrayRanges! Module index = %i\n", i);
 #endif
         }
