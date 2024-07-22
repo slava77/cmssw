@@ -22,8 +22,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       descriptions.addWithDefaultLabel(desc);
     }
 
-    std::unique_ptr<SDL::LSTESData<DevHost>> produce(TrackerRecoGeometryRecord const& iRecord) {
-      return SDL::loadAndFillESHost();
+    std::unique_ptr<lst::LSTESData<DevHost>> produce(TrackerRecoGeometryRecord const& iRecord) {
+      return lst::loadAndFillESHost();
     }
   };
 

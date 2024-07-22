@@ -3,7 +3,7 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-namespace SDL {
+namespace lst {
   enum SubDet { InnerPixel = 0, Barrel = 5, Endcap = 4 };
 
   enum Side { NegZ = 1, PosZ = 2, Center = 3 };
@@ -146,7 +146,7 @@ namespace SDL {
 
     ModulesBuffer(TDev const& dev, unsigned int nMod, unsigned int nPixs)
         : detIds_buf(allocBufWrapper<unsigned int>(dev, nMod)),
-          moduleMap_buf(allocBufWrapper<uint16_t>(dev, nMod * MAX_CONNECTED_MODULES)),
+          moduleMap_buf(allocBufWrapper<uint16_t>(dev, nMod * max_connected_modules)),
           mapdetId_buf(allocBufWrapper<unsigned int>(dev, nMod)),
           mapIdx_buf(allocBufWrapper<uint16_t>(dev, nMod)),
           nConnectedModules_buf(allocBufWrapper<uint16_t>(dev, nMod)),
@@ -224,5 +224,5 @@ namespace SDL {
     inline Modules const* data() const { return &data_; }
   };
 
-}  // namespace SDL
+}  // namespace lst
 #endif

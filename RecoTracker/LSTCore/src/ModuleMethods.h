@@ -13,7 +13,7 @@
 
 #include "HeterogeneousCore/AlpakaInterface/interface/host.h"
 
-namespace SDL {
+namespace lst {
   struct ModuleMetaData {
     std::map<unsigned int, uint16_t> detIdToIndex;
     std::map<unsigned int, float> module_x;
@@ -27,7 +27,7 @@ namespace SDL {
   inline void fillPixelMap(std::shared_ptr<ModulesBuffer<alpaka_common::DevHost>>& modulesBuf,
                            uint16_t nModules,
                            unsigned int& nPixels,
-                           pixelMap& pixelMapping,
+                           PixelMap& pixelMapping,
                            TQueue queue,
                            const MapPLStoLayer& pLStoLayer,
                            struct ModuleMetaData& mmd) {
@@ -111,7 +111,7 @@ namespace SDL {
                                                struct ModuleMetaData& mmd,
                                                const ModuleConnectionMap* moduleConnectionMap) {
     alpaka_common::DevHost const& devHost = cms::alpakatools::host();
-    auto moduleMap_buf = allocBufWrapper<uint16_t>(devHost, nMod * MAX_CONNECTED_MODULES);
+    auto moduleMap_buf = allocBufWrapper<uint16_t>(devHost, nMod * max_connected_modules);
     uint16_t* moduleMap = alpaka::getPtrNative(moduleMap_buf);
 
     auto nConnectedModules_buf = allocBufWrapper<uint16_t>(devHost, nMod);
@@ -123,7 +123,7 @@ namespace SDL {
       auto& connectedModules = moduleConnectionMap->getConnectedModuleDetIds(detId);
       nConnectedModules[index] = connectedModules.size();
       for (uint16_t i = 0; i < nConnectedModules[index]; i++) {
-        moduleMap[index * MAX_CONNECTED_MODULES + i] = mmd.detIdToIndex[connectedModules[i]];
+        moduleMap[index * max_connected_modules + i] = mmd.detIdToIndex[connectedModules[i]];
       }
     }
 
@@ -224,7 +224,7 @@ namespace SDL {
                                   uint16_t& nLowerModules,
                                   unsigned int& nPixels,
                                   std::shared_ptr<ModulesBuffer<alpaka_common::DevHost>>& modulesBuf,
-                                  pixelMap* pixelMapping,
+                                  PixelMap* pixelMapping,
                                   const EndcapGeometry* endcapGeometry,
                                   const TiltedGeometry* tiltedGeometry,
                                   const ModuleConnectionMap* moduleConnectionMap) {
@@ -302,8 +302,8 @@ namespace SDL {
         r = 0;
       } else {
         setDerivedQuantities(detId, layer, ring, rod, module, subdet, side, m_x, m_y, m_z, eta, r);
-        isInverted = SDL::Modules::parseIsInverted(subdet, side, module, layer);
-        isLower = SDL::Modules::parseIsLower(isInverted, detId);
+        isInverted = lst::Modules::parseIsInverted(subdet, side, module, layer);
+        isLower = lst::Modules::parseIsLower(isInverted, detId);
       }
       if (isLower) {
         index = lowerModuleCounter;
@@ -331,17 +331,17 @@ namespace SDL {
       //assigning other variables!
       if (detId == 1) {
         host_moduleType[index] = PixelModule;
-        host_moduleLayerType[index] = SDL::InnerPixelLayer;
+        host_moduleLayerType[index] = lst::InnerPixelLayer;
         host_dxdys[index] = 0;
         host_drdzs[index] = 0;
         host_isAnchor[index] = false;
       } else {
-        host_moduleType[index] = (m_t == 25 ? SDL::TwoS : SDL::PS);
-        host_moduleLayerType[index] = (m_t == 23 ? SDL::Pixel : SDL::Strip);
+        host_moduleType[index] = (m_t == 25 ? lst::TwoS : lst::PS);
+        host_moduleLayerType[index] = (m_t == 23 ? lst::Pixel : lst::Strip);
 
-        if (host_moduleType[index] == SDL::PS and host_moduleLayerType[index] == SDL::Pixel) {
+        if (host_moduleType[index] == lst::PS and host_moduleLayerType[index] == lst::Pixel) {
           host_isAnchor[index] = true;
-        } else if (host_moduleType[index] == SDL::TwoS and host_isLower[index]) {
+        } else if (host_moduleType[index] == lst::TwoS and host_isLower[index]) {
           host_isAnchor[index] = true;
         } else {
           host_isAnchor[index] = false;
@@ -352,7 +352,7 @@ namespace SDL {
       }
 
       host_sdlLayers[index] =
-          layer + 6 * (subdet == SDL::Endcap) + 5 * (subdet == SDL::Endcap and host_moduleType[index] == SDL::TwoS);
+          layer + 6 * (subdet == lst::Endcap) + 5 * (subdet == lst::Endcap and host_moduleType[index] == lst::TwoS);
     }
 
     //partner module stuff, and slopes and drdz move around
@@ -361,7 +361,7 @@ namespace SDL {
       auto& index = it->second;
       if (detId != 1) {
         host_partnerModuleIndices[index] =
-            mmd.detIdToIndex[SDL::Modules::parsePartnerModuleId(detId, host_isLower[index], host_isInverted[index])];
+            mmd.detIdToIndex[lst::Modules::parsePartnerModuleId(detId, host_isLower[index], host_isInverted[index])];
         //add drdz and slope importing stuff here!
         if (host_drdzs[index] == 0) {
           host_drdzs[index] = host_drdzs[host_partnerModuleIndices[index]];
@@ -408,5 +408,5 @@ namespace SDL {
     fillConnectedModuleArrayExplicit(modulesBuf.get(), nModules, queue, mmd, moduleConnectionMap);
     fillMapArraysExplicit(modulesBuf.get(), nModules, queue, mmd);
   };
-}  // namespace SDL
+}  // namespace lst
 #endif

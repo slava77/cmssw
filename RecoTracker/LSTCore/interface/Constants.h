@@ -7,7 +7,7 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/CachedBufAlloc.h"
 #endif
 
-namespace SDL {
+namespace lst {
 
   // Buffer type for allocations where auto type can't be used.
   template <typename TDev, typename TData>
@@ -39,18 +39,18 @@ namespace SDL {
   constexpr float PT_CUT = 0.8f;
 #endif
 
-  constexpr unsigned int MAX_BLOCKS = 80;
-  constexpr unsigned int MAX_CONNECTED_MODULES = 40;
+  constexpr unsigned int max_blocks = 80;
+  constexpr unsigned int max_connected_modules = 40;
 
-  constexpr unsigned int N_MAX_PIXEL_SEGMENTS_PER_MODULE = 50000;
+  constexpr unsigned int n_max_pixel_segments_per_module = 50000;
 
-  constexpr unsigned int N_MAX_PIXEL_MD_PER_MODULES = 2 * N_MAX_PIXEL_SEGMENTS_PER_MODULE;
+  constexpr unsigned int n_max_pixel_md_per_modules = 2 * n_max_pixel_segments_per_module;
 
-  constexpr unsigned int N_MAX_PIXEL_TRIPLETS = 5000;
-  constexpr unsigned int N_MAX_PIXEL_QUINTUPLETS = 15000;
+  constexpr unsigned int n_max_pixel_triplets = 5000;
+  constexpr unsigned int n_max_pixel_quintuplets = 15000;
 
-  constexpr unsigned int N_MAX_PIXEL_TRACK_CANDIDATES = 30000;
-  constexpr unsigned int N_MAX_NONPIXEL_TRACK_CANDIDATES = 1000;
+  constexpr unsigned int n_max_pixel_track_candidates = 30000;
+  constexpr unsigned int n_max_nonpixel_track_candidates = 1000;
 
   constexpr unsigned int size_superbins = 45000;
 
@@ -75,6 +75,6 @@ namespace SDL {
     static constexpr int kLayers = 7, kHits = 14;
   };
 
-}  //namespace SDL
+}  //namespace lst
 
 #endif

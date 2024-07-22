@@ -3,7 +3,7 @@
 
 #include "TString.h"
 #include "rooutil.h"
-#include "trktree.h"
+#include "Trktree.h"
 #include "ModuleConnectionMap.h"
 
 class AnalysisConfig {
@@ -78,7 +78,7 @@ public:
   int job_index;
 
   // Custom Looper object to facilitate looping over many files
-  RooUtil::Looper<trktree> looper;
+  RooUtil::Looper<Trktree> looper;
 
   // Custom Cutflow framework
   RooUtil::Cutflow cutflow;
@@ -100,7 +100,7 @@ public:
   std::map<int, std::vector<std::vector<float>>> moduleSimHits;
   std::map<int, int> modulePopulation;
 
-  SDL::ModuleConnectionMap moduleConnectiongMapLoose;
+  lst::ModuleConnectionMap moduleConnectiongMapLoose;
 
   // Boolean to trigger whether to run cut_value_ntupling
   bool do_cut_value_ntuple;

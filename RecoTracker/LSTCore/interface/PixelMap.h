@@ -6,8 +6,8 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-namespace SDL {
-  struct pixelMap {
+namespace lst {
+  struct PixelMap {
     uint16_t pixelModuleIndex;
 
     std::vector<unsigned int> connectedPixelsIndex;
@@ -19,7 +19,7 @@ namespace SDL {
 
     int* pixelType;
 
-    pixelMap(unsigned int sizef = size_superbins)
+    PixelMap(unsigned int sizef = size_superbins)
         : pixelModuleIndex(0),
           connectedPixelsIndex(sizef),
           connectedPixelsSizes(sizef),
@@ -28,6 +28,6 @@ namespace SDL {
           connectedPixelsIndexNeg(sizef),
           connectedPixelsSizesNeg(sizef) {}
   };
-}  // namespace SDL
+}  // namespace lst
 
 #endif

@@ -1,8 +1,8 @@
 #include "RecoTracker/LSTCore/interface/EndcapGeometry.h"
 
-SDL::EndcapGeometry::EndcapGeometry(std::string filename) { load(filename); }
+lst::EndcapGeometry::EndcapGeometry(std::string filename) { load(filename); }
 
-void SDL::EndcapGeometry::load(std::string filename) {
+void lst::EndcapGeometry::load(std::string filename) {
   dxdy_slope_.clear();
   centroid_phis_.clear();
 
@@ -34,7 +34,7 @@ void SDL::EndcapGeometry::load(std::string filename) {
   fillGeoMapArraysExplicit();
 }
 
-void SDL::EndcapGeometry::fillGeoMapArraysExplicit() {
+void lst::EndcapGeometry::fillGeoMapArraysExplicit() {
   nEndCapMap = centroid_phis_.size();
 
   geoMapDetId_buf.reserve(nEndCapMap);
@@ -48,7 +48,7 @@ void SDL::EndcapGeometry::fillGeoMapArraysExplicit() {
   }
 }
 
-float SDL::EndcapGeometry::getdxdy_slope(unsigned int detid) const {
+float lst::EndcapGeometry::getdxdy_slope(unsigned int detid) const {
   if (dxdy_slope_.find(detid) != dxdy_slope_.end()) {
     return dxdy_slope_.at(detid);
   } else {

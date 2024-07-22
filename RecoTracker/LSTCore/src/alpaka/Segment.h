@@ -9,7 +9,7 @@
 #include "Hit.h"
 #include "ObjectRanges.h"
 
-namespace SDL {
+namespace lst {
   struct Segments {
     FPX* dPhis;
     FPX* dPhiMins;
@@ -175,7 +175,7 @@ namespace SDL {
     inline void setData(SegmentsBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(struct SDL::Modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(struct lst::Modules& modulesInGPU,
                                                                   unsigned int moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
@@ -229,7 +229,7 @@ namespace SDL {
     return moduleSeparation;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(struct SDL::Modules& modulesInGPU, unsigned int moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(struct lst::Modules& modulesInGPU, unsigned int moduleIndex) {
     static constexpr float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     static constexpr float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     static constexpr float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -264,8 +264,8 @@ namespace SDL {
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void dAlphaThreshold(TAcc const& acc,
                                                       float* dAlphaThresholdValues,
-                                                      struct SDL::Modules& modulesInGPU,
-                                                      struct SDL::MiniDoublets& mdsInGPU,
+                                                      struct lst::Modules& modulesInGPU,
+                                                      struct lst::MiniDoublets& mdsInGPU,
                                                       float& xIn,
                                                       float& yIn,
                                                       float& zIn,
@@ -278,7 +278,7 @@ namespace SDL {
                                                       uint16_t& outerLowerModuleIndex,
                                                       unsigned int& innerMDIndex,
                                                       unsigned int& outerMDIndex) {
-    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == SDL::Barrel)
+    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
                        ? miniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
                        : miniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
 
@@ -288,15 +288,15 @@ namespace SDL {
     const float dAlpha_Bfield =
         alpaka::math::asin(acc, alpaka::math::min(acc, segmentDr * k2Rinv1GeVf / ptCut, sinAlphaMax));
 
-    bool isInnerTilted = modulesInGPU.subdets[innerLowerModuleIndex] == SDL::Barrel and
-                         modulesInGPU.sides[innerLowerModuleIndex] != SDL::Center;
-    bool isOuterTilted = modulesInGPU.subdets[outerLowerModuleIndex] == SDL::Barrel and
-                         modulesInGPU.sides[outerLowerModuleIndex] != SDL::Center;
+    bool isInnerTilted = modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
+                         modulesInGPU.sides[innerLowerModuleIndex] != lst::Center;
+    bool isOuterTilted = modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel and
+                         modulesInGPU.sides[outerLowerModuleIndex] != lst::Center;
 
     const float& drdzInner = modulesInGPU.drdzs[innerLowerModuleIndex];
     const float& drdzOuter = modulesInGPU.drdzs[outerLowerModuleIndex];
-    float innerModuleGapSize = SDL::moduleGapSize_seg(modulesInGPU, innerLowerModuleIndex);
-    float outerModuleGapSize = SDL::moduleGapSize_seg(modulesInGPU, outerLowerModuleIndex);
+    float innerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, innerLowerModuleIndex);
+    float outerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, outerLowerModuleIndex);
     const float innerminiTilt2 = isInnerTilted
                                      ? ((0.5f * 0.5f) * (pixelPSZpitch * pixelPSZpitch) * (drdzInner * drdzInner) /
                                         (1.f + drdzInner * drdzInner) / (innerModuleGapSize * innerModuleGapSize))
@@ -312,14 +312,14 @@ namespace SDL {
     float sdLumForInnerMini2;
     float sdLumForOuterMini2;
 
-    if (modulesInGPU.subdets[innerLowerModuleIndex] == SDL::Barrel) {
+    if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel) {
       sdLumForInnerMini2 = innerminiTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
       sdLumForInnerMini2 = (mdsInGPU.dphis[innerMDIndex] * mdsInGPU.dphis[innerMDIndex]) * (deltaZLum * deltaZLum) /
                            (mdsInGPU.dzs[innerMDIndex] * mdsInGPU.dzs[innerMDIndex]);
     }
 
-    if (modulesInGPU.subdets[outerLowerModuleIndex] == SDL::Barrel) {
+    if (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel) {
       sdLumForOuterMini2 = outerminiTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
       sdLumForOuterMini2 = (mdsInGPU.dphis[outerMDIndex] * mdsInGPU.dphis[outerMDIndex]) * (deltaZLum * deltaZLum) /
@@ -329,23 +329,23 @@ namespace SDL {
     // Unique stuff for the segment dudes alone
     float dAlpha_res_inner =
         0.02f / miniDelta *
-        (modulesInGPU.subdets[innerLowerModuleIndex] == SDL::Barrel ? 1.0f : alpaka::math::abs(acc, zIn) / rtIn);
+        (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel ? 1.0f : alpaka::math::abs(acc, zIn) / rtIn);
     float dAlpha_res_outer =
         0.02f / miniDelta *
-        (modulesInGPU.subdets[outerLowerModuleIndex] == SDL::Barrel ? 1.0f : alpaka::math::abs(acc, zOut) / rtOut);
+        (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel ? 1.0f : alpaka::math::abs(acc, zOut) / rtOut);
 
     float dAlpha_res = dAlpha_res_inner + dAlpha_res_outer;
 
-    if (modulesInGPU.subdets[innerLowerModuleIndex] == SDL::Barrel and
-        modulesInGPU.sides[innerLowerModuleIndex] == SDL::Center) {
+    if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
+        modulesInGPU.sides[innerLowerModuleIndex] == lst::Center) {
       dAlphaThresholdValues[0] = dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls);
     } else {
       dAlphaThresholdValues[0] =
           dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls + sdLumForInnerMini2);
     }
 
-    if (modulesInGPU.subdets[outerLowerModuleIndex] == SDL::Barrel and
-        modulesInGPU.sides[outerLowerModuleIndex] == SDL::Center) {
+    if (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel and
+        modulesInGPU.sides[outerLowerModuleIndex] == lst::Center) {
       dAlphaThresholdValues[1] = dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls);
     } else {
       dAlphaThresholdValues[1] =
@@ -356,7 +356,7 @@ namespace SDL {
     dAlphaThresholdValues[2] = dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls);
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addSegmentToMemory(struct SDL::Segments& segmentsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addSegmentToMemory(struct lst::Segments& segmentsInGPU,
                                                          unsigned int lowerMDIndex,
                                                          unsigned int upperMDIndex,
                                                          uint16_t innerLowerModuleIndex,
@@ -391,8 +391,8 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelSegmentToMemory(TAcc const& acc,
-                                                              struct SDL::Segments& segmentsInGPU,
-                                                              struct SDL::MiniDoublets& mdsInGPU,
+                                                              struct lst::Segments& segmentsInGPU,
+                                                              struct lst::MiniDoublets& mdsInGPU,
                                                               unsigned int innerMDIndex,
                                                               unsigned int outerMDIndex,
                                                               uint16_t pixelModuleIndex,
@@ -430,7 +430,7 @@ namespace SDL {
                                  mdsInGPU.anchorY[innerMDIndex] + circleRadius * alpaka::math::cos(acc, circlePhi)};
 
     //check which of the circles can accommodate r3LH better (we won't get perfect agreement)
-    float bestChiSquared = SDL::SDL_INF;
+    float bestChiSquared = lst::lst_INF;
     float chiSquared;
     size_t bestIndex;
     for (size_t i = 0; i < 2; i++) {
@@ -454,8 +454,8 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoBarrel(TAcc const& acc,
-                                                                  struct SDL::Modules& modulesInGPU,
-                                                                  struct SDL::MiniDoublets& mdsInGPU,
+                                                                  struct lst::Modules& modulesInGPU,
+                                                                  struct lst::MiniDoublets& mdsInGPU,
                                                                   uint16_t& innerLowerModuleIndex,
                                                                   uint16_t& outerLowerModuleIndex,
                                                                   unsigned int& innerMDIndex,
@@ -479,7 +479,7 @@ namespace SDL {
                                                                   float& dAlphaInnerMDSegmentThreshold,
                                                                   float& dAlphaOuterMDSegmentThreshold,
                                                                   float& dAlphaInnerMDOuterMDThreshold) {
-    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == SDL::Barrel)
+    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
                        ? miniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
                        : miniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
 
@@ -510,12 +510,12 @@ namespace SDL {
 
     sdCut = sdSlope + alpaka::math::sqrt(acc, sdMuls * sdMuls + sdPVoff * sdPVoff);
 
-    dPhi = SDL::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhi) > sdCut)
       return false;
 
-    dPhiChange = SDL::phi_mpi_pi(acc, SDL::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhiChange = lst::phi_mpi_pi(acc, lst::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhiChange) > sdCut)
       return false;
@@ -557,8 +557,8 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoEndcap(TAcc const& acc,
-                                                                  struct SDL::Modules& modulesInGPU,
-                                                                  struct SDL::MiniDoublets& mdsInGPU,
+                                                                  struct lst::Modules& modulesInGPU,
+                                                                  struct lst::MiniDoublets& mdsInGPU,
                                                                   uint16_t& innerLowerModuleIndex,
                                                                   uint16_t& outerLowerModuleIndex,
                                                                   unsigned int& innerMDIndex,
@@ -595,8 +595,8 @@ namespace SDL {
     zOut = mdsInGPU.anchorZ[outerMDIndex];
     rtOut = mdsInGPU.anchorRt[outerMDIndex];
 
-    bool outerLayerEndcapTwoS = (modulesInGPU.subdets[outerLowerModuleIndex] == SDL::Endcap) &&
-                                (modulesInGPU.moduleType[outerLowerModuleIndex] == SDL::TwoS);
+    bool outerLayerEndcapTwoS = (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Endcap) &&
+                                (modulesInGPU.moduleType[outerLowerModuleIndex] == lst::TwoS);
 
     float sdSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, sinAlphaMax));
     float disks2SMinRadius = 60.f;
@@ -612,7 +612,7 @@ namespace SDL {
 
     float dz = zOut - zIn;
     // Alpaka: Needs to be moved over
-    float dLum = SDL::copysignf(deltaZLum, zIn);
+    float dLum = lst::copysignf(deltaZLum, zIn);
     float drtDzScale = sdSlope / alpaka::math::tan(acc, sdSlope);
 
     rtLo = alpaka::math::max(
@@ -624,14 +624,14 @@ namespace SDL {
     if ((rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
-    dPhi = SDL::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     sdCut = sdSlope;
     if (outerLayerEndcapTwoS) {
       float dPhiPos_high =
-          SDL::phi_mpi_pi(acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+          lst::phi_mpi_pi(acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
       float dPhiPos_low =
-          SDL::phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+          lst::phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
       dPhiMax = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_high : dPhiPos_low;
       dPhiMin = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_low : dPhiPos_high;
@@ -687,8 +687,8 @@ namespace SDL {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgo(TAcc const& acc,
-                                                            struct SDL::Modules& modulesInGPU,
-                                                            struct SDL::MiniDoublets& mdsInGPU,
+                                                            struct lst::Modules& modulesInGPU,
+                                                            struct lst::MiniDoublets& mdsInGPU,
                                                             uint16_t& innerLowerModuleIndex,
                                                             uint16_t& outerLowerModuleIndex,
                                                             unsigned int& innerMDIndex,
@@ -719,8 +719,8 @@ namespace SDL {
     rtLo = -999.f;
     rtHi = -999.f;
 
-    if (modulesInGPU.subdets[innerLowerModuleIndex] == SDL::Barrel and
-        modulesInGPU.subdets[outerLowerModuleIndex] == SDL::Barrel) {
+    if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
+        modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel) {
       return runSegmentDefaultAlgoBarrel(acc,
                                          modulesInGPU,
                                          mdsInGPU,
@@ -780,10 +780,10 @@ namespace SDL {
   struct createSegmentsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::Modules modulesInGPU,
-                                  struct SDL::MiniDoublets mdsInGPU,
-                                  struct SDL::Segments segmentsInGPU,
-                                  struct SDL::ObjectRanges rangesInGPU) const {
+                                  struct lst::Modules modulesInGPU,
+                                  struct lst::MiniDoublets mdsInGPU,
+                                  struct lst::Segments segmentsInGPU,
+                                  struct lst::ObjectRanges rangesInGPU) const {
       auto const globalBlockIdx = alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc);
       auto const blockThreadIdx = alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc);
       auto const gridBlockExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc);
@@ -800,7 +800,7 @@ namespace SDL {
         for (uint16_t outerLowerModuleArrayIdx = blockThreadIdx[1]; outerLowerModuleArrayIdx < nConnectedModules;
              outerLowerModuleArrayIdx += blockThreadExtent[1]) {
           uint16_t outerLowerModuleIndex =
-              modulesInGPU.moduleMap[innerLowerModuleIndex * MAX_CONNECTED_MODULES + outerLowerModuleArrayIdx];
+              modulesInGPU.moduleMap[innerLowerModuleIndex * max_connected_modules + outerLowerModuleArrayIdx];
 
           unsigned int nOuterMDs = mdsInGPU.nMDs[outerLowerModuleIndex];
 
@@ -859,7 +859,7 @@ namespace SDL {
               unsigned int totOccupancySegments = alpaka::atomicOp<alpaka::AtomicAdd>(
                   acc, &segmentsInGPU.totOccupancySegments[innerLowerModuleIndex], 1u);
               if (static_cast<int>(totOccupancySegments) >= rangesInGPU.segmentModuleOccupancy[innerLowerModuleIndex]) {
-#ifdef Warnings
+#ifdef WARNINGS
                 printf("Segment excess alert! Module index = %d\n", innerLowerModuleIndex);
 #endif
               } else {
@@ -892,9 +892,9 @@ namespace SDL {
   struct createSegmentArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::Modules modulesInGPU,
-                                  struct SDL::ObjectRanges rangesInGPU,
-                                  struct SDL::MiniDoublets mdsInGPU) const {
+                                  struct lst::Modules modulesInGPU,
+                                  struct lst::ObjectRanges rangesInGPU,
+                                  struct lst::MiniDoublets mdsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -968,7 +968,7 @@ namespace SDL {
           occupancy = 85;
         else {
           occupancy = 0;
-#ifdef Warnings
+#ifdef WARNINGS
           printf("Unhandled case in createSegmentArrayRanges! Module index = %i\n", i);
 #endif
         }
@@ -990,9 +990,9 @@ namespace SDL {
   struct addSegmentRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::Modules modulesInGPU,
-                                  struct SDL::Segments segmentsInGPU,
-                                  struct SDL::ObjectRanges rangesInGPU) const {
+                                  struct lst::Modules modulesInGPU,
+                                  struct lst::Segments segmentsInGPU,
+                                  struct lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -1011,11 +1011,11 @@ namespace SDL {
   struct addPixelSegmentToEventKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::Modules modulesInGPU,
-                                  struct SDL::ObjectRanges rangesInGPU,
-                                  struct SDL::Hits hitsInGPU,
-                                  struct SDL::MiniDoublets mdsInGPU,
-                                  struct SDL::Segments segmentsInGPU,
+                                  struct lst::Modules modulesInGPU,
+                                  struct lst::ObjectRanges rangesInGPU,
+                                  struct lst::Hits hitsInGPU,
+                                  struct lst::MiniDoublets mdsInGPU,
+                                  struct lst::Segments segmentsInGPU,
                                   unsigned int* hitIndices0,
                                   unsigned int* hitIndices1,
                                   unsigned int* hitIndices2,
@@ -1095,6 +1095,6 @@ namespace SDL {
       }
     }
   };
-}  // namespace SDL
+}  // namespace lst
 
 #endif

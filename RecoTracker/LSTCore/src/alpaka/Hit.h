@@ -4,7 +4,7 @@
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
 
-namespace SDL {
+namespace lst {
   struct Hits {
     unsigned int* nHits;
     float* xs;
@@ -194,8 +194,8 @@ namespace SDL {
   struct moduleRangesKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct SDL::Modules modulesInGPU,
-                                  struct SDL::Hits hitsInGPU,
+                                  struct lst::Modules modulesInGPU,
+                                  struct lst::Hits hitsInGPU,
                                   int const& nLowerModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
@@ -223,8 +223,8 @@ namespace SDL {
                                   unsigned int nEndCapMap,          // Number of elements in endcap map
                                   const unsigned int* geoMapDetId,  // DetId's from endcap map
                                   const float* geoMapPhi,           // Phi values from endcap map
-                                  struct SDL::Modules modulesInGPU,
-                                  struct SDL::Hits hitsInGPU,
+                                  struct lst::Modules modulesInGPU,
+                                  struct lst::Hits hitsInGPU,
                                   unsigned int const& nHits) const  // Total number of hits in event
     {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -236,7 +236,7 @@ namespace SDL {
         int iDetId = hitsInGPU.detid[ihit];
 
         hitsInGPU.rts[ihit] = alpaka::math::sqrt(acc, ihit_x * ihit_x + ihit_y * ihit_y);
-        hitsInGPU.phis[ihit] = SDL::phi(acc, ihit_x, ihit_y);
+        hitsInGPU.phis[ihit] = lst::phi(acc, ihit_x, ihit_y);
         hitsInGPU.etas[ihit] =
             ((ihit_z > 0) - (ihit_z < 0)) *
             alpaka::math::acosh(
@@ -268,5 +268,5 @@ namespace SDL {
       }
     }
   };
-}  // namespace SDL
+}  // namespace lst
 #endif

@@ -11,7 +11,7 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-namespace SDL {
+namespace lst {
 
   struct EndcapGeometryDev {
     const unsigned int* geoMapDetId;
@@ -51,6 +51,6 @@ namespace SDL {
     inline EndcapGeometryDev const* data() const { return &data_; }
   };
 
-}  // namespace SDL
+}  // namespace lst
 
 #endif

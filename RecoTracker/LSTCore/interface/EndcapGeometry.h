@@ -9,7 +9,7 @@
 #include <vector>
 #include <stdexcept>
 
-namespace SDL {
+namespace lst {
   class EndcapGeometry {
   private:
     std::map<unsigned int, float> dxdy_slope_;     // dx/dy slope
@@ -29,6 +29,6 @@ namespace SDL {
     void fillGeoMapArraysExplicit();
     float getdxdy_slope(unsigned int detid) const;
   };
-}  // namespace SDL
+}  // namespace lst
 
 #endif

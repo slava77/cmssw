@@ -3,7 +3,7 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-namespace SDL {
+namespace lst {
 
   struct ObjectRanges {
     int* hitRanges;
@@ -151,5 +151,5 @@ namespace SDL {
     void setData(ObjectRangesBuffer& buf) { data_.setData(buf); }
   };
 
-}  // namespace SDL
+}  // namespace lst
 #endif

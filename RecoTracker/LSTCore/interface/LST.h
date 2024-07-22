@@ -6,10 +6,9 @@
 
 #include <cstdlib>
 #include <numeric>
-#include <mutex>
 #include <alpaka/alpaka.hpp>
 
-namespace SDL {
+namespace lst {
   template <typename>
   class Event;
 
@@ -72,7 +71,7 @@ namespace SDL {
                       const std::vector<float> ph2_y,
                       const std::vector<float> ph2_z);
 
-    void getOutput(SDL::Event<TAcc>& event);
+    void getOutput(lst::Event<TAcc>& event);
     std::vector<unsigned int> getHitIdxs(const short trackCandidateType,
                                          const unsigned int TCIdx,
                                          const unsigned int* TCHitIndices,
@@ -108,6 +107,6 @@ namespace SDL {
     std::vector<short> out_tc_trackCandidateType_;
   };
 
-}  // namespace SDL
+}  // namespace lst
 
 #endif
