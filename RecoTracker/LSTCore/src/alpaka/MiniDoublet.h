@@ -1,6 +1,8 @@
 #ifndef RecoTracker_LSTCore_src_alpaka_MiniDoublet_h
 #define RecoTracker_LSTCore_src_alpaka_MiniDoublet_h
 
+#include "HeterogeneousCore/AlpakaInterface/interface/workdivision.h"
+
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
 #include "RecoTracker/LSTCore/interface/EndcapGeometry.h"
@@ -994,7 +996,9 @@ namespace lst {
 
       // Declare variables in shared memory and set to 0
       int& nTotalMDs = alpaka::declareSharedVar<int, __COUNTER__>(acc);
-      nTotalMDs = 0;
+      if (cms::alpakatools::once_per_block(acc)) {
+        nTotalMDs = 0;
+      }
       alpaka::syncBlockThreads(acc);
 
       // Initialize variables outside of the for loop.
@@ -1067,7 +1071,7 @@ namespace lst {
 
       // Wait for all threads to finish before reporting final values
       alpaka::syncBlockThreads(acc);
-      if (globalThreadIdx[2] == 0) {
+      if (cms::alpakatools::once_per_block(acc)) {
         rangesInGPU.miniDoubletModuleIndices[*modulesInGPU.nLowerModules] = nTotalMDs;
         *rangesInGPU.device_nTotalMDs = nTotalMDs;
       }
