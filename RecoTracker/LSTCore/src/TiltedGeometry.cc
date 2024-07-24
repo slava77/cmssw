@@ -33,17 +33,11 @@ void lst::TiltedGeometry::load(std::string filename) {
 }
 
 float lst::TiltedGeometry::getDrDz(unsigned int detid) const {
-  if (drdzs_.find(detid) != drdzs_.end()) {
-    return drdzs_.at(detid);
-  } else {
-    return 0;
-  }
+  auto res = drdzs_.find(detid);
+  return res == drdzs_.end() ? 0.f : res->second;
 }
 
 float lst::TiltedGeometry::getDxDy(unsigned int detid) const {
-  if (dxdys_.find(detid) != dxdys_.end()) {
-    return dxdys_.at(detid);
-  } else {
-    return 0;
-  }
+  auto res = dxdys_.find(detid);
+  return res == dxdys_.end() ? 0.f : res->second;
 }
