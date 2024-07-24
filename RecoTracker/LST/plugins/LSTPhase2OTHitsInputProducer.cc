@@ -55,7 +55,8 @@ void LSTPhase2OTHitsInputProducer::produce(edm::StreamID iID, edm::Event& iEvent
     }
   }
 
-  LSTPhase2OTHitsInput phase2OTHitsInput(ph2_detId, ph2_x, ph2_y, ph2_z, ph2_hits);
+  LSTPhase2OTHitsInput phase2OTHitsInput(
+      std::move(ph2_detId), std::move(ph2_x), std::move(ph2_y), std::move(ph2_z), std::move(ph2_hits));
   iEvent.emplace(lstPhase2OTHitsInputPutToken_, std::move(phase2OTHitsInput));
 }
 

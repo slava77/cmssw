@@ -109,30 +109,30 @@ namespace lst {
     }
     void resetEvent();
 
-    void addHitToEvent(
-        std::vector<float> x,
-        std::vector<float> y,
-        std::vector<float> z,
-        std::vector<unsigned int> detId,
-        std::vector<unsigned int> idxInNtuple);  //call the appropriate hit function, then increment the counter here
-    void addPixelSegmentToEvent(std::vector<unsigned int> hitIndices0,
-                                std::vector<unsigned int> hitIndices1,
-                                std::vector<unsigned int> hitIndices2,
-                                std::vector<unsigned int> hitIndices3,
-                                std::vector<float> dPhiChange,
-                                std::vector<float> ptIn,
-                                std::vector<float> ptErr,
-                                std::vector<float> px,
-                                std::vector<float> py,
-                                std::vector<float> pz,
-                                std::vector<float> eta,
-                                std::vector<float> etaErr,
-                                std::vector<float> phi,
-                                std::vector<int> charge,
-                                std::vector<unsigned int> seedIdx,
-                                std::vector<int> superbin,
-                                std::vector<int8_t> pixelType,
-                                std::vector<char> isQuad);
+    void addHitToEvent(std::vector<float> const& x,
+                       std::vector<float> const& y,
+                       std::vector<float> const& z,
+                       std::vector<unsigned int> const& detId,
+                       std::vector<unsigned int> const&
+                           idxInNtuple);  //call the appropriate hit function, then increment the counter here
+    void addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
+                                std::vector<unsigned int> const& hitIndices1,
+                                std::vector<unsigned int> const& hitIndices2,
+                                std::vector<unsigned int> const& hitIndices3,
+                                std::vector<float> const& dPhiChange,
+                                std::vector<float> const& ptIn,
+                                std::vector<float> const& ptErr,
+                                std::vector<float> const& px,
+                                std::vector<float> const& py,
+                                std::vector<float> const& pz,
+                                std::vector<float> const& eta,
+                                std::vector<float> const& etaErr,
+                                std::vector<float> const& phi,
+                                std::vector<int> const& charge,
+                                std::vector<unsigned int> const& seedIdx,
+                                std::vector<int> const& superbin,
+                                std::vector<int8_t> const& pixelType,
+                                std::vector<char> const& isQuad);
 
     // functions that map the objects to the appropriate modules
     void addMiniDoubletsToEventExplicit();

@@ -22,10 +22,10 @@ namespace lst {
     unsigned int nEndCapMap;
 
     EndcapGeometry() = default;
-    EndcapGeometry(std::string filename);
+    EndcapGeometry(std::string const& filename);
     ~EndcapGeometry() = default;
 
-    void load(std::string);
+    void load(std::string const&);
     void fillGeoMapArraysExplicit();
     float getdxdy_slope(unsigned int detid) const;
   };

@@ -2,11 +2,11 @@
 
 lst::ModuleConnectionMap::ModuleConnectionMap() {}
 
-lst::ModuleConnectionMap::ModuleConnectionMap(std::string filename) { load(filename); }
+lst::ModuleConnectionMap::ModuleConnectionMap(std::string const& filename) { load(filename); }
 
 lst::ModuleConnectionMap::~ModuleConnectionMap() {}
 
-void lst::ModuleConnectionMap::load(std::string filename) {
+void lst::ModuleConnectionMap::load(std::string const& filename) {
   moduleConnections_.clear();
 
   std::ifstream ifile(filename, std::ios::binary);
@@ -49,7 +49,7 @@ void lst::ModuleConnectionMap::load(std::string filename) {
   }
 }
 
-void lst::ModuleConnectionMap::add(std::string filename) {
+void lst::ModuleConnectionMap::add(std::string const& filename) {
   std::ifstream ifile;
   ifile.open(filename.c_str());
   std::string line;

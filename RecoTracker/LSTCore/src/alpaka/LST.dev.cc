@@ -20,25 +20,25 @@ namespace {
 }  // namespace
 
 template <>
-void lst::LST<Acc3D>::prepareInput(const std::vector<float> see_px,
-                                   const std::vector<float> see_py,
-                                   const std::vector<float> see_pz,
-                                   const std::vector<float> see_dxy,
-                                   const std::vector<float> see_dz,
-                                   const std::vector<float> see_ptErr,
-                                   const std::vector<float> see_etaErr,
-                                   const std::vector<float> see_stateTrajGlbX,
-                                   const std::vector<float> see_stateTrajGlbY,
-                                   const std::vector<float> see_stateTrajGlbZ,
-                                   const std::vector<float> see_stateTrajGlbPx,
-                                   const std::vector<float> see_stateTrajGlbPy,
-                                   const std::vector<float> see_stateTrajGlbPz,
-                                   const std::vector<int> see_q,
-                                   const std::vector<std::vector<int>> see_hitIdx,
-                                   const std::vector<unsigned int> ph2_detId,
-                                   const std::vector<float> ph2_x,
-                                   const std::vector<float> ph2_y,
-                                   const std::vector<float> ph2_z) {
+void lst::LST<Acc3D>::prepareInput(std::vector<float> const& see_px,
+                                   std::vector<float> const& see_py,
+                                   std::vector<float> const& see_pz,
+                                   std::vector<float> const& see_dxy,
+                                   std::vector<float> const& see_dz,
+                                   std::vector<float> const& see_ptErr,
+                                   std::vector<float> const& see_etaErr,
+                                   std::vector<float> const& see_stateTrajGlbX,
+                                   std::vector<float> const& see_stateTrajGlbY,
+                                   std::vector<float> const& see_stateTrajGlbZ,
+                                   std::vector<float> const& see_stateTrajGlbPx,
+                                   std::vector<float> const& see_stateTrajGlbPy,
+                                   std::vector<float> const& see_stateTrajGlbPz,
+                                   std::vector<int> const& see_q,
+                                   std::vector<std::vector<int>> const& see_hitIdx,
+                                   std::vector<unsigned int> const& ph2_detId,
+                                   std::vector<float> const& ph2_x,
+                                   std::vector<float> const& ph2_y,
+                                   std::vector<float> const& ph2_z) {
   unsigned int count = 0;
   auto n_see = see_stateTrajGlbPx.size();
   std::vector<float> px_vec;
