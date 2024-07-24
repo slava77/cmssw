@@ -35,11 +35,6 @@ namespace lst {
   };
 #endif
 
-  // Wrapper function to reduce code boilerplate for defining grid/block sizes.
-  ALPAKA_FN_HOST ALPAKA_FN_INLINE Vec3D createVec(int x, int y, int z) {
-    return Vec3D(static_cast<Idx>(x), static_cast<Idx>(y), static_cast<Idx>(z));
-  }
-
   // Adjust grid and block sizes based on backend configuration
   template <typename Vec>
   ALPAKA_FN_HOST ALPAKA_FN_INLINE WorkDiv3D createWorkDiv(const Vec& blocksPerGrid,
