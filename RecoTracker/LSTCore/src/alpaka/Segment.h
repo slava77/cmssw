@@ -279,14 +279,14 @@ namespace lst {
                                                       unsigned int& innerMDIndex,
                                                       unsigned int& outerMDIndex) {
     float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
-                       ? miniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
-                       : miniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
+                       ? kMiniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
+                       : kMiniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
 
     //more accurate then outer rt - inner rt
     float segmentDr = alpaka::math::sqrt(acc, (yOut - yIn) * (yOut - yIn) + (xOut - xIn) * (xOut - xIn));
 
     const float dAlpha_Bfield =
-        alpaka::math::asin(acc, alpaka::math::min(acc, segmentDr * k2Rinv1GeVf / ptCut, sinAlphaMax));
+        alpaka::math::asin(acc, alpaka::math::min(acc, segmentDr * k2Rinv1GeVf / ptCut, kSinAlphaMax));
 
     bool isInnerTilted = modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
                          modulesInGPU.sides[innerLowerModuleIndex] != lst::Center;
@@ -298,12 +298,12 @@ namespace lst {
     float innerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, innerLowerModuleIndex);
     float outerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, outerLowerModuleIndex);
     const float innerminiTilt2 = isInnerTilted
-                                     ? ((0.5f * 0.5f) * (pixelPSZpitch * pixelPSZpitch) * (drdzInner * drdzInner) /
+                                     ? ((0.5f * 0.5f) * (kPixelPSZpitch * kPixelPSZpitch) * (drdzInner * drdzInner) /
                                         (1.f + drdzInner * drdzInner) / (innerModuleGapSize * innerModuleGapSize))
                                      : 0;
 
     const float outerminiTilt2 = isOuterTilted
-                                     ? ((0.5f * 0.5f) * (pixelPSZpitch * pixelPSZpitch) * (drdzOuter * drdzOuter) /
+                                     ? ((0.5f * 0.5f) * (kPixelPSZpitch * kPixelPSZpitch) * (drdzOuter * drdzOuter) /
                                         (1.f + drdzOuter * drdzOuter) / (outerModuleGapSize * outerModuleGapSize))
                                      : 0;
 
@@ -315,14 +315,14 @@ namespace lst {
     if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel) {
       sdLumForInnerMini2 = innerminiTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
-      sdLumForInnerMini2 = (mdsInGPU.dphis[innerMDIndex] * mdsInGPU.dphis[innerMDIndex]) * (deltaZLum * deltaZLum) /
+      sdLumForInnerMini2 = (mdsInGPU.dphis[innerMDIndex] * mdsInGPU.dphis[innerMDIndex]) * (kDeltaZLum * kDeltaZLum) /
                            (mdsInGPU.dzs[innerMDIndex] * mdsInGPU.dzs[innerMDIndex]);
     }
 
     if (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel) {
       sdLumForOuterMini2 = outerminiTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
-      sdLumForOuterMini2 = (mdsInGPU.dphis[outerMDIndex] * mdsInGPU.dphis[outerMDIndex]) * (deltaZLum * deltaZLum) /
+      sdLumForOuterMini2 = (mdsInGPU.dphis[outerMDIndex] * mdsInGPU.dphis[outerMDIndex]) * (kDeltaZLum * kDeltaZLum) /
                            (mdsInGPU.dzs[outerMDIndex] * mdsInGPU.dzs[outerMDIndex]);
     }
 
@@ -480,8 +480,8 @@ namespace lst {
                                                                   float& dAlphaOuterMDSegmentThreshold,
                                                                   float& dAlphaInnerMDOuterMDThreshold) {
     float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
-                       ? miniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
-                       : miniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
+                       ? kMiniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
+                       : kMiniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
 
     float xIn, yIn, xOut, yOut;
 
@@ -495,15 +495,15 @@ namespace lst {
     zOut = mdsInGPU.anchorZ[outerMDIndex];
     rtOut = mdsInGPU.anchorRt[outerMDIndex];
 
-    float sdSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, sinAlphaMax));
+    float sdSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     float sdPVoff = 0.1f / rtOut;
     float dzDrtScale = alpaka::math::tan(acc, sdSlope) / sdSlope;  //FIXME: need appropriate value
 
-    const float zGeom = modulesInGPU.layers[innerLowerModuleIndex] <= 2 ? 2.f * pixelPSZpitch : 2.f * strip2SZpitch;
+    const float zGeom = modulesInGPU.layers[innerLowerModuleIndex] <= 2 ? 2.f * kPixelPSZpitch : 2.f * kStrip2SZpitch;
 
-    zLo = zIn + (zIn - deltaZLum) * (rtOut / rtIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
+    zLo = zIn + (zIn - kDeltaZLum) * (rtOut / rtIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
           zGeom;  //slope-correction only on outer end
-    zHi = zIn + (zIn + deltaZLum) * (rtOut / rtIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + zGeom;
+    zHi = zIn + (zIn + kDeltaZLum) * (rtOut / rtIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + zGeom;
 
     if ((zOut < zLo) || (zOut > zHi))
       return false;
@@ -598,13 +598,13 @@ namespace lst {
     bool outerLayerEndcapTwoS = (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Endcap) &&
                                 (modulesInGPU.moduleType[outerLowerModuleIndex] == lst::TwoS);
 
-    float sdSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, sinAlphaMax));
+    float sdSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     float disks2SMinRadius = 60.f;
 
     float rtGeom = ((rtIn < disks2SMinRadius && rtOut < disks2SMinRadius)
-                        ? (2.f * pixelPSZpitch)
-                        : ((rtIn < disks2SMinRadius || rtOut < disks2SMinRadius) ? (pixelPSZpitch + strip2SZpitch)
-                                                                                 : (2.f * strip2SZpitch)));
+                        ? (2.f * kPixelPSZpitch)
+                        : ((rtIn < disks2SMinRadius || rtOut < disks2SMinRadius) ? (kPixelPSZpitch + kStrip2SZpitch)
+                                                                                 : (2.f * kStrip2SZpitch)));
 
     //cut 0 - z compatibility
     if (zIn * zOut < 0)
@@ -612,7 +612,7 @@ namespace lst {
 
     float dz = zOut - zIn;
     // Alpaka: Needs to be moved over
-    float dLum = lst::copysignf(deltaZLum, zIn);
+    float dLum = alpaka::math::copysign(acc, kDeltaZLum, zIn);
     float drtDzScale = sdSlope / alpaka::math::tan(acc, sdSlope);
 
     rtLo = alpaka::math::max(

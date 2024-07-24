@@ -355,12 +355,12 @@ namespace lst {
     // =================================================================
 
     unsigned int iL = modulesInGPU.layers[moduleIndex] - 1;
-    const float miniSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rt * k2Rinv1GeVf / ptCut, sinAlphaMax));
+    const float miniSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rt * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     const float rLayNominal =
-        ((modulesInGPU.subdets[moduleIndex] == Barrel) ? miniRminMeanBarrel[iL] : miniRminMeanEndcap[iL]);
+        ((modulesInGPU.subdets[moduleIndex] == Barrel) ? kMiniRminMeanBarrel[iL] : kMiniRminMeanEndcap[iL]);
     const float miniPVoff = 0.1f / rLayNominal;
-    const float miniMuls = ((modulesInGPU.subdets[moduleIndex] == Barrel) ? miniMulsPtScaleBarrel[iL] * 3.f / ptCut
-                                                                          : miniMulsPtScaleEndcap[iL] * 3.f / ptCut);
+    const float miniMuls = ((modulesInGPU.subdets[moduleIndex] == Barrel) ? kMiniMulsPtScaleBarrel[iL] * 3.f / ptCut
+                                                                          : kMiniMulsPtScaleEndcap[iL] * 3.f / ptCut);
     const bool isTilted = modulesInGPU.subdets[moduleIndex] == Barrel and modulesInGPU.sides[moduleIndex] != Center;
     //the lower module is sent in irrespective of its layer type. We need to fetch the drdz properly
 
@@ -374,12 +374,12 @@ namespace lst {
     } else {
       drdz = 0;
     }
-    const float miniTilt2 = ((isTilted) ? (0.5f * 0.5f) * (pixelPSZpitch * pixelPSZpitch) * (drdz * drdz) /
+    const float miniTilt2 = ((isTilted) ? (0.5f * 0.5f) * (kPixelPSZpitch * kPixelPSZpitch) * (drdz * drdz) /
                                               (1.f + drdz * drdz) / moduleGapSize(modulesInGPU, moduleIndex)
                                         : 0);
 
     // Compute luminous region requirement for endcap
-    const float miniLum = alpaka::math::abs(acc, dPhi * deltaZLum / dz);  // Balaji's new error
+    const float miniLum = alpaka::math::abs(acc, dPhi * kDeltaZLum / dz);  // Balaji's new error
 
     // =================================================================
     // Return the threshold value
