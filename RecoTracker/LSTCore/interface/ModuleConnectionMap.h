@@ -22,7 +22,7 @@ namespace lst {
     void add(std::string const&);
     void print();
 
-    const std::vector<unsigned int>& getConnectedModuleDetIds(unsigned int detid) const;
+    const std::vector<unsigned int>& getConnectedModuleDetIds(const unsigned int detid) const;
     int size() const;
   };
 

@@ -19,7 +19,7 @@ namespace lst {
 
     int* pixelType;
 
-    PixelMap(unsigned int sizef = size_superbins)
+    PixelMap(const unsigned int sizef = size_superbins)
         : pixelModuleIndex(0),
           connectedPixelsIndex(sizef),
           connectedPixelsSizes(sizef),

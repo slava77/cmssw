@@ -40,7 +40,7 @@ namespace lst {
     const int* sdlLayers;
     const unsigned int* connectedPixels;
 
-    static bool parseIsInverted(short subdet, short side, short module, short layer) {
+    static bool parseIsInverted(const short subdet, const short side, const short module, const short layer) {
       if (subdet == Endcap) {
         if (side == NegZ) {
           return module % 2 == 1;
@@ -74,16 +74,16 @@ namespace lst {
       }
     };
 
-    static bool parseIsLower(bool isInvertedx, unsigned int detId) {
+    static bool parseIsLower(const bool isInvertedx, const unsigned int detId) {
       return (isInvertedx) ? !(detId & 1) : (detId & 1);
     };
 
-    static unsigned int parsePartnerModuleId(unsigned int detId, bool isLowerx, bool isInvertedx) {
+    static unsigned int parsePartnerModuleId(const unsigned int detId, const bool isLowerx, const bool isInvertedx) {
       return isLowerx ? (isInvertedx ? detId - 1 : detId + 1) : (isInvertedx ? detId + 1 : detId - 1);
     };
 
     template <typename TBuff>
-    void setData(const TBuff& buf) {
+    void setData(TBuff const& buf) {
       detIds = alpaka::getPtrNative(buf.detIds_buf);
       moduleMap = alpaka::getPtrNative(buf.moduleMap_buf);
       mapdetId = alpaka::getPtrNative(buf.mapdetId_buf);
@@ -144,7 +144,7 @@ namespace lst {
 
     Modules data_;
 
-    ModulesBuffer(TDev const& dev, unsigned int nMod, unsigned int nPixs)
+    ModulesBuffer(TDev const& dev, const unsigned int nMod, const unsigned int nPixs)
         : detIds_buf(allocBufWrapper<unsigned int>(dev, nMod)),
           moduleMap_buf(allocBufWrapper<uint16_t>(dev, nMod * max_connected_modules)),
           mapdetId_buf(allocBufWrapper<unsigned int>(dev, nMod)),
@@ -175,7 +175,7 @@ namespace lst {
     }
 
     template <typename TQueue, typename TDevSrc>
-    inline void copyFromSrc(TQueue queue, const ModulesBuffer<TDevSrc>& src, bool isFull = true) {
+    inline void copyFromSrc(TQueue queue, ModulesBuffer<TDevSrc> const& src, const bool isFull = true) {
       alpaka::memcpy(queue, detIds_buf, src.detIds_buf);
       if (isFull) {
         alpaka::memcpy(queue, moduleMap_buf, src.moduleMap_buf);
@@ -216,7 +216,7 @@ namespace lst {
     }
 
     template <typename TQueue, typename TDevSrc>
-    ModulesBuffer(TQueue queue, const ModulesBuffer<TDevSrc>& src, unsigned int nMod, unsigned int nPixs)
+    ModulesBuffer(TQueue queue, ModulesBuffer<TDevSrc> const& src, const unsigned int nMod, const unsigned int nPixs)
         : ModulesBuffer(alpaka::getDev(queue), nMod, nPixs) {
       copyFromSrc(queue, src);
     }

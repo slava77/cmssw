@@ -105,7 +105,7 @@ namespace lst {
     ObjectRanges data_;
 
     template <typename TQueue, typename TDevAcc>
-    ObjectRangesBuffer(unsigned int nMod, unsigned int nLowerMod, TDevAcc const& devAccIn, TQueue& queue)
+    ObjectRangesBuffer(const unsigned int nMod, const unsigned int nLowerMod, TDevAcc const& devAccIn, TQueue& queue)
         : hitRanges_buf(allocBufWrapper<int>(devAccIn, nMod * 2, queue)),
           hitRangesLower_buf(allocBufWrapper<int>(devAccIn, nMod, queue)),
           hitRangesUpper_buf(allocBufWrapper<int>(devAccIn, nMod, queue)),

@@ -104,7 +104,10 @@ namespace lst {
     Quintuplets data_;
 
     template <typename TQueue, typename TDevAcc>
-    QuintupletsBuffer(unsigned int nTotalQuintuplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
+    QuintupletsBuffer(const unsigned int nTotalQuintuplets,
+                      const unsigned int nLowerModules,
+                      TDevAcc const& devAccIn,
+                      TQueue& queue)
         : tripletIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * nTotalQuintuplets, queue)),
           lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, Params_T5::kLayers * nTotalQuintuplets, queue)),
           nQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
@@ -141,22 +144,22 @@ namespace lst {
     inline void setData(QuintupletsBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlap(const float& firstMin,
-                                                           const float& firstMax,
-                                                           const float& secondMin,
-                                                           const float& secondMax) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlap(const float firstMin,
+                                                           const float firstMax,
+                                                           const float secondMin,
+                                                           const float secondMax) {
     return ((firstMin <= secondMin) && (secondMin < firstMax)) || ((secondMin < firstMin) && (firstMin < secondMax));
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addQuintupletToMemory(struct lst::Triplets& tripletsInGPU,
                                                             struct lst::Quintuplets& quintupletsInGPU,
-                                                            unsigned int innerTripletIndex,
-                                                            unsigned int outerTripletIndex,
-                                                            uint16_t& lowerModule1,
-                                                            uint16_t& lowerModule2,
-                                                            uint16_t& lowerModule3,
-                                                            uint16_t& lowerModule4,
-                                                            uint16_t& lowerModule5,
+                                                            const unsigned int innerTripletIndex,
+                                                            const unsigned int outerTripletIndex,
+                                                            const uint16_t lowerModule1,
+                                                            const uint16_t lowerModule2,
+                                                            const uint16_t lowerModule3,
+                                                            const uint16_t lowerModule4,
+                                                            const uint16_t lowerModule5,
                                                             float& innerRadius,
                                                             float& bridgeRadius,
                                                             float& outerRadius,
@@ -166,13 +169,13 @@ namespace lst {
                                                             float& rzChiSquared,
                                                             float& rPhiChiSquared,
                                                             float& nonAnchorChiSquared,
-                                                            float pt,
-                                                            float eta,
-                                                            float phi,
-                                                            float scores,
-                                                            uint8_t layer,
-                                                            unsigned int quintupletIndex,
-                                                            bool TightCutFlag) {
+                                                            const float pt,
+                                                            const float eta,
+                                                            const float phi,
+                                                            const float scores,
+                                                            const uint8_t layer,
+                                                            const unsigned int quintupletIndex,
+                                                            const bool TightCutFlag) {
     quintupletsInGPU.tripletIndices[2 * quintupletIndex] = innerTripletIndex;
     quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1] = outerTripletIndex;
 
@@ -232,12 +235,12 @@ namespace lst {
 
   //90% constraint
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passChiSquaredConstraint(struct lst::Modules& modulesInGPU,
-                                                               uint16_t& lowerModuleIndex1,
-                                                               uint16_t& lowerModuleIndex2,
-                                                               uint16_t& lowerModuleIndex3,
-                                                               uint16_t& lowerModuleIndex4,
-                                                               uint16_t& lowerModuleIndex5,
-                                                               float& chiSquared) {
+                                                               const uint16_t lowerModuleIndex1,
+                                                               const uint16_t lowerModuleIndex2,
+                                                               const uint16_t lowerModuleIndex3,
+                                                               const uint16_t lowerModuleIndex4,
+                                                               const uint16_t lowerModuleIndex5,
+                                                               const float chiSquared) {
     // Using sdlLayer numbering convention defined in ModuleMethods.h
     const int layer1 = modulesInGPU.sdlLayers[lowerModuleIndex1];
     const int layer2 = modulesInGPU.sdlLayers[lowerModuleIndex2];
@@ -318,21 +321,21 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passT5RZConstraint(TAcc const& acc,
                                                          struct lst::Modules& modulesInGPU,
                                                          struct lst::MiniDoublets& mdsInGPU,
-                                                         unsigned int firstMDIndex,
-                                                         unsigned int secondMDIndex,
-                                                         unsigned int thirdMDIndex,
-                                                         unsigned int fourthMDIndex,
-                                                         unsigned int fifthMDIndex,
-                                                         uint16_t& lowerModuleIndex1,
-                                                         uint16_t& lowerModuleIndex2,
-                                                         uint16_t& lowerModuleIndex3,
-                                                         uint16_t& lowerModuleIndex4,
-                                                         uint16_t& lowerModuleIndex5,
+                                                         const unsigned int firstMDIndex,
+                                                         const unsigned int secondMDIndex,
+                                                         const unsigned int thirdMDIndex,
+                                                         const unsigned int fourthMDIndex,
+                                                         const unsigned int fifthMDIndex,
+                                                         const uint16_t lowerModuleIndex1,
+                                                         const uint16_t lowerModuleIndex2,
+                                                         const uint16_t lowerModuleIndex3,
+                                                         const uint16_t lowerModuleIndex4,
+                                                         const uint16_t lowerModuleIndex5,
                                                          float& rzChiSquared,
-                                                         float inner_pt,
-                                                         float innerRadius,
-                                                         float g,
-                                                         float f,
+                                                         const float inner_pt,
+                                                         const float innerRadius,
+                                                         const float g,
+                                                         const float f,
                                                          bool& TightCutFlag) {
     //(g,f) is the center of the circle fitted by the innermost 3 points on x,y coordinates
     const float& rt1 = mdsInGPU.anchorRt[firstMDIndex] / 100;  //in the unit of m instead of cm
@@ -752,8 +755,8 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool T5HasCommonMiniDoublet(struct lst::Triplets& tripletsInGPU,
                                                              struct lst::Segments& segmentsInGPU,
-                                                             unsigned int innerTripletIndex,
-                                                             unsigned int outerTripletIndex) {
+                                                             const unsigned int innerTripletIndex,
+                                                             const unsigned int outerTripletIndex) {
     unsigned int innerOuterSegmentIndex = tripletsInGPU.segmentIndices[2 * innerTripletIndex + 1];
     unsigned int outerInnerSegmentIndex = tripletsInGPU.segmentIndices[2 * outerTripletIndex];
     unsigned int innerOuterOuterMiniDoubletIndex =
@@ -1155,8 +1158,8 @@ namespace lst {
                                                                  float* delta2,
                                                                  float* slopes,
                                                                  bool* isFlat,
-                                                                 unsigned int nPoints = 5,
-                                                                 bool anchorHits = true) {
+                                                                 const unsigned int nPoints = 5,
+                                                                 const bool anchorHits = true) {
     /*
         Bool anchorHits required to deal with a weird edge case wherein 
         the hits ultimately used in the regression are anchor hits, but the
@@ -1236,7 +1239,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeRadiusUsingRegression(TAcc const& acc,
-                                                                    unsigned int nPoints,
+                                                                    const unsigned int nPoints,
                                                                     float* xs,
                                                                     float* ys,
                                                                     float* delta1,
@@ -1334,16 +1337,16 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeChiSquared(TAcc const& acc,
-                                                         unsigned int nPoints,
+                                                         const unsigned int nPoints,
                                                          float* xs,
                                                          float* ys,
                                                          float* delta1,
                                                          float* delta2,
                                                          float* slopes,
                                                          bool* isFlat,
-                                                         float g,
-                                                         float f,
-                                                         float radius) {
+                                                         const float g,
+                                                         const float f,
+                                                         const float radius) {
     // given values of (g, f, radius) and a set of points (and its uncertainties)
     // compute chi squared
     float c = g * g + f * f - radius * radius;
@@ -1384,10 +1387,10 @@ namespace lst {
                                                                float& betaOut,
                                                                float& betaAv,
                                                                float& pt_beta,
-                                                               float sdIn_dr,
-                                                               float sdOut_dr,
-                                                               float dr,
-                                                               float lIn) {
+                                                               const float sdIn_dr,
+                                                               const float sdOut_dr,
+                                                               const float dr,
+                                                               const float lIn) {
     if (lIn == 0) {
       betaOut += alpaka::math::copysign(
           acc,
@@ -1489,16 +1492,16 @@ namespace lst {
                                                                    struct lst::Modules& modulesInGPU,
                                                                    struct lst::MiniDoublets& mdsInGPU,
                                                                    struct lst::Segments& segmentsInGPU,
-                                                                   uint16_t& innerInnerLowerModuleIndex,
-                                                                   uint16_t& innerOuterLowerModuleIndex,
-                                                                   uint16_t& outerInnerLowerModuleIndex,
-                                                                   uint16_t& outerOuterLowerModuleIndex,
-                                                                   unsigned int& innerSegmentIndex,
-                                                                   unsigned int& outerSegmentIndex,
-                                                                   unsigned int& firstMDIndex,
-                                                                   unsigned int& secondMDIndex,
-                                                                   unsigned int& thirdMDIndex,
-                                                                   unsigned int& fourthMDIndex,
+                                                                   const uint16_t innerInnerLowerModuleIndex,
+                                                                   const uint16_t innerOuterLowerModuleIndex,
+                                                                   const uint16_t outerInnerLowerModuleIndex,
+                                                                   const uint16_t outerOuterLowerModuleIndex,
+                                                                   const unsigned int innerSegmentIndex,
+                                                                   const unsigned int outerSegmentIndex,
+                                                                   const unsigned int firstMDIndex,
+                                                                   const unsigned int secondMDIndex,
+                                                                   const unsigned int thirdMDIndex,
+                                                                   const unsigned int fourthMDIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
                                                                    float& deltaPhiPos,
@@ -1576,7 +1579,8 @@ namespace lst {
     float sdlPVoff = 0.1f / rt_OutLo;
     sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
 
-    deltaPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
+    deltaPhiPos =
+        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
     // Cut #3: FIXME:deltaPhiPos can be tighter
     if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
       return false;
@@ -1586,7 +1590,7 @@ namespace lst {
     float diffX = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float diffY = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
+    dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
     // Cut #4: deltaPhiChange
     if (alpaka::math::abs(acc, dPhi) > sdlCut)
@@ -1602,11 +1606,12 @@ namespace lst {
 
     float alpha_OutUp, alpha_OutUp_highEdge, alpha_OutUp_lowEdge;
 
-    alpha_OutUp = lst::phi_mpi_pi(acc,
-                                  lst::phi(acc,
-                                           mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                                           mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-                                      mdsInGPU.anchorPhi[fourthMDIndex]);
+    alpha_OutUp = cms::alpakatools::phi_mpi_pi(
+        acc,
+        cms::alpakatools::phi(acc,
+                              mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                              mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+            mdsInGPU.anchorPhi[fourthMDIndex]);
 
     alpha_OutUp_highEdge = alpha_OutUp;
     alpha_OutUp_lowEdge = alpha_OutUp;
@@ -1618,41 +1623,45 @@ namespace lst {
     float tl_axis_lowEdge_x = tl_axis_x;
     float tl_axis_lowEdge_y = tl_axis_y;
 
-    betaIn = alpha_InLo - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = alpha_InLo - cms::alpakatools::phi_mpi_pi(
+                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float betaInRHmin = betaIn;
     float betaInRHmax = betaIn;
     betaOut =
-        -alpha_OutUp + lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
+        -alpha_OutUp + cms::alpakatools::phi_mpi_pi(
+                           acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
 
     float betaOutRHmin = betaOut;
     float betaOutRHmax = betaOut;
 
     if (isEC_lastLayer) {
-      alpha_OutUp_highEdge =
-          lst::phi_mpi_pi(acc,
-                          lst::phi(acc,
-                                   mdsInGPU.anchorHighEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                                   mdsInGPU.anchorHighEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-                              mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
-      alpha_OutUp_lowEdge =
-          lst::phi_mpi_pi(acc,
-                          lst::phi(acc,
-                                   mdsInGPU.anchorLowEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                                   mdsInGPU.anchorLowEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-                              mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
+      alpha_OutUp_highEdge = cms::alpakatools::phi_mpi_pi(
+          acc,
+          cms::alpakatools::phi(acc,
+                                mdsInGPU.anchorHighEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                                mdsInGPU.anchorHighEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+              mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
+      alpha_OutUp_lowEdge = cms::alpakatools::phi_mpi_pi(
+          acc,
+          cms::alpakatools::phi(acc,
+                                mdsInGPU.anchorLowEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                                mdsInGPU.anchorLowEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+              mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
 
       tl_axis_highEdge_x = mdsInGPU.anchorHighEdgeX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
       tl_axis_highEdge_y = mdsInGPU.anchorHighEdgeY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
       tl_axis_lowEdge_x = mdsInGPU.anchorLowEdgeX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
       tl_axis_lowEdge_y = mdsInGPU.anchorLowEdgeY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-      betaOutRHmin = -alpha_OutUp_highEdge + lst::phi_mpi_pi(acc,
-                                                             lst::phi(acc, tl_axis_highEdge_x, tl_axis_highEdge_y) -
-                                                                 mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
-      betaOutRHmax = -alpha_OutUp_lowEdge + lst::phi_mpi_pi(acc,
-                                                            lst::phi(acc, tl_axis_lowEdge_x, tl_axis_lowEdge_y) -
-                                                                mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
+      betaOutRHmin = -alpha_OutUp_highEdge +
+                     cms::alpakatools::phi_mpi_pi(acc,
+                                                  cms::alpakatools::phi(acc, tl_axis_highEdge_x, tl_axis_highEdge_y) -
+                                                      mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
+      betaOutRHmax = -alpha_OutUp_lowEdge +
+                     cms::alpakatools::phi_mpi_pi(acc,
+                                                  cms::alpakatools::phi(acc, tl_axis_lowEdge_x, tl_axis_lowEdge_y) -
+                                                      mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
     }
 
     //beta computation
@@ -1758,16 +1767,16 @@ namespace lst {
                                                                    struct lst::Modules& modulesInGPU,
                                                                    struct lst::MiniDoublets& mdsInGPU,
                                                                    struct lst::Segments& segmentsInGPU,
-                                                                   uint16_t& innerInnerLowerModuleIndex,
-                                                                   uint16_t& innerOuterLowerModuleIndex,
-                                                                   uint16_t& outerInnerLowerModuleIndex,
-                                                                   uint16_t& outerOuterLowerModuleIndex,
-                                                                   unsigned int& innerSegmentIndex,
-                                                                   unsigned int& outerSegmentIndex,
-                                                                   unsigned int& firstMDIndex,
-                                                                   unsigned int& secondMDIndex,
-                                                                   unsigned int& thirdMDIndex,
-                                                                   unsigned int& fourthMDIndex,
+                                                                   const uint16_t innerInnerLowerModuleIndex,
+                                                                   const uint16_t innerOuterLowerModuleIndex,
+                                                                   const uint16_t outerInnerLowerModuleIndex,
+                                                                   const uint16_t outerOuterLowerModuleIndex,
+                                                                   const unsigned int innerSegmentIndex,
+                                                                   const unsigned int outerSegmentIndex,
+                                                                   const unsigned int firstMDIndex,
+                                                                   const unsigned int secondMDIndex,
+                                                                   const unsigned int thirdMDIndex,
+                                                                   const unsigned int fourthMDIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
                                                                    float& deltaPhiPos,
@@ -1859,7 +1868,8 @@ namespace lst {
     const float sdlPVoff = 0.1f / rt_OutLo;
     sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
 
-    deltaPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
+    deltaPhiPos =
+        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
 
     //Cut #4: deltaPhiPos can be tighter
     if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
@@ -1870,7 +1880,7 @@ namespace lst {
     float diffX = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float diffY = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
+    dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
     // Cut #5: deltaPhiChange
     if (alpaka::math::abs(acc, dPhi) > sdlCut)
       return false;
@@ -1880,26 +1890,29 @@ namespace lst {
     float sdIn_alpha_max = __H2F(segmentsInGPU.dPhiChangeMaxs[innerSegmentIndex]);
     float sdOut_alpha = sdIn_alpha;
 
-    float sdOut_alphaOut = lst::phi_mpi_pi(acc,
-                                           lst::phi(acc,
-                                                    mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                                                    mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-                                               mdsInGPU.anchorPhi[fourthMDIndex]);
+    float sdOut_alphaOut = cms::alpakatools::phi_mpi_pi(
+        acc,
+        cms::alpakatools::phi(acc,
+                              mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                              mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+            mdsInGPU.anchorPhi[fourthMDIndex]);
 
-    float sdOut_alphaOut_min = lst::phi_mpi_pi(
+    float sdOut_alphaOut_min = cms::alpakatools::phi_mpi_pi(
         acc, __H2F(segmentsInGPU.dPhiChangeMins[outerSegmentIndex]) - __H2F(segmentsInGPU.dPhiMins[outerSegmentIndex]));
-    float sdOut_alphaOut_max = lst::phi_mpi_pi(
+    float sdOut_alphaOut_max = cms::alpakatools::phi_mpi_pi(
         acc, __H2F(segmentsInGPU.dPhiChangeMaxs[outerSegmentIndex]) - __H2F(segmentsInGPU.dPhiMaxs[outerSegmentIndex]));
 
     float tl_axis_x = mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - cms::alpakatools::phi_mpi_pi(
+                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float betaInRHmin = betaIn;
     float betaInRHmax = betaIn;
-    betaOut =
-        -sdOut_alphaOut + lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
+    betaOut = -sdOut_alphaOut +
+              cms::alpakatools::phi_mpi_pi(
+                  acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
 
     float betaOutRHmin = betaOut;
     float betaOutRHmax = betaOut;
@@ -2029,16 +2042,16 @@ namespace lst {
                                                                    struct lst::Modules& modulesInGPU,
                                                                    struct lst::MiniDoublets& mdsInGPU,
                                                                    struct lst::Segments& segmentsInGPU,
-                                                                   uint16_t& innerInnerLowerModuleIndex,
-                                                                   uint16_t& innerOuterLowerModuleIndex,
-                                                                   uint16_t& outerInnerLowerModuleIndex,
-                                                                   uint16_t& outerOuterLowerModuleIndex,
-                                                                   unsigned int& innerSegmentIndex,
-                                                                   unsigned int& outerSegmentIndex,
-                                                                   unsigned int& firstMDIndex,
-                                                                   unsigned int& secondMDIndex,
-                                                                   unsigned int& thirdMDIndex,
-                                                                   unsigned int& fourthMDIndex,
+                                                                   const uint16_t innerInnerLowerModuleIndex,
+                                                                   const uint16_t innerOuterLowerModuleIndex,
+                                                                   const uint16_t outerInnerLowerModuleIndex,
+                                                                   const uint16_t outerOuterLowerModuleIndex,
+                                                                   const unsigned int innerSegmentIndex,
+                                                                   const unsigned int outerSegmentIndex,
+                                                                   const unsigned int firstMDIndex,
+                                                                   const unsigned int secondMDIndex,
+                                                                   const unsigned int thirdMDIndex,
+                                                                   const unsigned int fourthMDIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
                                                                    float& deltaPhiPos,
@@ -2140,7 +2153,8 @@ namespace lst {
     float sdlPVoff = 0.1f / rtOut;
     sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
 
-    deltaPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
+    deltaPhiPos =
+        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
 
     if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
       return false;
@@ -2150,7 +2164,7 @@ namespace lst {
     float diffX = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float diffY = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
+    dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
     // Cut #5: deltaPhiChange
     if (alpaka::math::abs(acc, dPhi) > sdlCut)
@@ -2158,28 +2172,31 @@ namespace lst {
 
     float sdIn_alpha = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
     float sdOut_alpha = sdIn_alpha;  //weird
-    float sdOut_dPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[thirdMDIndex]);
+    float sdOut_dPhiPos =
+        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[thirdMDIndex]);
 
     float sdOut_dPhiChange = __H2F(segmentsInGPU.dPhiChanges[outerSegmentIndex]);
     float sdOut_dPhiChange_min = __H2F(segmentsInGPU.dPhiChangeMins[outerSegmentIndex]);
     float sdOut_dPhiChange_max = __H2F(segmentsInGPU.dPhiChangeMaxs[outerSegmentIndex]);
 
-    float sdOut_alphaOutRHmin = lst::phi_mpi_pi(acc, sdOut_dPhiChange_min - sdOut_dPhiPos);
-    float sdOut_alphaOutRHmax = lst::phi_mpi_pi(acc, sdOut_dPhiChange_max - sdOut_dPhiPos);
-    float sdOut_alphaOut = lst::phi_mpi_pi(acc, sdOut_dPhiChange - sdOut_dPhiPos);
+    float sdOut_alphaOutRHmin = cms::alpakatools::phi_mpi_pi(acc, sdOut_dPhiChange_min - sdOut_dPhiPos);
+    float sdOut_alphaOutRHmax = cms::alpakatools::phi_mpi_pi(acc, sdOut_dPhiChange_max - sdOut_dPhiPos);
+    float sdOut_alphaOut = cms::alpakatools::phi_mpi_pi(acc, sdOut_dPhiChange - sdOut_dPhiPos);
 
     float tl_axis_x = mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - cms::alpakatools::phi_mpi_pi(
+                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float sdIn_alphaRHmin = __H2F(segmentsInGPU.dPhiChangeMins[innerSegmentIndex]);
     float sdIn_alphaRHmax = __H2F(segmentsInGPU.dPhiChangeMaxs[innerSegmentIndex]);
     float betaInRHmin = betaIn + sdIn_alphaRHmin - sdIn_alpha;
     float betaInRHmax = betaIn + sdIn_alphaRHmax - sdIn_alpha;
 
-    betaOut =
-        -sdOut_alphaOut + lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
+    betaOut = -sdOut_alphaOut +
+              cms::alpakatools::phi_mpi_pi(
+                  acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
 
     float betaOutRHmin = betaOut - sdOut_alphaOutRHmin + sdOut_alphaOut;
     float betaOutRHmax = betaOut - sdOut_alphaOutRHmax + sdOut_alphaOut;
@@ -2286,16 +2303,16 @@ namespace lst {
                                                                 struct lst::Modules& modulesInGPU,
                                                                 struct lst::MiniDoublets& mdsInGPU,
                                                                 struct lst::Segments& segmentsInGPU,
-                                                                uint16_t& innerInnerLowerModuleIndex,
-                                                                uint16_t& innerOuterLowerModuleIndex,
-                                                                uint16_t& outerInnerLowerModuleIndex,
-                                                                uint16_t& outerOuterLowerModuleIndex,
-                                                                unsigned int& innerSegmentIndex,
-                                                                unsigned int& outerSegmentIndex,
-                                                                unsigned int& firstMDIndex,
-                                                                unsigned int& secondMDIndex,
-                                                                unsigned int& thirdMDIndex,
-                                                                unsigned int& fourthMDIndex,
+                                                                const uint16_t innerInnerLowerModuleIndex,
+                                                                const uint16_t innerOuterLowerModuleIndex,
+                                                                const uint16_t outerInnerLowerModuleIndex,
+                                                                const uint16_t outerOuterLowerModuleIndex,
+                                                                const unsigned int innerSegmentIndex,
+                                                                const unsigned int outerSegmentIndex,
+                                                                const unsigned int firstMDIndex,
+                                                                const unsigned int secondMDIndex,
+                                                                const unsigned int thirdMDIndex,
+                                                                const unsigned int fourthMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
                                                                 float& deltaPhiPos,
@@ -2494,13 +2511,13 @@ namespace lst {
                                                                struct lst::MiniDoublets& mdsInGPU,
                                                                struct lst::Segments& segmentsInGPU,
                                                                struct lst::Triplets& tripletsInGPU,
-                                                               uint16_t& lowerModuleIndex1,
-                                                               uint16_t& lowerModuleIndex2,
-                                                               uint16_t& lowerModuleIndex3,
-                                                               uint16_t& lowerModuleIndex4,
-                                                               uint16_t& lowerModuleIndex5,
-                                                               unsigned int& innerTripletIndex,
-                                                               unsigned int& outerTripletIndex,
+                                                               const uint16_t lowerModuleIndex1,
+                                                               const uint16_t lowerModuleIndex2,
+                                                               const uint16_t lowerModuleIndex3,
+                                                               const uint16_t lowerModuleIndex4,
+                                                               const uint16_t lowerModuleIndex5,
+                                                               const unsigned int innerTripletIndex,
+                                                               const unsigned int outerTripletIndex,
                                                                float& innerRadius,
                                                                float& outerRadius,
                                                                float& bridgeRadius,
@@ -2988,7 +3005,7 @@ namespace lst {
                                   struct lst::Triplets tripletsInGPU,
                                   struct lst::Quintuplets quintupletsInGPU,
                                   struct lst::ObjectRanges rangesInGPU,
-                                  uint16_t nEligibleT5Modules) const {
+                                  const uint16_t nEligibleT5Modules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 

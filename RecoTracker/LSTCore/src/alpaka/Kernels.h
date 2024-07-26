@@ -14,29 +14,29 @@
 
 namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(struct lst::Quintuplets& quintupletsInGPU,
-                                                             unsigned int quintupletIndex,
-                                                             bool secondpass = false) {
+                                                             const unsigned int quintupletIndex,
+                                                             const bool secondpass = false) {
     quintupletsInGPU.isDup[quintupletIndex] |= 1 + secondpass;
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(struct lst::PixelTriplets& pixelTripletsInGPU,
-                                                               unsigned int pixelTripletIndex) {
+                                                               const unsigned int pixelTripletIndex) {
     pixelTripletsInGPU.isDup[pixelTripletIndex] = true;
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelQuintupletFromMemory(struct lst::PixelQuintuplets& pixelQuintupletsInGPU,
-                                                                  unsigned int pixelQuintupletIndex) {
+                                                                  const unsigned int pixelQuintupletIndex) {
     pixelQuintupletsInGPU.isDup[pixelQuintupletIndex] = true;
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelSegmentFromMemory(struct lst::Segments& segmentsInGPU,
-                                                               unsigned int pixelSegmentArrayIndex,
-                                                               bool secondpass = false) {
+                                                               const unsigned int pixelSegmentArrayIndex,
+                                                               const bool secondpass = false) {
     segmentsInGPU.isDup[pixelSegmentArrayIndex] |= 1 + secondpass;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitsT5(unsigned int ix,
-                                                 unsigned int jx,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitsT5(const unsigned int ix,
+                                                 const unsigned int jx,
                                                  struct lst::Quintuplets& quintupletsInGPU) {
     unsigned int hits1[Params_T5::kHits];
     unsigned int hits2[Params_T5::kHits];
@@ -62,8 +62,8 @@ namespace lst {
     return nMatched;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitspT5(unsigned int ix,
-                                                  unsigned int jx,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitspT5(const unsigned int ix,
+                                                  const unsigned int jx,
                                                   struct lst::PixelQuintuplets& pixelQuintupletsInGPU) {
     unsigned int hits1[Params_pT5::kHits];
     unsigned int hits2[Params_pT5::kHits];
@@ -89,8 +89,8 @@ namespace lst {
     return nMatched;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void checkHitspT3(unsigned int ix,
-                                                   unsigned int jx,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void checkHitspT3(const unsigned int ix,
+                                                   const unsigned int jx,
                                                    struct lst::PixelTriplets& pixelTripletsInGPU,
                                                    int* matched) {
     int phits1[Params_pLS::kHits];
@@ -167,7 +167,7 @@ namespace lst {
             float eta2 = __H2F(quintupletsInGPU.eta[jx]);
             float phi2 = __H2F(quintupletsInGPU.phi[jx]);
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
-            float dPhi = lst::calculate_dPhi(phi1, phi2);
+            float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
             float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
 
             if (dEta > 0.1f)
@@ -239,7 +239,7 @@ namespace lst {
               float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
 
               float dEta = alpaka::math::abs(acc, eta1 - eta2);
-              float dPhi = lst::calculate_dPhi(phi1, phi2);
+              float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
 
               if (dEta > 0.1f)
                 continue;
@@ -335,7 +335,7 @@ namespace lst {
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   struct lst::Modules modulesInGPU,
                                   struct lst::Segments segmentsInGPU,
-                                  bool secondpass) const {
+                                  const bool secondpass) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -410,7 +410,7 @@ namespace lst {
           }
           if (secondpass) {
             float dEta = alpaka::math::abs(acc, eta_pix1 - eta_pix2);
-            float dPhi = lst::calculate_dPhi(phi_pix1, phi_pix2);
+            float dPhi = cms::alpakatools::calculate_dPhi(phi_pix1, phi_pix2);
 
             float dR2 = dEta * dEta + dPhi * dPhi;
             if ((npMatched >= 1) || (dR2 < 1e-5f)) {

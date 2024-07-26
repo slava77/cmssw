@@ -93,7 +93,7 @@ void lst::ModuleConnectionMap::print() {
   }
 }
 
-const std::vector<unsigned int>& lst::ModuleConnectionMap::getConnectedModuleDetIds(unsigned int detid) const {
+const std::vector<unsigned int>& lst::ModuleConnectionMap::getConnectedModuleDetIds(const unsigned int detid) const {
   static const std::vector<unsigned int> dummy;
   auto const mList = moduleConnections_.find(detid);
   return mList != moduleConnections_.end() ? mList->second : dummy;

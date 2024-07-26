@@ -125,9 +125,9 @@ namespace lst {
     Segments data_;
 
     template <typename TQueue, typename TDevAcc>
-    SegmentsBuffer(unsigned int nMemoryLocationsIn,
-                   uint16_t nLowerModules,
-                   unsigned int maxPixelSegments,
+    SegmentsBuffer(const unsigned int nMemoryLocationsIn,
+                   const uint16_t nLowerModules,
+                   const unsigned int maxPixelSegments,
                    TDevAcc const& devAccIn,
                    TQueue& queue)
         : dPhis_buf(allocBufWrapper<FPX>(devAccIn, nMemoryLocationsIn, queue)),
@@ -176,7 +176,7 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(struct lst::Modules& modulesInGPU,
-                                                                  unsigned int moduleIndex) {
+                                                                  const unsigned int moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
     // See Figure 9.1 of https://cds.cern.ch/record/2272264/files/CMS-TDR-014.pdf
@@ -199,7 +199,8 @@ namespace lst {
                                   ((side == PosZ) && (((layer == 2) && (rod < 8)) || ((layer == 1) && (rod < 4)))));
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(short layer, short ring, short subdet, short side, short rod) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(
+      const short layer, const short ring, const short subdet, const short side, const short rod) {
     static constexpr float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     static constexpr float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     static constexpr float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -229,7 +230,8 @@ namespace lst {
     return moduleSeparation;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(struct lst::Modules& modulesInGPU, unsigned int moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(struct lst::Modules& modulesInGPU,
+                                                         const unsigned int moduleIndex) {
     static constexpr float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     static constexpr float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     static constexpr float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -274,10 +276,10 @@ namespace lst {
                                                       float& yOut,
                                                       float& zOut,
                                                       float& rtOut,
-                                                      uint16_t& innerLowerModuleIndex,
-                                                      uint16_t& outerLowerModuleIndex,
-                                                      unsigned int& innerMDIndex,
-                                                      unsigned int& outerMDIndex) {
+                                                      const uint16_t innerLowerModuleIndex,
+                                                      const uint16_t outerLowerModuleIndex,
+                                                      const unsigned int innerMDIndex,
+                                                      const unsigned int outerMDIndex) {
     float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
                        ? kMiniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
                        : kMiniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
@@ -357,19 +359,19 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addSegmentToMemory(struct lst::Segments& segmentsInGPU,
-                                                         unsigned int lowerMDIndex,
-                                                         unsigned int upperMDIndex,
-                                                         uint16_t innerLowerModuleIndex,
-                                                         uint16_t outerLowerModuleIndex,
-                                                         unsigned int innerMDAnchorHitIndex,
-                                                         unsigned int outerMDAnchorHitIndex,
+                                                         const unsigned int lowerMDIndex,
+                                                         const unsigned int upperMDIndex,
+                                                         const uint16_t innerLowerModuleIndex,
+                                                         const uint16_t outerLowerModuleIndex,
+                                                         const unsigned int innerMDAnchorHitIndex,
+                                                         const unsigned int outerMDAnchorHitIndex,
                                                          float& dPhi,
                                                          float& dPhiMin,
                                                          float& dPhiMax,
                                                          float& dPhiChange,
                                                          float& dPhiChangeMin,
                                                          float& dPhiChangeMax,
-                                                         unsigned int idx) {
+                                                         const unsigned int idx) {
     //idx will be computed in the kernel, which is the index into which the
     //segment will be written
     //nSegments will be incremented in the kernel
@@ -393,16 +395,16 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelSegmentToMemory(TAcc const& acc,
                                                               struct lst::Segments& segmentsInGPU,
                                                               struct lst::MiniDoublets& mdsInGPU,
-                                                              unsigned int innerMDIndex,
-                                                              unsigned int outerMDIndex,
-                                                              uint16_t pixelModuleIndex,
-                                                              unsigned int hitIdxs[4],
-                                                              unsigned int innerAnchorHitIndex,
-                                                              unsigned int outerAnchorHitIndex,
-                                                              float dPhiChange,
-                                                              unsigned int idx,
-                                                              unsigned int pixelSegmentArrayIndex,
-                                                              float score) {
+                                                              const unsigned int innerMDIndex,
+                                                              const unsigned int outerMDIndex,
+                                                              const uint16_t pixelModuleIndex,
+                                                              const unsigned int hitIdxs[4],
+                                                              const unsigned int innerAnchorHitIndex,
+                                                              const unsigned int outerAnchorHitIndex,
+                                                              const float dPhiChange,
+                                                              const unsigned int idx,
+                                                              const unsigned int pixelSegmentArrayIndex,
+                                                              const float score) {
     segmentsInGPU.mdIndices[idx * 2] = innerMDIndex;
     segmentsInGPU.mdIndices[idx * 2 + 1] = outerMDIndex;
     segmentsInGPU.innerLowerModuleIndices[idx] = pixelModuleIndex;
@@ -456,10 +458,10 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoBarrel(TAcc const& acc,
                                                                   struct lst::Modules& modulesInGPU,
                                                                   struct lst::MiniDoublets& mdsInGPU,
-                                                                  uint16_t& innerLowerModuleIndex,
-                                                                  uint16_t& outerLowerModuleIndex,
-                                                                  unsigned int& innerMDIndex,
-                                                                  unsigned int& outerMDIndex,
+                                                                  const uint16_t innerLowerModuleIndex,
+                                                                  const uint16_t outerLowerModuleIndex,
+                                                                  const unsigned int& innerMDIndex,
+                                                                  const unsigned int& outerMDIndex,
                                                                   float& zIn,
                                                                   float& zOut,
                                                                   float& rtIn,
@@ -510,12 +512,13 @@ namespace lst {
 
     sdCut = sdSlope + alpaka::math::sqrt(acc, sdMuls * sdMuls + sdPVoff * sdPVoff);
 
-    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhi) > sdCut)
       return false;
 
-    dPhiChange = lst::phi_mpi_pi(acc, lst::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhiChange = cms::alpakatools::phi_mpi_pi(
+        acc, cms::alpakatools::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhiChange) > sdCut)
       return false;
@@ -559,10 +562,10 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoEndcap(TAcc const& acc,
                                                                   struct lst::Modules& modulesInGPU,
                                                                   struct lst::MiniDoublets& mdsInGPU,
-                                                                  uint16_t& innerLowerModuleIndex,
-                                                                  uint16_t& outerLowerModuleIndex,
-                                                                  unsigned int& innerMDIndex,
-                                                                  unsigned int& outerMDIndex,
+                                                                  const uint16_t innerLowerModuleIndex,
+                                                                  const uint16_t outerLowerModuleIndex,
+                                                                  const unsigned int innerMDIndex,
+                                                                  const unsigned int outerMDIndex,
                                                                   float& zIn,
                                                                   float& zOut,
                                                                   float& rtIn,
@@ -624,14 +627,14 @@ namespace lst {
     if ((rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
-    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     sdCut = sdSlope;
     if (outerLayerEndcapTwoS) {
-      float dPhiPos_high =
-          lst::phi_mpi_pi(acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+      float dPhiPos_high = cms::alpakatools::phi_mpi_pi(
+          acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
       float dPhiPos_low =
-          lst::phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+          cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
       dPhiMax = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_high : dPhiPos_low;
       dPhiMin = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_low : dPhiPos_high;
@@ -689,10 +692,10 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgo(TAcc const& acc,
                                                             struct lst::Modules& modulesInGPU,
                                                             struct lst::MiniDoublets& mdsInGPU,
-                                                            uint16_t& innerLowerModuleIndex,
-                                                            uint16_t& outerLowerModuleIndex,
-                                                            unsigned int& innerMDIndex,
-                                                            unsigned int& outerMDIndex,
+                                                            const uint16_t innerLowerModuleIndex,
+                                                            const uint16_t outerLowerModuleIndex,
+                                                            const unsigned int innerMDIndex,
+                                                            const unsigned int outerMDIndex,
                                                             float& zIn,
                                                             float& zOut,
                                                             float& rtIn,
@@ -1021,7 +1024,7 @@ namespace lst {
                                   unsigned int* hitIndices2,
                                   unsigned int* hitIndices3,
                                   float* dPhiChange,
-                                  uint16_t pixelModuleIndex,
+                                  const uint16_t pixelModuleIndex,
                                   const int size) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
@@ -1046,7 +1049,6 @@ namespace lst {
                       0,
                       0,
                       0,
-                      0,
                       innerMDIndex);
         addMDToMemory(acc,
                       mdsInGPU,
@@ -1055,7 +1057,6 @@ namespace lst {
                       hitIndices2[tid],
                       hitIndices3[tid],
                       pixelModuleIndex,
-                      0,
                       0,
                       0,
                       0,

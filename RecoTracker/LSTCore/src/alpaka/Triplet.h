@@ -109,7 +109,10 @@ namespace lst {
     Triplets data_;
 
     template <typename TQueue, typename TDevAcc>
-    TripletsBuffer(unsigned int maxTriplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
+    TripletsBuffer(const unsigned int maxTriplets,
+                   const unsigned int nLowerModules,
+                   TDevAcc const& devAccIn,
+                   TQueue& queue)
         : segmentIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * maxTriplets, queue)),
           lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, Params_T3::kLayers * maxTriplets, queue)),
           nTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
@@ -156,11 +159,11 @@ namespace lst {
                                                          struct lst::MiniDoublets& mdsInGPU,
                                                          struct lst::Segments& segmentsInGPU,
                                                          struct lst::Triplets& tripletsInGPU,
-                                                         unsigned int& innerSegmentIndex,
-                                                         unsigned int& outerSegmentIndex,
-                                                         uint16_t& innerInnerLowerModuleIndex,
-                                                         uint16_t& middleLowerModuleIndex,
-                                                         uint16_t& outerOuterLowerModuleIndex,
+                                                         const unsigned int innerSegmentIndex,
+                                                         const unsigned int outerSegmentIndex,
+                                                         const uint16_t innerInnerLowerModuleIndex,
+                                                         const uint16_t middleLowerModuleIndex,
+                                                         const uint16_t outerOuterLowerModuleIndex,
                                                          float& zOut,
                                                          float& rtOut,
                                                          float& deltaPhiPos,
@@ -177,22 +180,22 @@ namespace lst {
                                                          float& zHiPointed,
                                                          float& sdlCut,
                                                          float& betaInCut,
-                                                         unsigned int& tripletIndex)
+                                                         const unsigned int tripletIndex)
 #else
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(struct lst::Modules& modulesInGPU,
                                                          struct lst::MiniDoublets& mdsInGPU,
                                                          struct lst::Segments& segmentsInGPU,
                                                          struct lst::Triplets& tripletsInGPU,
-                                                         unsigned int& innerSegmentIndex,
-                                                         unsigned int& outerSegmentIndex,
-                                                         uint16_t& innerInnerLowerModuleIndex,
-                                                         uint16_t& middleLowerModuleIndex,
-                                                         uint16_t& outerOuterLowerModuleIndex,
+                                                         const unsigned int innerSegmentIndex,
+                                                         const unsigned int outerSegmentIndex,
+                                                         const uint16_t innerInnerLowerModuleIndex,
+                                                         const uint16_t middleLowerModuleIndex,
+                                                         const uint16_t outerOuterLowerModuleIndex,
                                                          float& betaIn,
                                                          float& circleRadius,
                                                          float& circleCenterX,
                                                          float& circleCenterY,
-                                                         unsigned int& tripletIndex)
+                                                         const unsigned int tripletIndex)
 #endif
   {
     tripletsInGPU.segmentIndices[tripletIndex * 2] = innerSegmentIndex;
@@ -243,12 +246,12 @@ namespace lst {
                                                        struct lst::Modules& modulesInGPU,
                                                        struct lst::MiniDoublets& mdsInGPU,
                                                        struct lst::Segments& segmentsInGPU,
-                                                       uint16_t& innerInnerLowerModuleIndex,
-                                                       uint16_t& middleLowerModuleIndex,
-                                                       uint16_t& outerOuterLowerModuleIndex,
-                                                       unsigned int& firstMDIndex,
-                                                       unsigned int& secondMDIndex,
-                                                       unsigned int& thirdMDIndex) {
+                                                       const uint16_t innerInnerLowerModuleIndex,
+                                                       const uint16_t middleLowerModuleIndex,
+                                                       const uint16_t outerOuterLowerModuleIndex,
+                                                       const unsigned int firstMDIndex,
+                                                       const unsigned int secondMDIndex,
+                                                       const unsigned int thirdMDIndex) {
     //get the rt and z
     const float& r1 = mdsInGPU.anchorRt[firstMDIndex];
     const float& r2 = mdsInGPU.anchorRt[secondMDIndex];
@@ -303,15 +306,15 @@ namespace lst {
                                                                 struct lst::Modules& modulesInGPU,
                                                                 struct lst::MiniDoublets& mdsInGPU,
                                                                 struct lst::Segments& segmentsInGPU,
-                                                                uint16_t& innerInnerLowerModuleIndex,
-                                                                uint16_t& middleLowerModuleIndex,
-                                                                uint16_t& outerOuterLowerModuleIndex,
-                                                                unsigned int& firstMDIndex,
-                                                                unsigned int& secondMDIndex,
-                                                                unsigned int& thirdMDIndex,
+                                                                const uint16_t innerInnerLowerModuleIndex,
+                                                                const uint16_t middleLowerModuleIndex,
+                                                                const uint16_t outerOuterLowerModuleIndex,
+                                                                const unsigned int firstMDIndex,
+                                                                const unsigned int secondMDIndex,
+                                                                const unsigned int thirdMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
-                                                                unsigned int& innerSegmentIndex,
+                                                                const unsigned int innerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
     bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS);
@@ -376,7 +379,8 @@ namespace lst {
     float alpha_InLo = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
-    betaIn = alpha_InLo - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = alpha_InLo - cms::alpakatools::phi_mpi_pi(
+                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     //beta computation
     float drt_tl_axis = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
@@ -402,17 +406,17 @@ namespace lst {
                                                                 struct lst::Modules& modulesInGPU,
                                                                 struct lst::MiniDoublets& mdsInGPU,
                                                                 struct lst::Segments& segmentsInGPU,
-                                                                uint16_t& innerInnerLowerModuleIndex,
-                                                                uint16_t& middleLowerModuleIndex,
-                                                                uint16_t& outerOuterLowerModuleIndex,
-                                                                unsigned int& firstMDIndex,
-                                                                unsigned int& secondMDIndex,
-                                                                unsigned int& thirdMDIndex,
+                                                                const uint16_t innerInnerLowerModuleIndex,
+                                                                const uint16_t middleLowerModuleIndex,
+                                                                const uint16_t outerOuterLowerModuleIndex,
+                                                                const unsigned int firstMDIndex,
+                                                                const unsigned int secondMDIndex,
+                                                                const unsigned int thirdMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
-                                                                uint16_t& innerOuterLowerModuleIndex,
-                                                                unsigned int& innerSegmentIndex,
-                                                                unsigned int& outerSegmentIndex,
+                                                                const uint16_t innerOuterLowerModuleIndex,
+                                                                const unsigned int innerSegmentIndex,
+                                                                const unsigned int outerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
     bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS);
@@ -489,7 +493,8 @@ namespace lst {
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - cms::alpakatools::phi_mpi_pi(
+                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float betaInRHmin = betaIn;
     float betaInRHmax = betaIn;
@@ -523,16 +528,16 @@ namespace lst {
                                                                 struct lst::Modules& modulesInGPU,
                                                                 struct lst::MiniDoublets& mdsInGPU,
                                                                 struct lst::Segments& segmentsInGPU,
-                                                                uint16_t& innerInnerLowerModuleIndex,
-                                                                uint16_t& middleLowerModuleIndex,
-                                                                uint16_t& outerOuterLowerModuleIndex,
-                                                                unsigned int& firstMDIndex,
-                                                                unsigned int& secondMDIndex,
-                                                                unsigned int& thirdMDIndex,
+                                                                const uint16_t innerInnerLowerModuleIndex,
+                                                                const uint16_t middleLowerModuleIndex,
+                                                                const uint16_t outerOuterLowerModuleIndex,
+                                                                const unsigned int firstMDIndex,
+                                                                const unsigned int secondMDIndex,
+                                                                const unsigned int thirdMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
-                                                                unsigned int& innerSegmentIndex,
-                                                                unsigned int& outerSegmentIndex,
+                                                                const unsigned int innerSegmentIndex,
+                                                                const unsigned int outerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
     float rtIn = mdsInGPU.anchorRt[firstMDIndex];
@@ -611,7 +616,8 @@ namespace lst {
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - cms::alpakatools::phi_mpi_pi(
+                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float sdIn_alphaRHmin = __H2F(segmentsInGPU.dPhiChangeMins[innerSegmentIndex]);
     float sdIn_alphaRHmax = __H2F(segmentsInGPU.dPhiChangeMaxs[innerSegmentIndex]);
@@ -646,17 +652,17 @@ namespace lst {
                                                              struct lst::Modules& modulesInGPU,
                                                              struct lst::MiniDoublets& mdsInGPU,
                                                              struct lst::Segments& segmentsInGPU,
-                                                             uint16_t& innerInnerLowerModuleIndex,
-                                                             uint16_t& middleLowerModuleIndex,
-                                                             uint16_t& outerOuterLowerModuleIndex,
-                                                             unsigned int& firstMDIndex,
-                                                             unsigned int& secondMDIndex,
-                                                             unsigned int& thirdMDIndex,
+                                                             const uint16_t innerInnerLowerModuleIndex,
+                                                             const uint16_t middleLowerModuleIndex,
+                                                             const uint16_t outerOuterLowerModuleIndex,
+                                                             const unsigned int firstMDIndex,
+                                                             const unsigned int secondMDIndex,
+                                                             const unsigned int thirdMDIndex,
                                                              float& zOut,
                                                              float& rtOut,
-                                                             uint16_t& innerOuterLowerModuleIndex,
-                                                             unsigned int& innerSegmentIndex,
-                                                             unsigned int& outerSegmentIndex,
+                                                             const uint16_t innerOuterLowerModuleIndex,
+                                                             const unsigned int innerSegmentIndex,
+                                                             const unsigned int outerSegmentIndex,
                                                              float& betaIn,
                                                              float& betaInCut) {
     short innerInnerLowerModuleSubdet = modulesInGPU.subdets[innerInnerLowerModuleIndex];
@@ -744,8 +750,15 @@ namespace lst {
   };
 
   template <typename TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeRadiusFromThreeAnchorHits(
-      TAcc const& acc, float x1, float y1, float x2, float y2, float x3, float y3, float& g, float& f) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeRadiusFromThreeAnchorHits(TAcc const& acc,
+                                                                        const float x1,
+                                                                        const float y1,
+                                                                        const float x2,
+                                                                        const float y2,
+                                                                        const float x3,
+                                                                        const float y3,
+                                                                        float& g,
+                                                                        float& f) {
     float radius = 0.f;
 
     //writing manual code for computing radius, which obviously sucks
@@ -783,11 +796,11 @@ namespace lst {
                                                                    struct lst::Modules& modulesInGPU,
                                                                    struct lst::MiniDoublets& mdsInGPU,
                                                                    struct lst::Segments& segmentsInGPU,
-                                                                   uint16_t& innerInnerLowerModuleIndex,
-                                                                   uint16_t& middleLowerModuleIndex,
-                                                                   uint16_t& outerOuterLowerModuleIndex,
-                                                                   unsigned int& innerSegmentIndex,
-                                                                   unsigned int& outerSegmentIndex,
+                                                                   const uint16_t innerInnerLowerModuleIndex,
+                                                                   const uint16_t middleLowerModuleIndex,
+                                                                   const uint16_t outerOuterLowerModuleIndex,
+                                                                   const unsigned int innerSegmentIndex,
+                                                                   const unsigned int outerSegmentIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
                                                                    float& deltaPhiPos,
@@ -862,7 +875,7 @@ namespace lst {
                                   struct lst::Triplets tripletsInGPU,
                                   struct lst::ObjectRanges rangesInGPU,
                                   uint16_t* index_gpu,
-                                  uint16_t nonZeroModules) const {
+                                  const uint16_t nonZeroModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 

@@ -82,7 +82,6 @@ namespace lst {
     int* superbinCPU;
     int8_t* pixelTypeCPU;
 
-    // Stuff that used to be global
     const uint16_t nModules_;
     const uint16_t nLowerModules_;
     const unsigned int nPixels_;
@@ -94,7 +93,7 @@ namespace lst {
   public:
     // Constructor used for CMSSW integration. Uses an external queue.
     template <typename TQueue>
-    Event(bool verbose, TQueue const& q, const LSTESData<Device>* deviceESData)
+    Event(const bool verbose, TQueue const& q, const LSTESData<Device>* deviceESData)
         : queue(q),
           devAcc(alpaka::getDev(q)),
           devHost(cms::alpakatools::host()),
@@ -109,12 +108,12 @@ namespace lst {
     }
     void resetEvent();
 
+    // Calls the appropriate hit function, then increments the counter
     void addHitToEvent(std::vector<float> const& x,
                        std::vector<float> const& y,
                        std::vector<float> const& z,
                        std::vector<unsigned int> const& detId,
-                       std::vector<unsigned int> const&
-                           idxInNtuple);  //call the appropriate hit function, then increment the counter here
+                       std::vector<unsigned int> const& idxInNtuple);
     void addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
                                 std::vector<unsigned int> const& hitIndices1,
                                 std::vector<unsigned int> const& hitIndices2,
@@ -146,32 +145,32 @@ namespace lst {
     void createTriplets();
     void createPixelTracklets();
     void createPixelTrackletsWithMap();
-    void createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets);
+    void createTrackCandidates(const bool no_pls_dupclean, const bool tc_pls_triplets);
     void createExtendedTracks();
     void createQuintuplets();
     void createPixelTriplets();
     void createPixelQuintuplets();
-    void pixelLineSegmentCleaning(bool no_pls_dupclean);
+    void pixelLineSegmentCleaning(const bool no_pls_dupclean);
 
     unsigned int getNumberOfHits();
-    unsigned int getNumberOfHitsByLayer(unsigned int layer);
-    unsigned int getNumberOfHitsByLayerBarrel(unsigned int layer);
-    unsigned int getNumberOfHitsByLayerEndcap(unsigned int layer);
+    unsigned int getNumberOfHitsByLayer(const unsigned int layer);
+    unsigned int getNumberOfHitsByLayerBarrel(const unsigned int layer);
+    unsigned int getNumberOfHitsByLayerEndcap(const unsigned int layer);
 
     unsigned int getNumberOfMiniDoublets();
-    unsigned int getNumberOfMiniDoubletsByLayer(unsigned int layer);
-    unsigned int getNumberOfMiniDoubletsByLayerBarrel(unsigned int layer);
-    unsigned int getNumberOfMiniDoubletsByLayerEndcap(unsigned int layer);
+    unsigned int getNumberOfMiniDoubletsByLayer(const unsigned int layer);
+    unsigned int getNumberOfMiniDoubletsByLayerBarrel(const unsigned int layer);
+    unsigned int getNumberOfMiniDoubletsByLayerEndcap(const unsigned int layer);
 
     unsigned int getNumberOfSegments();
-    unsigned int getNumberOfSegmentsByLayer(unsigned int layer);
-    unsigned int getNumberOfSegmentsByLayerBarrel(unsigned int layer);
-    unsigned int getNumberOfSegmentsByLayerEndcap(unsigned int layer);
+    unsigned int getNumberOfSegmentsByLayer(const unsigned int layer);
+    unsigned int getNumberOfSegmentsByLayerBarrel(const unsigned int layer);
+    unsigned int getNumberOfSegmentsByLayerEndcap(const unsigned int layer);
 
     unsigned int getNumberOfTriplets();
-    unsigned int getNumberOfTripletsByLayer(unsigned int layer);
-    unsigned int getNumberOfTripletsByLayerBarrel(unsigned int layer);
-    unsigned int getNumberOfTripletsByLayerEndcap(unsigned int layer);
+    unsigned int getNumberOfTripletsByLayer(const unsigned int layer);
+    unsigned int getNumberOfTripletsByLayerBarrel(const unsigned int layer);
+    unsigned int getNumberOfTripletsByLayerEndcap(const unsigned int layer);
 
     int getNumberOfTrackCandidates();
     int getNumberOfPixelTrackCandidates();
@@ -181,9 +180,9 @@ namespace lst {
     int getNumberOfPLSTrackCandidates();
 
     unsigned int getNumberOfQuintuplets();
-    unsigned int getNumberOfQuintupletsByLayer(unsigned int layer);
-    unsigned int getNumberOfQuintupletsByLayerBarrel(unsigned int layer);
-    unsigned int getNumberOfQuintupletsByLayerEndcap(unsigned int layer);
+    unsigned int getNumberOfQuintupletsByLayer(const unsigned int layer);
+    unsigned int getNumberOfQuintupletsByLayerBarrel(const unsigned int layer);
+    unsigned int getNumberOfQuintupletsByLayerEndcap(const unsigned int layer);
 
     int getNumberOfPixelTriplets();
     int getNumberOfPixelQuintuplets();
@@ -199,7 +198,7 @@ namespace lst {
     TrackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW();
     PixelTripletsBuffer<DevHost>* getPixelTriplets();
     PixelQuintupletsBuffer<DevHost>* getPixelQuintuplets();
-    ModulesBuffer<DevHost>* getModules(bool isFull = false);
+    ModulesBuffer<DevHost>* getModules(const bool isFull = false);
   };
 
 }  // namespace lst

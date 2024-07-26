@@ -1,6 +1,8 @@
 #ifndef RecoTracker_LSTCore_src_alpaka_Hit_h
 #define RecoTracker_LSTCore_src_alpaka_Hit_h
 
+#include "HeterogeneousCore/AlpakaInterface/interface/binarySearch.h"
+#include "HeterogeneousCore/AlpakaInterface/interface/geomFunctions.h"
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
 
@@ -75,7 +77,7 @@ namespace lst {
     Hits data_;
 
     template <typename TQueue, typename TDevAcc>
-    HitsBuffer(unsigned int nModules, unsigned int nMaxHits, TDevAcc const& devAccIn, TQueue& queue)
+    HitsBuffer(const unsigned int nModules, const unsigned int nMaxHits, TDevAcc const& devAccIn, TQueue& queue)
         : nHits_buf(allocBufWrapper<unsigned int>(devAccIn, 1u, queue)),
           xs_buf(allocBufWrapper<float>(devAccIn, nMaxHits, queue)),
           ys_buf(allocBufWrapper<float>(devAccIn, nMaxHits, queue)),
@@ -107,82 +109,12 @@ namespace lst {
     inline void setData(HitsBuffer& buf) { data_.setData(buf); }
   };
 
-  template <typename TAcc>
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float eta(TAcc const& acc, float x, float y, float z) {
-    float r3 = alpaka::math::sqrt(acc, x * x + y * y + z * z);
-    float rt = alpaka::math::sqrt(acc, x * x + y * y);
-    float eta = ((z > 0) - (z < 0)) * alpaka::math::acosh(acc, r3 / rt);
-    return eta;
-  };
-
-  template <typename TAcc>
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float phi_mpi_pi(TAcc const& acc, float x) {
-    if (alpaka::math::abs(acc, x) <= float(M_PI))
-      return x;
-
-    constexpr float o2pi = 1.f / (2.f * float(M_PI));
-    float n = alpaka::math::round(acc, x * o2pi);
-    return x - n * float(2.f * float(M_PI));
-  };
-
-  template <typename TAcc>
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float phi(TAcc const& acc, float x, float y) {
-    return phi_mpi_pi(acc, float(M_PI) + alpaka::math::atan2(acc, -y, -x));
-  };
-
-  template <typename TAcc>
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float deltaPhi(TAcc const& acc, float x1, float y1, float x2, float y2) {
-    float phi1 = phi(acc, x1, y1);
-    float phi2 = phi(acc, x2, y2);
-    return phi_mpi_pi(acc, (phi2 - phi1));
-  };
-
-  template <typename TAcc>
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float deltaPhiChange(TAcc const& acc, float x1, float y1, float x2, float y2) {
-    return deltaPhi(acc, x1, y1, x2 - x1, y2 - y1);
-  };
-
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float calculate_dPhi(float phi1, float phi2) {
-    // Calculate dPhi
-    float dPhi = phi1 - phi2;
-
-    // Normalize dPhi to be between -pi and pi
-    if (dPhi > float(M_PI)) {
-      dPhi -= 2 * float(M_PI);
-    } else if (dPhi < -float(M_PI)) {
-      dPhi += 2 * float(M_PI);
-    }
-
-    return dPhi;
-  };
-
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE int binary_search(const unsigned int* data,  // Array that we are searching over
-                                                        unsigned int search_val,  // Value we want to find in data array
-                                                        unsigned int ndata)       // Number of elements in data array
-  {
-    unsigned int low = 0;
-    unsigned int high = ndata - 1;
-
-    while (low <= high) {
-      unsigned int mid = (low + high) / 2;
-      unsigned int test_val = data[mid];
-      if (test_val == search_val)
-        return mid;
-      else if (test_val > search_val)
-        high = mid - 1;
-      else
-        low = mid + 1;
-    }
-    // Couldn't find search value in array.
-    return -1;
-  };
-
   struct moduleRangesKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   struct lst::Modules modulesInGPU,
                                   struct lst::Hits hitsInGPU,
-                                  int const& nLowerModules) const {
+                                  const int nLowerModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -203,15 +135,15 @@ namespace lst {
   struct hitLoopKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  uint16_t Endcap,                  // Integer corresponding to endcap in module subdets
-                                  uint16_t TwoS,                    // Integer corresponding to TwoS in moduleType
-                                  unsigned int nModules,            // Number of modules
-                                  unsigned int nEndCapMap,          // Number of elements in endcap map
+                                  const uint16_t Endcap,            // Integer corresponding to endcap in module subdets
+                                  const uint16_t TwoS,              // Integer corresponding to TwoS in moduleType
+                                  const unsigned int nModules,      // Number of modules
+                                  const unsigned int nEndCapMap,    // Number of elements in endcap map
                                   const unsigned int* geoMapDetId,  // DetId's from endcap map
                                   const float* geoMapPhi,           // Phi values from endcap map
                                   struct lst::Modules modulesInGPU,
                                   struct lst::Hits hitsInGPU,
-                                  unsigned int const& nHits) const  // Total number of hits in event
+                                  const unsigned int nHits) const  // Total number of hits in event
     {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
@@ -222,19 +154,19 @@ namespace lst {
         int iDetId = hitsInGPU.detid[ihit];
 
         hitsInGPU.rts[ihit] = alpaka::math::sqrt(acc, ihit_x * ihit_x + ihit_y * ihit_y);
-        hitsInGPU.phis[ihit] = lst::phi(acc, ihit_x, ihit_y);
+        hitsInGPU.phis[ihit] = cms::alpakatools::phi(acc, ihit_x, ihit_y);
         hitsInGPU.etas[ihit] =
             ((ihit_z > 0) - (ihit_z < 0)) *
             alpaka::math::acosh(
                 acc,
                 alpaka::math::sqrt(acc, ihit_x * ihit_x + ihit_y * ihit_y + ihit_z * ihit_z) / hitsInGPU.rts[ihit]);
-        int found_index = binary_search(modulesInGPU.mapdetId, iDetId, nModules);
+        int found_index = cms::alpakatools::binary_search(modulesInGPU.mapdetId, iDetId, nModules);
         uint16_t lastModuleIndex = modulesInGPU.mapIdx[found_index];
 
         hitsInGPU.moduleIndices[ihit] = lastModuleIndex;
 
         if (modulesInGPU.subdets[lastModuleIndex] == Endcap && modulesInGPU.moduleType[lastModuleIndex] == TwoS) {
-          found_index = binary_search(geoMapDetId, iDetId, nEndCapMap);
+          found_index = cms::alpakatools::binary_search(geoMapDetId, iDetId, nEndCapMap);
           float phi = geoMapPhi[found_index];
           float cos_phi = alpaka::math::cos(acc, phi);
           hitsInGPU.highEdgeXs[ihit] = ihit_x + 2.5f * cos_phi;

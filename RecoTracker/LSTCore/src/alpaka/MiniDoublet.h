@@ -25,7 +25,6 @@ namespace lst {
     float* shiftedXs;
     float* shiftedYs;
     float* shiftedZs;
-    float* noShiftedDzs;          //if shifted module
     float* noShiftedDphis;        //if shifted module
     float* noShiftedDphiChanges;  //if shifted module
 
@@ -67,7 +66,6 @@ namespace lst {
       shiftedXs = alpaka::getPtrNative(buf.shiftedXs_buf);
       shiftedYs = alpaka::getPtrNative(buf.shiftedYs_buf);
       shiftedZs = alpaka::getPtrNative(buf.shiftedZs_buf);
-      noShiftedDzs = alpaka::getPtrNative(buf.noShiftedDzs_buf);
       noShiftedDphis = alpaka::getPtrNative(buf.noShiftedDphis_buf);
       noShiftedDphiChanges = alpaka::getPtrNative(buf.noShiftedDphiChanges_buf);
       anchorX = alpaka::getPtrNative(buf.anchorX_buf);
@@ -112,7 +110,6 @@ namespace lst {
     Buf<TDev, float> shiftedXs_buf;
     Buf<TDev, float> shiftedYs_buf;
     Buf<TDev, float> shiftedZs_buf;
-    Buf<TDev, float> noShiftedDzs_buf;
     Buf<TDev, float> noShiftedDphis_buf;
     Buf<TDev, float> noShiftedDphiChanges_buf;
 
@@ -143,7 +140,10 @@ namespace lst {
     MiniDoublets data_;
 
     template <typename TQueue, typename TDevAcc>
-    MiniDoubletsBuffer(unsigned int nMemoryLoc, uint16_t nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
+    MiniDoubletsBuffer(const unsigned int nMemoryLoc,
+                       const uint16_t nLowerModules,
+                       TDevAcc const& devAccIn,
+                       TQueue& queue)
         : nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
           anchorHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
           outerHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
@@ -156,7 +156,6 @@ namespace lst {
           shiftedXs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           shiftedYs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           shiftedZs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          noShiftedDzs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           noShiftedDphis_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           noShiftedDphiChanges_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           anchorX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
@@ -195,19 +194,18 @@ namespace lst {
                                                     struct lst::MiniDoublets& mdsInGPU,
                                                     struct lst::Hits& hitsInGPU,
                                                     struct lst::Modules& modulesInGPU,
-                                                    unsigned int lowerHitIdx,
-                                                    unsigned int upperHitIdx,
-                                                    uint16_t& lowerModuleIdx,
-                                                    float dz,
-                                                    float dPhi,
-                                                    float dPhiChange,
-                                                    float shiftedX,
-                                                    float shiftedY,
-                                                    float shiftedZ,
-                                                    float noShiftedDz,
-                                                    float noShiftedDphi,
-                                                    float noShiftedDPhiChange,
-                                                    unsigned int idx) {
+                                                    const unsigned int lowerHitIdx,
+                                                    const unsigned int upperHitIdx,
+                                                    const uint16_t& lowerModuleIdx,
+                                                    const float dz,
+                                                    const float dPhi,
+                                                    const float dPhiChange,
+                                                    const float shiftedX,
+                                                    const float shiftedY,
+                                                    const float shiftedZ,
+                                                    const float noShiftedDphi,
+                                                    const float noShiftedDPhiChange,
+                                                    const unsigned int idx) {
     //the index into which this MD needs to be written will be computed in the kernel
     //nMDs variable will be incremented in the kernel, no need to worry about that here
 
@@ -235,7 +233,6 @@ namespace lst {
     mdsInGPU.shiftedYs[idx] = shiftedY;
     mdsInGPU.shiftedZs[idx] = shiftedZ;
 
-    mdsInGPU.noShiftedDzs[idx] = noShiftedDz;
     mdsInGPU.noShiftedDphis[idx] = noShiftedDphi;
     mdsInGPU.noShiftedDphiChanges[idx] = noShiftedDPhiChange;
 
@@ -267,7 +264,7 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(struct lst::Modules& modulesInGPU,
-                                                              uint16_t& moduleIndex) {
+                                                              const uint16_t moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
     // See Figure 9.1 of https://cds.cern.ch/record/2272264/files/CMS-TDR-014.pdf
@@ -287,7 +284,7 @@ namespace lst {
       return false;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules& modulesInGPU, uint16_t& moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules& modulesInGPU, const uint16_t moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -340,11 +337,11 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(TAcc const& acc,
-                                                     float rt,
+                                                     const float rt,
                                                      struct lst::Modules& modulesInGPU,
-                                                     uint16_t& moduleIndex,
-                                                     float dPhi = 0,
-                                                     float dz = 0) {
+                                                     const uint16_t moduleIndex,
+                                                     const float dPhi = 0,
+                                                     const float dz = 0) {
     // =================================================================
     // Various constants
     // =================================================================
@@ -404,19 +401,19 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_INLINE ALPAKA_FN_ACC void shiftStripHits(TAcc const& acc,
                                                      struct lst::Modules& modulesInGPU,
-                                                     uint16_t& lowerModuleIndex,
-                                                     uint16_t& upperModuleIndex,
-                                                     unsigned int lowerHitIndex,
-                                                     unsigned int upperHitIndex,
+                                                     const uint16_t lowerModuleIndex,
+                                                     const uint16_t upperModuleIndex,
+                                                     const unsigned int lowerHitIndex,
+                                                     const unsigned int upperHitIndex,
                                                      float* shiftedCoords,
-                                                     float xLower,
-                                                     float yLower,
-                                                     float zLower,
-                                                     float rtLower,
-                                                     float xUpper,
-                                                     float yUpper,
-                                                     float zUpper,
-                                                     float rtUpper) {
+                                                     const float xLower,
+                                                     const float yLower,
+                                                     const float zLower,
+                                                     const float rtLower,
+                                                     const float xUpper,
+                                                     const float yUpper,
+                                                     const float zUpper,
+                                                     const float rtUpper) {
     // This is the strip shift scheme that is explained in http://uaf-10.t2.ucsd.edu/~phchang/talks/PhilipChang20190607_SDL_Update.pdf (see backup slides)
     // The main feature of this shifting is that the strip hits are shifted to be "aligned" in the line of sight from interaction point to the the pixel hit.
     // (since pixel hit is well defined in 3-d)
@@ -570,27 +567,26 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgo(TAcc const& acc,
                                                struct lst::Modules& modulesInGPU,
-                                               uint16_t& lowerModuleIndex,
-                                               uint16_t& upperModuleIndex,
-                                               unsigned int lowerHitIndex,
-                                               unsigned int upperHitIndex,
+                                               const uint16_t lowerModuleIndex,
+                                               const uint16_t upperModuleIndex,
+                                               const unsigned int lowerHitIndex,
+                                               const unsigned int upperHitIndex,
                                                float& dz,
                                                float& dPhi,
                                                float& dPhiChange,
                                                float& shiftedX,
                                                float& shiftedY,
                                                float& shiftedZ,
-                                               float& noShiftedDz,
                                                float& noShiftedDphi,
                                                float& noShiftedDphiChange,
-                                               float xLower,
-                                               float yLower,
-                                               float zLower,
-                                               float rtLower,
-                                               float xUpper,
-                                               float yUpper,
-                                               float zUpper,
-                                               float rtUpper) {
+                                               const float xLower,
+                                               const float yLower,
+                                               const float zLower,
+                                               const float rtLower,
+                                               const float xUpper,
+                                               const float yUpper,
+                                               const float zUpper,
+                                               const float rtUpper) {
     if (modulesInGPU.subdets[lowerModuleIndex] == lst::Barrel) {
       return runMiniDoubletDefaultAlgoBarrel(acc,
                                              modulesInGPU,
@@ -604,7 +600,6 @@ namespace lst {
                                              shiftedX,
                                              shiftedY,
                                              shiftedZ,
-                                             noShiftedDz,
                                              noShiftedDphi,
                                              noShiftedDphiChange,
                                              xLower,
@@ -628,7 +623,6 @@ namespace lst {
                                              shiftedX,
                                              shiftedY,
                                              shiftedZ,
-                                             noShiftedDz,
                                              noShiftedDphi,
                                              noShiftedDphiChange,
                                              xLower,
@@ -645,27 +639,26 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
                                                      struct lst::Modules& modulesInGPU,
-                                                     uint16_t& lowerModuleIndex,
-                                                     uint16_t& upperModuleIndex,
-                                                     unsigned int lowerHitIndex,
-                                                     unsigned int upperHitIndex,
+                                                     const uint16_t lowerModuleIndex,
+                                                     const uint16_t upperModuleIndex,
+                                                     const unsigned int lowerHitIndex,
+                                                     const unsigned int upperHitIndex,
                                                      float& dz,
                                                      float& dPhi,
                                                      float& dPhiChange,
                                                      float& shiftedX,
                                                      float& shiftedY,
                                                      float& shiftedZ,
-                                                     float& noShiftedDz,
                                                      float& noShiftedDphi,
                                                      float& noShiftedDphiChange,
-                                                     float xLower,
-                                                     float yLower,
-                                                     float zLower,
-                                                     float rtLower,
-                                                     float xUpper,
-                                                     float yUpper,
-                                                     float zUpper,
-                                                     float rtUpper) {
+                                                     const float xLower,
+                                                     const float yLower,
+                                                     const float zLower,
+                                                     const float rtLower,
+                                                     const float xUpper,
+                                                     const float yUpper,
+                                                     const float zUpper,
+                                                     const float rtUpper) {
     dz = zLower - zUpper;
     const float dzCut = modulesInGPU.moduleType[lowerModuleIndex] == lst::PS ? 2.f : 10.f;
     //const float sign = ((dz > 0) - (dz < 0)) * ((hitsInGPU.zs[lowerHitIndex] > 0) - (hitsInGPU.zs[lowerHitIndex] < 0));
@@ -714,21 +707,21 @@ namespace lst {
         shiftedZ = zUpper;
         shiftedRt2 = xn * xn + yn * yn;
 
-        dPhi = lst::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);  //function from Hit.cc
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);  //function from Hit.cc
+        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       } else {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zLower;
         shiftedRt2 = xn * xn + yn * yn;
-        dPhi = lst::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = cms::alpakatools::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
+        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       }
     } else {
       shiftedX = 0;
       shiftedY = 0;
       shiftedZ = 0;
-      dPhi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       noShiftedDphi = dPhi;
     }
 
@@ -747,28 +740,28 @@ namespace lst {
         // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
         // setdeltaPhiChange(lowerHit.rt() < upperHitMod.rt() ? lowerHit.deltaPhiChange(upperHitMod) : upperHitMod.deltaPhiChange(lowerHit));
 
-        dPhiChange = (rtLower * rtLower < shiftedRt2) ? lst::deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
-                                                      : lst::deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
-        noShiftedDphiChange = rtLower < rtUpper ? lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
-                                                : lst::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
+        dPhiChange = (rtLower * rtLower < shiftedRt2)
+                         ? cms::alpakatools::deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
+                         : cms::alpakatools::deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
+        noShiftedDphiChange = rtLower < rtUpper ? cms::alpakatools::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
+                                                : cms::alpakatools::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
       } else {
         // dPhi Change should be calculated so that the upper hit has higher rt.
         // In principle, this kind of check rt_lower < rt_upper should not be necessary because the hit shifting should have taken care of this.
         // (i.e. the strip hit is shifted to be aligned in the line of sight from interaction point to pixel hit of PS module guaranteeing rt ordering)
         // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
 
-        dPhiChange = (shiftedRt2 < rtUpper * rtUpper) ? lst::deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
-                                                      : lst::deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
-        noShiftedDphiChange = rtLower < rtUpper ? lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
-                                                : lst::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
+        dPhiChange = (shiftedRt2 < rtUpper * rtUpper)
+                         ? cms::alpakatools::deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
+                         : cms::alpakatools::deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
+        noShiftedDphiChange = rtLower < rtUpper ? cms::alpakatools::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
+                                                : cms::alpakatools::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
       }
     } else {
       // When it is flat lying module, whichever is the lowerSide will always have rt lower
-      dPhiChange = lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper);
+      dPhiChange = cms::alpakatools::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper);
       noShiftedDphiChange = dPhiChange;
     }
-
-    noShiftedDz = 0;  // not used anywhere
 
     return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
@@ -776,27 +769,26 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
                                                      struct lst::Modules& modulesInGPU,
-                                                     uint16_t& lowerModuleIndex,
-                                                     uint16_t& upperModuleIndex,
-                                                     unsigned int lowerHitIndex,
-                                                     unsigned int upperHitIndex,
+                                                     const uint16_t lowerModuleIndex,
+                                                     const uint16_t upperModuleIndex,
+                                                     const unsigned int lowerHitIndex,
+                                                     const unsigned int upperHitIndex,
                                                      float& drt,
                                                      float& dPhi,
                                                      float& dPhiChange,
                                                      float& shiftedX,
                                                      float& shiftedY,
                                                      float& shiftedZ,
-                                                     float& noShiftedDz,
                                                      float& noShiftedDphi,
                                                      float& noShiftedDphichange,
-                                                     float xLower,
-                                                     float yLower,
-                                                     float zLower,
-                                                     float rtLower,
-                                                     float xUpper,
-                                                     float yUpper,
-                                                     float zUpper,
-                                                     float rtUpper) {
+                                                     const float xLower,
+                                                     const float yLower,
+                                                     const float zLower,
+                                                     const float rtLower,
+                                                     const float xUpper,
+                                                     const float yUpper,
+                                                     const float zUpper,
+                                                     const float rtUpper) {
     // There are series of cuts that applies to mini-doublet in a "endcap" region
     // Cut #1 : dz cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3093
@@ -844,21 +836,21 @@ namespace lst {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zUpper;
-        dPhi = lst::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);
+        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       } else {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zLower;
-        dPhi = lst::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = cms::alpakatools::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
+        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       }
     } else {
       shiftedX = xn;
       shiftedY = yn;
       shiftedZ = zUpper;
-      dPhi = lst::deltaPhi(acc, xLower, yLower, xn, yn);
-      noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xn, yn);
+      noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
     }
 
     // dz needs to change if it is a PS module where the strip hits are shifted in order to properly account for the case when a tilted module falls under "endcap logic"
@@ -881,7 +873,6 @@ namespace lst {
     float dzFrac = alpaka::math::abs(acc, dz) / alpaka::math::abs(acc, zLower);
     dPhiChange = dPhi / dzFrac * (1.f + dzFrac);
     noShiftedDphichange = noShiftedDphi / dzFrac * (1.f + dzFrac);
-    noShiftedDz = 0;  // not used anywhere
 
     return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
@@ -925,7 +916,7 @@ namespace lst {
           float zUpper = hitsInGPU.zs[upperHitArrayIndex];
           float rtUpper = hitsInGPU.rts[upperHitArrayIndex];
 
-          float dz, dphi, dphichange, shiftedX, shiftedY, shiftedZ, noShiftedDz, noShiftedDphi, noShiftedDphiChange;
+          float dz, dphi, dphichange, shiftedX, shiftedY, shiftedZ, noShiftedDphi, noShiftedDphiChange;
           bool success = runMiniDoubletDefaultAlgo(acc,
                                                    modulesInGPU,
                                                    lowerModuleIndex,
@@ -938,7 +929,6 @@ namespace lst {
                                                    shiftedX,
                                                    shiftedY,
                                                    shiftedZ,
-                                                   noShiftedDz,
                                                    noShiftedDphi,
                                                    noShiftedDphiChange,
                                                    xLower,
@@ -973,7 +963,6 @@ namespace lst {
                             shiftedX,
                             shiftedY,
                             shiftedZ,
-                            noShiftedDz,
                             noShiftedDphi,
                             noShiftedDphiChange,
                             mdIndex);
