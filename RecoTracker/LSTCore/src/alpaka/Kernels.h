@@ -167,7 +167,7 @@ namespace lst {
             float eta2 = __H2F(quintupletsInGPU.eta[jx]);
             float phi2 = __H2F(quintupletsInGPU.phi[jx]);
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
-            float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
+            float dPhi = lst::calculate_dPhi(phi1, phi2);
             float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
 
             if (dEta > 0.1f)
@@ -239,7 +239,7 @@ namespace lst {
               float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
 
               float dEta = alpaka::math::abs(acc, eta1 - eta2);
-              float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
+              float dPhi = lst::calculate_dPhi(phi1, phi2);
 
               if (dEta > 0.1f)
                 continue;
@@ -410,7 +410,7 @@ namespace lst {
           }
           if (secondpass) {
             float dEta = alpaka::math::abs(acc, eta_pix1 - eta_pix2);
-            float dPhi = cms::alpakatools::calculate_dPhi(phi_pix1, phi_pix2);
+            float dPhi = lst::calculate_dPhi(phi_pix1, phi_pix2);
 
             float dR2 = dEta * dEta + dPhi * dPhi;
             if ((npMatched >= 1) || (dR2 < 1e-5f)) {

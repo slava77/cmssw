@@ -236,7 +236,7 @@ namespace lst {
           float eta2 = segmentsInGPU.eta[pLS_jx - prefix];
           float phi2 = segmentsInGPU.phi[pLS_jx - prefix];
           float dEta = alpaka::math::abs(acc, (eta1 - eta2));
-          float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
+          float dPhi = lst::calculate_dPhi(phi1, phi2);
 
           float dR2 = dEta * dEta + dPhi * dPhi;
           if (dR2 < 1e-5f)
@@ -289,7 +289,7 @@ namespace lst {
             }
 
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
-            float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
+            float dPhi = lst::calculate_dPhi(phi1, phi2);
 
             float dR2 = dEta * dEta + dPhi * dPhi;
             if (dR2 < 1e-3f)
@@ -339,7 +339,7 @@ namespace lst {
             float eta2 = __H2F(quintupletsInGPU.eta[quintupletIndex]);
             float phi2 = __H2F(quintupletsInGPU.phi[quintupletIndex]);
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
-            float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
+            float dPhi = lst::calculate_dPhi(phi1, phi2);
 
             float dR2 = dEta * dEta + dPhi * dPhi;
             if (dR2 < 1e-3f)
@@ -356,7 +356,7 @@ namespace lst {
             float eta2 = __H2F(pixelTripletsInGPU.eta_pix[pT3Index]);
             float phi2 = __H2F(pixelTripletsInGPU.phi_pix[pT3Index]);
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
-            float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
+            float dPhi = lst::calculate_dPhi(phi1, phi2);
 
             float dR2 = dEta * dEta + dPhi * dPhi;
             if (dR2 < 0.000001f)
@@ -373,7 +373,7 @@ namespace lst {
             float eta2 = segmentsInGPU.eta[pLSIndex - prefix];
             float phi2 = segmentsInGPU.phi[pLSIndex - prefix];
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
-            float dPhi = cms::alpakatools::calculate_dPhi(phi1, phi2);
+            float dPhi = lst::calculate_dPhi(phi1, phi2);
 
             float dR2 = dEta * dEta + dPhi * dPhi;
             if (dR2 < 0.000001f)

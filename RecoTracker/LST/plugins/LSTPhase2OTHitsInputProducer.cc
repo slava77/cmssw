@@ -50,10 +50,8 @@ void LSTPhase2OTHitsInputProducer::produce(edm::StreamID iID, edm::Event& iEvent
   ph2_hits.reserve(phase2OTHits.dataSize());
 
   for (auto const& it : phase2OTHits) {
-    //for (auto it = phase2OTHits.begin(); it != phase2OTHits.end(); it++) {
     const DetId hitId = it.detId();
     for (auto const& hit : it) {
-      //for (auto hit = it->begin(); hit != it->end(); hit++) {
       ph2_detId.push_back(hitId.rawId());
       ph2_x.push_back(hit.globalPosition().x());
       ph2_y.push_back(hit.globalPosition().y());

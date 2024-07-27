@@ -707,21 +707,21 @@ namespace lst {
         shiftedZ = zUpper;
         shiftedRt2 = xn * xn + yn * yn;
 
-        dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);  //function from Hit.cc
-        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = lst::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);  //function from Hit.cc
+        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       } else {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zLower;
         shiftedRt2 = xn * xn + yn * yn;
-        dPhi = cms::alpakatools::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
-        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = lst::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
+        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       }
     } else {
       shiftedX = 0;
       shiftedY = 0;
       shiftedZ = 0;
-      dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      dPhi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       noShiftedDphi = dPhi;
     }
 
@@ -740,26 +740,24 @@ namespace lst {
         // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
         // setdeltaPhiChange(lowerHit.rt() < upperHitMod.rt() ? lowerHit.deltaPhiChange(upperHitMod) : upperHitMod.deltaPhiChange(lowerHit));
 
-        dPhiChange = (rtLower * rtLower < shiftedRt2)
-                         ? cms::alpakatools::deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
-                         : cms::alpakatools::deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
-        noShiftedDphiChange = rtLower < rtUpper ? cms::alpakatools::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
-                                                : cms::alpakatools::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
+        dPhiChange = (rtLower * rtLower < shiftedRt2) ? lst::deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
+                                                      : lst::deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
+        noShiftedDphiChange = rtLower < rtUpper ? lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
+                                                : lst::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
       } else {
         // dPhi Change should be calculated so that the upper hit has higher rt.
         // In principle, this kind of check rt_lower < rt_upper should not be necessary because the hit shifting should have taken care of this.
         // (i.e. the strip hit is shifted to be aligned in the line of sight from interaction point to pixel hit of PS module guaranteeing rt ordering)
         // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
 
-        dPhiChange = (shiftedRt2 < rtUpper * rtUpper)
-                         ? cms::alpakatools::deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
-                         : cms::alpakatools::deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
-        noShiftedDphiChange = rtLower < rtUpper ? cms::alpakatools::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
-                                                : cms::alpakatools::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
+        dPhiChange = (shiftedRt2 < rtUpper * rtUpper) ? lst::deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
+                                                      : lst::deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
+        noShiftedDphiChange = rtLower < rtUpper ? lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
+                                                : lst::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
       }
     } else {
       // When it is flat lying module, whichever is the lowerSide will always have rt lower
-      dPhiChange = cms::alpakatools::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper);
+      dPhiChange = lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper);
       noShiftedDphiChange = dPhiChange;
     }
 
@@ -836,21 +834,21 @@ namespace lst {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zUpper;
-        dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);
-        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = lst::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);
+        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       } else {
         shiftedX = xn;
         shiftedY = yn;
         shiftedZ = zLower;
-        dPhi = cms::alpakatools::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
-        noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+        dPhi = lst::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
+        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
       }
     } else {
       shiftedX = xn;
       shiftedY = yn;
       shiftedZ = zUpper;
-      dPhi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xn, yn);
-      noShiftedDphi = cms::alpakatools::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      dPhi = lst::deltaPhi(acc, xLower, yLower, xn, yn);
+      noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
     }
 
     // dz needs to change if it is a PS module where the strip hits are shifted in order to properly account for the case when a tilted module falls under "endcap logic"

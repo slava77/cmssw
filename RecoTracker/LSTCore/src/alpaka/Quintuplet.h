@@ -1579,8 +1579,7 @@ namespace lst {
     float sdlPVoff = 0.1f / rt_OutLo;
     sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
 
-    deltaPhiPos =
-        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
+    deltaPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
     // Cut #3: FIXME:deltaPhiPos can be tighter
     if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
       return false;
@@ -1590,7 +1589,7 @@ namespace lst {
     float diffX = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float diffY = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
+    dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
     // Cut #4: deltaPhiChange
     if (alpaka::math::abs(acc, dPhi) > sdlCut)
@@ -1606,12 +1605,11 @@ namespace lst {
 
     float alpha_OutUp, alpha_OutUp_highEdge, alpha_OutUp_lowEdge;
 
-    alpha_OutUp = cms::alpakatools::phi_mpi_pi(
-        acc,
-        cms::alpakatools::phi(acc,
-                              mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                              mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-            mdsInGPU.anchorPhi[fourthMDIndex]);
+    alpha_OutUp = lst::phi_mpi_pi(acc,
+                                  lst::phi(acc,
+                                           mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                                           mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+                                      mdsInGPU.anchorPhi[fourthMDIndex]);
 
     alpha_OutUp_highEdge = alpha_OutUp;
     alpha_OutUp_lowEdge = alpha_OutUp;
@@ -1623,45 +1621,41 @@ namespace lst {
     float tl_axis_lowEdge_x = tl_axis_x;
     float tl_axis_lowEdge_y = tl_axis_y;
 
-    betaIn = alpha_InLo - cms::alpakatools::phi_mpi_pi(
-                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = alpha_InLo - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float betaInRHmin = betaIn;
     float betaInRHmax = betaIn;
     betaOut =
-        -alpha_OutUp + cms::alpakatools::phi_mpi_pi(
-                           acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
+        -alpha_OutUp + lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
 
     float betaOutRHmin = betaOut;
     float betaOutRHmax = betaOut;
 
     if (isEC_lastLayer) {
-      alpha_OutUp_highEdge = cms::alpakatools::phi_mpi_pi(
-          acc,
-          cms::alpakatools::phi(acc,
-                                mdsInGPU.anchorHighEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                                mdsInGPU.anchorHighEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-              mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
-      alpha_OutUp_lowEdge = cms::alpakatools::phi_mpi_pi(
-          acc,
-          cms::alpakatools::phi(acc,
-                                mdsInGPU.anchorLowEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                                mdsInGPU.anchorLowEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-              mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
+      alpha_OutUp_highEdge =
+          lst::phi_mpi_pi(acc,
+                          lst::phi(acc,
+                                   mdsInGPU.anchorHighEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                                   mdsInGPU.anchorHighEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+                              mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
+      alpha_OutUp_lowEdge =
+          lst::phi_mpi_pi(acc,
+                          lst::phi(acc,
+                                   mdsInGPU.anchorLowEdgeX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                                   mdsInGPU.anchorLowEdgeY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+                              mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
 
       tl_axis_highEdge_x = mdsInGPU.anchorHighEdgeX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
       tl_axis_highEdge_y = mdsInGPU.anchorHighEdgeY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
       tl_axis_lowEdge_x = mdsInGPU.anchorLowEdgeX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
       tl_axis_lowEdge_y = mdsInGPU.anchorLowEdgeY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-      betaOutRHmin = -alpha_OutUp_highEdge +
-                     cms::alpakatools::phi_mpi_pi(acc,
-                                                  cms::alpakatools::phi(acc, tl_axis_highEdge_x, tl_axis_highEdge_y) -
-                                                      mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
-      betaOutRHmax = -alpha_OutUp_lowEdge +
-                     cms::alpakatools::phi_mpi_pi(acc,
-                                                  cms::alpakatools::phi(acc, tl_axis_lowEdge_x, tl_axis_lowEdge_y) -
-                                                      mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
+      betaOutRHmin = -alpha_OutUp_highEdge + lst::phi_mpi_pi(acc,
+                                                             lst::phi(acc, tl_axis_highEdge_x, tl_axis_highEdge_y) -
+                                                                 mdsInGPU.anchorHighEdgePhi[fourthMDIndex]);
+      betaOutRHmax = -alpha_OutUp_lowEdge + lst::phi_mpi_pi(acc,
+                                                            lst::phi(acc, tl_axis_lowEdge_x, tl_axis_lowEdge_y) -
+                                                                mdsInGPU.anchorLowEdgePhi[fourthMDIndex]);
     }
 
     //beta computation
@@ -1868,8 +1862,7 @@ namespace lst {
     const float sdlPVoff = 0.1f / rt_OutLo;
     sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
 
-    deltaPhiPos =
-        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
+    deltaPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
 
     //Cut #4: deltaPhiPos can be tighter
     if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
@@ -1880,7 +1873,7 @@ namespace lst {
     float diffX = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float diffY = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
+    dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
     // Cut #5: deltaPhiChange
     if (alpaka::math::abs(acc, dPhi) > sdlCut)
       return false;
@@ -1890,29 +1883,26 @@ namespace lst {
     float sdIn_alpha_max = __H2F(segmentsInGPU.dPhiChangeMaxs[innerSegmentIndex]);
     float sdOut_alpha = sdIn_alpha;
 
-    float sdOut_alphaOut = cms::alpakatools::phi_mpi_pi(
-        acc,
-        cms::alpakatools::phi(acc,
-                              mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
-                              mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
-            mdsInGPU.anchorPhi[fourthMDIndex]);
+    float sdOut_alphaOut = lst::phi_mpi_pi(acc,
+                                           lst::phi(acc,
+                                                    mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[thirdMDIndex],
+                                                    mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[thirdMDIndex]) -
+                                               mdsInGPU.anchorPhi[fourthMDIndex]);
 
-    float sdOut_alphaOut_min = cms::alpakatools::phi_mpi_pi(
+    float sdOut_alphaOut_min = lst::phi_mpi_pi(
         acc, __H2F(segmentsInGPU.dPhiChangeMins[outerSegmentIndex]) - __H2F(segmentsInGPU.dPhiMins[outerSegmentIndex]));
-    float sdOut_alphaOut_max = cms::alpakatools::phi_mpi_pi(
+    float sdOut_alphaOut_max = lst::phi_mpi_pi(
         acc, __H2F(segmentsInGPU.dPhiChangeMaxs[outerSegmentIndex]) - __H2F(segmentsInGPU.dPhiMaxs[outerSegmentIndex]));
 
     float tl_axis_x = mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - cms::alpakatools::phi_mpi_pi(
-                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float betaInRHmin = betaIn;
     float betaInRHmax = betaIn;
-    betaOut = -sdOut_alphaOut +
-              cms::alpakatools::phi_mpi_pi(
-                  acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
+    betaOut =
+        -sdOut_alphaOut + lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
 
     float betaOutRHmin = betaOut;
     float betaOutRHmax = betaOut;
@@ -2153,8 +2143,7 @@ namespace lst {
     float sdlPVoff = 0.1f / rtOut;
     sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
 
-    deltaPhiPos =
-        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
+    deltaPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[secondMDIndex]);
 
     if (alpaka::math::abs(acc, deltaPhiPos) > sdlCut)
       return false;
@@ -2164,7 +2153,7 @@ namespace lst {
     float diffX = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float diffY = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
+    dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
     // Cut #5: deltaPhiChange
     if (alpaka::math::abs(acc, dPhi) > sdlCut)
@@ -2172,31 +2161,28 @@ namespace lst {
 
     float sdIn_alpha = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
     float sdOut_alpha = sdIn_alpha;  //weird
-    float sdOut_dPhiPos =
-        cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[thirdMDIndex]);
+    float sdOut_dPhiPos = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[fourthMDIndex] - mdsInGPU.anchorPhi[thirdMDIndex]);
 
     float sdOut_dPhiChange = __H2F(segmentsInGPU.dPhiChanges[outerSegmentIndex]);
     float sdOut_dPhiChange_min = __H2F(segmentsInGPU.dPhiChangeMins[outerSegmentIndex]);
     float sdOut_dPhiChange_max = __H2F(segmentsInGPU.dPhiChangeMaxs[outerSegmentIndex]);
 
-    float sdOut_alphaOutRHmin = cms::alpakatools::phi_mpi_pi(acc, sdOut_dPhiChange_min - sdOut_dPhiPos);
-    float sdOut_alphaOutRHmax = cms::alpakatools::phi_mpi_pi(acc, sdOut_dPhiChange_max - sdOut_dPhiPos);
-    float sdOut_alphaOut = cms::alpakatools::phi_mpi_pi(acc, sdOut_dPhiChange - sdOut_dPhiPos);
+    float sdOut_alphaOutRHmin = lst::phi_mpi_pi(acc, sdOut_dPhiChange_min - sdOut_dPhiPos);
+    float sdOut_alphaOutRHmax = lst::phi_mpi_pi(acc, sdOut_dPhiChange_max - sdOut_dPhiPos);
+    float sdOut_alphaOut = lst::phi_mpi_pi(acc, sdOut_dPhiChange - sdOut_dPhiPos);
 
     float tl_axis_x = mdsInGPU.anchorX[fourthMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[fourthMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - cms::alpakatools::phi_mpi_pi(
-                              acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float sdIn_alphaRHmin = __H2F(segmentsInGPU.dPhiChangeMins[innerSegmentIndex]);
     float sdIn_alphaRHmax = __H2F(segmentsInGPU.dPhiChangeMaxs[innerSegmentIndex]);
     float betaInRHmin = betaIn + sdIn_alphaRHmin - sdIn_alpha;
     float betaInRHmax = betaIn + sdIn_alphaRHmax - sdIn_alpha;
 
-    betaOut = -sdOut_alphaOut +
-              cms::alpakatools::phi_mpi_pi(
-                  acc, cms::alpakatools::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
+    betaOut =
+        -sdOut_alphaOut + lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[fourthMDIndex]);
 
     float betaOutRHmin = betaOut - sdOut_alphaOutRHmin + sdOut_alphaOut;
     float betaOutRHmax = betaOut - sdOut_alphaOutRHmax + sdOut_alphaOut;

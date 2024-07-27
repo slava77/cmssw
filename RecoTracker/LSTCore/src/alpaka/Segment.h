@@ -512,13 +512,12 @@ namespace lst {
 
     sdCut = sdSlope + alpaka::math::sqrt(acc, sdMuls * sdMuls + sdPVoff * sdPVoff);
 
-    dPhi = cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhi) > sdCut)
       return false;
 
-    dPhiChange = cms::alpakatools::phi_mpi_pi(
-        acc, cms::alpakatools::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhiChange = lst::phi_mpi_pi(acc, lst::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhiChange) > sdCut)
       return false;
@@ -627,14 +626,14 @@ namespace lst {
     if ((rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
-    dPhi = cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     sdCut = sdSlope;
     if (outerLayerEndcapTwoS) {
-      float dPhiPos_high = cms::alpakatools::phi_mpi_pi(
-          acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+      float dPhiPos_high =
+          lst::phi_mpi_pi(acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
       float dPhiPos_low =
-          cms::alpakatools::phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+          lst::phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
       dPhiMax = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_high : dPhiPos_low;
       dPhiMin = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_low : dPhiPos_high;
