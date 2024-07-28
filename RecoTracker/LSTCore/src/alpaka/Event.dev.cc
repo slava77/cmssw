@@ -2,7 +2,7 @@
 
 using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 
-void lst::Event<Acc3D>::init(const bool verbose) {
+void lst::Event<Acc3D>::init(bool verbose) {
   addObjects = verbose;
   hitsInGPU = nullptr;
   mdsInGPU = nullptr;
@@ -622,7 +622,7 @@ void lst::Event<Acc3D>::createTriplets() {
   }
 }
 
-void lst::Event<Acc3D>::createTrackCandidates(const bool no_pls_dupclean, const bool tc_pls_triplets) {
+void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets) {
   if (trackCandidatesInGPU == nullptr) {
     trackCandidatesInGPU = new lst::TrackCandidates();
     trackCandidatesBuffers = new lst::TrackCandidatesBuffer<Device>(
@@ -1278,18 +1278,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfHits() {
   return hits;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayer(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_hits_by_layer_barrel_[layer];
   else
     return n_hits_by_layer_barrel_[layer] + n_hits_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayerBarrel(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayerBarrel(unsigned int layer) {
   return n_hits_by_layer_barrel_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayerEndcap(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayerEndcap(unsigned int layer) {
   return n_hits_by_layer_endcap_[layer];
 }
 
@@ -1305,18 +1305,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfMiniDoublets() {
   return miniDoublets;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayer(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_minidoublets_by_layer_barrel_[layer];
   else
     return n_minidoublets_by_layer_barrel_[layer] + n_minidoublets_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayerBarrel(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayerBarrel(unsigned int layer) {
   return n_minidoublets_by_layer_barrel_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayerEndcap(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayerEndcap(unsigned int layer) {
   return n_minidoublets_by_layer_endcap_[layer];
 }
 
@@ -1332,18 +1332,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfSegments() {
   return segments;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayer(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_segments_by_layer_barrel_[layer];
   else
     return n_segments_by_layer_barrel_[layer] + n_segments_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayerBarrel(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayerBarrel(unsigned int layer) {
   return n_segments_by_layer_barrel_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayerEndcap(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayerEndcap(unsigned int layer) {
   return n_segments_by_layer_endcap_[layer];
 }
 
@@ -1359,18 +1359,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfTriplets() {
   return triplets;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayer(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_triplets_by_layer_barrel_[layer];
   else
     return n_triplets_by_layer_barrel_[layer] + n_triplets_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayerBarrel(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayerBarrel(unsigned int layer) {
   return n_triplets_by_layer_barrel_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayerEndcap(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayerEndcap(unsigned int layer) {
   return n_triplets_by_layer_endcap_[layer];
 }
 
@@ -1408,18 +1408,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfQuintuplets() {
   return quintuplets;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayer(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_quintuplets_by_layer_barrel_[layer];
   else
     return n_quintuplets_by_layer_barrel_[layer] + n_quintuplets_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayerBarrel(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayerBarrel(unsigned int layer) {
   return n_quintuplets_by_layer_barrel_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayerEndcap(const unsigned int layer) {
+unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayerEndcap(unsigned int layer) {
   return n_quintuplets_by_layer_endcap_[layer];
 }
 
@@ -1818,7 +1818,7 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSS
   return trackCandidatesInCPU;
 }
 
-lst::ModulesBuffer<DevHost>* lst::Event<Acc3D>::getModules(const bool isFull) {
+lst::ModulesBuffer<DevHost>* lst::Event<Acc3D>::getModules(bool isFull) {
   if (modulesInCPU == nullptr) {
     // The last input here is just a small placeholder for the allocation.
     modulesInCPU = new lst::ModulesBuffer<DevHost>(devHost, nModules_, nPixels_);

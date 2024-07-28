@@ -27,7 +27,7 @@ namespace lst {
 
     void load(std::string const&);
     void fillGeoMapArraysExplicit();
-    float getdxdy_slope(const unsigned int detid) const;
+    float getdxdy_slope(unsigned int detid) const;
   };
 }  // namespace lst
 

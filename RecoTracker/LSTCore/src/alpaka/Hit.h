@@ -75,7 +75,7 @@ namespace lst {
     Hits data_;
 
     template <typename TQueue, typename TDevAcc>
-    HitsBuffer(const unsigned int nModules, const unsigned int nMaxHits, TDevAcc const& devAccIn, TQueue& queue)
+    HitsBuffer(unsigned int nModules, unsigned int nMaxHits, TDevAcc const& devAccIn, TQueue& queue)
         : nHits_buf(allocBufWrapper<unsigned int>(devAccIn, 1u, queue)),
           xs_buf(allocBufWrapper<float>(devAccIn, nMaxHits, queue)),
           ys_buf(allocBufWrapper<float>(devAccIn, nMaxHits, queue)),
@@ -182,7 +182,7 @@ namespace lst {
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   struct lst::Modules modulesInGPU,
                                   struct lst::Hits hitsInGPU,
-                                  const int nLowerModules) const {
+                                  int nLowerModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -203,15 +203,15 @@ namespace lst {
   struct hitLoopKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  const uint16_t Endcap,            // Integer corresponding to endcap in module subdets
-                                  const uint16_t TwoS,              // Integer corresponding to TwoS in moduleType
-                                  const unsigned int nModules,      // Number of modules
-                                  const unsigned int nEndCapMap,    // Number of elements in endcap map
+                                  uint16_t Endcap,            // Integer corresponding to endcap in module subdets
+                                  uint16_t TwoS,              // Integer corresponding to TwoS in moduleType
+                                  unsigned int nModules,      // Number of modules
+                                  unsigned int nEndCapMap,    // Number of elements in endcap map
                                   const unsigned int* geoMapDetId,  // DetId's from endcap map
                                   const float* geoMapPhi,           // Phi values from endcap map
                                   struct lst::Modules modulesInGPU,
                                   struct lst::Hits hitsInGPU,
-                                  const unsigned int nHits) const  // Total number of hits in event
+                                  unsigned int nHits) const  // Total number of hits in event
     {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);

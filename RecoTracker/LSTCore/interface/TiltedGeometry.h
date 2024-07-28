@@ -22,8 +22,8 @@ namespace lst {
 
     void load(std::string const&);
 
-    float getDrDz(const unsigned int detid) const;
-    float getDxDy(const unsigned int detid) const;
+    float getDrDz(unsigned int detid) const;
+    float getDxDy(unsigned int detid) const;
   };
 
 }  // namespace lst

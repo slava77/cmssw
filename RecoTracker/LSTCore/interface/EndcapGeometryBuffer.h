@@ -30,7 +30,7 @@ namespace lst {
     Buf<TDev, float> geoMapPhi_buf;
     EndcapGeometryDev data_;
 
-    EndcapGeometryBuffer(TDev const& dev, const unsigned int nEndCapMap)
+    EndcapGeometryBuffer(TDev const& dev, unsigned int nEndCapMap)
         : geoMapDetId_buf(allocBufWrapper<unsigned int>(dev, nEndCapMap)),
           geoMapPhi_buf(allocBufWrapper<float>(dev, nEndCapMap)) {
       data_.setData(*this);
@@ -43,7 +43,7 @@ namespace lst {
     }
 
     template <typename TQueue, typename TDevSrc>
-    EndcapGeometryBuffer(TQueue queue, EndcapGeometryBuffer<TDevSrc> const& src, const unsigned int nEndCapMap)
+    EndcapGeometryBuffer(TQueue queue, EndcapGeometryBuffer<TDevSrc> const& src, unsigned int nEndCapMap)
         : EndcapGeometryBuffer(alpaka::getDev(queue), nEndCapMap) {
       copyFromSrc(queue, src);
     }

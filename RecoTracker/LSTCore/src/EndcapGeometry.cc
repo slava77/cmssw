@@ -48,7 +48,7 @@ void lst::EndcapGeometry::fillGeoMapArraysExplicit() {
   }
 }
 
-float lst::EndcapGeometry::getdxdy_slope(const unsigned int detid) const {
+float lst::EndcapGeometry::getdxdy_slope(unsigned int detid) const {
   if (dxdy_slope_.find(detid) != dxdy_slope_.end()) {
     return dxdy_slope_.at(detid);
   } else {

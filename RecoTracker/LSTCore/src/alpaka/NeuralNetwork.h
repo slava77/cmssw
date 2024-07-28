@@ -22,11 +22,11 @@ namespace lst::t5dnn {
                                                     const float* yVec,
                                                     const unsigned int* mdIndices,
                                                     const uint16_t* lowerModuleIndices,
-                                                    const unsigned int innerTripletIndex,
-                                                    const unsigned int outerTripletIndex,
-                                                    const float innerRadius,
-                                                    const float outerRadius,
-                                                    const float bridgeRadius) {
+                                                    unsigned int innerTripletIndex,
+                                                    unsigned int outerTripletIndex,
+                                                    float innerRadius,
+                                                    float outerRadius,
+                                                    float bridgeRadius) {
     // Unpack x-coordinates of hits
     float x1 = xVec[0];
     float x2 = xVec[1];

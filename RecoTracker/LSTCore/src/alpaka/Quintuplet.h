@@ -104,8 +104,8 @@ namespace lst {
     Quintuplets data_;
 
     template <typename TQueue, typename TDevAcc>
-    QuintupletsBuffer(const unsigned int nTotalQuintuplets,
-                      const unsigned int nLowerModules,
+    QuintupletsBuffer(unsigned int nTotalQuintuplets,
+                      unsigned int nLowerModules,
                       TDevAcc const& devAccIn,
                       TQueue& queue)
         : tripletIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * nTotalQuintuplets, queue)),
@@ -144,22 +144,22 @@ namespace lst {
     inline void setData(QuintupletsBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlap(const float firstMin,
-                                                           const float firstMax,
-                                                           const float secondMin,
-                                                           const float secondMax) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlap(float firstMin,
+                                                           float firstMax,
+                                                           float secondMin,
+                                                           float secondMax) {
     return ((firstMin <= secondMin) && (secondMin < firstMax)) || ((secondMin < firstMin) && (firstMin < secondMax));
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addQuintupletToMemory(struct lst::Triplets& tripletsInGPU,
                                                             struct lst::Quintuplets& quintupletsInGPU,
-                                                            const unsigned int innerTripletIndex,
-                                                            const unsigned int outerTripletIndex,
-                                                            const uint16_t lowerModule1,
-                                                            const uint16_t lowerModule2,
-                                                            const uint16_t lowerModule3,
-                                                            const uint16_t lowerModule4,
-                                                            const uint16_t lowerModule5,
+                                                            unsigned int innerTripletIndex,
+                                                            unsigned int outerTripletIndex,
+                                                            uint16_t lowerModule1,
+                                                            uint16_t lowerModule2,
+                                                            uint16_t lowerModule3,
+                                                            uint16_t lowerModule4,
+                                                            uint16_t lowerModule5,
                                                             float& innerRadius,
                                                             float& bridgeRadius,
                                                             float& outerRadius,
@@ -169,13 +169,13 @@ namespace lst {
                                                             float& rzChiSquared,
                                                             float& rPhiChiSquared,
                                                             float& nonAnchorChiSquared,
-                                                            const float pt,
-                                                            const float eta,
-                                                            const float phi,
-                                                            const float scores,
-                                                            const uint8_t layer,
-                                                            const unsigned int quintupletIndex,
-                                                            const bool TightCutFlag) {
+                                                            float pt,
+                                                            float eta,
+                                                            float phi,
+                                                            float scores,
+                                                            uint8_t layer,
+                                                            unsigned int quintupletIndex,
+                                                            bool TightCutFlag) {
     quintupletsInGPU.tripletIndices[2 * quintupletIndex] = innerTripletIndex;
     quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1] = outerTripletIndex;
 
@@ -235,12 +235,12 @@ namespace lst {
 
   //90% constraint
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passChiSquaredConstraint(struct lst::Modules& modulesInGPU,
-                                                               const uint16_t lowerModuleIndex1,
-                                                               const uint16_t lowerModuleIndex2,
-                                                               const uint16_t lowerModuleIndex3,
-                                                               const uint16_t lowerModuleIndex4,
-                                                               const uint16_t lowerModuleIndex5,
-                                                               const float chiSquared) {
+                                                               uint16_t lowerModuleIndex1,
+                                                               uint16_t lowerModuleIndex2,
+                                                               uint16_t lowerModuleIndex3,
+                                                               uint16_t lowerModuleIndex4,
+                                                               uint16_t lowerModuleIndex5,
+                                                               float chiSquared) {
     // Using sdlLayer numbering convention defined in ModuleMethods.h
     const int layer1 = modulesInGPU.sdlLayers[lowerModuleIndex1];
     const int layer2 = modulesInGPU.sdlLayers[lowerModuleIndex2];
@@ -321,21 +321,21 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passT5RZConstraint(TAcc const& acc,
                                                          struct lst::Modules& modulesInGPU,
                                                          struct lst::MiniDoublets& mdsInGPU,
-                                                         const unsigned int firstMDIndex,
-                                                         const unsigned int secondMDIndex,
-                                                         const unsigned int thirdMDIndex,
-                                                         const unsigned int fourthMDIndex,
-                                                         const unsigned int fifthMDIndex,
-                                                         const uint16_t lowerModuleIndex1,
-                                                         const uint16_t lowerModuleIndex2,
-                                                         const uint16_t lowerModuleIndex3,
-                                                         const uint16_t lowerModuleIndex4,
-                                                         const uint16_t lowerModuleIndex5,
+                                                         unsigned int firstMDIndex,
+                                                         unsigned int secondMDIndex,
+                                                         unsigned int thirdMDIndex,
+                                                         unsigned int fourthMDIndex,
+                                                         unsigned int fifthMDIndex,
+                                                         uint16_t lowerModuleIndex1,
+                                                         uint16_t lowerModuleIndex2,
+                                                         uint16_t lowerModuleIndex3,
+                                                         uint16_t lowerModuleIndex4,
+                                                         uint16_t lowerModuleIndex5,
                                                          float& rzChiSquared,
-                                                         const float inner_pt,
-                                                         const float innerRadius,
-                                                         const float g,
-                                                         const float f,
+                                                         float inner_pt,
+                                                         float innerRadius,
+                                                         float g,
+                                                         float f,
                                                          bool& TightCutFlag) {
     //(g,f) is the center of the circle fitted by the innermost 3 points on x,y coordinates
     const float& rt1 = mdsInGPU.anchorRt[firstMDIndex] / 100;  //in the unit of m instead of cm
@@ -755,8 +755,8 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool T5HasCommonMiniDoublet(struct lst::Triplets& tripletsInGPU,
                                                              struct lst::Segments& segmentsInGPU,
-                                                             const unsigned int innerTripletIndex,
-                                                             const unsigned int outerTripletIndex) {
+                                                             unsigned int innerTripletIndex,
+                                                             unsigned int outerTripletIndex) {
     unsigned int innerOuterSegmentIndex = tripletsInGPU.segmentIndices[2 * innerTripletIndex + 1];
     unsigned int outerInnerSegmentIndex = tripletsInGPU.segmentIndices[2 * outerTripletIndex];
     unsigned int innerOuterOuterMiniDoubletIndex =
@@ -1158,8 +1158,8 @@ namespace lst {
                                                                  float* delta2,
                                                                  float* slopes,
                                                                  bool* isFlat,
-                                                                 const unsigned int nPoints = 5,
-                                                                 const bool anchorHits = true) {
+                                                                 unsigned int nPoints = 5,
+                                                                 bool anchorHits = true) {
     /*
         Bool anchorHits required to deal with a weird edge case wherein 
         the hits ultimately used in the regression are anchor hits, but the
@@ -1239,7 +1239,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeRadiusUsingRegression(TAcc const& acc,
-                                                                    const unsigned int nPoints,
+                                                                    unsigned int nPoints,
                                                                     float* xs,
                                                                     float* ys,
                                                                     float* delta1,
@@ -1337,16 +1337,16 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeChiSquared(TAcc const& acc,
-                                                         const unsigned int nPoints,
+                                                         unsigned int nPoints,
                                                          float* xs,
                                                          float* ys,
                                                          float* delta1,
                                                          float* delta2,
                                                          float* slopes,
                                                          bool* isFlat,
-                                                         const float g,
-                                                         const float f,
-                                                         const float radius) {
+                                                         float g,
+                                                         float f,
+                                                         float radius) {
     // given values of (g, f, radius) and a set of points (and its uncertainties)
     // compute chi squared
     float c = g * g + f * f - radius * radius;
@@ -1387,10 +1387,10 @@ namespace lst {
                                                                float& betaOut,
                                                                float& betaAv,
                                                                float& pt_beta,
-                                                               const float sdIn_dr,
-                                                               const float sdOut_dr,
-                                                               const float dr,
-                                                               const float lIn) {
+                                                               float sdIn_dr,
+                                                               float sdOut_dr,
+                                                               float dr,
+                                                               float lIn) {
     if (lIn == 0) {
       betaOut += alpaka::math::copysign(
           acc,
@@ -1492,16 +1492,16 @@ namespace lst {
                                                                    struct lst::Modules& modulesInGPU,
                                                                    struct lst::MiniDoublets& mdsInGPU,
                                                                    struct lst::Segments& segmentsInGPU,
-                                                                   const uint16_t innerInnerLowerModuleIndex,
-                                                                   const uint16_t innerOuterLowerModuleIndex,
-                                                                   const uint16_t outerInnerLowerModuleIndex,
-                                                                   const uint16_t outerOuterLowerModuleIndex,
-                                                                   const unsigned int innerSegmentIndex,
-                                                                   const unsigned int outerSegmentIndex,
-                                                                   const unsigned int firstMDIndex,
-                                                                   const unsigned int secondMDIndex,
-                                                                   const unsigned int thirdMDIndex,
-                                                                   const unsigned int fourthMDIndex,
+                                                                   uint16_t innerInnerLowerModuleIndex,
+                                                                   uint16_t innerOuterLowerModuleIndex,
+                                                                   uint16_t outerInnerLowerModuleIndex,
+                                                                   uint16_t outerOuterLowerModuleIndex,
+                                                                   unsigned int innerSegmentIndex,
+                                                                   unsigned int outerSegmentIndex,
+                                                                   unsigned int firstMDIndex,
+                                                                   unsigned int secondMDIndex,
+                                                                   unsigned int thirdMDIndex,
+                                                                   unsigned int fourthMDIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
                                                                    float& deltaPhiPos,
@@ -1761,16 +1761,16 @@ namespace lst {
                                                                    struct lst::Modules& modulesInGPU,
                                                                    struct lst::MiniDoublets& mdsInGPU,
                                                                    struct lst::Segments& segmentsInGPU,
-                                                                   const uint16_t innerInnerLowerModuleIndex,
-                                                                   const uint16_t innerOuterLowerModuleIndex,
-                                                                   const uint16_t outerInnerLowerModuleIndex,
-                                                                   const uint16_t outerOuterLowerModuleIndex,
-                                                                   const unsigned int innerSegmentIndex,
-                                                                   const unsigned int outerSegmentIndex,
-                                                                   const unsigned int firstMDIndex,
-                                                                   const unsigned int secondMDIndex,
-                                                                   const unsigned int thirdMDIndex,
-                                                                   const unsigned int fourthMDIndex,
+                                                                   uint16_t innerInnerLowerModuleIndex,
+                                                                   uint16_t innerOuterLowerModuleIndex,
+                                                                   uint16_t outerInnerLowerModuleIndex,
+                                                                   uint16_t outerOuterLowerModuleIndex,
+                                                                   unsigned int innerSegmentIndex,
+                                                                   unsigned int outerSegmentIndex,
+                                                                   unsigned int firstMDIndex,
+                                                                   unsigned int secondMDIndex,
+                                                                   unsigned int thirdMDIndex,
+                                                                   unsigned int fourthMDIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
                                                                    float& deltaPhiPos,
@@ -2032,16 +2032,16 @@ namespace lst {
                                                                    struct lst::Modules& modulesInGPU,
                                                                    struct lst::MiniDoublets& mdsInGPU,
                                                                    struct lst::Segments& segmentsInGPU,
-                                                                   const uint16_t innerInnerLowerModuleIndex,
-                                                                   const uint16_t innerOuterLowerModuleIndex,
-                                                                   const uint16_t outerInnerLowerModuleIndex,
-                                                                   const uint16_t outerOuterLowerModuleIndex,
-                                                                   const unsigned int innerSegmentIndex,
-                                                                   const unsigned int outerSegmentIndex,
-                                                                   const unsigned int firstMDIndex,
-                                                                   const unsigned int secondMDIndex,
-                                                                   const unsigned int thirdMDIndex,
-                                                                   const unsigned int fourthMDIndex,
+                                                                   uint16_t innerInnerLowerModuleIndex,
+                                                                   uint16_t innerOuterLowerModuleIndex,
+                                                                   uint16_t outerInnerLowerModuleIndex,
+                                                                   uint16_t outerOuterLowerModuleIndex,
+                                                                   unsigned int innerSegmentIndex,
+                                                                   unsigned int outerSegmentIndex,
+                                                                   unsigned int firstMDIndex,
+                                                                   unsigned int secondMDIndex,
+                                                                   unsigned int thirdMDIndex,
+                                                                   unsigned int fourthMDIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
                                                                    float& deltaPhiPos,
@@ -2289,16 +2289,16 @@ namespace lst {
                                                                 struct lst::Modules& modulesInGPU,
                                                                 struct lst::MiniDoublets& mdsInGPU,
                                                                 struct lst::Segments& segmentsInGPU,
-                                                                const uint16_t innerInnerLowerModuleIndex,
-                                                                const uint16_t innerOuterLowerModuleIndex,
-                                                                const uint16_t outerInnerLowerModuleIndex,
-                                                                const uint16_t outerOuterLowerModuleIndex,
-                                                                const unsigned int innerSegmentIndex,
-                                                                const unsigned int outerSegmentIndex,
-                                                                const unsigned int firstMDIndex,
-                                                                const unsigned int secondMDIndex,
-                                                                const unsigned int thirdMDIndex,
-                                                                const unsigned int fourthMDIndex,
+                                                                uint16_t innerInnerLowerModuleIndex,
+                                                                uint16_t innerOuterLowerModuleIndex,
+                                                                uint16_t outerInnerLowerModuleIndex,
+                                                                uint16_t outerOuterLowerModuleIndex,
+                                                                unsigned int innerSegmentIndex,
+                                                                unsigned int outerSegmentIndex,
+                                                                unsigned int firstMDIndex,
+                                                                unsigned int secondMDIndex,
+                                                                unsigned int thirdMDIndex,
+                                                                unsigned int fourthMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
                                                                 float& deltaPhiPos,
@@ -2497,13 +2497,13 @@ namespace lst {
                                                                struct lst::MiniDoublets& mdsInGPU,
                                                                struct lst::Segments& segmentsInGPU,
                                                                struct lst::Triplets& tripletsInGPU,
-                                                               const uint16_t lowerModuleIndex1,
-                                                               const uint16_t lowerModuleIndex2,
-                                                               const uint16_t lowerModuleIndex3,
-                                                               const uint16_t lowerModuleIndex4,
-                                                               const uint16_t lowerModuleIndex5,
-                                                               const unsigned int innerTripletIndex,
-                                                               const unsigned int outerTripletIndex,
+                                                               uint16_t lowerModuleIndex1,
+                                                               uint16_t lowerModuleIndex2,
+                                                               uint16_t lowerModuleIndex3,
+                                                               uint16_t lowerModuleIndex4,
+                                                               uint16_t lowerModuleIndex5,
+                                                               unsigned int innerTripletIndex,
+                                                               unsigned int outerTripletIndex,
                                                                float& innerRadius,
                                                                float& outerRadius,
                                                                float& bridgeRadius,
@@ -2991,7 +2991,7 @@ namespace lst {
                                   struct lst::Triplets tripletsInGPU,
                                   struct lst::Quintuplets quintupletsInGPU,
                                   struct lst::ObjectRanges rangesInGPU,
-                                  const uint16_t nEligibleT5Modules) const {
+                                  uint16_t nEligibleT5Modules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 

@@ -98,7 +98,7 @@ namespace lst {
     PixelTriplets data_;
 
     template <typename TQueue, typename TDevAcc>
-    PixelTripletsBuffer(const unsigned int maxPixelTriplets, TDevAcc const& devAccIn, TQueue& queue)
+    PixelTripletsBuffer(unsigned int maxPixelTriplets, TDevAcc const& devAccIn, TQueue& queue)
         : pixelSegmentIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelTriplets, queue)),
           tripletIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelTriplets, queue)),
           nPixelTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
@@ -137,22 +137,22 @@ namespace lst {
                                                               struct lst::Segments& segmentsInGPU,
                                                               struct lst::Triplets& tripletsInGPU,
                                                               struct lst::PixelTriplets& pixelTripletsInGPU,
-                                                              const unsigned int pixelSegmentIndex,
-                                                              const unsigned int tripletIndex,
-                                                              const float pixelRadius,
-                                                              const float tripletRadius,
-                                                              const float centerX,
-                                                              const float centerY,
-                                                              const float rPhiChiSquared,
-                                                              const float rPhiChiSquaredInwards,
-                                                              const float rzChiSquared,
-                                                              const unsigned int pixelTripletIndex,
-                                                              const float pt,
-                                                              const float eta,
-                                                              const float phi,
-                                                              const float eta_pix,
-                                                              const float phi_pix,
-                                                              const float score) {
+                                                              unsigned int pixelSegmentIndex,
+                                                              unsigned int tripletIndex,
+                                                              float pixelRadius,
+                                                              float tripletRadius,
+                                                              float centerX,
+                                                              float centerY,
+                                                              float rPhiChiSquared,
+                                                              float rPhiChiSquaredInwards,
+                                                              float rzChiSquared,
+                                                              unsigned int pixelTripletIndex,
+                                                              float pt,
+                                                              float eta,
+                                                              float phi,
+                                                              float eta_pix,
+                                                              float phi_pix,
+                                                              float score) {
     pixelTripletsInGPU.pixelSegmentIndices[pixelTripletIndex] = pixelSegmentIndex;
     pixelTripletsInGPU.tripletIndices[pixelTripletIndex] = tripletIndex;
     pixelTripletsInGPU.pixelRadius[pixelTripletIndex] = __F2H(pixelRadius);
@@ -218,11 +218,11 @@ namespace lst {
                                                                      struct lst::ObjectRanges& rangesInGPU,
                                                                      struct lst::MiniDoublets& mdsInGPU,
                                                                      struct lst::Segments& segmentsInGPU,
-                                                                     const uint16_t pixelLowerModuleIndex,
-                                                                     const uint16_t outerInnerLowerModuleIndex,
-                                                                     const uint16_t outerOuterLowerModuleIndex,
-                                                                     const unsigned int innerSegmentIndex,
-                                                                     const unsigned int outerSegmentIndex,
+                                                                     uint16_t pixelLowerModuleIndex,
+                                                                     uint16_t outerInnerLowerModuleIndex,
+                                                                     uint16_t outerOuterLowerModuleIndex,
+                                                                     unsigned int innerSegmentIndex,
+                                                                     unsigned int outerSegmentIndex,
                                                                      float& zOut,
                                                                      float& rtOut,
                                                                      float& deltaPhiPos,
@@ -324,10 +324,10 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RZChiSquaredCuts(struct lst::Modules& modulesInGPU,
-                                                              const uint16_t lowerModuleIndex1,
-                                                              const uint16_t lowerModuleIndex2,
-                                                              const uint16_t lowerModuleIndex3,
-                                                              const float rzChiSquared) {
+                                                              uint16_t lowerModuleIndex1,
+                                                              uint16_t lowerModuleIndex2,
+                                                              uint16_t lowerModuleIndex3,
+                                                              float rzChiSquared) {
     const int layer1 = modulesInGPU.layers[lowerModuleIndex1] +
                        6 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap) +
                        5 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap and
@@ -386,9 +386,9 @@ namespace lst {
                                                             float* delta2,
                                                             float* slopes,
                                                             bool* isFlat,
-                                                            const float g,
-                                                            const float f,
-                                                            const float radius) {
+                                                            float g,
+                                                            float f,
+                                                            float radius) {
     //given values of (g, f, radius) and a set of points (and its uncertainties)
     //compute chi squared
     float c = g * g + f * f - radius * radius;
@@ -428,9 +428,9 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT3RPhiChiSquared(TAcc const& acc,
                                                                 struct lst::Modules& modulesInGPU,
                                                                 uint16_t* lowerModuleIndices,
-                                                                const float g,
-                                                                const float f,
-                                                                const float radius,
+                                                                float g,
+                                                                float f,
+                                                                float radius,
                                                                 float* xs,
                                                                 float* ys) {
     float delta1[3]{}, delta2[3]{}, slopes[3];
@@ -496,7 +496,7 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT3RPhiChiSquaredInwards(
-      struct lst::Modules& modulesInGPU, const float g, const float f, const float r, float* xPix, float* yPix) {
+      struct lst::Modules& modulesInGPU, float g, float f, float r, float* xPix, float* yPix) {
     float residual = (xPix[0] - g) * (xPix[0] - g) + (yPix[0] - f) * (yPix[0] - f) - r * r;
     float chiSquared = residual * residual;
     residual = (xPix[1] - g) * (xPix[1] - g) + (yPix[1] - f) * (yPix[1] - f) - r * r;
@@ -508,10 +508,10 @@ namespace lst {
 
   //90pc threshold
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RPhiChiSquaredCuts(struct lst::Modules& modulesInGPU,
-                                                                const uint16_t lowerModuleIndex1,
-                                                                const uint16_t lowerModuleIndex2,
-                                                                const uint16_t lowerModuleIndex3,
-                                                                const float chiSquared) {
+                                                                uint16_t lowerModuleIndex1,
+                                                                uint16_t lowerModuleIndex2,
+                                                                uint16_t lowerModuleIndex3,
+                                                                float chiSquared) {
     const int layer1 = modulesInGPU.layers[lowerModuleIndex1] +
                        6 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap) +
                        5 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap and
@@ -555,9 +555,9 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT3RPhiChiSquaredInwardsCuts(struct lst::Modules& modulesInGPU,
-                                                                       const uint16_t lowerModuleIndex1,
-                                                                       const uint16_t lowerModuleIndex2,
-                                                                       const uint16_t lowerModuleIndex3,
+                                                                       uint16_t lowerModuleIndex1,
+                                                                       uint16_t lowerModuleIndex2,
+                                                                       uint16_t lowerModuleIndex3,
                                                                        float& chiSquared) {
     const int layer1 = modulesInGPU.layers[lowerModuleIndex1] +
                        6 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap) +
@@ -613,19 +613,19 @@ namespace lst {
     return true;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlappT3(const float firstMin,
-                                                              const float firstMax,
-                                                              const float secondMin,
-                                                              const float secondMax) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlappT3(float firstMin,
+                                                              float firstMax,
+                                                              float secondMin,
+                                                              float secondMax) {
     return ((firstMin <= secondMin) && (secondMin < firstMax)) || ((secondMin < firstMin) && (firstMin < secondMax));
   };
 
   /*bounds for high Pt taken from : http://uaf-10.t2.ucsd.edu/~bsathian/SDL/T5_efficiency/efficiencies/new_efficiencies/efficiencies_20210513_T5_recovering_high_Pt_efficiencies/highE_radius_matching/highE_bounds.txt */
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRadiusCriterionBBB(TAcc const& acc,
-                                                             const float pixelRadius,
-                                                             const float pixelRadiusError,
-                                                             const float tripletRadius) {
+                                                             float pixelRadius,
+                                                             float pixelRadiusError,
+                                                             float tripletRadius) {
     float tripletInvRadiusErrorBound = 0.15624f;
     float pixelInvRadiusErrorBound = 0.17235f;
 
@@ -647,9 +647,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRadiusCriterionBBE(TAcc const& acc,
-                                                             const float pixelRadius,
-                                                             const float pixelRadiusError,
-                                                             const float tripletRadius) {
+                                                             float pixelRadius,
+                                                             float pixelRadiusError,
+                                                             float tripletRadius) {
     float tripletInvRadiusErrorBound = 0.45972f;
     float pixelInvRadiusErrorBound = 0.19644f;
 
@@ -671,9 +671,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRadiusCriterionBEE(TAcc const& acc,
-                                                             const float pixelRadius,
-                                                             const float pixelRadiusError,
-                                                             const float tripletRadius) {
+                                                             float pixelRadius,
+                                                             float pixelRadiusError,
+                                                             float tripletRadius) {
     float tripletInvRadiusErrorBound = 1.59294f;
     float pixelInvRadiusErrorBound = 0.255181f;
 
@@ -697,9 +697,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRadiusCriterionEEE(TAcc const& acc,
-                                                             const float pixelRadius,
-                                                             const float pixelRadiusError,
-                                                             const float tripletRadius) {
+                                                             float pixelRadius,
+                                                             float pixelRadiusError,
+                                                             float tripletRadius) {
     float tripletInvRadiusErrorBound = 1.7006f;
     float pixelInvRadiusErrorBound = 0.26367f;
 
@@ -724,12 +724,12 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRadiusCriterion(TAcc const& acc,
                                                           struct lst::Modules const& modulesInGPU,
-                                                          const float pixelRadius,
-                                                          const float pixelRadiusError,
-                                                          const float tripletRadius,
-                                                          const int16_t lowerModuleIndex,
-                                                          const uint16_t middleModuleIndex,
-                                                          const uint16_t upperModuleIndex) {
+                                                          float pixelRadius,
+                                                          float pixelRadiusError,
+                                                          float tripletRadius,
+                                                          int16_t lowerModuleIndex,
+                                                          uint16_t middleModuleIndex,
+                                                          uint16_t upperModuleIndex) {
     if (modulesInGPU.subdets[lowerModuleIndex] == lst::Endcap) {
       return passRadiusCriterionEEE(acc, pixelRadius, pixelRadiusError, tripletRadius);
     } else if (modulesInGPU.subdets[middleModuleIndex] == lst::Endcap) {
@@ -753,11 +753,11 @@ namespace lst {
                                                               const float* xs,
                                                               const float* ys,
                                                               const float* zs,
-                                                              const float pixelSegmentPt,
-                                                              const float pixelSegmentPx,
-                                                              const float pixelSegmentPy,
-                                                              const float pixelSegmentPz,
-                                                              const int pixelSegmentCharge) {
+                                                              float pixelSegmentPt,
+                                                              float pixelSegmentPx,
+                                                              float pixelSegmentPy,
+                                                              float pixelSegmentPz,
+                                                              int pixelSegmentCharge) {
     float residual = 0;
     float error2 = 0;
     float RMSE = 0;
@@ -837,8 +837,8 @@ namespace lst {
                                                                  struct lst::MiniDoublets& mdsInGPU,
                                                                  struct lst::Segments& segmentsInGPU,
                                                                  struct lst::Triplets& tripletsInGPU,
-                                                                 const unsigned int pixelSegmentIndex,
-                                                                 const unsigned int tripletIndex,
+                                                                 unsigned int pixelSegmentIndex,
+                                                                 unsigned int tripletIndex,
                                                                  float& pixelRadius,
                                                                  float& pixelRadiusError,
                                                                  float& tripletRadius,
@@ -847,7 +847,7 @@ namespace lst {
                                                                  float& rzChiSquared,
                                                                  float& rPhiChiSquared,
                                                                  float& rPhiChiSquaredInwards,
-                                                                 const bool runChiSquaredCuts = true) {
+                                                                 bool runChiSquaredCuts = true) {
     //run pT4 compatibility between the pixel segment and inner segment, and between the pixel and outer segment of the triplet
     uint16_t pixelModuleIndex = segmentsInGPU.innerLowerModuleIndices[pixelSegmentIndex];
 
@@ -1037,7 +1037,7 @@ namespace lst {
                                   struct lst::PixelTriplets pixelTripletsInGPU,
                                   unsigned int* connectedPixelSize,
                                   unsigned int* connectedPixelIndex,
-                                  const unsigned int nPixelSegments) const {
+                                  unsigned int nPixelSegments) const {
       auto const globalBlockIdx = alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc);
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridBlockExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc);
@@ -1172,10 +1172,10 @@ namespace lst {
                                                                 float& betaOut,
                                                                 float& betaAv,
                                                                 float& pt_beta,
-                                                                const float sdIn_dr,
-                                                                const float sdOut_dr,
-                                                                const float dr,
-                                                                const float lIn) {
+                                                                float sdIn_dr,
+                                                                float sdOut_dr,
+                                                                float dr,
+                                                                float lIn) {
     if (lIn == 0) {
       betaOut += alpaka::math::copysign(
           acc,
@@ -1278,15 +1278,15 @@ namespace lst {
                                                                 struct lst::ObjectRanges& rangesInGPU,
                                                                 struct lst::MiniDoublets& mdsInGPU,
                                                                 struct lst::Segments& segmentsInGPU,
-                                                                const uint16_t pixelModuleIndex,
-                                                                const uint16_t outerInnerLowerModuleIndex,
-                                                                const uint16_t outerOuterLowerModuleIndex,
-                                                                const unsigned int innerSegmentIndex,
-                                                                const unsigned int outerSegmentIndex,
-                                                                const unsigned int firstMDIndex,
-                                                                const unsigned int secondMDIndex,
-                                                                const unsigned int thirdMDIndex,
-                                                                const unsigned int fourthMDIndex,
+                                                                uint16_t pixelModuleIndex,
+                                                                uint16_t outerInnerLowerModuleIndex,
+                                                                uint16_t outerOuterLowerModuleIndex,
+                                                                unsigned int innerSegmentIndex,
+                                                                unsigned int outerSegmentIndex,
+                                                                unsigned int firstMDIndex,
+                                                                unsigned int secondMDIndex,
+                                                                unsigned int thirdMDIndex,
+                                                                unsigned int fourthMDIndex,
                                                                 float& /*z_OutLo*/,
                                                                 float& /*rt_OutLo*/,
                                                                 float& dPhiPos,
@@ -1557,15 +1557,15 @@ namespace lst {
                                                                 struct lst::ObjectRanges& rangesInGPU,
                                                                 struct lst::MiniDoublets& mdsInGPU,
                                                                 struct lst::Segments& segmentsInGPU,
-                                                                const uint16_t pixelModuleIndex,
-                                                                const uint16_t outerInnerLowerModuleIndex,
-                                                                const uint16_t outerOuterLowerModuleIndex,
-                                                                const unsigned int innerSegmentIndex,
-                                                                const unsigned int outerSegmentIndex,
-                                                                const unsigned int firstMDIndex,
-                                                                const unsigned int secondMDIndex,
-                                                                const unsigned int thirdMDIndex,
-                                                                const unsigned int fourthMDIndex,
+                                                                uint16_t pixelModuleIndex,
+                                                                uint16_t outerInnerLowerModuleIndex,
+                                                                uint16_t outerOuterLowerModuleIndex,
+                                                                unsigned int innerSegmentIndex,
+                                                                unsigned int outerSegmentIndex,
+                                                                unsigned int firstMDIndex,
+                                                                unsigned int secondMDIndex,
+                                                                unsigned int thirdMDIndex,
+                                                                unsigned int fourthMDIndex,
                                                                 float& /*z_OutLo*/,
                                                                 float& /*rt_OutLo*/,
                                                                 float& deltaPhiPos,
@@ -1921,7 +1921,7 @@ namespace lst {
     PixelQuintuplets data_;
 
     template <typename TQueue, typename TDevAcc>
-    PixelQuintupletsBuffer(const unsigned int maxPixelQuintuplets, TDevAcc const& devAccIn, TQueue& queue)
+    PixelQuintupletsBuffer(unsigned int maxPixelQuintuplets, TDevAcc const& devAccIn, TQueue& queue)
         : pixelIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelQuintuplets, queue)),
           T5Indices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelQuintuplets, queue)),
           nPixelQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
@@ -1954,15 +1954,15 @@ namespace lst {
                                                                  struct lst::Segments& segmentsInGPU,
                                                                  struct lst::Quintuplets& quintupletsInGPU,
                                                                  struct lst::PixelQuintuplets& pixelQuintupletsInGPU,
-                                                                 const unsigned int pixelIndex,
-                                                                 const unsigned int T5Index,
-                                                                 const unsigned int pixelQuintupletIndex,
+                                                                 unsigned int pixelIndex,
+                                                                 unsigned int T5Index,
+                                                                 unsigned int pixelQuintupletIndex,
                                                                  float& rzChiSquared,
                                                                  float& rPhiChiSquared,
                                                                  float& rPhiChiSquaredInwards,
-                                                                 const float score,
-                                                                 const float eta,
-                                                                 const float phi,
+                                                                 float score,
+                                                                 float eta,
+                                                                 float phi,
                                                                  float& pixelRadius,
                                                                  float& quintupletRadius,
                                                                  float& centerX,
@@ -2046,12 +2046,12 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RZChiSquaredCuts(struct lst::Modules& modulesInGPU,
-                                                              const uint16_t lowerModuleIndex1,
-                                                              const uint16_t lowerModuleIndex2,
-                                                              const uint16_t lowerModuleIndex3,
-                                                              const uint16_t lowerModuleIndex4,
-                                                              const uint16_t lowerModuleIndex5,
-                                                              const float rzChiSquared) {
+                                                              uint16_t lowerModuleIndex1,
+                                                              uint16_t lowerModuleIndex2,
+                                                              uint16_t lowerModuleIndex3,
+                                                              uint16_t lowerModuleIndex4,
+                                                              uint16_t lowerModuleIndex5,
+                                                              float rzChiSquared) {
     const int layer1 = modulesInGPU.layers[lowerModuleIndex1] +
                        6 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap) +
                        5 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap and
@@ -2136,12 +2136,12 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredCuts(struct lst::Modules& modulesInGPU,
-                                                                const uint16_t lowerModuleIndex1,
-                                                                const uint16_t lowerModuleIndex2,
-                                                                const uint16_t lowerModuleIndex3,
-                                                                const uint16_t lowerModuleIndex4,
-                                                                const uint16_t lowerModuleIndex5,
-                                                                const float rPhiChiSquared) {
+                                                                uint16_t lowerModuleIndex1,
+                                                                uint16_t lowerModuleIndex2,
+                                                                uint16_t lowerModuleIndex3,
+                                                                uint16_t lowerModuleIndex4,
+                                                                uint16_t lowerModuleIndex5,
+                                                                float rPhiChiSquared) {
     const int layer1 = modulesInGPU.layers[lowerModuleIndex1] +
                        6 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap) +
                        5 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap and
@@ -2227,16 +2227,16 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeChiSquaredpT5(TAcc const& acc,
-                                                            const unsigned int nPoints,
+                                                            unsigned int nPoints,
                                                             float* xs,
                                                             float* ys,
                                                             float* delta1,
                                                             float* delta2,
                                                             float* slopes,
                                                             bool* isFlat,
-                                                            const float g,
-                                                            const float f,
-                                                            const float radius) {
+                                                            float g,
+                                                            float f,
+                                                            float radius) {
     /*
         Given values of (g, f, radius) and a set of points (and its uncertainties) compute chi squared
         */
@@ -2279,8 +2279,8 @@ namespace lst {
                                                                      float* delta2,
                                                                      float* slopes,
                                                                      bool* isFlat,
-                                                                     const unsigned int nPoints = 5,
-                                                                     const bool anchorHits = true) {
+                                                                     unsigned int nPoints = 5,
+                                                                     bool anchorHits = true) {
     /*
         bool anchorHits required to deal with a weird edge case wherein
         the hits ultimately used in the regression are anchor hits, but the
@@ -2361,9 +2361,9 @@ namespace lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT5RPhiChiSquared(TAcc const& acc,
                                                                 struct lst::Modules& modulesInGPU,
                                                                 uint16_t* lowerModuleIndices,
-                                                                const float g,
-                                                                const float f,
-                                                                const float radius,
+                                                                float g,
+                                                                float f,
+                                                                float radius,
                                                                 float* xs,
                                                                 float* ys) {
     /*
@@ -2396,12 +2396,12 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredInwardsCuts(struct lst::Modules& modulesInGPU,
-                                                                       const uint16_t lowerModuleIndex1,
-                                                                       const uint16_t lowerModuleIndex2,
-                                                                       const uint16_t lowerModuleIndex3,
-                                                                       const uint16_t lowerModuleIndex4,
-                                                                       const uint16_t lowerModuleIndex5,
-                                                                       const float rPhiChiSquared) {
+                                                                       uint16_t lowerModuleIndex1,
+                                                                       uint16_t lowerModuleIndex2,
+                                                                       uint16_t lowerModuleIndex3,
+                                                                       uint16_t lowerModuleIndex4,
+                                                                       uint16_t lowerModuleIndex5,
+                                                                       float rPhiChiSquared) {
     const int layer1 = modulesInGPU.layers[lowerModuleIndex1] +
                        6 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap) +
                        5 * (modulesInGPU.subdets[lowerModuleIndex1] == lst::Endcap and
@@ -2493,8 +2493,8 @@ namespace lst {
                                                                     struct lst::Segments& segmentsInGPU,
                                                                     struct lst::Triplets& tripletsInGPU,
                                                                     struct lst::Quintuplets& quintupletsInGPU,
-                                                                    const unsigned int pixelSegmentIndex,
-                                                                    const unsigned int quintupletIndex,
+                                                                    unsigned int pixelSegmentIndex,
+                                                                    unsigned int quintupletIndex,
                                                                     float& rzChiSquared,
                                                                     float& rPhiChiSquared,
                                                                     float& rPhiChiSquaredInwards,
@@ -2502,7 +2502,7 @@ namespace lst {
                                                                     float& quintupletRadius,
                                                                     float& centerX,
                                                                     float& centerY,
-                                                                    const unsigned int pixelSegmentArrayIndex) {
+                                                                    unsigned int pixelSegmentArrayIndex) {
     unsigned int T5InnerT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex];
     unsigned int T5OuterT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1];
 

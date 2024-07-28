@@ -22,7 +22,7 @@ namespace lst {
 
     template <typename TQueue>
     void run(TQueue& queue,
-             const bool verbose,
+             bool verbose,
              LSTESData<alpaka::Dev<TAcc>> const* deviceESData,
              std::vector<float> const& see_px,
              std::vector<float> const& see_py,
@@ -43,12 +43,12 @@ namespace lst {
              std::vector<float> const& ph2_x,
              std::vector<float> const& ph2_y,
              std::vector<float> const& ph2_z,
-             const bool no_pls_dupclean,
-             const bool tc_pls_triplets);
-    const std::vector<std::vector<unsigned int>>& hits() const { return out_tc_hitIdxs_; }
-    const std::vector<unsigned int>& len() const { return out_tc_len_; }
-    const std::vector<int>& seedIdx() const { return out_tc_seedIdx_; }
-    const std::vector<short>& trackCandidateType() const { return out_tc_trackCandidateType_; }
+             bool no_pls_dupclean,
+             bool tc_pls_triplets);
+    std::vector<std::vector<unsigned int>> const& hits() const { return out_tc_hitIdxs_; }
+    std::vector<unsigned int> const& len() const { return out_tc_len_; }
+    std::vector<int> const& seedIdx() const { return out_tc_seedIdx_; }
+    std::vector<short> const& trackCandidateType() const { return out_tc_trackCandidateType_; }
 
   private:
     void prepareInput(std::vector<float> const& see_px,
@@ -72,8 +72,8 @@ namespace lst {
                       std::vector<float> const& ph2_z);
 
     void getOutput(lst::Event<TAcc>& event);
-    std::vector<unsigned int> getHitIdxs(const short trackCandidateType,
-                                         const unsigned int TCIdx,
+    std::vector<unsigned int> getHitIdxs(short trackCandidateType,
+                                         unsigned int TCIdx,
                                          unsigned int const* TCHitIndices,
                                          unsigned int const* hitIndices);
 

@@ -140,8 +140,8 @@ namespace lst {
     MiniDoublets data_;
 
     template <typename TQueue, typename TDevAcc>
-    MiniDoubletsBuffer(const unsigned int nMemoryLoc,
-                       const uint16_t nLowerModules,
+    MiniDoubletsBuffer(unsigned int nMemoryLoc,
+                       uint16_t nLowerModules,
                        TDevAcc const& devAccIn,
                        TQueue& queue)
         : nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
@@ -194,18 +194,18 @@ namespace lst {
                                                     struct lst::MiniDoublets& mdsInGPU,
                                                     struct lst::Hits& hitsInGPU,
                                                     struct lst::Modules& modulesInGPU,
-                                                    const unsigned int lowerHitIdx,
-                                                    const unsigned int upperHitIdx,
-                                                    const uint16_t& lowerModuleIdx,
-                                                    const float dz,
-                                                    const float dPhi,
-                                                    const float dPhiChange,
-                                                    const float shiftedX,
-                                                    const float shiftedY,
-                                                    const float shiftedZ,
-                                                    const float noShiftedDphi,
-                                                    const float noShiftedDPhiChange,
-                                                    const unsigned int idx) {
+                                                    unsigned int lowerHitIdx,
+                                                    unsigned int upperHitIdx,
+                                                    uint16_t& lowerModuleIdx,
+                                                    float dz,
+                                                    float dPhi,
+                                                    float dPhiChange,
+                                                    float shiftedX,
+                                                    float shiftedY,
+                                                    float shiftedZ,
+                                                    float noShiftedDphi,
+                                                    float noShiftedDPhiChange,
+                                                    unsigned int idx) {
     //the index into which this MD needs to be written will be computed in the kernel
     //nMDs variable will be incremented in the kernel, no need to worry about that here
 
@@ -264,7 +264,7 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(struct lst::Modules& modulesInGPU,
-                                                              const uint16_t moduleIndex) {
+                                                              uint16_t moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
     // See Figure 9.1 of https://cds.cern.ch/record/2272264/files/CMS-TDR-014.pdf
@@ -284,7 +284,7 @@ namespace lst {
       return false;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules& modulesInGPU, const uint16_t moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules& modulesInGPU, uint16_t moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -337,11 +337,11 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(TAcc const& acc,
-                                                     const float rt,
+                                                     float rt,
                                                      struct lst::Modules& modulesInGPU,
-                                                     const uint16_t moduleIndex,
-                                                     const float dPhi = 0,
-                                                     const float dz = 0) {
+                                                     uint16_t moduleIndex,
+                                                     float dPhi = 0,
+                                                     float dz = 0) {
     // =================================================================
     // Various constants
     // =================================================================
@@ -401,19 +401,19 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_INLINE ALPAKA_FN_ACC void shiftStripHits(TAcc const& acc,
                                                      struct lst::Modules& modulesInGPU,
-                                                     const uint16_t lowerModuleIndex,
-                                                     const uint16_t upperModuleIndex,
-                                                     const unsigned int lowerHitIndex,
-                                                     const unsigned int upperHitIndex,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
+                                                     unsigned int lowerHitIndex,
+                                                     unsigned int upperHitIndex,
                                                      float* shiftedCoords,
-                                                     const float xLower,
-                                                     const float yLower,
-                                                     const float zLower,
-                                                     const float rtLower,
-                                                     const float xUpper,
-                                                     const float yUpper,
-                                                     const float zUpper,
-                                                     const float rtUpper) {
+                                                     float xLower,
+                                                     float yLower,
+                                                     float zLower,
+                                                     float rtLower,
+                                                     float xUpper,
+                                                     float yUpper,
+                                                     float zUpper,
+                                                     float rtUpper) {
     // This is the strip shift scheme that is explained in http://uaf-10.t2.ucsd.edu/~phchang/talks/PhilipChang20190607_SDL_Update.pdf (see backup slides)
     // The main feature of this shifting is that the strip hits are shifted to be "aligned" in the line of sight from interaction point to the the pixel hit.
     // (since pixel hit is well defined in 3-d)
@@ -567,10 +567,10 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgo(TAcc const& acc,
                                                struct lst::Modules& modulesInGPU,
-                                               const uint16_t lowerModuleIndex,
-                                               const uint16_t upperModuleIndex,
-                                               const unsigned int lowerHitIndex,
-                                               const unsigned int upperHitIndex,
+                                               uint16_t lowerModuleIndex,
+                                               uint16_t upperModuleIndex,
+                                               unsigned int lowerHitIndex,
+                                               unsigned int upperHitIndex,
                                                float& dz,
                                                float& dPhi,
                                                float& dPhiChange,
@@ -579,14 +579,14 @@ namespace lst {
                                                float& shiftedZ,
                                                float& noShiftedDphi,
                                                float& noShiftedDphiChange,
-                                               const float xLower,
-                                               const float yLower,
-                                               const float zLower,
-                                               const float rtLower,
-                                               const float xUpper,
-                                               const float yUpper,
-                                               const float zUpper,
-                                               const float rtUpper) {
+                                               float xLower,
+                                               float yLower,
+                                               float zLower,
+                                               float rtLower,
+                                               float xUpper,
+                                               float yUpper,
+                                               float zUpper,
+                                               float rtUpper) {
     if (modulesInGPU.subdets[lowerModuleIndex] == lst::Barrel) {
       return runMiniDoubletDefaultAlgoBarrel(acc,
                                              modulesInGPU,
@@ -639,10 +639,10 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
                                                      struct lst::Modules& modulesInGPU,
-                                                     const uint16_t lowerModuleIndex,
-                                                     const uint16_t upperModuleIndex,
-                                                     const unsigned int lowerHitIndex,
-                                                     const unsigned int upperHitIndex,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
+                                                     unsigned int lowerHitIndex,
+                                                     unsigned int upperHitIndex,
                                                      float& dz,
                                                      float& dPhi,
                                                      float& dPhiChange,
@@ -651,17 +651,16 @@ namespace lst {
                                                      float& shiftedZ,
                                                      float& noShiftedDphi,
                                                      float& noShiftedDphiChange,
-                                                     const float xLower,
-                                                     const float yLower,
-                                                     const float zLower,
-                                                     const float rtLower,
-                                                     const float xUpper,
-                                                     const float yUpper,
-                                                     const float zUpper,
-                                                     const float rtUpper) {
+                                                     float xLower,
+                                                     float yLower,
+                                                     float zLower,
+                                                     float rtLower,
+                                                     float xUpper,
+                                                     float yUpper,
+                                                     float zUpper,
+                                                     float rtUpper) {
     dz = zLower - zUpper;
     const float dzCut = modulesInGPU.moduleType[lowerModuleIndex] == lst::PS ? 2.f : 10.f;
-    //const float sign = ((dz > 0) - (dz < 0)) * ((hitsInGPU.zs[lowerHitIndex] > 0) - (hitsInGPU.zs[lowerHitIndex] < 0));
     const float sign = ((dz > 0) - (dz < 0)) * ((zLower > 0) - (zLower < 0));
     const float invertedcrossercut = (alpaka::math::abs(acc, dz) > 2) * sign;
 
@@ -767,10 +766,10 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
                                                      struct lst::Modules& modulesInGPU,
-                                                     const uint16_t lowerModuleIndex,
-                                                     const uint16_t upperModuleIndex,
-                                                     const unsigned int lowerHitIndex,
-                                                     const unsigned int upperHitIndex,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
+                                                     unsigned int lowerHitIndex,
+                                                     unsigned int upperHitIndex,
                                                      float& drt,
                                                      float& dPhi,
                                                      float& dPhiChange,
@@ -779,14 +778,14 @@ namespace lst {
                                                      float& shiftedZ,
                                                      float& noShiftedDphi,
                                                      float& noShiftedDphichange,
-                                                     const float xLower,
-                                                     const float yLower,
-                                                     const float zLower,
-                                                     const float rtLower,
-                                                     const float xUpper,
-                                                     const float yUpper,
-                                                     const float zUpper,
-                                                     const float rtUpper) {
+                                                     float xLower,
+                                                     float yLower,
+                                                     float zLower,
+                                                     float rtLower,
+                                                     float xUpper,
+                                                     float yUpper,
+                                                     float zUpper,
+                                                     float rtUpper) {
     // There are series of cuts that applies to mini-doublet in a "endcap" region
     // Cut #1 : dz cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
     // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3093

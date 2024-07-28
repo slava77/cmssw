@@ -8,7 +8,7 @@ using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 using XYZVector = ROOT::Math::XYZVector;
 
 namespace {
-  XYZVector calculateR3FromPCA(const XYZVector& p3, const float dxy, const float dz) {
+  XYZVector calculateR3FromPCA(const XYZVector& p3, float dxy, float dz) {
     const float pt = p3.rho();
     const float p = p3.r();
     const float vz = dz * pt * pt / p / p;
@@ -213,8 +213,8 @@ void lst::LST<Acc3D>::prepareInput(std::vector<float> const& see_px,
 }
 
 template <>
-std::vector<unsigned int> lst::LST<Acc3D>::getHitIdxs(const short trackCandidateType,
-                                                      const unsigned int TCIdx,
+std::vector<unsigned int> lst::LST<Acc3D>::getHitIdxs(short trackCandidateType,
+                                                      unsigned int TCIdx,
                                                       unsigned int const* TCHitIndices,
                                                       unsigned int const* hitIndices) {
   std::vector<unsigned int> hits;
@@ -279,7 +279,7 @@ void lst::LST<Acc3D>::getOutput(lst::Event<Acc3D>& event) {
 template <>
 template <>
 void lst::LST<Acc3D>::run(Queue& queue,
-                          const bool verbose,
+                          bool verbose,
                           LSTESData<Device> const* deviceESData,
                           std::vector<float> const& see_px,
                           std::vector<float> const& see_py,
@@ -300,8 +300,8 @@ void lst::LST<Acc3D>::run(Queue& queue,
                           std::vector<float> const& ph2_x,
                           std::vector<float> const& ph2_y,
                           std::vector<float> const& ph2_z,
-                          const bool no_pls_dupclean,
-                          const bool tc_pls_triplets) {
+                          bool no_pls_dupclean,
+                          bool tc_pls_triplets) {
   auto event = lst::Event<Acc3D>(verbose, queue, deviceESData);
   prepareInput(see_px,
                see_py,

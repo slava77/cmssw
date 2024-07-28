@@ -77,7 +77,7 @@ namespace lst {
     TrackCandidates data_;
 
     template <typename TQueue, typename TDevAcc>
-    TrackCandidatesBuffer(const unsigned int maxTrackCandidates, TDevAcc const& devAccIn, TQueue& queue)
+    TrackCandidatesBuffer(unsigned int maxTrackCandidates, TDevAcc const& devAccIn, TQueue& queue)
         : trackCandidateType_buf(allocBufWrapper<short>(devAccIn, maxTrackCandidates, queue)),
           directObjectIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxTrackCandidates, queue)),
           objectIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * maxTrackCandidates, queue)),
@@ -110,10 +110,10 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addpLSTrackCandidateToMemory(struct lst::TrackCandidates& trackCandidatesInGPU,
-                                                                   const unsigned int trackletIndex,
-                                                                   const unsigned int trackCandidateIndex,
-                                                                   const uint4 hitIndices,
-                                                                   const int pixelSeedIndex) {
+                                                                   unsigned int trackletIndex,
+                                                                   unsigned int trackCandidateIndex,
+                                                                   uint4 hitIndices,
+                                                                   int pixelSeedIndex) {
     trackCandidatesInGPU.trackCandidateType[trackCandidateIndex] = 8;  // type for pLS
     trackCandidatesInGPU.directObjectIndices[trackCandidateIndex] = trackletIndex;
     trackCandidatesInGPU.pixelSeedIndex[trackCandidateIndex] = pixelSeedIndex;
@@ -129,18 +129,18 @@ namespace lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTrackCandidateToMemory(struct lst::TrackCandidates& trackCandidatesInGPU,
-                                                                const short trackCandidateType,
-                                                                const unsigned int innerTrackletIndex,
-                                                                const unsigned int outerTrackletIndex,
+                                                                short trackCandidateType,
+                                                                unsigned int innerTrackletIndex,
+                                                                unsigned int outerTrackletIndex,
                                                                 uint8_t* logicalLayerIndices,
                                                                 uint16_t* lowerModuleIndices,
                                                                 unsigned int* hitIndices,
-                                                                const int pixelSeedIndex,
-                                                                const float centerX,
-                                                                const float centerY,
-                                                                const float radius,
-                                                                const unsigned int trackCandidateIndex,
-                                                                const unsigned int directObjectIndex) {
+                                                                int pixelSeedIndex,
+                                                                float centerX,
+                                                                float centerY,
+                                                                float radius,
+                                                                unsigned int trackCandidateIndex,
+                                                                unsigned int directObjectIndex) {
     trackCandidatesInGPU.trackCandidateType[trackCandidateIndex] = trackCandidateType;
     trackCandidatesInGPU.directObjectIndices[trackCandidateIndex] = directObjectIndex;
     trackCandidatesInGPU.pixelSeedIndex[trackCandidateIndex] = pixelSeedIndex;
@@ -165,8 +165,8 @@ namespace lst {
     trackCandidatesInGPU.radius[trackCandidateIndex] = __F2H(radius);
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(const unsigned int ix,
-                                                    const unsigned int jx,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(unsigned int ix,
+                                                    unsigned int jx,
                                                     struct lst::MiniDoublets& mdsInGPU,
                                                     struct lst::Segments& segmentsInGPU,
                                                     struct lst::Hits& hitsInGPU) {
@@ -439,7 +439,7 @@ namespace lst {
   struct addT5asTrackCandidateInGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  const uint16_t nLowerModules,
+                                  uint16_t nLowerModules,
                                   struct lst::Quintuplets quintupletsInGPU,
                                   struct lst::TrackCandidates trackCandidatesInGPU,
                                   struct lst::ObjectRanges rangesInGPU) const {
@@ -493,10 +493,10 @@ namespace lst {
   struct addpLSasTrackCandidateInGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  const uint16_t nLowerModules,
+                                  uint16_t nLowerModules,
                                   struct lst::TrackCandidates trackCandidatesInGPU,
                                   struct lst::Segments segmentsInGPU,
-                                  const bool tc_pls_triplets) const {
+                                  bool tc_pls_triplets) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -532,7 +532,7 @@ namespace lst {
   struct addpT5asTrackCandidateInGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  const uint16_t nLowerModules,
+                                  uint16_t nLowerModules,
                                   struct lst::PixelQuintuplets pixelQuintupletsInGPU,
                                   struct lst::TrackCandidates trackCandidatesInGPU,
                                   struct lst::Segments segmentsInGPU,
