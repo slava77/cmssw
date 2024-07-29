@@ -180,8 +180,8 @@ namespace lst {
   struct moduleRangesKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Hits hitsInGPU,
+                                  lst::Modules modulesInGPU,
+                                  lst::Hits hitsInGPU,
                                   int nLowerModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
@@ -203,14 +203,14 @@ namespace lst {
   struct hitLoopKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  uint16_t Endcap,            // Integer corresponding to endcap in module subdets
-                                  uint16_t TwoS,              // Integer corresponding to TwoS in moduleType
-                                  unsigned int nModules,      // Number of modules
-                                  unsigned int nEndCapMap,    // Number of elements in endcap map
+                                  uint16_t Endcap,                  // Integer corresponding to endcap in module subdets
+                                  uint16_t TwoS,                    // Integer corresponding to TwoS in moduleType
+                                  unsigned int nModules,            // Number of modules
+                                  unsigned int nEndCapMap,          // Number of elements in endcap map
                                   const unsigned int* geoMapDetId,  // DetId's from endcap map
                                   const float* geoMapPhi,           // Phi values from endcap map
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Hits hitsInGPU,
+                                  lst::Modules modulesInGPU,
+                                  lst::Hits hitsInGPU,
                                   unsigned int nHits) const  // Total number of hits in event
     {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);

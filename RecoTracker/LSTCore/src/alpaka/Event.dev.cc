@@ -996,7 +996,7 @@ void lst::Event<Acc3D>::createQuintuplets() {
   }
 }
 
-void lst::Event<Acc3D>::pixelLineSegmentCleaning(const bool no_pls_dupclean) {
+void lst::Event<Acc3D>::pixelLineSegmentCleaning(bool no_pls_dupclean) {
   if (!no_pls_dupclean) {
     Vec3D const threadsPerBlockCheckHitspLS = createVec(1, 16, 16);
     Vec3D const blocksPerGridCheckHitspLS = createVec(1, max_blocks * 4, max_blocks / 4);

@@ -60,7 +60,7 @@ void LSTPixelSeedInputProducer::fillDescriptions(edm::ConfigurationDescriptions&
 
 void LSTPixelSeedInputProducer::produce(edm::StreamID iID, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
   // Setup
-  const auto& mf = iSetup.getData(mfToken_);
+  auto const& mf = iSetup.getData(mfToken_);
   auto const& bs = iEvent.get(beamSpotToken_);
 
   // Vector definitions
@@ -83,7 +83,7 @@ void LSTPixelSeedInputProducer::produce(edm::StreamID iID, edm::Event& iEvent, c
 
   for (size_t iColl = 0; iColl < seedTokens_.size(); ++iColl) {
     // Get seed tokens
-    const auto& seedToken = seedTokens_[iColl];
+    auto const& seedToken = seedTokens_[iColl];
     auto const& seedTracks = iEvent.get(seedToken);
 
     if (seedTracks.empty())
@@ -98,10 +98,10 @@ void LSTPixelSeedInputProducer::produce(edm::StreamID iID, edm::Event& iEvent, c
     edm::ProductID id = seedTracks[0].seedRef().id();
 
     for (size_t iSeed = 0; iSeed < seedTrackRefs.size(); ++iSeed) {
-      const auto& seedTrackRef = seedTrackRefs[iSeed];
-      const auto& seedTrack = *seedTrackRef;
-      const auto& seedRef = seedTrack.seedRef();
-      const auto& seed = *seedRef;
+      auto const& seedTrackRef = seedTrackRefs[iSeed];
+      auto const& seedTrack = *seedTrackRef;
+      auto const& seedRef = seedTrack.seedRef();
+      auto const& seed = *seedRef;
 
       if (seedRef.id() != id)
         throw cms::Exception("LogicError")

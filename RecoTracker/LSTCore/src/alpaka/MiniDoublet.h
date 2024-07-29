@@ -140,10 +140,7 @@ namespace lst {
     MiniDoublets data_;
 
     template <typename TQueue, typename TDevAcc>
-    MiniDoubletsBuffer(unsigned int nMemoryLoc,
-                       uint16_t nLowerModules,
-                       TDevAcc const& devAccIn,
-                       TQueue& queue)
+    MiniDoubletsBuffer(unsigned int nMemoryLoc, uint16_t nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
         : nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
           anchorHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
           outerHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
@@ -191,12 +188,12 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addMDToMemory(TAcc const& acc,
-                                                    struct lst::MiniDoublets& mdsInGPU,
-                                                    struct lst::Hits& hitsInGPU,
-                                                    struct lst::Modules& modulesInGPU,
+                                                    lst::MiniDoublets& mdsInGPU,
+                                                    lst::Hits const& hitsInGPU,
+                                                    lst::Modules const& modulesInGPU,
                                                     unsigned int lowerHitIdx,
                                                     unsigned int upperHitIdx,
-                                                    uint16_t& lowerModuleIdx,
+                                                    uint16_t lowerModuleIdx,
                                                     float dz,
                                                     float dPhi,
                                                     float dPhiChange,
@@ -263,8 +260,7 @@ namespace lst {
     mdsInGPU.outerLowEdgeY[idx] = hitsInGPU.lowEdgeYs[outerHitIndex];
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(struct lst::Modules& modulesInGPU,
-                                                              uint16_t moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
     // See Figure 9.1 of https://cds.cern.ch/record/2272264/files/CMS-TDR-014.pdf
@@ -284,7 +280,7 @@ namespace lst {
       return false;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules& modulesInGPU, uint16_t moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -336,12 +332,8 @@ namespace lst {
   };
 
   template <typename TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(TAcc const& acc,
-                                                     float rt,
-                                                     struct lst::Modules& modulesInGPU,
-                                                     uint16_t moduleIndex,
-                                                     float dPhi = 0,
-                                                     float dz = 0) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(
+      TAcc const& acc, float rt, lst::Modules const& modulesInGPU, uint16_t moduleIndex, float dPhi = 0, float dz = 0) {
     // =================================================================
     // Various constants
     // =================================================================
@@ -400,7 +392,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_INLINE ALPAKA_FN_ACC void shiftStripHits(TAcc const& acc,
-                                                     struct lst::Modules& modulesInGPU,
+                                                     lst::Modules const& modulesInGPU,
                                                      uint16_t lowerModuleIndex,
                                                      uint16_t upperModuleIndex,
                                                      unsigned int lowerHitIndex,
@@ -566,7 +558,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgo(TAcc const& acc,
-                                               struct lst::Modules& modulesInGPU,
+                                               lst::Modules const& modulesInGPU,
                                                uint16_t lowerModuleIndex,
                                                uint16_t upperModuleIndex,
                                                unsigned int lowerHitIndex,
@@ -638,7 +630,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
-                                                     struct lst::Modules& modulesInGPU,
+                                                     lst::Modules const& modulesInGPU,
                                                      uint16_t lowerModuleIndex,
                                                      uint16_t upperModuleIndex,
                                                      unsigned int lowerHitIndex,
@@ -765,7 +757,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
-                                                     struct lst::Modules& modulesInGPU,
+                                                     lst::Modules const& modulesInGPU,
                                                      uint16_t lowerModuleIndex,
                                                      uint16_t upperModuleIndex,
                                                      unsigned int lowerHitIndex,

@@ -93,7 +93,7 @@ namespace lst {
   public:
     // Constructor used for CMSSW integration. Uses an external queue.
     template <typename TQueue>
-    Event(const bool verbose, TQueue const& q, const LSTESData<Device>* deviceESData)
+    Event(bool verbose, TQueue const& q, const LSTESData<Device>* deviceESData)
         : queue(q),
           devAcc(alpaka::getDev(q)),
           devHost(cms::alpakatools::host()),
