@@ -30,11 +30,10 @@ namespace {
     return path_str;
   }
 
-  std::string get_absolute_path_after_check_file_exists(const std::string name) {
+  std::string get_absolute_path_after_check_file_exists(std::string const& name) {
     std::filesystem::path fullpath = std::filesystem::absolute(name.c_str());
     if (not std::filesystem::exists(fullpath)) {
-      std::cout << "ERROR: Could not find the file = " << fullpath << std::endl;
-      exit(2);
+      throw std::runtime_error("Could not find the file = " + fullpath.string());
     }
     return fullpath.string();
   }

@@ -83,7 +83,7 @@ namespace lst {
     };
 
     template <typename TBuff>
-    void setData(const TBuff& buf) {
+    void setData(TBuff const& buf) {
       detIds = alpaka::getPtrNative(buf.detIds_buf);
       moduleMap = alpaka::getPtrNative(buf.moduleMap_buf);
       mapdetId = alpaka::getPtrNative(buf.mapdetId_buf);
@@ -175,7 +175,7 @@ namespace lst {
     }
 
     template <typename TQueue, typename TDevSrc>
-    inline void copyFromSrc(TQueue queue, const ModulesBuffer<TDevSrc>& src, bool isFull = true) {
+    inline void copyFromSrc(TQueue queue, ModulesBuffer<TDevSrc> const& src, bool isFull = true) {
       alpaka::memcpy(queue, detIds_buf, src.detIds_buf);
       if (isFull) {
         alpaka::memcpy(queue, moduleMap_buf, src.moduleMap_buf);
@@ -216,7 +216,7 @@ namespace lst {
     }
 
     template <typename TQueue, typename TDevSrc>
-    ModulesBuffer(TQueue queue, const ModulesBuffer<TDevSrc>& src, unsigned int nMod, unsigned int nPixs)
+    ModulesBuffer(TQueue queue, ModulesBuffer<TDevSrc> const& src, unsigned int nMod, unsigned int nPixs)
         : ModulesBuffer(alpaka::getDev(queue), nMod, nPixs) {
       copyFromSrc(queue, src);
     }

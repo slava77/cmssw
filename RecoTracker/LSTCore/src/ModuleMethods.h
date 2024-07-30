@@ -30,7 +30,7 @@ namespace lst {
                            PixelMap& pixelMapping,
                            TQueue queue,
                            const MapPLStoLayer& pLStoLayer,
-                           struct ModuleMetaData& mmd) {
+                           ModuleMetaData& mmd) {
     pixelMapping.pixelModuleIndex = mmd.detIdToIndex[1];
 
     std::vector<unsigned int> connectedModuleDetIds;
@@ -105,10 +105,10 @@ namespace lst {
   };
 
   template <typename TQueue, typename TDev>
-  inline void fillConnectedModuleArrayExplicit(struct ModulesBuffer<TDev>* modulesBuf,
+  inline void fillConnectedModuleArrayExplicit(ModulesBuffer<TDev>* modulesBuf,
                                                unsigned int nMod,
                                                TQueue queue,
-                                               struct ModuleMetaData& mmd,
+                                               ModuleMetaData& mmd,
                                                const ModuleConnectionMap* moduleConnectionMap) {
     alpaka_common::DevHost const& devHost = cms::alpakatools::host();
     auto moduleMap_buf = allocBufWrapper<uint16_t>(devHost, nMod * max_connected_modules);
@@ -133,10 +133,10 @@ namespace lst {
   };
 
   template <typename TQueue, typename TDev>
-  inline void fillMapArraysExplicit(struct ModulesBuffer<TDev>* modulesBuf,
+  inline void fillMapArraysExplicit(ModulesBuffer<TDev>* modulesBuf,
                                     unsigned int nMod,
                                     TQueue queue,
-                                    struct ModuleMetaData& mmd) {
+                                    ModuleMetaData& mmd) {
     alpaka_common::DevHost const& devHost = cms::alpakatools::host();
     auto mapIdx_buf = allocBufWrapper<uint16_t>(devHost, nMod);
     uint16_t* mapIdx = alpaka::getPtrNative(mapIdx_buf);

@@ -14,7 +14,7 @@
 namespace lst {
   struct Triplets {
     unsigned int* segmentIndices;
-    uint16_t* lowerModuleIndices;  //3 of them now
+    uint16_t* lowerModuleIndices;  //3 of them
     unsigned int* nTriplets;
     unsigned int* totOccupancyTriplets;
     unsigned int* nMemoryLocations;
@@ -32,16 +32,7 @@ namespace lst {
     //debug variables
     float* zOut;
     float* rtOut;
-    float* deltaPhiPos;
-    float* deltaPhi;
-    float* zLo;
-    float* zHi;
-    float* zLoPointed;
-    float* zHiPointed;
-    float* sdlCut;
     float* betaInCut;
-    float* rtLo;
-    float* rtHi;
 #endif
     template <typename TBuff>
     void setData(TBuff& buf) {
@@ -62,16 +53,7 @@ namespace lst {
 #ifdef CUT_VALUE_DEBUG
       zOut = alpaka::getPtrNative(buf.zOut_buf);
       rtOut = alpaka::getPtrNative(buf.rtOut_buf);
-      deltaPhiPos = alpaka::getPtrNative(buf.deltaPhiPos_buf);
-      deltaPhi = alpaka::getPtrNative(buf.deltaPhi_buf);
-      zLo = alpaka::getPtrNative(buf.zLo_buf);
-      zHi = alpaka::getPtrNative(buf.zHi_buf);
-      zLoPointed = alpaka::getPtrNative(buf.zLoPointed_buf);
-      zHiPointed = alpaka::getPtrNative(buf.zHiPointed_buf);
-      sdlCut = alpaka::getPtrNative(buf.sdlCut_buf);
       betaInCut = alpaka::getPtrNative(buf.betaInCut_buf);
-      rtLo = alpaka::getPtrNative(buf.rtLo_buf);
-      rtHi = alpaka::getPtrNative(buf.rtHi_buf);
 #endif
     }
   };
@@ -154,47 +136,38 @@ namespace lst {
   };
 
 #ifdef CUT_VALUE_DEBUG
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(struct lst::Modules& modulesInGPU,
-                                                         struct lst::MiniDoublets& mdsInGPU,
-                                                         struct lst::Segments& segmentsInGPU,
-                                                         struct lst::Triplets& tripletsInGPU,
-                                                         unsigned int& innerSegmentIndex,
-                                                         unsigned int& outerSegmentIndex,
-                                                         uint16_t& innerInnerLowerModuleIndex,
-                                                         uint16_t& middleLowerModuleIndex,
-                                                         uint16_t& outerOuterLowerModuleIndex,
-                                                         float& zOut,
-                                                         float& rtOut,
-                                                         float& deltaPhiPos,
-                                                         float& deltaPhi,
-                                                         float& betaIn,
-                                                         float& circleRadius,
-                                                         float& circleCenterX,
-                                                         float& circleCenterY,
-                                                         float& zLo,
-                                                         float& zHi,
-                                                         float& rtLo,
-                                                         float& rtHi,
-                                                         float& zLoPointed,
-                                                         float& zHiPointed,
-                                                         float& sdlCut,
-                                                         float& betaInCut,
-                                                         unsigned int& tripletIndex)
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(lst::Modules const& modulesInGPU,
+                                                         lst::MiniDoublets const& mdsInGPU,
+                                                         lst::Segments const& segmentsInGPU,
+                                                         lst::Triplets& tripletsInGPU,
+                                                         unsigned int innerSegmentIndex,
+                                                         unsigned int outerSegmentIndex,
+                                                         uint16_t innerInnerLowerModuleIndex,
+                                                         uint16_t middleLowerModuleIndex,
+                                                         uint16_t outerOuterLowerModuleIndex,
+                                                         float zOut,
+                                                         float rtOut,
+                                                         float betaIn,
+                                                         float betaInCut,
+                                                         float circleRadius,
+                                                         float circleCenterX,
+                                                         float circleCenterY,
+                                                         unsigned int tripletIndex)
 #else
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(struct lst::Modules& modulesInGPU,
-                                                         struct lst::MiniDoublets& mdsInGPU,
-                                                         struct lst::Segments& segmentsInGPU,
-                                                         struct lst::Triplets& tripletsInGPU,
-                                                         unsigned int& innerSegmentIndex,
-                                                         unsigned int& outerSegmentIndex,
-                                                         uint16_t& innerInnerLowerModuleIndex,
-                                                         uint16_t& middleLowerModuleIndex,
-                                                         uint16_t& outerOuterLowerModuleIndex,
-                                                         float& betaIn,
-                                                         float& circleRadius,
-                                                         float& circleCenterX,
-                                                         float& circleCenterY,
-                                                         unsigned int& tripletIndex)
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(lst::Modules const& modulesInGPU,
+                                                         lst::MiniDoublets const& mdsInGPU,
+                                                         lst::Segments const& segmentsInGPU,
+                                                         lst::Triplets& tripletsInGPU,
+                                                         unsigned int innerSegmentIndex,
+                                                         unsigned int outerSegmentIndex,
+                                                         uint16_t innerInnerLowerModuleIndex,
+                                                         uint16_t middleLowerModuleIndex,
+                                                         uint16_t outerOuterLowerModuleIndex,
+                                                         float betaIn,
+                                                         float circleRadius,
+                                                         float circleCenterX,
+                                                         float circleCenterY,
+                                                         unsigned int tripletIndex)
 #endif
   {
     tripletsInGPU.segmentIndices[tripletIndex * 2] = innerSegmentIndex;
@@ -227,30 +200,21 @@ namespace lst {
 #ifdef CUT_VALUE_DEBUG
     tripletsInGPU.zOut[tripletIndex] = zOut;
     tripletsInGPU.rtOut[tripletIndex] = rtOut;
-    tripletsInGPU.deltaPhiPos[tripletIndex] = deltaPhiPos;
-    tripletsInGPU.deltaPhi[tripletIndex] = deltaPhi;
-    tripletsInGPU.zLo[tripletIndex] = zLo;
-    tripletsInGPU.zHi[tripletIndex] = zHi;
-    tripletsInGPU.rtLo[tripletIndex] = rtLo;
-    tripletsInGPU.rtHi[tripletIndex] = rtHi;
-    tripletsInGPU.zLoPointed[tripletIndex] = zLoPointed;
-    tripletsInGPU.zHiPointed[tripletIndex] = zHiPointed;
-    tripletsInGPU.sdlCut[tripletIndex] = sdlCut;
     tripletsInGPU.betaInCut[tripletIndex] = betaInCut;
 #endif
   };
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRZConstraint(TAcc const& acc,
-                                                       struct lst::Modules& modulesInGPU,
-                                                       struct lst::MiniDoublets& mdsInGPU,
-                                                       struct lst::Segments& segmentsInGPU,
-                                                       uint16_t& innerInnerLowerModuleIndex,
-                                                       uint16_t& middleLowerModuleIndex,
-                                                       uint16_t& outerOuterLowerModuleIndex,
-                                                       unsigned int& firstMDIndex,
-                                                       unsigned int& secondMDIndex,
-                                                       unsigned int& thirdMDIndex) {
+                                                       lst::Modules const& modulesInGPU,
+                                                       lst::MiniDoublets const& mdsInGPU,
+                                                       lst::Segments const& segmentsInGPU,
+                                                       uint16_t innerInnerLowerModuleIndex,
+                                                       uint16_t middleLowerModuleIndex,
+                                                       uint16_t outerOuterLowerModuleIndex,
+                                                       unsigned int firstMDIndex,
+                                                       unsigned int secondMDIndex,
+                                                       unsigned int thirdMDIndex) {
     //get the rt and z
     const float& r1 = mdsInGPU.anchorRt[firstMDIndex];
     const float& r2 = mdsInGPU.anchorRt[secondMDIndex];
@@ -302,18 +266,18 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBB(TAcc const& acc,
-                                                                struct lst::Modules& modulesInGPU,
-                                                                struct lst::MiniDoublets& mdsInGPU,
-                                                                struct lst::Segments& segmentsInGPU,
-                                                                uint16_t& innerInnerLowerModuleIndex,
-                                                                uint16_t& middleLowerModuleIndex,
-                                                                uint16_t& outerOuterLowerModuleIndex,
-                                                                unsigned int& firstMDIndex,
-                                                                unsigned int& secondMDIndex,
-                                                                unsigned int& thirdMDIndex,
+                                                                lst::Modules const& modulesInGPU,
+                                                                lst::MiniDoublets const& mdsInGPU,
+                                                                lst::Segments const& segmentsInGPU,
+                                                                uint16_t innerInnerLowerModuleIndex,
+                                                                uint16_t middleLowerModuleIndex,
+                                                                uint16_t outerOuterLowerModuleIndex,
+                                                                unsigned int firstMDIndex,
+                                                                unsigned int secondMDIndex,
+                                                                unsigned int thirdMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
-                                                                unsigned int& innerSegmentIndex,
+                                                                unsigned int innerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
     bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS);
@@ -328,16 +292,16 @@ namespace lst {
     zOut = mdsInGPU.anchorZ[thirdMDIndex];
 
     float alpha1GeVOut =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::sinAlphaMax));
+        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax));
 
     float rtRatio_OutIn = rtOut / rtIn;  // Outer segment beginning rt divided by inner segment beginning rt;
     float dzDrtScale = alpaka::math::tan(acc, alpha1GeVOut) / alpha1GeVOut;  // The track can bend in r-z plane slightly
-    float zpitchIn = (isPSIn ? lst::pixelPSZpitch : lst::strip2SZpitch);
-    float zpitchOut = (isPSOut ? lst::pixelPSZpitch : lst::strip2SZpitch);
+    float zpitchIn = (isPSIn ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
+    float zpitchOut = (isPSOut ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
 
     const float zHi =
-        zIn + (zIn + lst::deltaZLum) * (rtRatio_OutIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + (zpitchIn + zpitchOut);
-    const float zLo = zIn + (zIn - lst::deltaZLum) * (rtRatio_OutIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
+        zIn + (zIn + lst::kDeltaZLum) * (rtRatio_OutIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + (zpitchIn + zpitchOut);
+    const float zLo = zIn + (zIn - lst::kDeltaZLum) * (rtRatio_OutIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
                       (zpitchIn + zpitchOut);  //slope-correction only on outer end
 
     //Cut 1 - z compatibility
@@ -392,7 +356,7 @@ namespace lst {
                                    (mdsInGPU.anchorY[secondMDIndex] - mdsInGPU.anchorY[firstMDIndex]));
     betaInCut =
         alpaka::math::asin(
-            acc, alpaka::math::min(acc, (-rt_InSeg + drt_tl_axis) * lst::k2Rinv1GeVf / lst::ptCut, lst::sinAlphaMax)) +
+            acc, alpaka::math::min(acc, (-rt_InSeg + drt_tl_axis) * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax)) +
         (0.02f / drt_InSeg);
 
     //Cut #3: first beta cut
@@ -401,20 +365,20 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBE(TAcc const& acc,
-                                                                struct lst::Modules& modulesInGPU,
-                                                                struct lst::MiniDoublets& mdsInGPU,
-                                                                struct lst::Segments& segmentsInGPU,
-                                                                uint16_t& innerInnerLowerModuleIndex,
-                                                                uint16_t& middleLowerModuleIndex,
-                                                                uint16_t& outerOuterLowerModuleIndex,
-                                                                unsigned int& firstMDIndex,
-                                                                unsigned int& secondMDIndex,
-                                                                unsigned int& thirdMDIndex,
+                                                                lst::Modules const& modulesInGPU,
+                                                                lst::MiniDoublets const& mdsInGPU,
+                                                                lst::Segments const& segmentsInGPU,
+                                                                uint16_t innerInnerLowerModuleIndex,
+                                                                uint16_t middleLowerModuleIndex,
+                                                                uint16_t outerOuterLowerModuleIndex,
+                                                                unsigned int firstMDIndex,
+                                                                unsigned int secondMDIndex,
+                                                                unsigned int thirdMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
-                                                                uint16_t& innerOuterLowerModuleIndex,
-                                                                unsigned int& innerSegmentIndex,
-                                                                unsigned int& outerSegmentIndex,
+                                                                uint16_t innerOuterLowerModuleIndex,
+                                                                unsigned int innerSegmentIndex,
+                                                                unsigned int outerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
     bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS);
@@ -429,29 +393,29 @@ namespace lst {
     zOut = mdsInGPU.anchorZ[thirdMDIndex];
 
     float alpha1GeV_OutLo =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::sinAlphaMax));
+        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax));
 
     float dzDrtScale =
         alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;  // The track can bend in r-z plane slightly
-    float zpitchIn = (isPSIn ? lst::pixelPSZpitch : lst::strip2SZpitch);
-    float zpitchOut = (isPSOut ? lst::pixelPSZpitch : lst::strip2SZpitch);
+    float zpitchIn = (isPSIn ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
+    float zpitchOut = (isPSOut ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
     float zGeom = zpitchIn + zpitchOut;
 
     // Cut #0: Preliminary (Only here in endcap case)
     if (zIn * zOut <= 0)
       return false;
 
-    float dLum = lst::copysignf(lst::deltaZLum, zIn);
+    float dLum = alpaka::math::copysign(acc, lst::kDeltaZLum, zIn);
     bool isOutSgInnerMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == lst::PS;
-    float rtGeom1 = isOutSgInnerMDPS ? lst::pixelPSZpitch : lst::strip2SZpitch;
-    float zGeom1 = lst::copysignf(zGeom, zIn);
+    float rtGeom1 = isOutSgInnerMDPS ? lst::kPixelPSZpitch : lst::kStrip2SZpitch;
+    float zGeom1 = alpaka::math::copysign(acc, zGeom, zIn);
     float rtLo = rtIn * (1.f + (zOut - zIn - zGeom1) / (zIn + zGeom1 + dLum) / dzDrtScale) -
                  rtGeom1;  //slope correction only on the lower end
 
     //Cut #1: rt condition
     float zInForHi = zIn - zGeom1 - dLum;
     if (zInForHi * zIn < 0) {
-      zInForHi = lst::copysignf(0.1f, zIn);
+      zInForHi = alpaka::math::copysign(acc, 0.1f, zIn);
     }
     float rtHi = rtIn * (1.f + (zOut - zIn + zGeom1) / zInForHi) + rtGeom1;
 
@@ -469,7 +433,7 @@ namespace lst {
     const float coshEta = dr3SDIn / drtSDIn;  //direction estimate
     const float dzOutInAbs = alpaka::math::abs(acc, zOut - zIn);
     const float multDzDr = dzOutInAbs * coshEta / (coshEta * coshEta - 1.f);
-    const float zGeom1_another = lst::pixelPSZpitch;
+    const float zGeom1_another = lst::kPixelPSZpitch;
     const float kZ = (zOut - zIn) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
@@ -513,7 +477,7 @@ namespace lst {
 
     float dr = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
     betaInCut = alpaka::math::asin(
-                    acc, alpaka::math::min(acc, (-sdIn_dr + dr) * lst::k2Rinv1GeVf / lst::ptCut, lst::sinAlphaMax)) +
+                    acc, alpaka::math::min(acc, (-sdIn_dr + dr) * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax)) +
                 (0.02f / sdIn_d);
 
     //Cut #4: first beta cut
@@ -522,19 +486,19 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintEEE(TAcc const& acc,
-                                                                struct lst::Modules& modulesInGPU,
-                                                                struct lst::MiniDoublets& mdsInGPU,
-                                                                struct lst::Segments& segmentsInGPU,
-                                                                uint16_t& innerInnerLowerModuleIndex,
-                                                                uint16_t& middleLowerModuleIndex,
-                                                                uint16_t& outerOuterLowerModuleIndex,
-                                                                unsigned int& firstMDIndex,
-                                                                unsigned int& secondMDIndex,
-                                                                unsigned int& thirdMDIndex,
+                                                                lst::Modules const& modulesInGPU,
+                                                                lst::MiniDoublets const& mdsInGPU,
+                                                                lst::Segments const& segmentsInGPU,
+                                                                uint16_t innerInnerLowerModuleIndex,
+                                                                uint16_t middleLowerModuleIndex,
+                                                                uint16_t outerOuterLowerModuleIndex,
+                                                                unsigned int firstMDIndex,
+                                                                unsigned int secondMDIndex,
+                                                                unsigned int thirdMDIndex,
                                                                 float& zOut,
                                                                 float& rtOut,
-                                                                unsigned int& innerSegmentIndex,
-                                                                unsigned int& outerSegmentIndex,
+                                                                unsigned int innerSegmentIndex,
+                                                                unsigned int outerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
     float rtIn = mdsInGPU.anchorRt[firstMDIndex];
@@ -546,7 +510,7 @@ namespace lst {
     zOut = mdsInGPU.anchorZ[thirdMDIndex];
 
     float alpha1GeV_Out =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::sinAlphaMax));
+        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax));
 
     float dzDrtScale =
         alpaka::math::tan(acc, alpha1GeV_Out) / alpha1GeV_Out;  // The track can bend in r-z plane slightly
@@ -555,13 +519,13 @@ namespace lst {
     if (zIn * zOut <= 0)
       return false;
 
-    float dLum = lst::copysignf(lst::deltaZLum, zIn);
+    float dLum = alpaka::math::copysign(acc, lst::kDeltaZLum, zIn);
     bool isOutSgOuterMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == lst::PS;
     bool isInSgInnerMDPS = modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS;
 
-    float rtGeom = (isInSgInnerMDPS and isOutSgOuterMDPS)  ? 2.f * lst::pixelPSZpitch
-                   : (isInSgInnerMDPS or isOutSgOuterMDPS) ? lst::pixelPSZpitch + lst::strip2SZpitch
-                                                           : 2.f * lst::strip2SZpitch;
+    float rtGeom = (isInSgInnerMDPS and isOutSgOuterMDPS)  ? 2.f * lst::kPixelPSZpitch
+                   : (isInSgInnerMDPS or isOutSgOuterMDPS) ? lst::kPixelPSZpitch + lst::kStrip2SZpitch
+                                                           : 2.f * lst::kStrip2SZpitch;
 
     float dz = zOut - zIn;
     const float rtLo = rtIn * (1.f + dz / (zIn + dLum) / dzDrtScale) - rtGeom;  //slope correction only on the lower end
@@ -589,7 +553,7 @@ namespace lst {
 
     float drtErr = alpaka::math::sqrt(
         acc,
-        lst::pixelPSZpitch * lst::pixelPSZpitch * 2.f / (dzSDIn * dzSDIn) * (dzOutInAbs * dzOutInAbs) +
+        lst::kPixelPSZpitch * lst::kPixelPSZpitch * 2.f / (dzSDIn * dzSDIn) * (dzOutInAbs * dzOutInAbs) +
             sdlMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
 
     float drtMean = drtSDIn * dzOutInAbs / alpaka::math::abs(acc, dzSDIn);
@@ -636,7 +600,7 @@ namespace lst {
 
     float dr = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
     betaInCut = alpaka::math::asin(
-                    acc, alpaka::math::min(acc, (-sdIn_dr + dr) * lst::k2Rinv1GeVf / lst::ptCut, lst::sinAlphaMax)) +
+                    acc, alpaka::math::min(acc, (-sdIn_dr + dr) * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax)) +
                 (0.02f / sdIn_d);
 
     //Cut #4: first beta cut
@@ -645,20 +609,20 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraint(TAcc const& acc,
-                                                             struct lst::Modules& modulesInGPU,
-                                                             struct lst::MiniDoublets& mdsInGPU,
-                                                             struct lst::Segments& segmentsInGPU,
-                                                             uint16_t& innerInnerLowerModuleIndex,
-                                                             uint16_t& middleLowerModuleIndex,
-                                                             uint16_t& outerOuterLowerModuleIndex,
-                                                             unsigned int& firstMDIndex,
-                                                             unsigned int& secondMDIndex,
-                                                             unsigned int& thirdMDIndex,
+                                                             lst::Modules const& modulesInGPU,
+                                                             lst::MiniDoublets const& mdsInGPU,
+                                                             lst::Segments const& segmentsInGPU,
+                                                             uint16_t innerInnerLowerModuleIndex,
+                                                             uint16_t middleLowerModuleIndex,
+                                                             uint16_t outerOuterLowerModuleIndex,
+                                                             unsigned int firstMDIndex,
+                                                             unsigned int secondMDIndex,
+                                                             unsigned int thirdMDIndex,
                                                              float& zOut,
                                                              float& rtOut,
-                                                             uint16_t& innerOuterLowerModuleIndex,
-                                                             unsigned int& innerSegmentIndex,
-                                                             unsigned int& outerSegmentIndex,
+                                                             uint16_t innerOuterLowerModuleIndex,
+                                                             unsigned int innerSegmentIndex,
+                                                             unsigned int outerSegmentIndex,
                                                              float& betaIn,
                                                              float& betaInCut) {
     short innerInnerLowerModuleSubdet = modulesInGPU.subdets[innerInnerLowerModuleIndex];
@@ -750,8 +714,6 @@ namespace lst {
       TAcc const& acc, float x1, float y1, float x2, float y2, float x3, float y3, float& g, float& f) {
     float radius = 0.f;
 
-    //writing manual code for computing radius, which obviously sucks
-    //TODO:Use fancy inbuilt libraries like cuBLAS or cuSOLVE for this!
     //(g,f) -> center
     //first anchor hit - (x1,y1), second anchor hit - (x2,y2), third anchor hit - (x3, y3)
 
@@ -782,30 +744,21 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletConstraintsAndAlgo(TAcc const& acc,
-                                                                   struct lst::Modules& modulesInGPU,
-                                                                   struct lst::MiniDoublets& mdsInGPU,
-                                                                   struct lst::Segments& segmentsInGPU,
-                                                                   uint16_t& innerInnerLowerModuleIndex,
-                                                                   uint16_t& middleLowerModuleIndex,
-                                                                   uint16_t& outerOuterLowerModuleIndex,
-                                                                   unsigned int& innerSegmentIndex,
-                                                                   unsigned int& outerSegmentIndex,
+                                                                   lst::Modules const& modulesInGPU,
+                                                                   lst::MiniDoublets const& mdsInGPU,
+                                                                   lst::Segments const& segmentsInGPU,
+                                                                   uint16_t innerInnerLowerModuleIndex,
+                                                                   uint16_t middleLowerModuleIndex,
+                                                                   uint16_t outerOuterLowerModuleIndex,
+                                                                   unsigned int innerSegmentIndex,
+                                                                   unsigned int outerSegmentIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
-                                                                   float& deltaPhiPos,
-                                                                   float& deltaPhi,
                                                                    float& betaIn,
+                                                                   float& betaInCut,
                                                                    float& circleRadius,
                                                                    float& circleCenterX,
-                                                                   float& circleCenterY,
-                                                                   float& zLo,
-                                                                   float& zHi,
-                                                                   float& rtLo,
-                                                                   float& rtHi,
-                                                                   float& zLoPointed,
-                                                                   float& zHiPointed,
-                                                                   float& sdlCut,
-                                                                   float& betaInCut) {
+                                                                   float& circleCenterY) {
     //this cut reduces the number of candidates by a factor of 4, i.e., 3 out of 4 warps can end right here!
     if (segmentsInGPU.mdIndices[2 * innerSegmentIndex + 1] != segmentsInGPU.mdIndices[2 * outerSegmentIndex])
       return false;
@@ -858,11 +811,11 @@ namespace lst {
   struct createTripletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::MiniDoublets mdsInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::Triplets tripletsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
+                                  lst::Modules modulesInGPU,
+                                  lst::MiniDoublets mdsInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::Triplets tripletsInGPU,
+                                  lst::ObjectRanges rangesInGPU,
                                   uint16_t* index_gpu,
                                   uint16_t nonZeroModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -895,8 +848,7 @@ namespace lst {
 
             uint16_t outerOuterLowerModuleIndex = segmentsInGPU.outerLowerModuleIndices[outerSegmentIndex];
 
-            float zOut, rtOut, deltaPhiPos, deltaPhi, betaIn, circleRadius, circleCenterX, circleCenterY;
-            float zLo, zHi, rtLo, rtHi, zLoPointed, zHiPointed, sdlCut, betaInCut;
+            float zOut, rtOut, betaIn, betaInCut, circleRadius, circleCenterX, circleCenterY;
 
             bool success = runTripletConstraintsAndAlgo(acc,
                                                         modulesInGPU,
@@ -909,20 +861,11 @@ namespace lst {
                                                         outerSegmentIndex,
                                                         zOut,
                                                         rtOut,
-                                                        deltaPhiPos,
-                                                        deltaPhi,
                                                         betaIn,
+                                                        betaInCut,
                                                         circleRadius,
                                                         circleCenterX,
-                                                        circleCenterY,
-                                                        zLo,
-                                                        zHi,
-                                                        rtLo,
-                                                        rtHi,
-                                                        zLoPointed,
-                                                        zHiPointed,
-                                                        sdlCut,
-                                                        betaInCut);
+                                                        circleCenterY);
 
             if (success) {
               unsigned int totOccupancyTriplets = alpaka::atomicOp<alpaka::AtomicAdd>(
@@ -949,20 +892,11 @@ namespace lst {
                                    outerOuterLowerModuleIndex,
                                    zOut,
                                    rtOut,
-                                   deltaPhiPos,
-                                   deltaPhi,
                                    betaIn,
+                                   betaInCut,
                                    circleRadius,
                                    circleCenterX,
                                    circleCenterY,
-                                   zLo,
-                                   zHi,
-                                   rtLo,
-                                   rtHi,
-                                   zLoPointed,
-                                   zHiPointed,
-                                   sdlCut,
-                                   betaInCut,
                                    tripletIndex);
 #else
                 addTripletToMemory(modulesInGPU,
@@ -991,9 +925,9 @@ namespace lst {
   struct createTripletArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
-                                  struct lst::Segments segmentsInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::ObjectRanges rangesInGPU,
+                                  lst::Segments segmentsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -1090,9 +1024,9 @@ namespace lst {
   struct addTripletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Triplets tripletsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::Triplets tripletsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 

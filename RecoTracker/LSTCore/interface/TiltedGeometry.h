@@ -17,10 +17,10 @@ namespace lst {
 
   public:
     TiltedGeometry() = default;
-    TiltedGeometry(std::string filename);
+    TiltedGeometry(std::string const& filename);
     ~TiltedGeometry() = default;
 
-    void load(std::string);
+    void load(std::string const&);
 
     float getDrDz(unsigned int detid) const;
     float getDxDy(unsigned int detid) const;

@@ -27,7 +27,6 @@ namespace lst {
     float* shiftedXs;
     float* shiftedYs;
     float* shiftedZs;
-    float* noShiftedDzs;          //if shifted module
     float* noShiftedDphis;        //if shifted module
     float* noShiftedDphiChanges;  //if shifted module
 
@@ -69,7 +68,6 @@ namespace lst {
       shiftedXs = alpaka::getPtrNative(buf.shiftedXs_buf);
       shiftedYs = alpaka::getPtrNative(buf.shiftedYs_buf);
       shiftedZs = alpaka::getPtrNative(buf.shiftedZs_buf);
-      noShiftedDzs = alpaka::getPtrNative(buf.noShiftedDzs_buf);
       noShiftedDphis = alpaka::getPtrNative(buf.noShiftedDphis_buf);
       noShiftedDphiChanges = alpaka::getPtrNative(buf.noShiftedDphiChanges_buf);
       anchorX = alpaka::getPtrNative(buf.anchorX_buf);
@@ -114,7 +112,6 @@ namespace lst {
     Buf<TDev, float> shiftedXs_buf;
     Buf<TDev, float> shiftedYs_buf;
     Buf<TDev, float> shiftedZs_buf;
-    Buf<TDev, float> noShiftedDzs_buf;
     Buf<TDev, float> noShiftedDphis_buf;
     Buf<TDev, float> noShiftedDphiChanges_buf;
 
@@ -158,7 +155,6 @@ namespace lst {
           shiftedXs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           shiftedYs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           shiftedZs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          noShiftedDzs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           noShiftedDphis_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           noShiftedDphiChanges_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
           anchorX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
@@ -194,19 +190,18 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addMDToMemory(TAcc const& acc,
-                                                    struct lst::MiniDoublets& mdsInGPU,
-                                                    struct lst::Hits& hitsInGPU,
-                                                    struct lst::Modules& modulesInGPU,
+                                                    lst::MiniDoublets& mdsInGPU,
+                                                    lst::Hits const& hitsInGPU,
+                                                    lst::Modules const& modulesInGPU,
                                                     unsigned int lowerHitIdx,
                                                     unsigned int upperHitIdx,
-                                                    uint16_t& lowerModuleIdx,
+                                                    uint16_t lowerModuleIdx,
                                                     float dz,
                                                     float dPhi,
                                                     float dPhiChange,
                                                     float shiftedX,
                                                     float shiftedY,
                                                     float shiftedZ,
-                                                    float noShiftedDz,
                                                     float noShiftedDphi,
                                                     float noShiftedDPhiChange,
                                                     unsigned int idx) {
@@ -237,7 +232,6 @@ namespace lst {
     mdsInGPU.shiftedYs[idx] = shiftedY;
     mdsInGPU.shiftedZs[idx] = shiftedZ;
 
-    mdsInGPU.noShiftedDzs[idx] = noShiftedDz;
     mdsInGPU.noShiftedDphis[idx] = noShiftedDphi;
     mdsInGPU.noShiftedDphiChanges[idx] = noShiftedDPhiChange;
 
@@ -268,8 +262,7 @@ namespace lst {
     mdsInGPU.outerLowEdgeY[idx] = hitsInGPU.lowEdgeYs[outerHitIndex];
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(struct lst::Modules& modulesInGPU,
-                                                              uint16_t& moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
     // See Figure 9.1 of https://cds.cern.ch/record/2272264/files/CMS-TDR-014.pdf
@@ -289,7 +282,7 @@ namespace lst {
       return false;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules& modulesInGPU, uint16_t& moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -341,12 +334,8 @@ namespace lst {
   };
 
   template <typename TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(TAcc const& acc,
-                                                     float rt,
-                                                     struct lst::Modules& modulesInGPU,
-                                                     uint16_t& moduleIndex,
-                                                     float dPhi = 0,
-                                                     float dz = 0) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(
+      TAcc const& acc, float rt, lst::Modules const& modulesInGPU, uint16_t moduleIndex, float dPhi = 0, float dz = 0) {
     // =================================================================
     // Various constants
     // =================================================================
@@ -357,12 +346,12 @@ namespace lst {
     // =================================================================
 
     unsigned int iL = modulesInGPU.layers[moduleIndex] - 1;
-    const float miniSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rt * k2Rinv1GeVf / ptCut, sinAlphaMax));
+    const float miniSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rt * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     const float rLayNominal =
-        ((modulesInGPU.subdets[moduleIndex] == Barrel) ? miniRminMeanBarrel[iL] : miniRminMeanEndcap[iL]);
+        ((modulesInGPU.subdets[moduleIndex] == Barrel) ? kMiniRminMeanBarrel[iL] : kMiniRminMeanEndcap[iL]);
     const float miniPVoff = 0.1f / rLayNominal;
-    const float miniMuls = ((modulesInGPU.subdets[moduleIndex] == Barrel) ? miniMulsPtScaleBarrel[iL] * 3.f / ptCut
-                                                                          : miniMulsPtScaleEndcap[iL] * 3.f / ptCut);
+    const float miniMuls = ((modulesInGPU.subdets[moduleIndex] == Barrel) ? kMiniMulsPtScaleBarrel[iL] * 3.f / ptCut
+                                                                          : kMiniMulsPtScaleEndcap[iL] * 3.f / ptCut);
     const bool isTilted = modulesInGPU.subdets[moduleIndex] == Barrel and modulesInGPU.sides[moduleIndex] != Center;
     //the lower module is sent in irrespective of its layer type. We need to fetch the drdz properly
 
@@ -376,12 +365,12 @@ namespace lst {
     } else {
       drdz = 0;
     }
-    const float miniTilt2 = ((isTilted) ? (0.5f * 0.5f) * (pixelPSZpitch * pixelPSZpitch) * (drdz * drdz) /
+    const float miniTilt2 = ((isTilted) ? (0.5f * 0.5f) * (kPixelPSZpitch * kPixelPSZpitch) * (drdz * drdz) /
                                               (1.f + drdz * drdz) / moduleGapSize(modulesInGPU, moduleIndex)
                                         : 0);
 
     // Compute luminous region requirement for endcap
-    const float miniLum = alpaka::math::abs(acc, dPhi * deltaZLum / dz);  // Balaji's new error
+    const float miniLum = alpaka::math::abs(acc, dPhi * kDeltaZLum / dz);  // Balaji's new error
 
     // =================================================================
     // Return the threshold value
@@ -405,9 +394,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_INLINE ALPAKA_FN_ACC void shiftStripHits(TAcc const& acc,
-                                                     struct lst::Modules& modulesInGPU,
-                                                     uint16_t& lowerModuleIndex,
-                                                     uint16_t& upperModuleIndex,
+                                                     lst::Modules const& modulesInGPU,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
                                                      unsigned int lowerHitIndex,
                                                      unsigned int upperHitIndex,
                                                      float* shiftedCoords,
@@ -571,9 +560,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgo(TAcc const& acc,
-                                               struct lst::Modules& modulesInGPU,
-                                               uint16_t& lowerModuleIndex,
-                                               uint16_t& upperModuleIndex,
+                                               lst::Modules const& modulesInGPU,
+                                               uint16_t lowerModuleIndex,
+                                               uint16_t upperModuleIndex,
                                                unsigned int lowerHitIndex,
                                                unsigned int upperHitIndex,
                                                float& dz,
@@ -582,7 +571,6 @@ namespace lst {
                                                float& shiftedX,
                                                float& shiftedY,
                                                float& shiftedZ,
-                                               float& noShiftedDz,
                                                float& noShiftedDphi,
                                                float& noShiftedDphiChange,
                                                float xLower,
@@ -606,7 +594,6 @@ namespace lst {
                                              shiftedX,
                                              shiftedY,
                                              shiftedZ,
-                                             noShiftedDz,
                                              noShiftedDphi,
                                              noShiftedDphiChange,
                                              xLower,
@@ -630,7 +617,6 @@ namespace lst {
                                              shiftedX,
                                              shiftedY,
                                              shiftedZ,
-                                             noShiftedDz,
                                              noShiftedDphi,
                                              noShiftedDphiChange,
                                              xLower,
@@ -646,9 +632,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
-                                                     struct lst::Modules& modulesInGPU,
-                                                     uint16_t& lowerModuleIndex,
-                                                     uint16_t& upperModuleIndex,
+                                                     lst::Modules const& modulesInGPU,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
                                                      unsigned int lowerHitIndex,
                                                      unsigned int upperHitIndex,
                                                      float& dz,
@@ -657,7 +643,6 @@ namespace lst {
                                                      float& shiftedX,
                                                      float& shiftedY,
                                                      float& shiftedZ,
-                                                     float& noShiftedDz,
                                                      float& noShiftedDphi,
                                                      float& noShiftedDphiChange,
                                                      float xLower,
@@ -670,7 +655,6 @@ namespace lst {
                                                      float rtUpper) {
     dz = zLower - zUpper;
     const float dzCut = modulesInGPU.moduleType[lowerModuleIndex] == lst::PS ? 2.f : 10.f;
-    //const float sign = ((dz > 0) - (dz < 0)) * ((hitsInGPU.zs[lowerHitIndex] > 0) - (hitsInGPU.zs[lowerHitIndex] < 0));
     const float sign = ((dz > 0) - (dz < 0)) * ((zLower > 0) - (zLower < 0));
     const float invertedcrossercut = (alpaka::math::abs(acc, dz) > 2) * sign;
 
@@ -770,16 +754,14 @@ namespace lst {
       noShiftedDphiChange = dPhiChange;
     }
 
-    noShiftedDz = 0;  // not used anywhere
-
     return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
-                                                     struct lst::Modules& modulesInGPU,
-                                                     uint16_t& lowerModuleIndex,
-                                                     uint16_t& upperModuleIndex,
+                                                     lst::Modules const& modulesInGPU,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
                                                      unsigned int lowerHitIndex,
                                                      unsigned int upperHitIndex,
                                                      float& drt,
@@ -788,7 +770,6 @@ namespace lst {
                                                      float& shiftedX,
                                                      float& shiftedY,
                                                      float& shiftedZ,
-                                                     float& noShiftedDz,
                                                      float& noShiftedDphi,
                                                      float& noShiftedDphichange,
                                                      float xLower,
@@ -883,7 +864,6 @@ namespace lst {
     float dzFrac = alpaka::math::abs(acc, dz) / alpaka::math::abs(acc, zLower);
     dPhiChange = dPhi / dzFrac * (1.f + dzFrac);
     noShiftedDphichange = noShiftedDphi / dzFrac * (1.f + dzFrac);
-    noShiftedDz = 0;  // not used anywhere
 
     return alpaka::math::abs(acc, dPhiChange) < miniCut;
   };
@@ -927,7 +907,7 @@ namespace lst {
           float zUpper = hitsInGPU.zs[upperHitArrayIndex];
           float rtUpper = hitsInGPU.rts[upperHitArrayIndex];
 
-          float dz, dphi, dphichange, shiftedX, shiftedY, shiftedZ, noShiftedDz, noShiftedDphi, noShiftedDphiChange;
+          float dz, dphi, dphichange, shiftedX, shiftedY, shiftedZ, noShiftedDphi, noShiftedDphiChange;
           bool success = runMiniDoubletDefaultAlgo(acc,
                                                    modulesInGPU,
                                                    lowerModuleIndex,
@@ -940,7 +920,6 @@ namespace lst {
                                                    shiftedX,
                                                    shiftedY,
                                                    shiftedZ,
-                                                   noShiftedDz,
                                                    noShiftedDphi,
                                                    noShiftedDphiChange,
                                                    xLower,
@@ -975,7 +954,6 @@ namespace lst {
                             shiftedX,
                             shiftedY,
                             shiftedZ,
-                            noShiftedDz,
                             noShiftedDphi,
                             noShiftedDphiChange,
                             mdIndex);

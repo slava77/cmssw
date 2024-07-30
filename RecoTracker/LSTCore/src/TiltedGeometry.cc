@@ -1,8 +1,8 @@
 #include "RecoTracker/LSTCore/interface/TiltedGeometry.h"
 
-lst::TiltedGeometry::TiltedGeometry(std::string filename) { load(filename); }
+lst::TiltedGeometry::TiltedGeometry(std::string const& filename) { load(filename); }
 
-void lst::TiltedGeometry::load(std::string filename) {
+void lst::TiltedGeometry::load(std::string const& filename) {
   drdzs_.clear();
   dxdys_.clear();
 

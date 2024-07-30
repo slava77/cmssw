@@ -15,11 +15,11 @@ namespace lst {
 
   public:
     ModuleConnectionMap();
-    ModuleConnectionMap(std::string filename);
+    ModuleConnectionMap(std::string const& filename);
     ~ModuleConnectionMap();
 
-    void load(std::string);
-    void add(std::string);
+    void load(std::string const&);
+    void add(std::string const&);
     void print();
 
     const std::vector<unsigned int>& getConnectedModuleDetIds(unsigned int detid) const;

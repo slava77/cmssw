@@ -18,7 +18,7 @@ namespace lst {
     const float* geoMapPhi;
 
     template <typename TBuff>
-    void setData(const TBuff& buf) {
+    void setData(TBuff const& buf) {
       geoMapDetId = alpaka::getPtrNative(buf.geoMapDetId_buf);
       geoMapPhi = alpaka::getPtrNative(buf.geoMapPhi_buf);
     }
@@ -37,13 +37,13 @@ namespace lst {
     }
 
     template <typename TQueue, typename TDevSrc>
-    inline void copyFromSrc(TQueue queue, const EndcapGeometryBuffer<TDevSrc>& src) {
+    inline void copyFromSrc(TQueue queue, EndcapGeometryBuffer<TDevSrc> const& src) {
       alpaka::memcpy(queue, geoMapDetId_buf, src.geoMapDetId_buf);
       alpaka::memcpy(queue, geoMapPhi_buf, src.geoMapPhi_buf);
     }
 
     template <typename TQueue, typename TDevSrc>
-    EndcapGeometryBuffer(TQueue queue, const EndcapGeometryBuffer<TDevSrc>& src, unsigned int nEndCapMap)
+    EndcapGeometryBuffer(TQueue queue, EndcapGeometryBuffer<TDevSrc> const& src, unsigned int nEndCapMap)
         : EndcapGeometryBuffer(alpaka::getDev(queue), nEndCapMap) {
       copyFromSrc(queue, src);
     }

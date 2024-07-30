@@ -109,7 +109,7 @@ namespace lst {
     inline void setData(TrackCandidatesBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addpLSTrackCandidateToMemory(struct lst::TrackCandidates& trackCandidatesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addpLSTrackCandidateToMemory(lst::TrackCandidates& trackCandidatesInGPU,
                                                                    unsigned int trackletIndex,
                                                                    unsigned int trackCandidateIndex,
                                                                    uint4 hitIndices,
@@ -128,7 +128,7 @@ namespace lst {
     trackCandidatesInGPU.hitIndices[Params_pT5::kHits * trackCandidateIndex + 3] = hitIndices.w;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTrackCandidateToMemory(struct lst::TrackCandidates& trackCandidatesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTrackCandidateToMemory(lst::TrackCandidates& trackCandidatesInGPU,
                                                                 short trackCandidateType,
                                                                 unsigned int innerTrackletIndex,
                                                                 unsigned int outerTrackletIndex,
@@ -167,9 +167,9 @@ namespace lst {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(unsigned int ix,
                                                     unsigned int jx,
-                                                    struct lst::MiniDoublets& mdsInGPU,
-                                                    struct lst::Segments& segmentsInGPU,
-                                                    struct lst::Hits& hitsInGPU) {
+                                                    lst::MiniDoublets const& mdsInGPU,
+                                                    lst::Segments const& segmentsInGPU,
+                                                    lst::Hits const& hitsInGPU) {
     int phits1[Params_pLS::kHits];
     int phits2[Params_pLS::kHits];
 
@@ -208,11 +208,11 @@ namespace lst {
   struct crossCleanpT3 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
-                                  struct lst::PixelTriplets pixelTripletsInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::PixelQuintuplets pixelQuintupletsInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::ObjectRanges rangesInGPU,
+                                  lst::PixelTriplets pixelTripletsInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::PixelQuintuplets pixelQuintupletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -249,11 +249,11 @@ namespace lst {
   struct crossCleanT5 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Quintuplets quintupletsInGPU,
-                                  struct lst::PixelQuintuplets pixelQuintupletsInGPU,
-                                  struct lst::PixelTriplets pixelTripletsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::Quintuplets quintupletsInGPU,
+                                  lst::PixelQuintuplets pixelQuintupletsInGPU,
+                                  lst::PixelTriplets pixelTripletsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -301,19 +301,17 @@ namespace lst {
     }
   };
 
-  // Using Matt's block for the outer loop and thread for inner loop trick here!
-  // This will eliminate the need for another kernel just for adding the pLS, because we can __syncthreads()
   struct crossCleanpLS {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
-                                  struct lst::PixelTriplets pixelTripletsInGPU,
-                                  struct lst::TrackCandidates trackCandidatesInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::MiniDoublets mdsInGPU,
-                                  struct lst::Hits hitsInGPU,
-                                  struct lst::Quintuplets quintupletsInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::ObjectRanges rangesInGPU,
+                                  lst::PixelTriplets pixelTripletsInGPU,
+                                  lst::TrackCandidates trackCandidatesInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::MiniDoublets mdsInGPU,
+                                  lst::Hits hitsInGPU,
+                                  lst::Quintuplets quintupletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -388,10 +386,10 @@ namespace lst {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
-                                  struct lst::PixelTriplets pixelTripletsInGPU,
-                                  struct lst::TrackCandidates trackCandidatesInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::PixelTriplets pixelTripletsInGPU,
+                                  lst::TrackCandidates trackCandidatesInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -440,9 +438,9 @@ namespace lst {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
-                                  struct lst::Quintuplets quintupletsInGPU,
-                                  struct lst::TrackCandidates trackCandidatesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::Quintuplets quintupletsInGPU,
+                                  lst::TrackCandidates trackCandidatesInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -494,8 +492,8 @@ namespace lst {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
-                                  struct lst::TrackCandidates trackCandidatesInGPU,
-                                  struct lst::Segments segmentsInGPU,
+                                  lst::TrackCandidates trackCandidatesInGPU,
+                                  lst::Segments segmentsInGPU,
                                   bool tc_pls_triplets) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
@@ -533,10 +531,10 @@ namespace lst {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
-                                  struct lst::PixelQuintuplets pixelQuintupletsInGPU,
-                                  struct lst::TrackCandidates trackCandidatesInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::PixelQuintuplets pixelQuintupletsInGPU,
+                                  lst::TrackCandidates trackCandidatesInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 

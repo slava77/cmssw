@@ -107,13 +107,6 @@ namespace lst {
     inline void setData(HitsBuffer& buf) { data_.setData(buf); }
   };
 
-  // Alpaka does not support log10 natively right now.
-  template <typename TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float temp_log10(TAcc const& acc, float val) {
-    constexpr float ln10 = 2.302585093f;  // precomputed ln(10)
-    return alpaka::math::log(acc, val) / ln10;
-  };
-
   template <typename TAcc>
   ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float eta(TAcc const& acc, float x, float y, float z) {
     float r3 = alpaka::math::sqrt(acc, x * x + y * y + z * z);
@@ -147,13 +140,6 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float deltaPhiChange(TAcc const& acc, float x1, float y1, float x2, float y2) {
     return deltaPhi(acc, x1, y1, x2 - x1, y2 - y1);
-  };
-
-  // Alpaka: This function is not yet implemented directly in Alpaka.
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float copysignf(float a, float b) {
-    int sign_a = (a < 0) ? -1 : 1;
-    int sign_b = (b < 0) ? -1 : 1;
-    return sign_a * sign_b * a;
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float calculate_dPhi(float phi1, float phi2) {
@@ -194,9 +180,9 @@ namespace lst {
   struct moduleRangesKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Hits hitsInGPU,
-                                  int const& nLowerModules) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::Hits hitsInGPU,
+                                  int nLowerModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -223,9 +209,9 @@ namespace lst {
                                   unsigned int nEndCapMap,          // Number of elements in endcap map
                                   const unsigned int* geoMapDetId,  // DetId's from endcap map
                                   const float* geoMapPhi,           // Phi values from endcap map
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Hits hitsInGPU,
-                                  unsigned int const& nHits) const  // Total number of hits in event
+                                  lst::Modules modulesInGPU,
+                                  lst::Hits hitsInGPU,
+                                  unsigned int nHits) const  // Total number of hits in event
     {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
