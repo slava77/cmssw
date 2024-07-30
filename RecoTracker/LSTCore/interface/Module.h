@@ -37,7 +37,7 @@ namespace lst {
     const bool* isAnchor;
     const ModuleType* moduleType;
     const ModuleLayerType* moduleLayerType;
-    const int* sdlLayers;
+    const int* lstLayers;
     const unsigned int* connectedPixels;
 
     static bool parseIsInverted(short subdet, short side, short module, short layer) {
@@ -108,7 +108,7 @@ namespace lst {
       isAnchor = alpaka::getPtrNative(buf.isAnchor_buf);
       moduleType = alpaka::getPtrNative(buf.moduleType_buf);
       moduleLayerType = alpaka::getPtrNative(buf.moduleLayerType_buf);
-      sdlLayers = alpaka::getPtrNative(buf.sdlLayers_buf);
+      lstLayers = alpaka::getPtrNative(buf.lstLayers_buf);
       connectedPixels = alpaka::getPtrNative(buf.connectedPixels_buf);
     }
   };
@@ -139,7 +139,7 @@ namespace lst {
     Buf<TDev, bool> isAnchor_buf;
     Buf<TDev, ModuleType> moduleType_buf;
     Buf<TDev, ModuleLayerType> moduleLayerType_buf;
-    Buf<TDev, int> sdlLayers_buf;
+    Buf<TDev, int> lstLayers_buf;
     Buf<TDev, unsigned int> connectedPixels_buf;
 
     Modules data_;
@@ -169,7 +169,7 @@ namespace lst {
           isAnchor_buf(allocBufWrapper<bool>(dev, nMod)),
           moduleType_buf(allocBufWrapper<ModuleType>(dev, nMod)),
           moduleLayerType_buf(allocBufWrapper<ModuleLayerType>(dev, nMod)),
-          sdlLayers_buf(allocBufWrapper<int>(dev, nMod)),
+          lstLayers_buf(allocBufWrapper<int>(dev, nMod)),
           connectedPixels_buf(allocBufWrapper<unsigned int>(dev, nPixs)) {
       data_.setData(*this);
     }
@@ -209,7 +209,7 @@ namespace lst {
       alpaka::memcpy(queue, moduleType_buf, src.moduleType_buf);
       if (isFull) {
         alpaka::memcpy(queue, moduleLayerType_buf, src.moduleLayerType_buf);
-        alpaka::memcpy(queue, sdlLayers_buf, src.sdlLayers_buf);
+        alpaka::memcpy(queue, lstLayers_buf, src.lstLayers_buf);
         alpaka::memcpy(queue, connectedPixels_buf, src.connectedPixels_buf);
       }
       alpaka::wait(queue);
