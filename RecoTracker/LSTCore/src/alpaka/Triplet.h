@@ -12,7 +12,7 @@
 namespace lst {
   struct Triplets {
     unsigned int* segmentIndices;
-    uint16_t* lowerModuleIndices;  //3 of them now
+    uint16_t* lowerModuleIndices;  //3 of them
     unsigned int* nTriplets;
     unsigned int* totOccupancyTriplets;
     unsigned int* nMemoryLocations;
@@ -30,16 +30,7 @@ namespace lst {
     //debug variables
     float* zOut;
     float* rtOut;
-    float* deltaPhiPos;
-    float* deltaPhi;
-    float* zLo;
-    float* zHi;
-    float* zLoPointed;
-    float* zHiPointed;
-    float* sdlCut;
     float* betaInCut;
-    float* rtLo;
-    float* rtHi;
 #endif
     template <typename TBuff>
     void setData(TBuff& buf) {
@@ -60,16 +51,7 @@ namespace lst {
 #ifdef CUT_VALUE_DEBUG
       zOut = alpaka::getPtrNative(buf.zOut_buf);
       rtOut = alpaka::getPtrNative(buf.rtOut_buf);
-      deltaPhiPos = alpaka::getPtrNative(buf.deltaPhiPos_buf);
-      deltaPhi = alpaka::getPtrNative(buf.deltaPhi_buf);
-      zLo = alpaka::getPtrNative(buf.zLo_buf);
-      zHi = alpaka::getPtrNative(buf.zHi_buf);
-      zLoPointed = alpaka::getPtrNative(buf.zLoPointed_buf);
-      zHiPointed = alpaka::getPtrNative(buf.zHiPointed_buf);
-      sdlCut = alpaka::getPtrNative(buf.sdlCut_buf);
       betaInCut = alpaka::getPtrNative(buf.betaInCut_buf);
-      rtLo = alpaka::getPtrNative(buf.rtLo_buf);
-      rtHi = alpaka::getPtrNative(buf.rtHi_buf);
 #endif
     }
   };
@@ -109,10 +91,7 @@ namespace lst {
     Triplets data_;
 
     template <typename TQueue, typename TDevAcc>
-    TripletsBuffer(unsigned int maxTriplets,
-                   unsigned int nLowerModules,
-                   TDevAcc const& devAccIn,
-                   TQueue& queue)
+    TripletsBuffer(unsigned int maxTriplets, unsigned int nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
         : segmentIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * maxTriplets, queue)),
           lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, Params_T3::kLayers * maxTriplets, queue)),
           nTriplets_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules, queue)),
@@ -155,46 +134,37 @@ namespace lst {
   };
 
 #ifdef CUT_VALUE_DEBUG
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(struct lst::Modules& modulesInGPU,
-                                                         struct lst::MiniDoublets& mdsInGPU,
-                                                         struct lst::Segments& segmentsInGPU,
-                                                         struct lst::Triplets& tripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(lst::Modules const& modulesInGPU,
+                                                         lst::MiniDoublets const& mdsInGPU,
+                                                         lst::Segments const& segmentsInGPU,
+                                                         lst::Triplets& tripletsInGPU,
                                                          unsigned int innerSegmentIndex,
                                                          unsigned int outerSegmentIndex,
                                                          uint16_t innerInnerLowerModuleIndex,
                                                          uint16_t middleLowerModuleIndex,
                                                          uint16_t outerOuterLowerModuleIndex,
-                                                         float& zOut,
-                                                         float& rtOut,
-                                                         float& deltaPhiPos,
-                                                         float& deltaPhi,
-                                                         float& betaIn,
-                                                         float& circleRadius,
-                                                         float& circleCenterX,
-                                                         float& circleCenterY,
-                                                         float& zLo,
-                                                         float& zHi,
-                                                         float& rtLo,
-                                                         float& rtHi,
-                                                         float& zLoPointed,
-                                                         float& zHiPointed,
-                                                         float& sdlCut,
-                                                         float& betaInCut,
+                                                         float zOut,
+                                                         float rtOut,
+                                                         float betaIn,
+                                                         float betaInCut,
+                                                         float circleRadius,
+                                                         float circleCenterX,
+                                                         float circleCenterY,
                                                          unsigned int tripletIndex)
 #else
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(struct lst::Modules& modulesInGPU,
-                                                         struct lst::MiniDoublets& mdsInGPU,
-                                                         struct lst::Segments& segmentsInGPU,
-                                                         struct lst::Triplets& tripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(lst::Modules const& modulesInGPU,
+                                                         lst::MiniDoublets const& mdsInGPU,
+                                                         lst::Segments const& segmentsInGPU,
+                                                         lst::Triplets& tripletsInGPU,
                                                          unsigned int innerSegmentIndex,
                                                          unsigned int outerSegmentIndex,
                                                          uint16_t innerInnerLowerModuleIndex,
                                                          uint16_t middleLowerModuleIndex,
                                                          uint16_t outerOuterLowerModuleIndex,
-                                                         float& betaIn,
-                                                         float& circleRadius,
-                                                         float& circleCenterX,
-                                                         float& circleCenterY,
+                                                         float betaIn,
+                                                         float circleRadius,
+                                                         float circleCenterX,
+                                                         float circleCenterY,
                                                          unsigned int tripletIndex)
 #endif
   {
@@ -228,24 +198,15 @@ namespace lst {
 #ifdef CUT_VALUE_DEBUG
     tripletsInGPU.zOut[tripletIndex] = zOut;
     tripletsInGPU.rtOut[tripletIndex] = rtOut;
-    tripletsInGPU.deltaPhiPos[tripletIndex] = deltaPhiPos;
-    tripletsInGPU.deltaPhi[tripletIndex] = deltaPhi;
-    tripletsInGPU.zLo[tripletIndex] = zLo;
-    tripletsInGPU.zHi[tripletIndex] = zHi;
-    tripletsInGPU.rtLo[tripletIndex] = rtLo;
-    tripletsInGPU.rtHi[tripletIndex] = rtHi;
-    tripletsInGPU.zLoPointed[tripletIndex] = zLoPointed;
-    tripletsInGPU.zHiPointed[tripletIndex] = zHiPointed;
-    tripletsInGPU.sdlCut[tripletIndex] = sdlCut;
     tripletsInGPU.betaInCut[tripletIndex] = betaInCut;
 #endif
   };
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRZConstraint(TAcc const& acc,
-                                                       struct lst::Modules& modulesInGPU,
-                                                       struct lst::MiniDoublets& mdsInGPU,
-                                                       struct lst::Segments& segmentsInGPU,
+                                                       lst::Modules const& modulesInGPU,
+                                                       lst::MiniDoublets const& mdsInGPU,
+                                                       lst::Segments const& segmentsInGPU,
                                                        uint16_t innerInnerLowerModuleIndex,
                                                        uint16_t middleLowerModuleIndex,
                                                        uint16_t outerOuterLowerModuleIndex,
@@ -303,9 +264,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBB(TAcc const& acc,
-                                                                struct lst::Modules& modulesInGPU,
-                                                                struct lst::MiniDoublets& mdsInGPU,
-                                                                struct lst::Segments& segmentsInGPU,
+                                                                lst::Modules const& modulesInGPU,
+                                                                lst::MiniDoublets const& mdsInGPU,
+                                                                lst::Segments const& segmentsInGPU,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -402,9 +363,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBE(TAcc const& acc,
-                                                                struct lst::Modules& modulesInGPU,
-                                                                struct lst::MiniDoublets& mdsInGPU,
-                                                                struct lst::Segments& segmentsInGPU,
+                                                                lst::Modules const& modulesInGPU,
+                                                                lst::MiniDoublets const& mdsInGPU,
+                                                                lst::Segments const& segmentsInGPU,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -523,9 +484,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintEEE(TAcc const& acc,
-                                                                struct lst::Modules& modulesInGPU,
-                                                                struct lst::MiniDoublets& mdsInGPU,
-                                                                struct lst::Segments& segmentsInGPU,
+                                                                lst::Modules const& modulesInGPU,
+                                                                lst::MiniDoublets const& mdsInGPU,
+                                                                lst::Segments const& segmentsInGPU,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -646,9 +607,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraint(TAcc const& acc,
-                                                             struct lst::Modules& modulesInGPU,
-                                                             struct lst::MiniDoublets& mdsInGPU,
-                                                             struct lst::Segments& segmentsInGPU,
+                                                             lst::Modules const& modulesInGPU,
+                                                             lst::MiniDoublets const& mdsInGPU,
+                                                             lst::Segments const& segmentsInGPU,
                                                              uint16_t innerInnerLowerModuleIndex,
                                                              uint16_t middleLowerModuleIndex,
                                                              uint16_t outerOuterLowerModuleIndex,
@@ -747,19 +708,10 @@ namespace lst {
   };
 
   template <typename TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeRadiusFromThreeAnchorHits(TAcc const& acc,
-                                                                        float x1,
-                                                                        float y1,
-                                                                        float x2,
-                                                                        float y2,
-                                                                        float x3,
-                                                                        float y3,
-                                                                        float& g,
-                                                                        float& f) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeRadiusFromThreeAnchorHits(
+      TAcc const& acc, float x1, float y1, float x2, float y2, float x3, float y3, float& g, float& f) {
     float radius = 0.f;
 
-    //writing manual code for computing radius, which obviously sucks
-    //TODO:Use fancy inbuilt libraries like cuBLAS or cuSOLVE for this!
     //(g,f) -> center
     //first anchor hit - (x1,y1), second anchor hit - (x2,y2), third anchor hit - (x3, y3)
 
@@ -790,9 +742,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletConstraintsAndAlgo(TAcc const& acc,
-                                                                   struct lst::Modules& modulesInGPU,
-                                                                   struct lst::MiniDoublets& mdsInGPU,
-                                                                   struct lst::Segments& segmentsInGPU,
+                                                                   lst::Modules const& modulesInGPU,
+                                                                   lst::MiniDoublets const& mdsInGPU,
+                                                                   lst::Segments const& segmentsInGPU,
                                                                    uint16_t innerInnerLowerModuleIndex,
                                                                    uint16_t middleLowerModuleIndex,
                                                                    uint16_t outerOuterLowerModuleIndex,
@@ -800,20 +752,11 @@ namespace lst {
                                                                    unsigned int outerSegmentIndex,
                                                                    float& zOut,
                                                                    float& rtOut,
-                                                                   float& deltaPhiPos,
-                                                                   float& deltaPhi,
                                                                    float& betaIn,
+                                                                   float& betaInCut,
                                                                    float& circleRadius,
                                                                    float& circleCenterX,
-                                                                   float& circleCenterY,
-                                                                   float& zLo,
-                                                                   float& zHi,
-                                                                   float& rtLo,
-                                                                   float& rtHi,
-                                                                   float& zLoPointed,
-                                                                   float& zHiPointed,
-                                                                   float& sdlCut,
-                                                                   float& betaInCut) {
+                                                                   float& circleCenterY) {
     //this cut reduces the number of candidates by a factor of 4, i.e., 3 out of 4 warps can end right here!
     if (segmentsInGPU.mdIndices[2 * innerSegmentIndex + 1] != segmentsInGPU.mdIndices[2 * outerSegmentIndex])
       return false;
@@ -866,11 +809,11 @@ namespace lst {
   struct createTripletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::MiniDoublets mdsInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::Triplets tripletsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
+                                  lst::Modules modulesInGPU,
+                                  lst::MiniDoublets mdsInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::Triplets tripletsInGPU,
+                                  lst::ObjectRanges rangesInGPU,
                                   uint16_t* index_gpu,
                                   uint16_t nonZeroModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -903,8 +846,7 @@ namespace lst {
 
             uint16_t outerOuterLowerModuleIndex = segmentsInGPU.outerLowerModuleIndices[outerSegmentIndex];
 
-            float zOut, rtOut, deltaPhiPos, deltaPhi, betaIn, circleRadius, circleCenterX, circleCenterY;
-            float zLo, zHi, rtLo, rtHi, zLoPointed, zHiPointed, sdlCut, betaInCut;
+            float zOut, rtOut, betaIn, betaInCut, circleRadius, circleCenterX, circleCenterY;
 
             bool success = runTripletConstraintsAndAlgo(acc,
                                                         modulesInGPU,
@@ -917,20 +859,11 @@ namespace lst {
                                                         outerSegmentIndex,
                                                         zOut,
                                                         rtOut,
-                                                        deltaPhiPos,
-                                                        deltaPhi,
                                                         betaIn,
+                                                        betaInCut,
                                                         circleRadius,
                                                         circleCenterX,
-                                                        circleCenterY,
-                                                        zLo,
-                                                        zHi,
-                                                        rtLo,
-                                                        rtHi,
-                                                        zLoPointed,
-                                                        zHiPointed,
-                                                        sdlCut,
-                                                        betaInCut);
+                                                        circleCenterY);
 
             if (success) {
               unsigned int totOccupancyTriplets = alpaka::atomicOp<alpaka::AtomicAdd>(
@@ -957,20 +890,11 @@ namespace lst {
                                    outerOuterLowerModuleIndex,
                                    zOut,
                                    rtOut,
-                                   deltaPhiPos,
-                                   deltaPhi,
                                    betaIn,
+                                   betaInCut,
                                    circleRadius,
                                    circleCenterX,
                                    circleCenterY,
-                                   zLo,
-                                   zHi,
-                                   rtLo,
-                                   rtHi,
-                                   zLoPointed,
-                                   zHiPointed,
-                                   sdlCut,
-                                   betaInCut,
                                    tripletIndex);
 #else
                 addTripletToMemory(modulesInGPU,
@@ -999,9 +923,9 @@ namespace lst {
   struct createTripletArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
-                                  struct lst::Segments segmentsInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::ObjectRanges rangesInGPU,
+                                  lst::Segments segmentsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -1096,9 +1020,9 @@ namespace lst {
   struct addTripletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Triplets tripletsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::Triplets tripletsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
