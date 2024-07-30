@@ -1,4 +1,4 @@
-#include "write_sdl_ntuple.h"
+#include "write_lst_ntuple.h"
 
 using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 

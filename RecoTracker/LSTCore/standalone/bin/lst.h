@@ -1,5 +1,5 @@
-#ifndef sdl_h
-#define sdl_h
+#ifndef lst_h
+#define lst_h
 
 #include <vector>
 #include <map>
@@ -20,11 +20,11 @@
 // Efficiency study modules
 #include "AnalysisConfig.h"
 #include "trkCore.h"
-#include "write_sdl_ntuple.h"
+#include "write_lst_ntuple.h"
 
 #include "TSystem.h"
 
 // Main code
-void run_sdl();
+void run_lst();
 
 #endif

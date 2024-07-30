@@ -93,7 +93,7 @@ public:
   RooUtil::TTreeX* tx;
 
   // Boolean to control whether to write ntuple or not
-  bool write_sdl_ntuple;
+  bool write_lst_ntuple;
 
   // Module boundaries related info
   std::map<int, std::array<float, 6>> moduleBoundaries;

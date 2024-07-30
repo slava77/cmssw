@@ -1,5 +1,5 @@
-#ifndef write_sdl_ntuple_h
-#define write_sdl_ntuple_h
+#ifndef write_lst_ntuple_h
+#define write_lst_ntuple_h
 
 #include <iostream>
 #include <tuple>
