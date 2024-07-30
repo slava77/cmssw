@@ -1623,7 +1623,7 @@ lst::TripletsBuffer<DevHost>* lst::Event<Acc3D>::getTriplets() {
     alpaka::memcpy(queue, tripletsInCPU->zHi_buf, tripletsBuffers->zHi_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->zLoPointed_buf, tripletsBuffers->zLoPointed_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->zHiPointed_buf, tripletsBuffers->zHiPointed_buf, nMemHost);
-    alpaka::memcpy(queue, tripletsInCPU->lstCut_buf, tripletsBuffers->lstCut_buf, nMemHost);
+    alpaka::memcpy(queue, tripletsInCPU->dPhiCut_buf, tripletsBuffers->dPhiCut_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->betaInCut_buf, tripletsBuffers->betaInCut_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->rtLo_buf, tripletsBuffers->rtLo_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->rtHi_buf, tripletsBuffers->rtHi_buf, nMemHost);

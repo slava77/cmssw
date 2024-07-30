@@ -82,7 +82,7 @@ namespace lst {
     Buf<TDev, float> zHi_buf;
     Buf<TDev, float> zLoPointed_buf;
     Buf<TDev, float> zHiPointed_buf;
-    Buf<TDev, float> lstCut_buf;
+    Buf<TDev, float> dPhiCut_buf;
     Buf<TDev, float> betaInCut_buf;
     Buf<TDev, float> rtLo_buf;
     Buf<TDev, float> rtHi_buf;
@@ -116,7 +116,7 @@ namespace lst {
           zHi_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           zLoPointed_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           zHiPointed_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
-          lstCut_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
+          dPhiCut_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           betaInCut_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           rtLo_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           rtHi_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue))
@@ -317,9 +317,9 @@ namespace lst {
     float coshEta = dr3_InSeg / drt_InSeg;
     float dzErr = (zpitchIn + zpitchOut) * (zpitchIn + zpitchOut) * 2.f;
 
-    float lstThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
-    float lstMuls2 = lstThetaMulsF2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
-    dzErr += lstMuls2 * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;
+    float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
+    float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    dzErr += muls2 * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;
     dzErr = alpaka::math::sqrt(acc, dzErr);
 
     // Constructing upper and lower bound
@@ -435,9 +435,9 @@ namespace lst {
     const float kZ = (zOut - zIn) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
-    const float lstThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
-    const float lstMuls2 = lstThetaMulsF2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
-    drtErr += lstMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
+    const float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
+    const float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    drtErr += muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
 
     //Cut #3: rt-z pointed
@@ -545,14 +545,14 @@ namespace lst {
     float multDzDr = dzOutInAbs * coshEta / (coshEta * coshEta - 1.f);
 
     float kZ = (zOut - zIn) / dzSDIn;
-    float lstThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
+    float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
 
-    float lstMuls2 = lstThetaMulsF2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
 
     float drtErr = alpaka::math::sqrt(
         acc,
         lst::kPixelPSZpitch * lst::kPixelPSZpitch * 2.f / (dzSDIn * dzSDIn) * (dzOutInAbs * dzOutInAbs) +
-            lstMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
+            muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
 
     float drtMean = drtSDIn * dzOutInAbs / alpaka::math::abs(acc, dzSDIn);
     float rtWindow = drtErr + rtGeom;
