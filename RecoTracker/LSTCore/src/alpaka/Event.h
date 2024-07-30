@@ -11,6 +11,7 @@
 #include "Kernels.h"
 #include "Quintuplet.h"
 #include "MiniDoublet.h"
+#include "PixelQuintuplet.h"
 #include "PixelTriplet.h"
 #include "TrackCandidate.h"
 

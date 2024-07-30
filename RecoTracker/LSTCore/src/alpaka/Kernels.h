@@ -10,6 +10,7 @@
 #include "Segment.h"
 #include "Triplet.h"
 #include "Quintuplet.h"
+#include "PixelQuintuplet.h"
 #include "PixelTriplet.h"
 
 namespace lst {
