@@ -175,7 +175,7 @@ namespace lst {
     inline void setData(SegmentsBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(struct lst::Modules& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(lst::Modules const& modulesInGPU,
                                                                   unsigned int moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
@@ -199,8 +199,7 @@ namespace lst {
                                   ((side == PosZ) && (((layer == 2) && (rod < 8)) || ((layer == 1) && (rod < 4)))));
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(
-      short layer, short ring, short subdet, short side, short rod) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(short layer, short ring, short subdet, short side, short rod) {
     static constexpr float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     static constexpr float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     static constexpr float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -230,8 +229,7 @@ namespace lst {
     return moduleSeparation;
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(struct lst::Modules& modulesInGPU,
-                                                         unsigned int moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(lst::Modules const& modulesInGPU, unsigned int moduleIndex) {
     static constexpr float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     static constexpr float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     static constexpr float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -266,16 +264,16 @@ namespace lst {
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void dAlphaThreshold(TAcc const& acc,
                                                       float* dAlphaThresholdValues,
-                                                      struct lst::Modules& modulesInGPU,
-                                                      struct lst::MiniDoublets& mdsInGPU,
-                                                      float& xIn,
-                                                      float& yIn,
-                                                      float& zIn,
-                                                      float& rtIn,
-                                                      float& xOut,
-                                                      float& yOut,
-                                                      float& zOut,
-                                                      float& rtOut,
+                                                      lst::Modules const& modulesInGPU,
+                                                      lst::MiniDoublets const& mdsInGPU,
+                                                      float xIn,
+                                                      float yIn,
+                                                      float zIn,
+                                                      float rtIn,
+                                                      float xOut,
+                                                      float yOut,
+                                                      float zOut,
+                                                      float rtOut,
                                                       uint16_t innerLowerModuleIndex,
                                                       uint16_t outerLowerModuleIndex,
                                                       unsigned int innerMDIndex,
@@ -295,8 +293,8 @@ namespace lst {
     bool isOuterTilted = modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel and
                          modulesInGPU.sides[outerLowerModuleIndex] != lst::Center;
 
-    const float& drdzInner = modulesInGPU.drdzs[innerLowerModuleIndex];
-    const float& drdzOuter = modulesInGPU.drdzs[outerLowerModuleIndex];
+    float drdzInner = modulesInGPU.drdzs[innerLowerModuleIndex];
+    float drdzOuter = modulesInGPU.drdzs[outerLowerModuleIndex];
     float innerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, innerLowerModuleIndex);
     float outerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, outerLowerModuleIndex);
     const float innerminiTilt2 = isInnerTilted
@@ -358,24 +356,20 @@ namespace lst {
     dAlphaThresholdValues[2] = dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls);
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addSegmentToMemory(struct lst::Segments& segmentsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addSegmentToMemory(lst::Segments& segmentsInGPU,
                                                          unsigned int lowerMDIndex,
                                                          unsigned int upperMDIndex,
                                                          uint16_t innerLowerModuleIndex,
                                                          uint16_t outerLowerModuleIndex,
                                                          unsigned int innerMDAnchorHitIndex,
                                                          unsigned int outerMDAnchorHitIndex,
-                                                         float& dPhi,
-                                                         float& dPhiMin,
-                                                         float& dPhiMax,
-                                                         float& dPhiChange,
-                                                         float& dPhiChangeMin,
-                                                         float& dPhiChangeMax,
+                                                         float dPhi,
+                                                         float dPhiMin,
+                                                         float dPhiMax,
+                                                         float dPhiChange,
+                                                         float dPhiChangeMin,
+                                                         float dPhiChangeMax,
                                                          unsigned int idx) {
-    //idx will be computed in the kernel, which is the index into which the
-    //segment will be written
-    //nSegments will be incremented in the kernel
-    //printf("seg: %u %u %u %u\n",lowerMDIndex, upperMDIndex,innerLowerModuleIndex,outerLowerModuleIndex);
     segmentsInGPU.mdIndices[idx * 2] = lowerMDIndex;
     segmentsInGPU.mdIndices[idx * 2 + 1] = upperMDIndex;
     segmentsInGPU.innerLowerModuleIndices[idx] = innerLowerModuleIndex;
@@ -393,8 +387,8 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelSegmentToMemory(TAcc const& acc,
-                                                              struct lst::Segments& segmentsInGPU,
-                                                              struct lst::MiniDoublets& mdsInGPU,
+                                                              lst::Segments& segmentsInGPU,
+                                                              lst::MiniDoublets const& mdsInGPU,
                                                               unsigned int innerMDIndex,
                                                               unsigned int outerMDIndex,
                                                               uint16_t pixelModuleIndex,
@@ -456,36 +450,23 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoBarrel(TAcc const& acc,
-                                                                  struct lst::Modules& modulesInGPU,
-                                                                  struct lst::MiniDoublets& mdsInGPU,
+                                                                  lst::Modules const& modulesInGPU,
+                                                                  lst::MiniDoublets const& mdsInGPU,
                                                                   uint16_t innerLowerModuleIndex,
                                                                   uint16_t outerLowerModuleIndex,
-                                                                  unsigned int& innerMDIndex,
-                                                                  unsigned int& outerMDIndex,
-                                                                  float& zIn,
-                                                                  float& zOut,
-                                                                  float& rtIn,
-                                                                  float& rtOut,
+                                                                  unsigned int innerMDIndex,
+                                                                  unsigned int outerMDIndex,
                                                                   float& dPhi,
                                                                   float& dPhiMin,
                                                                   float& dPhiMax,
                                                                   float& dPhiChange,
                                                                   float& dPhiChangeMin,
-                                                                  float& dPhiChangeMax,
-                                                                  float& dAlphaInnerMDSegment,
-                                                                  float& dAlphaOuterMDSegment,
-                                                                  float& dAlphaInnerMDOuterMD,
-                                                                  float& zLo,
-                                                                  float& zHi,
-                                                                  float& sdCut,
-                                                                  float& dAlphaInnerMDSegmentThreshold,
-                                                                  float& dAlphaOuterMDSegmentThreshold,
-                                                                  float& dAlphaInnerMDOuterMDThreshold) {
+                                                                  float& dPhiChangeMax) {
     float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
                        ? kMiniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
                        : kMiniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
 
-    float xIn, yIn, xOut, yOut;
+    float xIn, yIn, zIn, rtIn, xOut, yOut, zOut, rtOut;
 
     xIn = mdsInGPU.anchorX[innerMDIndex];
     yIn = mdsInGPU.anchorY[innerMDIndex];
@@ -503,14 +484,14 @@ namespace lst {
 
     const float zGeom = modulesInGPU.layers[innerLowerModuleIndex] <= 2 ? 2.f * kPixelPSZpitch : 2.f * kStrip2SZpitch;
 
-    zLo = zIn + (zIn - kDeltaZLum) * (rtOut / rtIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
-          zGeom;  //slope-correction only on outer end
-    zHi = zIn + (zIn + kDeltaZLum) * (rtOut / rtIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + zGeom;
+    float zLo = zIn + (zIn - kDeltaZLum) * (rtOut / rtIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
+                zGeom;  //slope-correction only on outer end
+    float zHi = zIn + (zIn + kDeltaZLum) * (rtOut / rtIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + zGeom;
 
     if ((zOut < zLo) || (zOut > zHi))
       return false;
 
-    sdCut = sdSlope + alpaka::math::sqrt(acc, sdMuls * sdMuls + sdPVoff * sdPVoff);
+    float sdCut = sdSlope + alpaka::math::sqrt(acc, sdMuls * sdMuls + sdPVoff * sdPVoff);
 
     dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
@@ -542,13 +523,13 @@ namespace lst {
 
     float innerMDAlpha = mdsInGPU.dphichanges[innerMDIndex];
     float outerMDAlpha = mdsInGPU.dphichanges[outerMDIndex];
-    dAlphaInnerMDSegment = innerMDAlpha - dPhiChange;
-    dAlphaOuterMDSegment = outerMDAlpha - dPhiChange;
-    dAlphaInnerMDOuterMD = innerMDAlpha - outerMDAlpha;
+    float dAlphaInnerMDSegment = innerMDAlpha - dPhiChange;
+    float dAlphaOuterMDSegment = outerMDAlpha - dPhiChange;
+    float dAlphaInnerMDOuterMD = innerMDAlpha - outerMDAlpha;
 
-    dAlphaInnerMDSegmentThreshold = dAlphaThresholdValues[0];
-    dAlphaOuterMDSegmentThreshold = dAlphaThresholdValues[1];
-    dAlphaInnerMDOuterMDThreshold = dAlphaThresholdValues[2];
+    float dAlphaInnerMDSegmentThreshold = dAlphaThresholdValues[0];
+    float dAlphaOuterMDSegmentThreshold = dAlphaThresholdValues[1];
+    float dAlphaInnerMDOuterMDThreshold = dAlphaThresholdValues[2];
 
     if (alpaka::math::abs(acc, dAlphaInnerMDSegment) >= dAlphaInnerMDSegmentThreshold)
       return false;
@@ -559,33 +540,19 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoEndcap(TAcc const& acc,
-                                                                  struct lst::Modules& modulesInGPU,
-                                                                  struct lst::MiniDoublets& mdsInGPU,
+                                                                  lst::Modules const& modulesInGPU,
+                                                                  lst::MiniDoublets const& mdsInGPU,
                                                                   uint16_t innerLowerModuleIndex,
                                                                   uint16_t outerLowerModuleIndex,
                                                                   unsigned int innerMDIndex,
                                                                   unsigned int outerMDIndex,
-                                                                  float& zIn,
-                                                                  float& zOut,
-                                                                  float& rtIn,
-                                                                  float& rtOut,
                                                                   float& dPhi,
                                                                   float& dPhiMin,
                                                                   float& dPhiMax,
                                                                   float& dPhiChange,
                                                                   float& dPhiChangeMin,
-                                                                  float& dPhiChangeMax,
-                                                                  float& dAlphaInnerMDSegment,
-                                                                  float& dAlphaOuterMDSegment,
-                                                                  float& rtLo,
-                                                                  float& rtHi,
-                                                                  float& sdCut,
-                                                                  float& dAlphaInnerMDSegmentThreshold,
-                                                                  float& dAlphaOuterMDSegmentThreshold,
-                                                                  float& dAlphaInnerMDOuterMDThreshold,
-                                                                  float& dAlphaInnerMDOuterMD) {
-    float xIn, yIn;
-    float xOut, yOut;
+                                                                  float& dPhiChangeMax) {
+    float xIn, yIn, zIn, rtIn, xOut, yOut, zOut, rtOut;
 
     xIn = mdsInGPU.anchorX[innerMDIndex];
     yIn = mdsInGPU.anchorY[innerMDIndex];
@@ -617,10 +584,10 @@ namespace lst {
     float dLum = alpaka::math::copysign(acc, kDeltaZLum, zIn);
     float drtDzScale = sdSlope / alpaka::math::tan(acc, sdSlope);
 
-    rtLo = alpaka::math::max(
+    float rtLo = alpaka::math::max(
         acc, rtIn * (1.f + dz / (zIn + dLum) * drtDzScale) - rtGeom, rtIn - 0.5f * rtGeom);  //rt should increase
-    rtHi = rtIn * (zOut - dLum) / (zIn - dLum) +
-           rtGeom;  //dLum for luminous; rGeom for measurement size; no tanTheta_loc(pt) correction
+    float rtHi = rtIn * (zOut - dLum) / (zIn - dLum) +
+                 rtGeom;  //dLum for luminous; rGeom for measurement size; no tanTheta_loc(pt) correction
 
     // Completeness
     if ((rtOut < rtLo) || (rtOut > rtHi))
@@ -628,7 +595,7 @@ namespace lst {
 
     dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
-    sdCut = sdSlope;
+    float sdCut = sdSlope;
     if (outerLayerEndcapTwoS) {
       float dPhiPos_high =
           lst::phi_mpi_pi(acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
@@ -670,57 +637,37 @@ namespace lst {
                     innerMDIndex,
                     outerMDIndex);
 
-    dAlphaInnerMDSegmentThreshold = dAlphaThresholdValues[0];
-    dAlphaOuterMDSegmentThreshold = dAlphaThresholdValues[1];
-    dAlphaInnerMDOuterMDThreshold = dAlphaThresholdValues[2];
-
     float innerMDAlpha = mdsInGPU.dphichanges[innerMDIndex];
     float outerMDAlpha = mdsInGPU.dphichanges[outerMDIndex];
-    dAlphaInnerMDSegment = innerMDAlpha - dPhiChange;
-    dAlphaOuterMDSegment = outerMDAlpha - dPhiChange;
-    dAlphaInnerMDOuterMD = innerMDAlpha - outerMDAlpha;
+    float dAlphaInnerMDSegment = innerMDAlpha - dPhiChange;
+    float dAlphaOuterMDSegment = outerMDAlpha - dPhiChange;
+    float dAlphaInnerMDOuterMD = innerMDAlpha - outerMDAlpha;
 
-    if (alpaka::math::abs(acc, dAlphaInnerMDSegment) >= dAlphaThresholdValues[0])
+    float dAlphaInnerMDSegmentThreshold = dAlphaThresholdValues[0];
+    float dAlphaOuterMDSegmentThreshold = dAlphaThresholdValues[1];
+    float dAlphaInnerMDOuterMDThreshold = dAlphaThresholdValues[2];
+
+    if (alpaka::math::abs(acc, dAlphaInnerMDSegment) >= dAlphaInnerMDSegmentThreshold)
       return false;
-    if (alpaka::math::abs(acc, dAlphaOuterMDSegment) >= dAlphaThresholdValues[1])
+    if (alpaka::math::abs(acc, dAlphaOuterMDSegment) >= dAlphaOuterMDSegmentThreshold)
       return false;
-    return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaThresholdValues[2];
+    return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaInnerMDOuterMDThreshold;
   };
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgo(TAcc const& acc,
-                                                            struct lst::Modules& modulesInGPU,
-                                                            struct lst::MiniDoublets& mdsInGPU,
+                                                            lst::Modules const& modulesInGPU,
+                                                            lst::MiniDoublets const& mdsInGPU,
                                                             uint16_t innerLowerModuleIndex,
                                                             uint16_t outerLowerModuleIndex,
                                                             unsigned int innerMDIndex,
                                                             unsigned int outerMDIndex,
-                                                            float& zIn,
-                                                            float& zOut,
-                                                            float& rtIn,
-                                                            float& rtOut,
                                                             float& dPhi,
                                                             float& dPhiMin,
                                                             float& dPhiMax,
                                                             float& dPhiChange,
                                                             float& dPhiChangeMin,
-                                                            float& dPhiChangeMax,
-                                                            float& dAlphaInnerMDSegment,
-                                                            float& dAlphaOuterMDSegment,
-                                                            float& dAlphaInnerMDOuterMD,
-                                                            float& zLo,
-                                                            float& zHi,
-                                                            float& rtLo,
-                                                            float& rtHi,
-                                                            float& sdCut,
-                                                            float& dAlphaInnerMDSegmentThreshold,
-                                                            float& dAlphaOuterMDSegmentThreshold,
-                                                            float& dAlphaInnerMDOuterMDThreshold) {
-    zLo = -999.f;
-    zHi = -999.f;
-    rtLo = -999.f;
-    rtHi = -999.f;
-
+                                                            float& dPhiChangeMax) {
     if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
         modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel) {
       return runSegmentDefaultAlgoBarrel(acc,
@@ -730,25 +677,12 @@ namespace lst {
                                          outerLowerModuleIndex,
                                          innerMDIndex,
                                          outerMDIndex,
-                                         zIn,
-                                         zOut,
-                                         rtIn,
-                                         rtOut,
                                          dPhi,
                                          dPhiMin,
                                          dPhiMax,
                                          dPhiChange,
                                          dPhiChangeMin,
-                                         dPhiChangeMax,
-                                         dAlphaInnerMDSegment,
-                                         dAlphaOuterMDSegment,
-                                         dAlphaInnerMDOuterMD,
-                                         zLo,
-                                         zHi,
-                                         sdCut,
-                                         dAlphaInnerMDSegmentThreshold,
-                                         dAlphaOuterMDSegmentThreshold,
-                                         dAlphaInnerMDOuterMDThreshold);
+                                         dPhiChangeMax);
     } else {
       return runSegmentDefaultAlgoEndcap(acc,
                                          modulesInGPU,
@@ -757,35 +691,22 @@ namespace lst {
                                          outerLowerModuleIndex,
                                          innerMDIndex,
                                          outerMDIndex,
-                                         zIn,
-                                         zOut,
-                                         rtIn,
-                                         rtOut,
                                          dPhi,
                                          dPhiMin,
                                          dPhiMax,
                                          dPhiChange,
                                          dPhiChangeMin,
-                                         dPhiChangeMax,
-                                         dAlphaInnerMDSegment,
-                                         dAlphaOuterMDSegment,
-                                         dAlphaInnerMDOuterMD,
-                                         rtLo,
-                                         rtHi,
-                                         sdCut,
-                                         dAlphaInnerMDSegmentThreshold,
-                                         dAlphaOuterMDSegmentThreshold,
-                                         dAlphaInnerMDOuterMDThreshold);
+                                         dPhiChangeMax);
     }
   };
 
   struct createSegmentsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::MiniDoublets mdsInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::MiniDoublets mdsInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalBlockIdx = alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc);
       auto const blockThreadIdx = alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc);
       auto const gridBlockExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc);
@@ -819,8 +740,7 @@ namespace lst {
             unsigned int innerMDIndex = rangesInGPU.mdRanges[innerLowerModuleIndex * 2] + innerMDArrayIdx;
             unsigned int outerMDIndex = rangesInGPU.mdRanges[outerLowerModuleIndex * 2] + outerMDArrayIdx;
 
-            float zIn, zOut, rtIn, rtOut, dPhi, dPhiMin, dPhiMax, dPhiChange, dPhiChangeMin, dPhiChangeMax,
-                dAlphaInnerMDSegment, dAlphaOuterMDSegment, dAlphaInnerMDOuterMD;
+            float dPhi, dPhiMin, dPhiMax, dPhiChange, dPhiChangeMin, dPhiChangeMax;
 
             unsigned int innerMiniDoubletAnchorHitIndex = mdsInGPU.anchorHitIndices[innerMDIndex];
             unsigned int outerMiniDoubletAnchorHitIndex = mdsInGPU.anchorHitIndices[outerMDIndex];
@@ -828,8 +748,6 @@ namespace lst {
             dPhiMax = 0;
             dPhiChangeMin = 0;
             dPhiChangeMax = 0;
-            float zLo, zHi, rtLo, rtHi, sdCut, dAlphaInnerMDSegmentThreshold, dAlphaOuterMDSegmentThreshold,
-                dAlphaInnerMDOuterMDThreshold;
             if (runSegmentDefaultAlgo(acc,
                                       modulesInGPU,
                                       mdsInGPU,
@@ -837,27 +755,12 @@ namespace lst {
                                       outerLowerModuleIndex,
                                       innerMDIndex,
                                       outerMDIndex,
-                                      zIn,
-                                      zOut,
-                                      rtIn,
-                                      rtOut,
                                       dPhi,
                                       dPhiMin,
                                       dPhiMax,
                                       dPhiChange,
                                       dPhiChangeMin,
-                                      dPhiChangeMax,
-                                      dAlphaInnerMDSegment,
-                                      dAlphaOuterMDSegment,
-                                      dAlphaInnerMDOuterMD,
-                                      zLo,
-                                      zHi,
-                                      rtLo,
-                                      rtHi,
-                                      sdCut,
-                                      dAlphaInnerMDSegmentThreshold,
-                                      dAlphaOuterMDSegmentThreshold,
-                                      dAlphaInnerMDOuterMDThreshold)) {
+                                      dPhiChangeMax)) {
               unsigned int totOccupancySegments = alpaka::atomicOp<alpaka::AtomicAdd>(
                   acc, &segmentsInGPU.totOccupancySegments[innerLowerModuleIndex], 1u);
               if (static_cast<int>(totOccupancySegments) >= rangesInGPU.segmentModuleOccupancy[innerLowerModuleIndex]) {
@@ -894,9 +797,9 @@ namespace lst {
   struct createSegmentArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
-                                  struct lst::MiniDoublets mdsInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::ObjectRanges rangesInGPU,
+                                  lst::MiniDoublets mdsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -992,9 +895,9 @@ namespace lst {
   struct addSegmentRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Segments segmentsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::Segments segmentsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -1013,11 +916,11 @@ namespace lst {
   struct addPixelSegmentToEventKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
-                                  struct lst::Hits hitsInGPU,
-                                  struct lst::MiniDoublets mdsInGPU,
-                                  struct lst::Segments segmentsInGPU,
+                                  lst::Modules modulesInGPU,
+                                  lst::ObjectRanges rangesInGPU,
+                                  lst::Hits hitsInGPU,
+                                  lst::MiniDoublets mdsInGPU,
+                                  lst::Segments segmentsInGPU,
                                   unsigned int* hitIndices0,
                                   unsigned int* hitIndices1,
                                   unsigned int* hitIndices2,
