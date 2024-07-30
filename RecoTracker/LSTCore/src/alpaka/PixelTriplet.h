@@ -1484,8 +1484,7 @@ namespace lst {
     float zpitch_OutLo = (isPS_OutLo ? kPixelPSZpitch : kStrip2SZpitch);
     float zGeom = zpitch_InLo + zpitch_OutLo;
 
-    const float slope =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rt_OutLo * k2Rinv1GeVf / ptCut, kSinAlphaMax));
+    const float slope = alpaka::math::asin(acc, alpaka::math::min(acc, rt_OutLo * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     const float dzDrtScale = alpaka::math::tan(acc, slope) / slope;  //FIXME: need approximate value
 
     const float dLum = alpaka::math::copysign(acc, kDeltaZLum, z_InUp);

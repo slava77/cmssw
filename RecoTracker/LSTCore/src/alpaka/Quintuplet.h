@@ -1400,8 +1400,7 @@ namespace lst {
     float coshEta = dr3_InSeg / drt_InSeg;
     float dzErr = (zpitch_InLo + zpitch_OutLo) * (zpitch_InLo + zpitch_OutLo) * 2.f;
 
-    float thetaMuls2 =
-        (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (r3_InLo / rt_InLo);
+    float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (r3_InLo / rt_InLo);
     float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
     dzErr += muls2 * drt_OutLo_InLo * drt_OutLo_InLo / 3.f * coshEta * coshEta;
     dzErr = alpaka::math::sqrt(acc, dzErr);
@@ -1673,8 +1672,7 @@ namespace lst {
     float kZ = (z_OutLo - z_InLo) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
-    const float thetaMuls2 =
-        (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (rIn / rt_InLo);
+    const float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InLo) / 50.f) * (rIn / rt_InLo);
     const float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
     drtErr += muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
