@@ -1,6 +1,8 @@
 #ifndef RecoTracker_LSTCore_src_alpaka_Quintuplet_h
 #define RecoTracker_LSTCore_src_alpaka_Quintuplet_h
 
+#include "HeterogeneousCore/AlpakaInterface/interface/workdivision.h"
+
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
 #include "RecoTracker/LSTCore/interface/EndcapGeometry.h"
@@ -3109,8 +3111,10 @@ namespace lst {
       // Initialize variables in shared memory and set to 0
       int& nEligibleT5Modulesx = alpaka::declareSharedVar<int, __COUNTER__>(acc);
       int& nTotalQuintupletsx = alpaka::declareSharedVar<int, __COUNTER__>(acc);
-      nTotalQuintupletsx = 0;
-      nEligibleT5Modulesx = 0;
+      if (cms::alpakatools::once_per_block(acc)) {
+        nTotalQuintupletsx = 0;
+        nEligibleT5Modulesx = 0;
+      }
       alpaka::syncBlockThreads(acc);
 
       // Initialize variables outside of the for loop.
