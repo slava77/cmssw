@@ -250,7 +250,7 @@ namespace lst {
     auto dxdys_buf = allocBufWrapper<float>(devHost, nModules);
     auto drdzs_buf = allocBufWrapper<float>(devHost, nModules);
     auto partnerModuleIndices_buf = allocBufWrapper<uint16_t>(devHost, nModules);
-    auto sdlLayers_buf = allocBufWrapper<int>(devHost, nModules);
+    auto lstLayers_buf = allocBufWrapper<int>(devHost, nModules);
 
     // Getting the underlying data pointers
     unsigned int* host_detIds = alpaka::getPtrNative(detIds_buf);
@@ -270,7 +270,7 @@ namespace lst {
     float* host_dxdys = alpaka::getPtrNative(dxdys_buf);
     float* host_drdzs = alpaka::getPtrNative(drdzs_buf);
     uint16_t* host_partnerModuleIndices = alpaka::getPtrNative(partnerModuleIndices_buf);
-    int* host_sdlLayers = alpaka::getPtrNative(sdlLayers_buf);
+    int* host_lstLayers = alpaka::getPtrNative(lstLayers_buf);
 
     //reassign detIdToIndex indices here
     nLowerModules = (nModules - 1) / 2;
@@ -351,7 +351,7 @@ namespace lst {
         host_drdzs[index] = (subdet == Barrel) ? tiltedGeometry->getDrDz(detId) : 0;
       }
 
-      host_sdlLayers[index] =
+      host_lstLayers[index] =
           layer + 6 * (subdet == lst::Endcap) + 5 * (subdet == lst::Endcap and host_moduleType[index] == lst::TwoS);
     }
 
@@ -402,7 +402,7 @@ namespace lst {
     alpaka::memcpy(queue, modulesBuf->dxdys_buf, dxdys_buf);
     alpaka::memcpy(queue, modulesBuf->drdzs_buf, drdzs_buf);
     alpaka::memcpy(queue, modulesBuf->partnerModuleIndices_buf, partnerModuleIndices_buf);
-    alpaka::memcpy(queue, modulesBuf->sdlLayers_buf, sdlLayers_buf);
+    alpaka::memcpy(queue, modulesBuf->lstLayers_buf, lstLayers_buf);
     alpaka::wait(queue);
 
     fillConnectedModuleArrayExplicit(modulesBuf.get(), nModules, queue, mmd, moduleConnectionMap);

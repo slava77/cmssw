@@ -1184,7 +1184,7 @@ namespace lst {
                                                                 unsigned int secondMDIndex,
                                                                 unsigned int thirdMDIndex,
                                                                 unsigned int fourthMDIndex) {
-    float dPhi, betaIn, betaOut, pt_beta, zLo, zHi, zLoPointed, zHiPointed, sdlCut, betaOutCut;
+    float dPhi, betaIn, betaOut, pt_beta, zLo, zHi, zLoPointed, zHiPointed, dPhiCut, betaOutCut;
 
     bool isPS_OutLo = (modulesInGPU.moduleType[outerInnerLowerModuleIndex] == lst::PS);
 
@@ -1249,14 +1249,14 @@ namespace lst {
 
     float drt_InSeg = rt_InOut - rt_InLo;
 
-    const float sdlThetaMulsF2 =
+    const float thetaMuls2 =
         (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InUp) / 50.f) * (r3_InUp / rt_InUp);
-    const float sdlMuls2 = sdlThetaMulsF2 * 9.f / (ptCut * ptCut) * 16.f;
+    const float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
 
     float dzErr = (drt_OutLo_InUp * drt_OutLo_InUp) * (etaErr * etaErr) * cosh2Eta;
     dzErr += 0.03f * 0.03f;  // Approximately account for IT module size
     dzErr *= 9.f;            // 3 sigma
-    dzErr += sdlMuls2 * (drt_OutLo_InUp * drt_OutLo_InUp) / 3.f * cosh2Eta;
+    dzErr += muls2 * (drt_OutLo_InUp * drt_OutLo_InUp) / 3.f * cosh2Eta;
     dzErr += zGeom * zGeom;
     dzErr = alpaka::math::sqrt(acc, dzErr);
 
@@ -1272,8 +1272,8 @@ namespace lst {
     if ((z_OutLo < zLoPointed) || (z_OutLo > zHiPointed))
       return false;
 
-    const float sdlPVoff = 0.1f / rt_OutLo;
-    sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
+    const float pvOffset = 0.1f / rt_OutLo;
+    dPhiCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, muls2 + pvOffset * pvOffset);
 
     //no dphipos cut
     float midPointX = 0.5f * (x_InLo + x_OutLo);
@@ -1284,7 +1284,7 @@ namespace lst {
 
     dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
-    if (alpaka::math::abs(acc, dPhi) > sdlCut)
+    if (alpaka::math::abs(acc, dPhi) > dPhiCut)
       return false;
 
     //lots of array accesses below this...
@@ -1380,7 +1380,7 @@ namespace lst {
 
     float min_ptBeta_ptBetaMax = alpaka::math::min(
         acc, alpaka::math::abs(acc, pt_beta), lst::kPt_betaMax);  //need to confirm the range-out value of 7 GeV
-    const float dBetaMuls2 = sdlThetaMulsF2 * 16.f / (min_ptBeta_ptBetaMax * min_ptBeta_ptBetaMax);
+    const float dBetaMuls2 = thetaMuls2 * 16.f / (min_ptBeta_ptBetaMax * min_ptBeta_ptBetaMax);
     const float alphaInAbsReg =
         alpaka::math::max(acc,
                           alpaka::math::abs(acc, alpha_InLo),
@@ -1442,7 +1442,7 @@ namespace lst {
                                                                 unsigned int secondMDIndex,
                                                                 unsigned int thirdMDIndex,
                                                                 unsigned int fourthMDIndex) {
-    float dPhi, betaIn, betaOut, pt_beta, rtLo, rtHi, sdlCut, betaOutCut;
+    float dPhi, betaIn, betaOut, pt_beta, rtLo, rtHi, dPhiCut, betaOutCut;
 
     bool isPS_OutLo = (modulesInGPU.moduleType[outerInnerLowerModuleIndex] == lst::PS);
 
@@ -1484,9 +1484,8 @@ namespace lst {
     float zpitch_OutLo = (isPS_OutLo ? kPixelPSZpitch : kStrip2SZpitch);
     float zGeom = zpitch_InLo + zpitch_OutLo;
 
-    const float sdlSlope =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rt_OutLo * k2Rinv1GeVf / ptCut, kSinAlphaMax));
-    const float dzDrtScale = alpaka::math::tan(acc, sdlSlope) / sdlSlope;  //FIXME: need approximate value
+    const float slope = alpaka::math::asin(acc, alpaka::math::min(acc, rt_OutLo * k2Rinv1GeVf / ptCut, kSinAlphaMax));
+    const float dzDrtScale = alpaka::math::tan(acc, slope) / slope;  //FIXME: need approximate value
 
     const float dLum = alpaka::math::copysign(acc, kDeltaZLum, z_InUp);
     bool isOutSgInnerMDPS = modulesInGPU.moduleType[outerInnerLowerModuleIndex] == lst::PS;
@@ -1511,14 +1510,14 @@ namespace lst {
     const float cosh2Eta = 1.f + (pz * pz) / (ptIn * ptIn);
     const float multDzDr2 = (dzOutInAbs * dzOutInAbs) * cosh2Eta / ((cosh2Eta - 1.f) * (cosh2Eta - 1.f));
     const float r3_InUp = alpaka::math::sqrt(acc, z_InUp * z_InUp + rt_InUp * rt_InUp);
-    const float sdlThetaMulsF2 =
+    const float thetaMuls2 =
         (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InUp) / 50.f) * (r3_InUp / rt_InUp);
-    const float sdlMuls2 = sdlThetaMulsF2 * 9.f / (ptCut * ptCut) * 16.f;
+    const float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
 
     float drtErr = (etaErr * etaErr) * multDzDr2;
     drtErr += 0.03f * 0.03f;  // Approximately account for IT module size
     drtErr *= 9.f;            // 3 sigma
-    drtErr += sdlMuls2 * multDzDr2 / 3.f * cosh2Eta;
+    drtErr += muls2 * multDzDr2 / 3.f * cosh2Eta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
     const float drtDzIn = alpaka::math::abs(acc, ptIn / pz);
 
@@ -1537,8 +1536,8 @@ namespace lst {
 
     const float alpha1GeV_OutLo =
         alpaka::math::asin(acc, alpaka::math::min(acc, rt_OutLo * k2Rinv1GeVf / ptCut, kSinAlphaMax));
-    const float sdlPVoff = 0.1f / rt_OutLo;
-    sdlCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, sdlMuls2 + sdlPVoff * sdlPVoff);
+    const float pvOffset = 0.1f / rt_OutLo;
+    dPhiCut = alpha1GeV_OutLo + alpaka::math::sqrt(acc, muls2 + pvOffset * pvOffset);
 
     float midPointX = 0.5f * (x_InLo + x_OutLo);
     float midPointY = 0.5f * (y_InLo + y_OutLo);
@@ -1549,7 +1548,7 @@ namespace lst {
     dPhi = lst::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
     // Cut #5: deltaPhiChange
-    if (alpaka::math::abs(acc, dPhi) > sdlCut)
+    if (alpaka::math::abs(acc, dPhi) > dPhiCut)
       return false;
 
     float alpha_InLo = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
@@ -1640,7 +1639,7 @@ namespace lst {
 
     float min_ptBeta_ptBetaMax = alpaka::math::min(
         acc, alpaka::math::abs(acc, pt_beta), lst::kPt_betaMax);  //need to confirm the range-out value of 7 GeV
-    const float dBetaMuls2 = sdlThetaMulsF2 * 16.f / (min_ptBeta_ptBetaMax * min_ptBeta_ptBetaMax);
+    const float dBetaMuls2 = thetaMuls2 * 16.f / (min_ptBeta_ptBetaMax * min_ptBeta_ptBetaMax);
 
     const float alphaInAbsReg =
         alpaka::math::max(acc,

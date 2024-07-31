@@ -84,7 +84,7 @@ namespace lst {
     Buf<TDev, float> zHi_buf;
     Buf<TDev, float> zLoPointed_buf;
     Buf<TDev, float> zHiPointed_buf;
-    Buf<TDev, float> sdlCut_buf;
+    Buf<TDev, float> dPhiCut_buf;
     Buf<TDev, float> betaInCut_buf;
     Buf<TDev, float> rtLo_buf;
     Buf<TDev, float> rtHi_buf;
@@ -118,7 +118,7 @@ namespace lst {
           zHi_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           zLoPointed_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           zHiPointed_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
-          sdlCut_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
+          dPhiCut_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           betaInCut_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           rtLo_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue)),
           rtHi_buf(allocBufWrapper<float>(devAccIn, maxTriplets, queue))
@@ -224,10 +224,10 @@ namespace lst {
     const float& z2 = mdsInGPU.anchorZ[secondMDIndex];
     const float& z3 = mdsInGPU.anchorZ[thirdMDIndex];
 
-    // Using sdl_layer numbering convention defined in ModuleMethods.h
-    const int layer1 = modulesInGPU.sdlLayers[innerInnerLowerModuleIndex];
-    const int layer2 = modulesInGPU.sdlLayers[middleLowerModuleIndex];
-    const int layer3 = modulesInGPU.sdlLayers[outerOuterLowerModuleIndex];
+    // Using lst_layer numbering convention defined in ModuleMethods.h
+    const int layer1 = modulesInGPU.lstLayers[innerInnerLowerModuleIndex];
+    const int layer2 = modulesInGPU.lstLayers[middleLowerModuleIndex];
+    const int layer3 = modulesInGPU.lstLayers[outerOuterLowerModuleIndex];
 
     const float residual = z2 - ((z3 - z1) / (r3 - r1) * (r2 - r1) + z1);
 
@@ -319,9 +319,9 @@ namespace lst {
     float coshEta = dr3_InSeg / drt_InSeg;
     float dzErr = (zpitchIn + zpitchOut) * (zpitchIn + zpitchOut) * 2.f;
 
-    float sdlThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
-    float sdlMuls2 = sdlThetaMulsF2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
-    dzErr += sdlMuls2 * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;
+    float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
+    float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    dzErr += muls2 * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;
     dzErr = alpaka::math::sqrt(acc, dzErr);
 
     // Constructing upper and lower bound
@@ -437,9 +437,9 @@ namespace lst {
     const float kZ = (zOut - zIn) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
-    const float sdlThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
-    const float sdlMuls2 = sdlThetaMulsF2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
-    drtErr += sdlMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
+    const float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
+    const float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    drtErr += muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
 
     //Cut #3: rt-z pointed
@@ -547,14 +547,14 @@ namespace lst {
     float multDzDr = dzOutInAbs * coshEta / (coshEta * coshEta - 1.f);
 
     float kZ = (zOut - zIn) / dzSDIn;
-    float sdlThetaMulsF2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
+    float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
 
-    float sdlMuls2 = sdlThetaMulsF2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
 
     float drtErr = alpaka::math::sqrt(
         acc,
         lst::kPixelPSZpitch * lst::kPixelPSZpitch * 2.f / (dzSDIn * dzSDIn) * (dzOutInAbs * dzOutInAbs) +
-            sdlMuls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
+            muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
 
     float drtMean = drtSDIn * dzOutInAbs / alpaka::math::abs(acc, dzSDIn);
     float rtWindow = drtErr + rtGeom;

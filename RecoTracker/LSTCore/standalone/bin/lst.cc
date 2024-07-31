@@ -1,4 +1,4 @@
-#include "sdl.h"
+#include "lst.h"
 
 #include <typeinfo>
 
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   // cxxopts is just a tool to parse argc, and argv easily
 
   // Grand option setting
-  cxxopts::Options options("\n  $ sdl",
+  cxxopts::Options options("\n  $ lst",
                            "\n         **********************\n         *                    *\n         *       "
                            "Looper       *\n         *                    *\n         **********************\n");
 
@@ -291,13 +291,13 @@ int main(int argc, char **argv) {
   writeMetaData();
 
   // Run the code
-  run_sdl();
+  run_lst();
 
   return 0;
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-void run_sdl() {
+void run_lst() {
   Device devAcc = alpaka::getDevByIdx(ALPAKA_ACCELERATOR_NAMESPACE::Platform{}, 0u);
   std::vector<Queue> queues;
   for (int s = 0; s < ana.streams; s++) {

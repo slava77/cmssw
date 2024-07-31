@@ -15,23 +15,23 @@ LSTOBJECTS_ROCM=$(patsubst ../../src/alpaka/%.dev.cc, %_rocm.o, $(LSTSOURCES))
 
 # Default to CPU and CUDA backends
 ifeq ($(BACKEND),)
-  LIB_CPU=libsdl_cpu.so
-  LIB_CUDA=libsdl_cuda.so
+  LIB_CPU=liblst_cpu.so
+  LIB_CUDA=liblst_cuda.so
 endif
 
 ifneq ($(findstring cpu,$(BACKEND)),)
-  LIB_CPU=libsdl_cpu.so
+  LIB_CPU=liblst_cpu.so
 endif
 ifneq ($(findstring cuda,$(BACKEND)),)
-  LIB_CUDA=libsdl_cuda.so
+  LIB_CUDA=liblst_cuda.so
 endif
 ifneq ($(findstring rocm,$(BACKEND)),)
-  LIB_ROCM=libsdl_rocm.so
+  LIB_ROCM=liblst_rocm.so
 endif
 ifneq ($(findstring all,$(BACKEND)),)
-  LIB_CPU=libsdl_cpu.so
-  LIB_CUDA=libsdl_cuda.so
-  LIB_ROCM=libsdl_rocm.so
+  LIB_CPU=liblst_cpu.so
+  LIB_CUDA=liblst_cuda.so
+  LIB_ROCM=liblst_rocm.so
 endif
 
 LIBS=$(LIB_CPU) $(LIB_CUDA) $(LIB_ROCM)
