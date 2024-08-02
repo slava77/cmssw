@@ -1,6 +1,8 @@
-#include "sdl.h"
+#include "lst.h"
 
 #include <typeinfo>
+
+using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
 int main(int argc, char **argv) {
@@ -35,7 +37,7 @@ int main(int argc, char **argv) {
   // cxxopts is just a tool to parse argc, and argv easily
 
   // Grand option setting
-  cxxopts::Options options("\n  $ sdl",
+  cxxopts::Options options("\n  $ lst",
                            "\n         **********************\n         *                    *\n         *       "
                            "Looper       *\n         *                    *\n         **********************\n");
 
@@ -253,7 +255,7 @@ int main(int argc, char **argv) {
 
   // Printing out the option settings overview
   std::cout << "=========================================================" << std::endl;
-  std::cout << " Running for Acc = " << alpaka::getAccName<SDL::Acc>() << std::endl;
+  std::cout << " Running for Acc = " << alpaka::getAccName<Acc3D>() << std::endl;
   std::cout << " Setting of the analysis job based on provided arguments " << std::endl;
   std::cout << "---------------------------------------------------------" << std::endl;
   std::cout << " ana.input_file_list_tstring: " << ana.input_file_list_tstring << std::endl;
@@ -289,25 +291,24 @@ int main(int argc, char **argv) {
   writeMetaData();
 
   // Run the code
-  run_sdl();
+  run_lst();
 
   return 0;
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-void run_sdl() {
-  SDL::Dev devAcc = alpaka::getDevByIdx(ALPAKA_ACCELERATOR_NAMESPACE::Platform{}, 0u);
-  std::vector<SDL::QueueAcc> queues;
+void run_lst() {
+  Device devAcc = alpaka::getDevByIdx(ALPAKA_ACCELERATOR_NAMESPACE::Platform{}, 0u);
+  std::vector<Queue> queues;
   for (int s = 0; s < ana.streams; s++) {
-    queues.push_back(SDL::QueueAcc(devAcc));
+    queues.push_back(Queue(devAcc));
   }
 
-  // Load various maps used in the SDL reconstruction
+  // Load various maps used in the lst reconstruction
   TStopwatch full_timer;
   full_timer.Start();
-  auto hostESData = SDL::loadAndFillESHost();
-  auto deviceESData =
-      cms::alpakatools::CopyToDevice<SDL::LSTESData<SDL::DevHost>>::copyAsync(queues[0], *hostESData.get());
+  auto hostESData = lst::loadAndFillESHost();
+  auto deviceESData = cms::alpakatools::CopyToDevice<lst::LSTESData<DevHost>>::copyAsync(queues[0], *hostESData.get());
   float timeForMapLoading = full_timer.RealTime() * 1000;
 
   if (ana.do_write_ntuple) {
@@ -383,9 +384,9 @@ void run_sdl() {
 
   full_timer.Reset();
   full_timer.Start();
-  std::vector<SDL::Event<SDL::Acc> *> events;
+  std::vector<lst::Event<Acc3D> *> events;
   for (int s = 0; s < ana.streams; s++) {
-    SDL::Event<SDL::Acc> *event = new SDL::Event<SDL::Acc>(ana.verbose >= 2, queues[s], &deviceESData);
+    lst::Event<Acc3D> *event = new lst::Event<Acc3D>(ana.verbose >= 2, queues[s], &deviceESData);
     events.push_back(event);
   }
   float timeForEventCreation = full_timer.RealTime() * 1000;
