@@ -202,7 +202,7 @@ namespace lst {
     tripletsInGPU.rtOut[tripletIndex] = rtOut;
     tripletsInGPU.betaInCut[tripletIndex] = betaInCut;
 #endif
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRZConstraint(TAcc const& acc,
@@ -262,7 +262,7 @@ namespace lst {
     } else {
       return alpaka::math::abs(acc, residual) < 5;
     }
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBB(TAcc const& acc,
@@ -361,7 +361,7 @@ namespace lst {
 
     //Cut #3: first beta cut
     return alpaka::math::abs(acc, betaIn) < betaInCut;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBE(TAcc const& acc,
@@ -482,7 +482,7 @@ namespace lst {
 
     //Cut #4: first beta cut
     return alpaka::math::abs(acc, betaInRHmin) < betaInCut;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintEEE(TAcc const& acc,
@@ -605,7 +605,7 @@ namespace lst {
 
     //Cut #4: first beta cut
     return alpaka::math::abs(acc, betaInRHmin) < betaInCut;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraint(TAcc const& acc,
@@ -707,7 +707,7 @@ namespace lst {
                                        betaInCut);
     }
     return false;  // failsafe
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeRadiusFromThreeAnchorHits(
@@ -740,7 +740,7 @@ namespace lst {
       radius = alpaka::math::sqrt(acc, g * g + f * f - c);
 
     return radius;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletConstraintsAndAlgo(TAcc const& acc,
@@ -806,7 +806,7 @@ namespace lst {
 
     circleRadius = computeRadiusFromThreeAnchorHits(acc, x1, y1, x2, y2, x3, y3, circleCenterX, circleCenterY);
     return true;
-  };
+  }
 
   struct createTripletsInGPUv2 {
     template <typename TAcc>

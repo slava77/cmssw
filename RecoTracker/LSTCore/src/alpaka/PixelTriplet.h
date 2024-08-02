@@ -1167,7 +1167,7 @@ namespace lst {
       //2nd update
       pt_beta = dr * lst::k2Rinv1GeVf / alpaka::math::sin(acc, betaAv);  //get a better pt estimate
     }
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPBB(TAcc const& acc,
@@ -1425,7 +1425,7 @@ namespace lst {
              (alpaka::math::abs(acc, betaInRHmin - betaInRHmax) + alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax)));
     float dBeta = betaIn - betaOut;
     return dBeta * dBeta <= dBetaCut2;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletDefaultAlgoPPEE(TAcc const& acc,
@@ -1689,7 +1689,7 @@ namespace lst {
              (alpaka::math::abs(acc, betaInRHmin - betaInRHmax) + alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax)));
     float dBeta = betaIn - betaOut;
     return dBeta * dBeta <= dBetaCut2;
-  };
+  }
 
 }  // namespace lst
 #endif

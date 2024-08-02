@@ -201,7 +201,7 @@ namespace lst {
     pixelQuintupletsInGPU.rzChiSquared[pixelQuintupletIndex] = rzChiSquared;
     pixelQuintupletsInGPU.rPhiChiSquared[pixelQuintupletIndex] = rPhiChiSquared;
     pixelQuintupletsInGPU.rPhiChiSquaredInwards[pixelQuintupletIndex] = rPhiChiSquaredInwards;
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RZChiSquaredCuts(lst::Modules const& modulesInGPU,
                                                               uint16_t lowerModuleIndex1,
@@ -291,7 +291,7 @@ namespace lst {
       }
     }
     return true;
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredCuts(lst::Modules const& modulesInGPU,
                                                                 uint16_t lowerModuleIndex1,
@@ -381,7 +381,7 @@ namespace lst {
       }
     }
     return true;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computeChiSquaredpT5(TAcc const& acc,
@@ -427,7 +427,7 @@ namespace lst {
                     (xs[i] * xs[i] + ys[i] * ys[i] - 2 * g * xs[i] - 2 * f * ys[i] + c) / (sigma2);
     }
     return chiSquared;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void computeSigmasForRegression_pT5(TAcc const& acc,
@@ -513,7 +513,7 @@ namespace lst {
       }
 #endif
     }
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT5RPhiChiSquared(TAcc const& acc,
@@ -536,7 +536,7 @@ namespace lst {
     chiSquared = computeChiSquaredpT5(acc, 5, xs, ys, delta1, delta2, slopes, isFlat, g, f, radius);
 
     return chiSquared;
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT5RPhiChiSquaredInwards(
       float g, float f, float r, float* xPix, float* yPix) {
@@ -551,7 +551,7 @@ namespace lst {
     }
     chiSquared *= 0.5f;
     return chiSquared;
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RPhiChiSquaredInwardsCuts(lst::Modules const& modulesInGPU,
                                                                        uint16_t lowerModuleIndex1,
@@ -641,7 +641,7 @@ namespace lst {
       }
     }
     return true;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runPixelQuintupletDefaultAlgo(TAcc const& acc,
@@ -787,7 +787,7 @@ namespace lst {
     centerY = (centerY + T5CenterY) / 2;
 
     return true;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float computePT5RZChiSquared(TAcc const& acc,
@@ -831,7 +831,7 @@ namespace lst {
 
     RMSE = alpaka::math::sqrt(acc, 0.2f * RMSE);  // Divided by the degree of freedom 5.
     return RMSE;
-  };
+  }
 
   struct createPixelQuintupletsInGPUFromMapv2 {
     template <typename TAcc>

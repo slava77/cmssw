@@ -260,7 +260,7 @@ namespace lst {
     mdsInGPU.outerHighEdgeY[idx] = hitsInGPU.highEdgeYs[outerHitIndex];
     mdsInGPU.outerLowEdgeX[idx] = hitsInGPU.lowEdgeXs[outerHitIndex];
     mdsInGPU.outerLowEdgeY[idx] = hitsInGPU.lowEdgeYs[outerHitIndex];
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
@@ -280,7 +280,7 @@ namespace lst {
         return false;
     } else
       return false;
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
@@ -331,7 +331,7 @@ namespace lst {
     }
 
     return moduleSeparation;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(
@@ -390,7 +390,7 @@ namespace lst {
     else {
       return miniSlope + alpaka::math::sqrt(acc, miniMuls * miniMuls + miniPVoff * miniPVoff + miniLum * miniLum);
     }
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_INLINE ALPAKA_FN_ACC void shiftStripHits(TAcc const& acc,
@@ -556,7 +556,7 @@ namespace lst {
     shiftedCoords[0] = xn;
     shiftedCoords[1] = yn;
     shiftedCoords[2] = zn;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgo(TAcc const& acc,
@@ -628,7 +628,7 @@ namespace lst {
                                              zUpper,
                                              rtUpper);
     }
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
@@ -755,7 +755,7 @@ namespace lst {
     }
 
     return alpaka::math::abs(acc, dPhiChange) < miniCut;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
@@ -866,7 +866,7 @@ namespace lst {
     noShiftedDphichange = noShiftedDphi / dzFrac * (1.f + dzFrac);
 
     return alpaka::math::abs(acc, dPhiChange) < miniCut;
-  };
+  }
 
   struct createMiniDoubletsInGPUv2 {
     template <typename TAcc>

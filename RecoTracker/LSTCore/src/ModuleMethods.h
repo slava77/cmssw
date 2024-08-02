@@ -94,7 +94,7 @@ namespace lst {
     for (unsigned int icondet = 0; icondet < totalSizes_neg; icondet++) {
       connectedPixels[icondet + totalSizes + totalSizes_pos] = mmd.detIdToIndex.at(connectedModuleDetIds_neg[icondet]);
     }
-  };
+  }
 
   inline void fillConnectedModuleArrayExplicit(ModulesBuffer<alpaka_common::DevHost>& modulesBuf,
                                                ModuleMetaData const& mmd,
@@ -111,7 +111,7 @@ namespace lst {
         moduleMap[index * max_connected_modules + i] = mmd.detIdToIndex.at(connectedModules[i]);
       }
     }
-  };
+  }
 
   inline void fillMapArraysExplicit(ModulesBuffer<alpaka_common::DevHost>& modulesBuf, ModuleMetaData const& mmd) {
     uint16_t* mapIdx = alpaka::getPtrNative(modulesBuf.mapIdx_buf);
@@ -125,7 +125,7 @@ namespace lst {
       mapdetId[counter] = detId;
       counter++;
     }
-  };
+  }
 
   inline void setDerivedQuantities(unsigned int detId,
                                    unsigned short& layer,
@@ -148,7 +148,7 @@ namespace lst {
 
     r = std::sqrt(m_x * m_x + m_y * m_y + m_z * m_z);
     eta = ((m_z > 0) - (m_z < 0)) * std::acosh(r / std::sqrt(m_x * m_x + m_y * m_y));
-  };
+  }
 
   inline void loadCentroidsFromFile(const char* filePath, ModuleMetaData& mmd, uint16_t& nModules) {
     std::ifstream ifile(filePath, std::ios::binary);
@@ -185,7 +185,7 @@ namespace lst {
     mmd.detIdToIndex[1] = counter;  //pixel module is the last module in the module list
     counter++;
     nModules = counter;
-  };
+  }
 
   inline ModulesBuffer<alpaka_common::DevHost> loadModulesFromFile(MapPLStoLayer const& pLStoLayer,
                                                                    const char* moduleMetaDataFilePath,
@@ -335,6 +335,6 @@ namespace lst {
     fillMapArraysExplicit(modulesBuf, mmd);
 
     return modulesBuf;
-  };
+  }
 }  // namespace lst
 #endif

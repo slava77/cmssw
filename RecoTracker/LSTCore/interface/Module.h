@@ -72,15 +72,15 @@ namespace lst {
       } else {
         return false;
       }
-    };
+    }
 
     static bool parseIsLower(bool isInvertedx, unsigned int detId) {
       return (isInvertedx) ? !(detId & 1) : (detId & 1);
-    };
+    }
 
     static unsigned int parsePartnerModuleId(unsigned int detId, bool isLowerx, bool isInvertedx) {
       return isLowerx ? (isInvertedx ? detId - 1 : detId + 1) : (isInvertedx ? detId + 1 : detId - 1);
-    };
+    }
 
     template <typename TBuff>
     void setData(TBuff const& buf) {

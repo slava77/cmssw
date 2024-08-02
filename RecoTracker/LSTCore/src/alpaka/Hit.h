@@ -113,7 +113,7 @@ namespace lst {
     float rt = alpaka::math::sqrt(acc, x * x + y * y);
     float eta = ((z > 0) - (z < 0)) * alpaka::math::acosh(acc, r3 / rt);
     return eta;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float phi_mpi_pi(TAcc const& acc, float x) {
@@ -123,24 +123,24 @@ namespace lst {
     constexpr float o2pi = 1.f / (2.f * float(M_PI));
     float n = alpaka::math::round(acc, x * o2pi);
     return x - n * float(2.f * float(M_PI));
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float phi(TAcc const& acc, float x, float y) {
     return phi_mpi_pi(acc, float(M_PI) + alpaka::math::atan2(acc, -y, -x));
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float deltaPhi(TAcc const& acc, float x1, float y1, float x2, float y2) {
     float phi1 = phi(acc, x1, y1);
     float phi2 = phi(acc, x2, y2);
     return phi_mpi_pi(acc, (phi2 - phi1));
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE float deltaPhiChange(TAcc const& acc, float x1, float y1, float x2, float y2) {
     return deltaPhi(acc, x1, y1, x2 - x1, y2 - y1);
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float calculate_dPhi(float phi1, float phi2) {
     // Calculate dPhi
@@ -154,7 +154,7 @@ namespace lst {
     }
 
     return dPhi;
-  };
+  }
 
   ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE int binary_search(const unsigned int* data,  // Array that we are searching over
                                                         unsigned int search_val,  // Value we want to find in data array
@@ -175,7 +175,7 @@ namespace lst {
     }
     // Couldn't find search value in array.
     return -1;
-  };
+  }
 
   struct moduleRangesKernel {
     template <typename TAcc>

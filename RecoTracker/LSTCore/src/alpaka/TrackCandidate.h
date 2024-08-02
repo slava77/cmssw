@@ -126,7 +126,7 @@ namespace lst {
     trackCandidatesInGPU.hitIndices[Params_pT5::kHits * trackCandidateIndex + 1] = hitIndices.z;
     trackCandidatesInGPU.hitIndices[Params_pT5::kHits * trackCandidateIndex + 2] = hitIndices.y;
     trackCandidatesInGPU.hitIndices[Params_pT5::kHits * trackCandidateIndex + 3] = hitIndices.w;
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTrackCandidateToMemory(lst::TrackCandidates& trackCandidatesInGPU,
                                                                 short trackCandidateType,
@@ -163,7 +163,7 @@ namespace lst {
     trackCandidatesInGPU.centerX[trackCandidateIndex] = __F2H(centerX);
     trackCandidatesInGPU.centerY[trackCandidateIndex] = __F2H(centerY);
     trackCandidatesInGPU.radius[trackCandidateIndex] = __F2H(radius);
-  };
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(unsigned int ix,
                                                     unsigned int jx,
@@ -203,7 +203,7 @@ namespace lst {
         npMatched++;
     }
     return npMatched;
-  };
+  }
 
   struct crossCleanpT3 {
     template <typename TAcc>
