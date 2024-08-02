@@ -49,9 +49,11 @@ namespace cms::alpakatools {
     template <typename TQueue>
     static lst::LSTESData<alpaka::Dev<TQueue>> copyAsync(TQueue& queue,
                                                          lst::LSTESData<alpaka_common::DevHost> const& srcData) {
-      auto deviceModulesBuffers = lst::ModulesBuffer<alpaka::Dev<TQueue>>(alpaka::getDev(queue), srcData.nModules, srcData.nPixels);
+      auto deviceModulesBuffers =
+          lst::ModulesBuffer<alpaka::Dev<TQueue>>(alpaka::getDev(queue), srcData.nModules, srcData.nPixels);
       deviceModulesBuffers.copyFromSrc(queue, srcData.modulesBuffers);
-      auto deviceEndcapGeometryBuffers = lst::EndcapGeometryBuffer<alpaka::Dev<TQueue>>(alpaka::getDev(queue), srcData.nEndCapMap);
+      auto deviceEndcapGeometryBuffers =
+          lst::EndcapGeometryBuffer<alpaka::Dev<TQueue>>(alpaka::getDev(queue), srcData.nEndCapMap);
       deviceEndcapGeometryBuffers.copyFromSrc(queue, srcData.endcapGeometryBuffers);
 
       return lst::LSTESData<alpaka::Dev<TQueue>>(srcData.nModules,

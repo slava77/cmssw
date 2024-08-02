@@ -113,8 +113,7 @@ namespace lst {
     }
   };
 
-  inline void fillMapArraysExplicit(ModulesBuffer<alpaka_common::DevHost>& modulesBuf,
-                                    ModuleMetaData const& mmd) {
+  inline void fillMapArraysExplicit(ModulesBuffer<alpaka_common::DevHost>& modulesBuf, ModuleMetaData const& mmd) {
     uint16_t* mapIdx = alpaka::getPtrNative(modulesBuf.mapIdx_buf);
     unsigned int* mapdetId = alpaka::getPtrNative(modulesBuf.mapdetId_buf);
 
@@ -189,14 +188,14 @@ namespace lst {
   };
 
   inline ModulesBuffer<alpaka_common::DevHost> loadModulesFromFile(MapPLStoLayer const& pLStoLayer,
-                                  const char* moduleMetaDataFilePath,
-                                  uint16_t& nModules,
-                                  uint16_t& nLowerModules,
-                                  unsigned int& nPixels,
-                                  PixelMap* pixelMapping,
-                                  const EndcapGeometry& endcapGeometry,
-                                  const TiltedGeometry& tiltedGeometry,
-                                  const ModuleConnectionMap& moduleConnectionMap) {
+                                                                   const char* moduleMetaDataFilePath,
+                                                                   uint16_t& nModules,
+                                                                   uint16_t& nLowerModules,
+                                                                   unsigned int& nPixels,
+                                                                   PixelMap& pixelMapping,
+                                                                   const EndcapGeometry& endcapGeometry,
+                                                                   const TiltedGeometry& tiltedGeometry,
+                                                                   const ModuleConnectionMap& moduleConnectionMap) {
     ModuleMetaData mmd;
 
     loadCentroidsFromFile(moduleMetaDataFilePath, mmd, nModules);
@@ -327,7 +326,7 @@ namespace lst {
       }
     }
 
-    fillPixelMap(modulesBuf, nModules, nPixels, *pixelMapping, pLStoLayer, mmd);
+    fillPixelMap(modulesBuf, nModules, nPixels, pixelMapping, pLStoLayer, mmd);
 
     *host_nModules = nModules;
     *host_nLowerModules = nLowerModules;

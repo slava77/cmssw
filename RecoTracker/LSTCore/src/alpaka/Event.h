@@ -88,7 +88,7 @@ namespace lst {
     const unsigned int nPixels_;
     const unsigned int nEndCapMap_;
     ModulesBuffer<Device> const& modulesBuffers_;
-    std::shared_ptr<const PixelMap> pixelMapping_;
+    PixelMap const& pixelMapping_;
     EndcapGeometryBuffer<Device> const& endcapGeometryBuffers_;
 
   public:
@@ -103,7 +103,7 @@ namespace lst {
           nPixels_(deviceESData->nPixels),
           nEndCapMap_(deviceESData->nEndCapMap),
           modulesBuffers_(deviceESData->modulesBuffers),
-          pixelMapping_(deviceESData->pixelMapping),
+          pixelMapping_(*deviceESData->pixelMapping),
           endcapGeometryBuffers_(deviceESData->endcapGeometryBuffers) {
       init(verbose);
     }
