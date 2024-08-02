@@ -212,7 +212,6 @@ namespace lst {
         alpaka::memcpy(queue, lstLayers_buf, src.lstLayers_buf);
         alpaka::memcpy(queue, connectedPixels_buf, src.connectedPixels_buf);
       }
-      alpaka::wait(queue);
     }
 
     template <typename TQueue, typename TDevSrc>

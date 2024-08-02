@@ -136,7 +136,6 @@ namespace lst {
       alpaka::memset(queue, isDup_buf, 0u);
       alpaka::memset(queue, TightCutFlag_buf, false);
       alpaka::memset(queue, partOfPT5_buf, false);
-      alpaka::wait(queue);
     }
 
     inline Quintuplets const* data() const { return &data_; }

@@ -170,7 +170,6 @@ namespace lst {
       alpaka::memset(queue, totOccupancySegments_buf, 0u);
       alpaka::memset(queue, partOfPT5_buf, false);
       alpaka::memset(queue, pLSHitsIdxs_buf, 0u);
-      alpaka::wait(queue);
     }
 
     inline Segments const* data() const { return &data_; }

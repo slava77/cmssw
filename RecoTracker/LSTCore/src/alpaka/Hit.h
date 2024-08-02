@@ -100,7 +100,6 @@ namespace lst {
       alpaka::memset(queue, hitRangesUpper_buf, 0xff);
       alpaka::memset(queue, hitRangesnLower_buf, 0xff);
       alpaka::memset(queue, hitRangesnUpper_buf, 0xff);
-      alpaka::wait(queue);
     }
 
     inline Hits const* data() const { return &data_; }

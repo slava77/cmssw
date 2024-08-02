@@ -123,7 +123,6 @@ namespace lst {
       alpaka::memset(queue, nPixelTriplets_buf, 0u);
       alpaka::memset(queue, totOccupancyPixelTriplets_buf, 0u);
       alpaka::memset(queue, partOfPT5_buf, false);
-      alpaka::wait(queue);
     }
 
     inline PixelTriplets const* data() const { return &data_; }

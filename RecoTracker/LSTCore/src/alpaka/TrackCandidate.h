@@ -102,7 +102,6 @@ namespace lst {
       alpaka::memset(queue, lowerModuleIndices_buf, 0u);
       alpaka::memset(queue, hitIndices_buf, 0u);
       alpaka::memset(queue, pixelSeedIndex_buf, 0);
-      alpaka::wait(queue);
     }
 
     inline TrackCandidates const* data() const { return &data_; }

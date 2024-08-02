@@ -181,7 +181,6 @@ namespace lst {
           outerLowEdgeY_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)) {
       alpaka::memset(queue, nMDs_buf, 0u);
       alpaka::memset(queue, totOccupancyMDs_buf, 0u);
-      alpaka::wait(queue);
     }
 
     inline MiniDoublets const* data() const { return &data_; }

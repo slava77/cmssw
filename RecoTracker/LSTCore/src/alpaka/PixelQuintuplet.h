@@ -100,7 +100,6 @@ namespace lst {
           rPhiChiSquaredInwards_buf(allocBufWrapper<float>(devAccIn, maxPixelQuintuplets, queue)) {
       alpaka::memset(queue, nPixelQuintuplets_buf, 0u);
       alpaka::memset(queue, totOccupancyPixelQuintuplets_buf, 0u);
-      alpaka::wait(queue);
     }
 
     inline PixelQuintuplets const* data() const { return &data_; }

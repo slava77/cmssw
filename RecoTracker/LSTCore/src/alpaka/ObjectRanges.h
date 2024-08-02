@@ -143,7 +143,6 @@ namespace lst {
       alpaka::memset(queue, trackCandidateRanges_buf, 0xff);
       alpaka::memset(queue, quintupletRanges_buf, 0xff);
       alpaka::memset(queue, quintupletModuleIndices_buf, 0xff);
-      alpaka::wait(queue);
       data_.setData(*this);
     }
 
