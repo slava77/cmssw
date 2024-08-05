@@ -91,10 +91,10 @@ std::unique_ptr<lst::LSTESData<alpaka_common::DevHost>> lst::loadAndFillESHost()
       EndcapGeometryBuffer<alpaka_common::DevHost>(cms::alpakatools::host(), endcapGeometry.nEndCapMap);
   std::memcpy(alpaka::getPtrNative(endcapGeometryBuffers.geoMapDetId_buf),
               endcapGeometry.geoMapDetId_buf.data(),
-              endcapGeometry.nEndCapMap);
+              endcapGeometry.nEndCapMap * sizeof(unsigned int));
   std::memcpy(alpaka::getPtrNative(endcapGeometryBuffers.geoMapPhi_buf),
               endcapGeometry.geoMapPhi_buf.data(),
-              endcapGeometry.nEndCapMap);
+              endcapGeometry.nEndCapMap * sizeof(float));
 
   auto path =
       get_absolute_path_after_check_file_exists(trackLooperDir() + "/data/OT800_IT615_pt0.8/sensor_centroids.bin");
