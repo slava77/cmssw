@@ -190,32 +190,26 @@ void lst::Event<Acc3D>::addHitToEvent(std::vector<float> const& x,
   WorkDiv3D const hit_loop_workdiv = createWorkDiv(blocksPerGrid1, threadsPerBlock1, elementsPerThread);
 
   hitLoopKernel hit_loop_kernel;
-  auto const hit_loop_task(alpaka::createTaskKernel<Acc3D>(hit_loop_workdiv,
-                                                           hit_loop_kernel,
-                                                           Endcap,
-                                                           TwoS,
-                                                           nModules_,
-                                                           nEndCapMap_,
-                                                           alpaka::getPtrNative(endcapGeometryBuffers_.geoMapDetId_buf),
-                                                           alpaka::getPtrNative(endcapGeometryBuffers_.geoMapPhi_buf),
-                                                           *modulesBuffers_.data(),
-                                                           *hitsInGPU,
-                                                           nHits));
-
-  alpaka::enqueue(queue, hit_loop_task);
+  alpaka::exec<Acc3D>(queue,
+                      hit_loop_workdiv,
+                      hit_loop_kernel,
+                      Endcap,
+                      TwoS,
+                      nModules_,
+                      nEndCapMap_,
+                      alpaka::getPtrNative(endcapGeometryBuffers_.geoMapDetId_buf),
+                      alpaka::getPtrNative(endcapGeometryBuffers_.geoMapPhi_buf),
+                      *modulesBuffers_.data(),
+                      *hitsInGPU,
+                      nHits);
 
   Vec3D const threadsPerBlock2{1, 1, 256};
   Vec3D const blocksPerGrid2{1, 1, max_blocks};
   WorkDiv3D const module_ranges_workdiv = createWorkDiv(blocksPerGrid2, threadsPerBlock2, elementsPerThread);
 
   moduleRangesKernel module_ranges_kernel;
-  auto const module_ranges_task(alpaka::createTaskKernel<Acc3D>(
-      module_ranges_workdiv, module_ranges_kernel, *modulesBuffers_.data(), *hitsInGPU, nLowerModules_));
-
-  // Waiting isn't needed after second kernel call. Saves ~100 us.
-  // This is because addPixelSegmentToEvent (which is run next) doesn't rely on hitsBuffers->hitrange variables.
-  // Also, modulesInGPU->partnerModuleIndices is not alterned in addPixelSegmentToEvent.
-  alpaka::enqueue(queue, module_ranges_task);
+  alpaka::exec<Acc3D>(
+      queue, module_ranges_workdiv, module_ranges_kernel, *modulesBuffers_.data(), *hitsInGPU, nLowerModules_);
 }
 
 void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
@@ -267,10 +261,8 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
         createWorkDiv(blocksPerGridCreateMD, threadsPerBlockCreateMD, elementsPerThread);
 
     lst::createMDArrayRangesGPU createMDArrayRangesGPU_kernel;
-    auto const createMDArrayRangesGPUTask(alpaka::createTaskKernel<Acc3D>(
-        createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU));
-
-    alpaka::enqueue(queue, createMDArrayRangesGPUTask);
+    alpaka::exec<Acc3D>(
+        queue, createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU);
 
     auto nTotalMDs_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, (Idx)1u);
     alpaka::memcpy(queue, nTotalMDs_buf_h, rangesBuffers->device_nTotalMDs_buf);
@@ -295,13 +287,12 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
         createWorkDiv(blocksPerGridCreateSeg, threadsPerBlockCreateSeg, elementsPerThread);
 
     lst::createSegmentArrayRanges createSegmentArrayRanges_kernel;
-    auto const createSegmentArrayRangesTask(alpaka::createTaskKernel<Acc3D>(createSegmentArrayRanges_workDiv,
-                                                                            createSegmentArrayRanges_kernel,
-                                                                            *modulesBuffers_.data(),
-                                                                            *rangesInGPU,
-                                                                            *mdsInGPU));
-
-    alpaka::enqueue(queue, createSegmentArrayRangesTask);
+    alpaka::exec<Acc3D>(queue,
+                        createSegmentArrayRanges_workDiv,
+                        createSegmentArrayRanges_kernel,
+                        *modulesBuffers_.data(),
+                        *rangesInGPU,
+                        *mdsInGPU);
 
     auto nTotalSegments_view = alpaka::createView(devHost, &nTotalSegments_, (Idx)1u);
 
@@ -369,22 +360,21 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
   WorkDiv3D const addPixelSegmentToEvent_workdiv = createWorkDiv(blocksPerGrid, threadsPerBlock, elementsPerThread);
 
   addPixelSegmentToEventKernel addPixelSegmentToEvent_kernel;
-  auto const addPixelSegmentToEvent_task(alpaka::createTaskKernel<Acc3D>(addPixelSegmentToEvent_workdiv,
-                                                                         addPixelSegmentToEvent_kernel,
-                                                                         *modulesBuffers_.data(),
-                                                                         *rangesInGPU,
-                                                                         *hitsInGPU,
-                                                                         *mdsInGPU,
-                                                                         *segmentsInGPU,
-                                                                         alpaka::getPtrNative(hitIndices0_dev),
-                                                                         alpaka::getPtrNative(hitIndices1_dev),
-                                                                         alpaka::getPtrNative(hitIndices2_dev),
-                                                                         alpaka::getPtrNative(hitIndices3_dev),
-                                                                         alpaka::getPtrNative(dPhiChange_dev),
-                                                                         pixelModuleIndex,
-                                                                         size));
-
-  alpaka::enqueue(queue, addPixelSegmentToEvent_task);
+  alpaka::exec<Acc3D>(queue,
+                      addPixelSegmentToEvent_workdiv,
+                      addPixelSegmentToEvent_kernel,
+                      *modulesBuffers_.data(),
+                      *rangesInGPU,
+                      *hitsInGPU,
+                      *mdsInGPU,
+                      *segmentsInGPU,
+                      alpaka::getPtrNative(hitIndices0_dev),
+                      alpaka::getPtrNative(hitIndices1_dev),
+                      alpaka::getPtrNative(hitIndices2_dev),
+                      alpaka::getPtrNative(hitIndices3_dev),
+                      alpaka::getPtrNative(dPhiChange_dev),
+                      pixelModuleIndex,
+                      size);
 }
 
 void lst::Event<Acc3D>::createMiniDoublets() {
@@ -404,10 +394,8 @@ void lst::Event<Acc3D>::createMiniDoublets() {
       createWorkDiv(blocksPerGridCreateMD, threadsPerBlockCreateMD, elementsPerThread);
 
   lst::createMDArrayRangesGPU createMDArrayRangesGPU_kernel;
-  auto const createMDArrayRangesGPUTask(alpaka::createTaskKernel<Acc3D>(
-      createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU));
-
-  alpaka::enqueue(queue, createMDArrayRangesGPUTask);
+  alpaka::exec<Acc3D>(
+      queue, createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU);
 
   auto nTotalMDs_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, (Idx)1u);
   alpaka::memcpy(queue, nTotalMDs_buf_h, rangesBuffers->device_nTotalMDs_buf);
@@ -428,14 +416,13 @@ void lst::Event<Acc3D>::createMiniDoublets() {
       createWorkDiv(blocksPerGridCreateMDInGPU, threadsPerBlockCreateMDInGPU, elementsPerThread);
 
   lst::createMiniDoubletsInGPUv2 createMiniDoubletsInGPUv2_kernel;
-  auto const createMiniDoubletsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createMiniDoubletsInGPUv2_workDiv,
-                                                                           createMiniDoubletsInGPUv2_kernel,
-                                                                           *modulesBuffers_.data(),
-                                                                           *hitsInGPU,
-                                                                           *mdsInGPU,
-                                                                           *rangesInGPU));
-
-  alpaka::enqueue(queue, createMiniDoubletsInGPUv2Task);
+  alpaka::exec<Acc3D>(queue,
+                      createMiniDoubletsInGPUv2_workDiv,
+                      createMiniDoubletsInGPUv2_kernel,
+                      *modulesBuffers_.data(),
+                      *hitsInGPU,
+                      *mdsInGPU,
+                      *rangesInGPU);
 
   Vec3D const threadsPerBlockAddMD{1, 1, 1024};
   Vec3D const blocksPerGridAddMD{1, 1, 1};
@@ -443,15 +430,13 @@ void lst::Event<Acc3D>::createMiniDoublets() {
       createWorkDiv(blocksPerGridAddMD, threadsPerBlockAddMD, elementsPerThread);
 
   lst::addMiniDoubletRangesToEventExplicit addMiniDoubletRangesToEventExplicit_kernel;
-  auto const addMiniDoubletRangesToEventExplicitTask(
-      alpaka::createTaskKernel<Acc3D>(addMiniDoubletRangesToEventExplicit_workDiv,
-                                      addMiniDoubletRangesToEventExplicit_kernel,
-                                      *modulesBuffers_.data(),
-                                      *mdsInGPU,
-                                      *rangesInGPU,
-                                      *hitsInGPU));
-
-  alpaka::enqueue(queue, addMiniDoubletRangesToEventExplicitTask);
+  alpaka::exec<Acc3D>(queue,
+                      addMiniDoubletRangesToEventExplicit_workDiv,
+                      addMiniDoubletRangesToEventExplicit_kernel,
+                      *modulesBuffers_.data(),
+                      *mdsInGPU,
+                      *rangesInGPU,
+                      *hitsInGPU);
 
   if (addObjects) {
     addMiniDoubletsToEventExplicit();
@@ -472,14 +457,13 @@ void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
       createWorkDiv(blocksPerGridCreateSeg, threadsPerBlockCreateSeg, elementsPerThread);
 
   lst::createSegmentsInGPUv2 createSegmentsInGPUv2_kernel;
-  auto const createSegmentsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createSegmentsInGPUv2_workDiv,
-                                                                       createSegmentsInGPUv2_kernel,
-                                                                       *modulesBuffers_.data(),
-                                                                       *mdsInGPU,
-                                                                       *segmentsInGPU,
-                                                                       *rangesInGPU));
-
-  alpaka::enqueue(queue, createSegmentsInGPUv2Task);
+  alpaka::exec<Acc3D>(queue,
+                      createSegmentsInGPUv2_workDiv,
+                      createSegmentsInGPUv2_kernel,
+                      *modulesBuffers_.data(),
+                      *mdsInGPU,
+                      *segmentsInGPU,
+                      *rangesInGPU);
 
   Vec3D const threadsPerBlockAddSeg{1, 1, 1024};
   Vec3D const blocksPerGridAddSeg{1, 1, 1};
@@ -487,14 +471,12 @@ void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
       createWorkDiv(blocksPerGridAddSeg, threadsPerBlockAddSeg, elementsPerThread);
 
   lst::addSegmentRangesToEventExplicit addSegmentRangesToEventExplicit_kernel;
-  auto const addSegmentRangesToEventExplicitTask(
-      alpaka::createTaskKernel<Acc3D>(addSegmentRangesToEventExplicit_workDiv,
-                                      addSegmentRangesToEventExplicit_kernel,
-                                      *modulesBuffers_.data(),
-                                      *segmentsInGPU,
-                                      *rangesInGPU));
-
-  alpaka::enqueue(queue, addSegmentRangesToEventExplicitTask);
+  alpaka::exec<Acc3D>(queue,
+                      addSegmentRangesToEventExplicit_workDiv,
+                      addSegmentRangesToEventExplicit_kernel,
+                      *modulesBuffers_.data(),
+                      *segmentsInGPU,
+                      *rangesInGPU);
 
   if (addObjects) {
     addSegmentsToEventExplicit();
@@ -509,13 +491,12 @@ void lst::Event<Acc3D>::createTriplets() {
         createWorkDiv(blocksPerGridCreateTrip, threadsPerBlockCreateTrip, elementsPerThread);
 
     lst::createTripletArrayRanges createTripletArrayRanges_kernel;
-    auto const createTripletArrayRangesTask(alpaka::createTaskKernel<Acc3D>(createTripletArrayRanges_workDiv,
-                                                                            createTripletArrayRanges_kernel,
-                                                                            *modulesBuffers_.data(),
-                                                                            *rangesInGPU,
-                                                                            *segmentsInGPU));
-
-    alpaka::enqueue(queue, createTripletArrayRangesTask);
+    alpaka::exec<Acc3D>(queue,
+                        createTripletArrayRanges_workDiv,
+                        createTripletArrayRanges_kernel,
+                        *modulesBuffers_.data(),
+                        *rangesInGPU,
+                        *segmentsInGPU);
 
     // TODO: Why are we pulling this back down only to put it back on the device in a new struct?
     auto maxTriplets_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, (Idx)1u);
@@ -571,17 +552,16 @@ void lst::Event<Acc3D>::createTriplets() {
       createWorkDiv(blocksPerGridCreateTrip, threadsPerBlockCreateTrip, elementsPerThread);
 
   lst::createTripletsInGPUv2 createTripletsInGPUv2_kernel;
-  auto const createTripletsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createTripletsInGPUv2_workDiv,
-                                                                       createTripletsInGPUv2_kernel,
-                                                                       *modulesBuffers_.data(),
-                                                                       *mdsInGPU,
-                                                                       *segmentsInGPU,
-                                                                       *tripletsInGPU,
-                                                                       *rangesInGPU,
-                                                                       alpaka::getPtrNative(index_gpu_buf),
-                                                                       nonZeroModules));
-
-  alpaka::enqueue(queue, createTripletsInGPUv2Task);
+  alpaka::exec<Acc3D>(queue,
+                      createTripletsInGPUv2_workDiv,
+                      createTripletsInGPUv2_kernel,
+                      *modulesBuffers_.data(),
+                      *mdsInGPU,
+                      *segmentsInGPU,
+                      *tripletsInGPU,
+                      *rangesInGPU,
+                      alpaka::getPtrNative(index_gpu_buf),
+                      nonZeroModules);
 
   Vec3D const threadsPerBlockAddTrip{1, 1, 1024};
   Vec3D const blocksPerGridAddTrip{1, 1, 1};
@@ -589,14 +569,12 @@ void lst::Event<Acc3D>::createTriplets() {
       createWorkDiv(blocksPerGridAddTrip, threadsPerBlockAddTrip, elementsPerThread);
 
   lst::addTripletRangesToEventExplicit addTripletRangesToEventExplicit_kernel;
-  auto const addTripletRangesToEventExplicitTask(
-      alpaka::createTaskKernel<Acc3D>(addTripletRangesToEventExplicit_workDiv,
-                                      addTripletRangesToEventExplicit_kernel,
-                                      *modulesBuffers_.data(),
-                                      *tripletsInGPU,
-                                      *rangesInGPU));
-
-  alpaka::enqueue(queue, addTripletRangesToEventExplicitTask);
+  alpaka::exec<Acc3D>(queue,
+                      addTripletRangesToEventExplicit_workDiv,
+                      addTripletRangesToEventExplicit_kernel,
+                      *modulesBuffers_.data(),
+                      *tripletsInGPU,
+                      *rangesInGPU);
 
   if (addObjects) {
     addTripletsToEventExplicit();
@@ -617,15 +595,14 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
       createWorkDiv(blocksPerGrid_crossCleanpT3, threadsPerBlock_crossCleanpT3, elementsPerThread);
 
   lst::crossCleanpT3 crossCleanpT3_kernel;
-  auto const crossCleanpT3Task(alpaka::createTaskKernel<Acc3D>(crossCleanpT3_workDiv,
-                                                               crossCleanpT3_kernel,
-                                                               *modulesBuffers_.data(),
-                                                               *rangesInGPU,
-                                                               *pixelTripletsInGPU,
-                                                               *segmentsInGPU,
-                                                               *pixelQuintupletsInGPU));
-
-  alpaka::enqueue(queue, crossCleanpT3Task);
+  alpaka::exec<Acc3D>(queue,
+                      crossCleanpT3_workDiv,
+                      crossCleanpT3_kernel,
+                      *modulesBuffers_.data(),
+                      *rangesInGPU,
+                      *pixelTripletsInGPU,
+                      *segmentsInGPU,
+                      *pixelQuintupletsInGPU);
 
   Vec3D const threadsPerBlock_addpT3asTrackCandidatesInGPU{1, 1, 512};
   Vec3D const blocksPerGrid_addpT3asTrackCandidatesInGPU{1, 1, 1};
@@ -633,15 +610,14 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
       blocksPerGrid_addpT3asTrackCandidatesInGPU, threadsPerBlock_addpT3asTrackCandidatesInGPU, elementsPerThread);
 
   lst::addpT3asTrackCandidatesInGPU addpT3asTrackCandidatesInGPU_kernel;
-  auto const addpT3asTrackCandidatesInGPUTask(alpaka::createTaskKernel<Acc3D>(addpT3asTrackCandidatesInGPU_workDiv,
-                                                                              addpT3asTrackCandidatesInGPU_kernel,
-                                                                              nLowerModules_,
-                                                                              *pixelTripletsInGPU,
-                                                                              *trackCandidatesInGPU,
-                                                                              *segmentsInGPU,
-                                                                              *rangesInGPU));
-
-  alpaka::enqueue(queue, addpT3asTrackCandidatesInGPUTask);
+  alpaka::exec<Acc3D>(queue,
+                      addpT3asTrackCandidatesInGPU_workDiv,
+                      addpT3asTrackCandidatesInGPU_kernel,
+                      nLowerModules_,
+                      *pixelTripletsInGPU,
+                      *trackCandidatesInGPU,
+                      *segmentsInGPU,
+                      *rangesInGPU);
 
   // Pull nEligibleT5Modules from the device.
   auto nEligibleModules_buf_h = cms::alpakatools::make_host_buffer<uint16_t[]>(queue, 1u);
@@ -655,13 +631,11 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
       createWorkDiv(blocksPerGridRemoveDupQuints, threadsPerBlockRemoveDupQuints, elementsPerThread);
 
   lst::removeDupQuintupletsInGPUBeforeTC removeDupQuintupletsInGPUBeforeTC_kernel;
-  auto const removeDupQuintupletsInGPUBeforeTCTask(
-      alpaka::createTaskKernel<Acc3D>(removeDupQuintupletsInGPUBeforeTC_workDiv,
-                                      removeDupQuintupletsInGPUBeforeTC_kernel,
-                                      *quintupletsInGPU,
-                                      *rangesInGPU));
-
-  alpaka::enqueue(queue, removeDupQuintupletsInGPUBeforeTCTask);
+  alpaka::exec<Acc3D>(queue,
+                      removeDupQuintupletsInGPUBeforeTC_workDiv,
+                      removeDupQuintupletsInGPUBeforeTC_kernel,
+                      *quintupletsInGPU,
+                      *rangesInGPU);
 
   Vec3D const threadsPerBlock_crossCleanT5{32, 1, 32};
   Vec3D const blocksPerGrid_crossCleanT5{(13296 / 32) + 1, 1, max_blocks};
@@ -669,15 +643,14 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
       createWorkDiv(blocksPerGrid_crossCleanT5, threadsPerBlock_crossCleanT5, elementsPerThread);
 
   lst::crossCleanT5 crossCleanT5_kernel;
-  auto const crossCleanT5Task(alpaka::createTaskKernel<Acc3D>(crossCleanT5_workDiv,
-                                                              crossCleanT5_kernel,
-                                                              *modulesBuffers_.data(),
-                                                              *quintupletsInGPU,
-                                                              *pixelQuintupletsInGPU,
-                                                              *pixelTripletsInGPU,
-                                                              *rangesInGPU));
-
-  alpaka::enqueue(queue, crossCleanT5Task);
+  alpaka::exec<Acc3D>(queue,
+                      crossCleanT5_workDiv,
+                      crossCleanT5_kernel,
+                      *modulesBuffers_.data(),
+                      *quintupletsInGPU,
+                      *pixelQuintupletsInGPU,
+                      *pixelTripletsInGPU,
+                      *rangesInGPU);
 
   Vec3D const threadsPerBlock_addT5asTrackCandidateInGPU{1, 8, 128};
   Vec3D const blocksPerGrid_addT5asTrackCandidateInGPU{1, 8, 10};
@@ -685,14 +658,13 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
       blocksPerGrid_addT5asTrackCandidateInGPU, threadsPerBlock_addT5asTrackCandidateInGPU, elementsPerThread);
 
   lst::addT5asTrackCandidateInGPU addT5asTrackCandidateInGPU_kernel;
-  auto const addT5asTrackCandidateInGPUTask(alpaka::createTaskKernel<Acc3D>(addT5asTrackCandidateInGPU_workDiv,
-                                                                            addT5asTrackCandidateInGPU_kernel,
-                                                                            nLowerModules_,
-                                                                            *quintupletsInGPU,
-                                                                            *trackCandidatesInGPU,
-                                                                            *rangesInGPU));
-
-  alpaka::enqueue(queue, addT5asTrackCandidateInGPUTask);
+  alpaka::exec<Acc3D>(queue,
+                      addT5asTrackCandidateInGPU_workDiv,
+                      addT5asTrackCandidateInGPU_kernel,
+                      nLowerModules_,
+                      *quintupletsInGPU,
+                      *trackCandidatesInGPU,
+                      *rangesInGPU);
 
   if (!no_pls_dupclean) {
     Vec3D const threadsPerBlockCheckHitspLS{1, 16, 16};
@@ -701,10 +673,8 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
     lst::checkHitspLS checkHitspLS_kernel;
-    auto const checkHitspLSTask(alpaka::createTaskKernel<Acc3D>(
-        checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, true));
-
-    alpaka::enqueue(queue, checkHitspLSTask);
+    alpaka::exec<Acc3D>(
+        queue, checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, true);
   }
 
   Vec3D const threadsPerBlock_crossCleanpLS{1, 16, 32};
@@ -713,18 +683,17 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
       createWorkDiv(blocksPerGrid_crossCleanpLS, threadsPerBlock_crossCleanpLS, elementsPerThread);
 
   lst::crossCleanpLS crossCleanpLS_kernel;
-  auto const crossCleanpLSTask(alpaka::createTaskKernel<Acc3D>(crossCleanpLS_workDiv,
-                                                               crossCleanpLS_kernel,
-                                                               *modulesBuffers_.data(),
-                                                               *rangesInGPU,
-                                                               *pixelTripletsInGPU,
-                                                               *trackCandidatesInGPU,
-                                                               *segmentsInGPU,
-                                                               *mdsInGPU,
-                                                               *hitsInGPU,
-                                                               *quintupletsInGPU));
-
-  alpaka::enqueue(queue, crossCleanpLSTask);
+  alpaka::exec<Acc3D>(queue,
+                      crossCleanpLS_workDiv,
+                      crossCleanpLS_kernel,
+                      *modulesBuffers_.data(),
+                      *rangesInGPU,
+                      *pixelTripletsInGPU,
+                      *trackCandidatesInGPU,
+                      *segmentsInGPU,
+                      *mdsInGPU,
+                      *hitsInGPU,
+                      *quintupletsInGPU);
 
   Vec3D const threadsPerBlock_addpLSasTrackCandidateInGPU{1, 1, 384};
   Vec3D const blocksPerGrid_addpLSasTrackCandidateInGPU{1, 1, max_blocks};
@@ -732,14 +701,13 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
       blocksPerGrid_addpLSasTrackCandidateInGPU, threadsPerBlock_addpLSasTrackCandidateInGPU, elementsPerThread);
 
   lst::addpLSasTrackCandidateInGPU addpLSasTrackCandidateInGPU_kernel;
-  auto const addpLSasTrackCandidateInGPUTask(alpaka::createTaskKernel<Acc3D>(addpLSasTrackCandidateInGPU_workDiv,
-                                                                             addpLSasTrackCandidateInGPU_kernel,
-                                                                             nLowerModules_,
-                                                                             *trackCandidatesInGPU,
-                                                                             *segmentsInGPU,
-                                                                             tc_pls_triplets));
-
-  alpaka::enqueue(queue, addpLSasTrackCandidateInGPUTask);
+  alpaka::exec<Acc3D>(queue,
+                      addpLSasTrackCandidateInGPU_workDiv,
+                      addpLSasTrackCandidateInGPU_kernel,
+                      nLowerModules_,
+                      *trackCandidatesInGPU,
+                      *segmentsInGPU,
+                      tc_pls_triplets);
 
   // Check if either n_max_pixel_track_candidates or n_max_nonpixel_track_candidates was reached
   auto nTrackCanpT5Host_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -844,20 +812,18 @@ void lst::Event<Acc3D>::createPixelTriplets() {
       createWorkDiv(blocksPerGrid, threadsPerBlock, elementsPerThread);
 
   lst::createPixelTripletsInGPUFromMapv2 createPixelTripletsInGPUFromMapv2_kernel;
-  auto const createPixelTripletsInGPUFromMapv2Task(
-      alpaka::createTaskKernel<Acc3D>(createPixelTripletsInGPUFromMapv2_workDiv,
-                                      createPixelTripletsInGPUFromMapv2_kernel,
-                                      *modulesBuffers_.data(),
-                                      *rangesInGPU,
-                                      *mdsInGPU,
-                                      *segmentsInGPU,
-                                      *tripletsInGPU,
-                                      *pixelTripletsInGPU,
-                                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
-                                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
-                                      nInnerSegments));
-
-  alpaka::enqueue(queue, createPixelTripletsInGPUFromMapv2Task);
+  alpaka::exec<Acc3D>(queue,
+                      createPixelTripletsInGPUFromMapv2_workDiv,
+                      createPixelTripletsInGPUFromMapv2_kernel,
+                      *modulesBuffers_.data(),
+                      *rangesInGPU,
+                      *mdsInGPU,
+                      *segmentsInGPU,
+                      *tripletsInGPU,
+                      *pixelTripletsInGPU,
+                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
+                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
+                      nInnerSegments);
 
 #ifdef WARNINGS
   auto nPixelTriplets_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -876,10 +842,10 @@ void lst::Event<Acc3D>::createPixelTriplets() {
       createWorkDiv(blocksPerGridDupPixTrip, threadsPerBlockDupPixTrip, elementsPerThread);
 
   lst::removeDupPixelTripletsInGPUFromMap removeDupPixelTripletsInGPUFromMap_kernel;
-  auto const removeDupPixelTripletsInGPUFromMapTask(alpaka::createTaskKernel<Acc3D>(
-      removeDupPixelTripletsInGPUFromMap_workDiv, removeDupPixelTripletsInGPUFromMap_kernel, *pixelTripletsInGPU));
-
-  alpaka::enqueue(queue, removeDupPixelTripletsInGPUFromMapTask);
+  alpaka::exec<Acc3D>(queue,
+                      removeDupPixelTripletsInGPUFromMap_workDiv,
+                      removeDupPixelTripletsInGPUFromMap_kernel,
+                      *pixelTripletsInGPU);
 }
 
 void lst::Event<Acc3D>::createQuintuplets() {
@@ -889,14 +855,12 @@ void lst::Event<Acc3D>::createQuintuplets() {
       createWorkDiv(blocksPerGridCreateQuints, threadsPerBlockCreateQuints, elementsPerThread);
 
   lst::createEligibleModulesListForQuintupletsGPU createEligibleModulesListForQuintupletsGPU_kernel;
-  auto const createEligibleModulesListForQuintupletsGPUTask(
-      alpaka::createTaskKernel<Acc3D>(createEligibleModulesListForQuintupletsGPU_workDiv,
-                                      createEligibleModulesListForQuintupletsGPU_kernel,
-                                      *modulesBuffers_.data(),
-                                      *tripletsInGPU,
-                                      *rangesInGPU));
-
-  alpaka::enqueue(queue, createEligibleModulesListForQuintupletsGPUTask);
+  alpaka::exec<Acc3D>(queue,
+                      createEligibleModulesListForQuintupletsGPU_workDiv,
+                      createEligibleModulesListForQuintupletsGPU_kernel,
+                      *modulesBuffers_.data(),
+                      *tripletsInGPU,
+                      *rangesInGPU);
 
   auto nEligibleT5Modules_buf = allocBufWrapper<uint16_t>(devHost, 1, queue);
   auto nTotalQuintuplets_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
@@ -922,17 +886,16 @@ void lst::Event<Acc3D>::createQuintuplets() {
       createWorkDiv(blocksPerGridQuints, threadsPerBlockQuints, elementsPerThread);
 
   lst::createQuintupletsInGPUv2 createQuintupletsInGPUv2_kernel;
-  auto const createQuintupletsInGPUv2Task(alpaka::createTaskKernel<Acc3D>(createQuintupletsInGPUv2_workDiv,
-                                                                          createQuintupletsInGPUv2_kernel,
-                                                                          *modulesBuffers_.data(),
-                                                                          *mdsInGPU,
-                                                                          *segmentsInGPU,
-                                                                          *tripletsInGPU,
-                                                                          *quintupletsInGPU,
-                                                                          *rangesInGPU,
-                                                                          nEligibleT5Modules));
-
-  alpaka::enqueue(queue, createQuintupletsInGPUv2Task);
+  alpaka::exec<Acc3D>(queue,
+                      createQuintupletsInGPUv2_workDiv,
+                      createQuintupletsInGPUv2_kernel,
+                      *modulesBuffers_.data(),
+                      *mdsInGPU,
+                      *segmentsInGPU,
+                      *tripletsInGPU,
+                      *quintupletsInGPU,
+                      *rangesInGPU,
+                      nEligibleT5Modules);
 
   Vec3D const threadsPerBlockDupQuint{1, 16, 16};
   Vec3D const blocksPerGridDupQuint{max_blocks, 1, 1};
@@ -940,14 +903,12 @@ void lst::Event<Acc3D>::createQuintuplets() {
       createWorkDiv(blocksPerGridDupQuint, threadsPerBlockDupQuint, elementsPerThread);
 
   lst::removeDupQuintupletsInGPUAfterBuild removeDupQuintupletsInGPUAfterBuild_kernel;
-  auto const removeDupQuintupletsInGPUAfterBuildTask(
-      alpaka::createTaskKernel<Acc3D>(removeDupQuintupletsInGPUAfterBuild_workDiv,
-                                      removeDupQuintupletsInGPUAfterBuild_kernel,
-                                      *modulesBuffers_.data(),
-                                      *quintupletsInGPU,
-                                      *rangesInGPU));
-
-  alpaka::enqueue(queue, removeDupQuintupletsInGPUAfterBuildTask);
+  alpaka::exec<Acc3D>(queue,
+                      removeDupQuintupletsInGPUAfterBuild_workDiv,
+                      removeDupQuintupletsInGPUAfterBuild_kernel,
+                      *modulesBuffers_.data(),
+                      *quintupletsInGPU,
+                      *rangesInGPU);
 
   Vec3D const threadsPerBlockAddQuint{1, 1, 1024};
   Vec3D const blocksPerGridAddQuint{1, 1, 1};
@@ -955,14 +916,12 @@ void lst::Event<Acc3D>::createQuintuplets() {
       createWorkDiv(blocksPerGridAddQuint, threadsPerBlockAddQuint, elementsPerThread);
 
   lst::addQuintupletRangesToEventExplicit addQuintupletRangesToEventExplicit_kernel;
-  auto const addQuintupletRangesToEventExplicitTask(
-      alpaka::createTaskKernel<Acc3D>(addQuintupletRangesToEventExplicit_workDiv,
-                                      addQuintupletRangesToEventExplicit_kernel,
-                                      *modulesBuffers_.data(),
-                                      *quintupletsInGPU,
-                                      *rangesInGPU));
-
-  alpaka::enqueue(queue, addQuintupletRangesToEventExplicitTask);
+  alpaka::exec<Acc3D>(queue,
+                      addQuintupletRangesToEventExplicit_workDiv,
+                      addQuintupletRangesToEventExplicit_kernel,
+                      *modulesBuffers_.data(),
+                      *quintupletsInGPU,
+                      *rangesInGPU);
 
   if (addObjects) {
     addQuintupletsToEventExplicit();
@@ -977,10 +936,8 @@ void lst::Event<Acc3D>::pixelLineSegmentCleaning(bool no_pls_dupclean) {
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
     lst::checkHitspLS checkHitspLS_kernel;
-    auto const checkHitspLSTask(alpaka::createTaskKernel<Acc3D>(
-        checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, false));
-
-    alpaka::enqueue(queue, checkHitspLSTask);
+    alpaka::exec<Acc3D>(
+        queue, checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, false);
   }
 }
 
@@ -1062,21 +1019,19 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
       createWorkDiv(blocksPerGridCreatePixQuints, threadsPerBlockCreatePixQuints, elementsPerThread);
 
   lst::createPixelQuintupletsInGPUFromMapv2 createPixelQuintupletsInGPUFromMapv2_kernel;
-  auto const createPixelQuintupletsInGPUFromMapv2Task(
-      alpaka::createTaskKernel<Acc3D>(createPixelQuintupletsInGPUFromMapv2_workDiv,
-                                      createPixelQuintupletsInGPUFromMapv2_kernel,
-                                      *modulesBuffers_.data(),
-                                      *mdsInGPU,
-                                      *segmentsInGPU,
-                                      *tripletsInGPU,
-                                      *quintupletsInGPU,
-                                      *pixelQuintupletsInGPU,
-                                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
-                                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
-                                      nInnerSegments,
-                                      *rangesInGPU));
-
-  alpaka::enqueue(queue, createPixelQuintupletsInGPUFromMapv2Task);
+  alpaka::exec<Acc3D>(queue,
+                      createPixelQuintupletsInGPUFromMapv2_workDiv,
+                      createPixelQuintupletsInGPUFromMapv2_kernel,
+                      *modulesBuffers_.data(),
+                      *mdsInGPU,
+                      *segmentsInGPU,
+                      *tripletsInGPU,
+                      *quintupletsInGPU,
+                      *pixelQuintupletsInGPU,
+                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
+                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
+                      nInnerSegments,
+                      *rangesInGPU);
 
   Vec3D const threadsPerBlockDupPix{1, 16, 16};
   Vec3D const blocksPerGridDupPix{1, max_blocks, 1};
@@ -1084,12 +1039,10 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
       createWorkDiv(blocksPerGridDupPix, threadsPerBlockDupPix, elementsPerThread);
 
   lst::removeDupPixelQuintupletsInGPUFromMap removeDupPixelQuintupletsInGPUFromMap_kernel;
-  auto const removeDupPixelQuintupletsInGPUFromMapTask(
-      alpaka::createTaskKernel<Acc3D>(removeDupPixelQuintupletsInGPUFromMap_workDiv,
-                                      removeDupPixelQuintupletsInGPUFromMap_kernel,
-                                      *pixelQuintupletsInGPU));
-
-  alpaka::enqueue(queue, removeDupPixelQuintupletsInGPUFromMapTask);
+  alpaka::exec<Acc3D>(queue,
+                      removeDupPixelQuintupletsInGPUFromMap_workDiv,
+                      removeDupPixelQuintupletsInGPUFromMap_kernel,
+                      *pixelQuintupletsInGPU);
 
   Vec3D const threadsPerBlockAddpT5asTrackCan{1, 1, 256};
   Vec3D const blocksPerGridAddpT5asTrackCan{1, 1, 1};
@@ -1097,15 +1050,14 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
       createWorkDiv(blocksPerGridAddpT5asTrackCan, threadsPerBlockAddpT5asTrackCan, elementsPerThread);
 
   lst::addpT5asTrackCandidateInGPU addpT5asTrackCandidateInGPU_kernel;
-  auto const addpT5asTrackCandidateInGPUTask(alpaka::createTaskKernel<Acc3D>(addpT5asTrackCandidateInGPU_workDiv,
-                                                                             addpT5asTrackCandidateInGPU_kernel,
-                                                                             nLowerModules_,
-                                                                             *pixelQuintupletsInGPU,
-                                                                             *trackCandidatesInGPU,
-                                                                             *segmentsInGPU,
-                                                                             *rangesInGPU));
-
-  alpaka::enqueue(queue, addpT5asTrackCandidateInGPUTask);
+  alpaka::exec<Acc3D>(queue,
+                      addpT5asTrackCandidateInGPU_workDiv,
+                      addpT5asTrackCandidateInGPU_kernel,
+                      nLowerModules_,
+                      *pixelQuintupletsInGPU,
+                      *trackCandidatesInGPU,
+                      *segmentsInGPU,
+                      *rangesInGPU);
 
 #ifdef WARNINGS
   auto nPixelQuintuplets_buf = allocBufWrapper<unsigned int>(devHost, 1, queue);
