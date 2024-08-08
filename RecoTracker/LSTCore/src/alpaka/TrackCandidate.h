@@ -34,23 +34,23 @@ namespace lst {
 
     template <typename TBuff>
     void setData(TBuff& buf) {
-      trackCandidateType = alpaka::getPtrNative(buf.trackCandidateType_buf);
-      directObjectIndices = alpaka::getPtrNative(buf.directObjectIndices_buf);
-      objectIndices = alpaka::getPtrNative(buf.objectIndices_buf);
-      nTrackCandidates = alpaka::getPtrNative(buf.nTrackCandidates_buf);
-      nTrackCandidatespT3 = alpaka::getPtrNative(buf.nTrackCandidatespT3_buf);
-      nTrackCandidatespT5 = alpaka::getPtrNative(buf.nTrackCandidatespT5_buf);
-      nTrackCandidatespLS = alpaka::getPtrNative(buf.nTrackCandidatespLS_buf);
-      nTrackCandidatesT5 = alpaka::getPtrNative(buf.nTrackCandidatesT5_buf);
+      trackCandidateType = buf.trackCandidateType_buf.data();
+      directObjectIndices = buf.directObjectIndices_buf.data();
+      objectIndices = buf.objectIndices_buf.data();
+      nTrackCandidates = buf.nTrackCandidates_buf.data();
+      nTrackCandidatespT3 = buf.nTrackCandidatespT3_buf.data();
+      nTrackCandidatespT5 = buf.nTrackCandidatespT5_buf.data();
+      nTrackCandidatespLS = buf.nTrackCandidatespLS_buf.data();
+      nTrackCandidatesT5 = buf.nTrackCandidatesT5_buf.data();
 
-      logicalLayers = alpaka::getPtrNative(buf.logicalLayers_buf);
-      hitIndices = alpaka::getPtrNative(buf.hitIndices_buf);
-      pixelSeedIndex = alpaka::getPtrNative(buf.pixelSeedIndex_buf);
-      lowerModuleIndices = alpaka::getPtrNative(buf.lowerModuleIndices_buf);
+      logicalLayers = buf.logicalLayers_buf.data();
+      hitIndices = buf.hitIndices_buf.data();
+      pixelSeedIndex = buf.pixelSeedIndex_buf.data();
+      lowerModuleIndices = buf.lowerModuleIndices_buf.data();
 
-      centerX = alpaka::getPtrNative(buf.centerX_buf);
-      centerY = alpaka::getPtrNative(buf.centerY_buf);
-      radius = alpaka::getPtrNative(buf.radius_buf);
+      centerX = buf.centerX_buf.data();
+      centerY = buf.centerY_buf.data();
+      radius = buf.radius_buf.data();
     }
   };
 

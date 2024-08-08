@@ -42,28 +42,28 @@ namespace lst {
 
     template <typename TBuff>
     void setData(TBuff& buf) {
-      pixelSegmentIndices = alpaka::getPtrNative(buf.pixelSegmentIndices_buf);
-      tripletIndices = alpaka::getPtrNative(buf.tripletIndices_buf);
-      nPixelTriplets = alpaka::getPtrNative(buf.nPixelTriplets_buf);
-      totOccupancyPixelTriplets = alpaka::getPtrNative(buf.totOccupancyPixelTriplets_buf);
-      pixelRadius = alpaka::getPtrNative(buf.pixelRadius_buf);
-      tripletRadius = alpaka::getPtrNative(buf.tripletRadius_buf);
-      pt = alpaka::getPtrNative(buf.pt_buf);
-      eta = alpaka::getPtrNative(buf.eta_buf);
-      phi = alpaka::getPtrNative(buf.phi_buf);
-      eta_pix = alpaka::getPtrNative(buf.eta_pix_buf);
-      phi_pix = alpaka::getPtrNative(buf.phi_pix_buf);
-      score = alpaka::getPtrNative(buf.score_buf);
-      isDup = alpaka::getPtrNative(buf.isDup_buf);
-      partOfPT5 = alpaka::getPtrNative(buf.partOfPT5_buf);
-      logicalLayers = alpaka::getPtrNative(buf.logicalLayers_buf);
-      hitIndices = alpaka::getPtrNative(buf.hitIndices_buf);
-      lowerModuleIndices = alpaka::getPtrNative(buf.lowerModuleIndices_buf);
-      centerX = alpaka::getPtrNative(buf.centerX_buf);
-      centerY = alpaka::getPtrNative(buf.centerY_buf);
-      rPhiChiSquared = alpaka::getPtrNative(buf.rPhiChiSquared_buf);
-      rPhiChiSquaredInwards = alpaka::getPtrNative(buf.rPhiChiSquaredInwards_buf);
-      rzChiSquared = alpaka::getPtrNative(buf.rzChiSquared_buf);
+      pixelSegmentIndices = buf.pixelSegmentIndices_buf.data();
+      tripletIndices = buf.tripletIndices_buf.data();
+      nPixelTriplets = buf.nPixelTriplets_buf.data();
+      totOccupancyPixelTriplets = buf.totOccupancyPixelTriplets_buf.data();
+      pixelRadius = buf.pixelRadius_buf.data();
+      tripletRadius = buf.tripletRadius_buf.data();
+      pt = buf.pt_buf.data();
+      eta = buf.eta_buf.data();
+      phi = buf.phi_buf.data();
+      eta_pix = buf.eta_pix_buf.data();
+      phi_pix = buf.phi_pix_buf.data();
+      score = buf.score_buf.data();
+      isDup = buf.isDup_buf.data();
+      partOfPT5 = buf.partOfPT5_buf.data();
+      logicalLayers = buf.logicalLayers_buf.data();
+      hitIndices = buf.hitIndices_buf.data();
+      lowerModuleIndices = buf.lowerModuleIndices_buf.data();
+      centerX = buf.centerX_buf.data();
+      centerY = buf.centerY_buf.data();
+      rPhiChiSquared = buf.rPhiChiSquared_buf.data();
+      rPhiChiSquaredInwards = buf.rPhiChiSquaredInwards_buf.data();
+      rzChiSquared = buf.rzChiSquared_buf.data();
     }
   };
 

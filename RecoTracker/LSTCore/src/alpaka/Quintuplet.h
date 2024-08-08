@@ -46,30 +46,30 @@ namespace lst {
 
     template <typename TBuff>
     void setData(TBuff& buf) {
-      tripletIndices = alpaka::getPtrNative(buf.tripletIndices_buf);
-      lowerModuleIndices = alpaka::getPtrNative(buf.lowerModuleIndices_buf);
-      nQuintuplets = alpaka::getPtrNative(buf.nQuintuplets_buf);
-      totOccupancyQuintuplets = alpaka::getPtrNative(buf.totOccupancyQuintuplets_buf);
-      nMemoryLocations = alpaka::getPtrNative(buf.nMemoryLocations_buf);
-      innerRadius = alpaka::getPtrNative(buf.innerRadius_buf);
-      bridgeRadius = alpaka::getPtrNative(buf.bridgeRadius_buf);
-      outerRadius = alpaka::getPtrNative(buf.outerRadius_buf);
-      pt = alpaka::getPtrNative(buf.pt_buf);
-      eta = alpaka::getPtrNative(buf.eta_buf);
-      phi = alpaka::getPtrNative(buf.phi_buf);
-      score_rphisum = alpaka::getPtrNative(buf.score_rphisum_buf);
-      layer = alpaka::getPtrNative(buf.layer_buf);
-      isDup = alpaka::getPtrNative(buf.isDup_buf);
-      TightCutFlag = alpaka::getPtrNative(buf.TightCutFlag_buf);
-      partOfPT5 = alpaka::getPtrNative(buf.partOfPT5_buf);
-      regressionRadius = alpaka::getPtrNative(buf.regressionRadius_buf);
-      regressionG = alpaka::getPtrNative(buf.regressionG_buf);
-      regressionF = alpaka::getPtrNative(buf.regressionF_buf);
-      logicalLayers = alpaka::getPtrNative(buf.logicalLayers_buf);
-      hitIndices = alpaka::getPtrNative(buf.hitIndices_buf);
-      rzChiSquared = alpaka::getPtrNative(buf.rzChiSquared_buf);
-      chiSquared = alpaka::getPtrNative(buf.chiSquared_buf);
-      nonAnchorChiSquared = alpaka::getPtrNative(buf.nonAnchorChiSquared_buf);
+      tripletIndices = buf.tripletIndices_buf.data();
+      lowerModuleIndices = buf.lowerModuleIndices_buf.data();
+      nQuintuplets = buf.nQuintuplets_buf.data();
+      totOccupancyQuintuplets = buf.totOccupancyQuintuplets_buf.data();
+      nMemoryLocations = buf.nMemoryLocations_buf.data();
+      innerRadius = buf.innerRadius_buf.data();
+      bridgeRadius = buf.bridgeRadius_buf.data();
+      outerRadius = buf.outerRadius_buf.data();
+      pt = buf.pt_buf.data();
+      eta = buf.eta_buf.data();
+      phi = buf.phi_buf.data();
+      score_rphisum = buf.score_rphisum_buf.data();
+      layer = buf.layer_buf.data();
+      isDup = buf.isDup_buf.data();
+      TightCutFlag = buf.TightCutFlag_buf.data();
+      partOfPT5 = buf.partOfPT5_buf.data();
+      regressionRadius = buf.regressionRadius_buf.data();
+      regressionG = buf.regressionG_buf.data();
+      regressionF = buf.regressionF_buf.data();
+      logicalLayers = buf.logicalLayers_buf.data();
+      hitIndices = buf.hitIndices_buf.data();
+      rzChiSquared = buf.rzChiSquared_buf.data();
+      chiSquared = buf.chiSquared_buf.data();
+      nonAnchorChiSquared = buf.nonAnchorChiSquared_buf.data();
     }
   };
 

@@ -197,8 +197,8 @@ void lst::Event<Acc3D>::addHitToEvent(std::vector<float> const& x,
                       TwoS,
                       nModules_,
                       nEndCapMap_,
-                      alpaka::getPtrNative(endcapGeometryBuffers_.geoMapDetId_buf),
-                      alpaka::getPtrNative(endcapGeometryBuffers_.geoMapPhi_buf),
+                      endcapGeometryBuffers_.geoMapDetId_buf.data(),
+                      endcapGeometryBuffers_.geoMapPhi_buf.data(),
                       *modulesBuffers_.data(),
                       *hitsInGPU,
                       nHits);
@@ -368,11 +368,11 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
                       *hitsInGPU,
                       *mdsInGPU,
                       *segmentsInGPU,
-                      alpaka::getPtrNative(hitIndices0_dev),
-                      alpaka::getPtrNative(hitIndices1_dev),
-                      alpaka::getPtrNative(hitIndices2_dev),
-                      alpaka::getPtrNative(hitIndices3_dev),
-                      alpaka::getPtrNative(dPhiChange_dev),
+                      hitIndices0_dev.data(),
+                      hitIndices1_dev.data(),
+                      hitIndices2_dev.data(),
+                      hitIndices3_dev.data(),
+                      dPhiChange_dev.data(),
                       pixelModuleIndex,
                       size);
 }
@@ -560,7 +560,7 @@ void lst::Event<Acc3D>::createTriplets() {
                       *segmentsInGPU,
                       *tripletsInGPU,
                       *rangesInGPU,
-                      alpaka::getPtrNative(index_gpu_buf),
+                      index_gpu_buf.data(),
                       nonZeroModules);
 
   Vec3D const threadsPerBlockAddTrip{1, 1, 1024};
@@ -720,10 +720,10 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   alpaka::memcpy(queue, nTrackCanT5Host_buf, trackCandidatesBuffers->nTrackCandidatesT5_buf);
   alpaka::wait(queue);  // wait to get the values before using them
 
-  auto nTrackCandidatespT5 = *alpaka::getPtrNative(nTrackCanpT5Host_buf);
-  auto nTrackCandidatespT3 = *alpaka::getPtrNative(nTrackCanpT3Host_buf);
-  auto nTrackCandidatespLS = *alpaka::getPtrNative(nTrackCanpLSHost_buf);
-  auto nTrackCandidatesT5 = *alpaka::getPtrNative(nTrackCanT5Host_buf);
+  auto nTrackCandidatespT5 = *nTrackCanpT5Host_buf.data();
+  auto nTrackCandidatespT3 = *nTrackCanpT3Host_buf.data();
+  auto nTrackCandidatespLS = *nTrackCanpLSHost_buf.data();
+  auto nTrackCandidatesT5 = *nTrackCanT5Host_buf.data();
   if ((nTrackCandidatespT5 + nTrackCandidatespT3 + nTrackCandidatespLS == n_max_pixel_track_candidates) ||
       (nTrackCandidatesT5 == n_max_nonpixel_track_candidates)) {
     printf(
@@ -764,8 +764,8 @@ void lst::Event<Acc3D>::createPixelTriplets() {
   auto connectedPixelSize_dev_buf = allocBufWrapper<unsigned int>(devAcc, nInnerSegments, queue);
   auto connectedPixelIndex_dev_buf = allocBufWrapper<unsigned int>(devAcc, nInnerSegments, queue);
 
-  unsigned int* connectedPixelSize_host = alpaka::getPtrNative(connectedPixelSize_host_buf);
-  unsigned int* connectedPixelIndex_host = alpaka::getPtrNative(connectedPixelIndex_host_buf);
+  unsigned int* connectedPixelSize_host = connectedPixelSize_host_buf.data();
+  unsigned int* connectedPixelIndex_host = connectedPixelIndex_host_buf.data();
 
   int pixelIndexOffsetPos =
       pixelMapping_.connectedPixelsIndex[size_superbins - 1] + pixelMapping_.connectedPixelsSizes[size_superbins - 1];
@@ -821,8 +821,8 @@ void lst::Event<Acc3D>::createPixelTriplets() {
                       *segmentsInGPU,
                       *tripletsInGPU,
                       *pixelTripletsInGPU,
-                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
-                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
+                      connectedPixelSize_dev_buf.data(),
+                      connectedPixelIndex_dev_buf.data(),
                       nInnerSegments);
 
 #ifdef WARNINGS
@@ -831,7 +831,7 @@ void lst::Event<Acc3D>::createPixelTriplets() {
   alpaka::memcpy(queue, nPixelTriplets_buf, pixelTripletsBuffers->nPixelTriplets_buf);
   alpaka::wait(queue);  // wait to get the value before using it
 
-  std::cout << "number of pixel triplets = " << *alpaka::getPtrNative(nPixelTriplets_buf) << std::endl;
+  std::cout << "number of pixel triplets = " << *nPixelTriplets_buf.data() << std::endl;
 #endif
 
   //pT3s can be cleaned here because they're not used in making pT5s!
@@ -1028,8 +1028,8 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
                       *tripletsInGPU,
                       *quintupletsInGPU,
                       *pixelQuintupletsInGPU,
-                      alpaka::getPtrNative(connectedPixelSize_dev_buf),
-                      alpaka::getPtrNative(connectedPixelIndex_dev_buf),
+                      connectedPixelSize_dev_buf.data(),
+                      connectedPixelIndex_dev_buf.data(),
                       nInnerSegments,
                       *rangesInGPU);
 
@@ -1065,7 +1065,7 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
   alpaka::memcpy(queue, nPixelQuintuplets_buf, pixelQuintupletsBuffers->nPixelQuintuplets_buf);
   alpaka::wait(queue);  // wait to get the value before using it
 
-  std::cout << "number of pixel quintuplets = " << *alpaka::getPtrNative(nPixelQuintuplets_buf) << std::endl;
+  std::cout << "number of pixel quintuplets = " << *nPixelQuintuplets_buf.data() << std::endl;
 #endif
 }
 

@@ -28,25 +28,25 @@ namespace lst {
 
     template <typename TBuff>
     void setData(TBuff& buf) {
-      nHits = alpaka::getPtrNative(buf.nHits_buf);
-      xs = alpaka::getPtrNative(buf.xs_buf);
-      ys = alpaka::getPtrNative(buf.ys_buf);
-      zs = alpaka::getPtrNative(buf.zs_buf);
-      moduleIndices = alpaka::getPtrNative(buf.moduleIndices_buf);
-      idxs = alpaka::getPtrNative(buf.idxs_buf);
-      detid = alpaka::getPtrNative(buf.detid_buf);
-      rts = alpaka::getPtrNative(buf.rts_buf);
-      phis = alpaka::getPtrNative(buf.phis_buf);
-      etas = alpaka::getPtrNative(buf.etas_buf);
-      highEdgeXs = alpaka::getPtrNative(buf.highEdgeXs_buf);
-      highEdgeYs = alpaka::getPtrNative(buf.highEdgeYs_buf);
-      lowEdgeXs = alpaka::getPtrNative(buf.lowEdgeXs_buf);
-      lowEdgeYs = alpaka::getPtrNative(buf.lowEdgeYs_buf);
-      hitRanges = alpaka::getPtrNative(buf.hitRanges_buf);
-      hitRangesLower = alpaka::getPtrNative(buf.hitRangesLower_buf);
-      hitRangesUpper = alpaka::getPtrNative(buf.hitRangesUpper_buf);
-      hitRangesnLower = alpaka::getPtrNative(buf.hitRangesnLower_buf);
-      hitRangesnUpper = alpaka::getPtrNative(buf.hitRangesnUpper_buf);
+      nHits = buf.nHits_buf.data();
+      xs = buf.xs_buf.data();
+      ys = buf.ys_buf.data();
+      zs = buf.zs_buf.data();
+      moduleIndices = buf.moduleIndices_buf.data();
+      idxs = buf.idxs_buf.data();
+      detid = buf.detid_buf.data();
+      rts = buf.rts_buf.data();
+      phis = buf.phis_buf.data();
+      etas = buf.etas_buf.data();
+      highEdgeXs = buf.highEdgeXs_buf.data();
+      highEdgeYs = buf.highEdgeYs_buf.data();
+      lowEdgeXs = buf.lowEdgeXs_buf.data();
+      lowEdgeYs = buf.lowEdgeYs_buf.data();
+      hitRanges = buf.hitRanges_buf.data();
+      hitRangesLower = buf.hitRangesLower_buf.data();
+      hitRangesUpper = buf.hitRangesUpper_buf.data();
+      hitRangesnLower = buf.hitRangesnLower_buf.data();
+      hitRangesnUpper = buf.hitRangesnUpper_buf.data();
     }
   };
 
