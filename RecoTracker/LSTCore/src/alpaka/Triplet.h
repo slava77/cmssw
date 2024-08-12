@@ -928,6 +928,10 @@ namespace lst {
                                   lst::Modules modulesInGPU,
                                   lst::ObjectRanges rangesInGPU,
                                   lst::Segments segmentsInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -938,10 +942,10 @@ namespace lst {
       }
       alpaka::syncBlockThreads(acc);
 
-      // Initialize variables outside of the for loop.
+      // Create variables outside of the for loop.
       int occupancy, category_number, eta_number;
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (segmentsInGPU.nSegments[i] == 0) {
           rangesInGPU.tripletModuleIndices[i] = nTotalTriplets;
           rangesInGPU.tripletModuleOccupancy[i] = 0;
@@ -1015,7 +1019,7 @@ namespace lst {
 
       // Wait for all threads to finish before reporting final values
       alpaka::syncBlockThreads(acc);
-      if (globalThreadIdx[2] == 0) {
+      if (cms::alpakatools::once_per_block(acc)) {
         *rangesInGPU.device_nTotalTrips = nTotalTriplets;
       }
     }
@@ -1027,10 +1031,14 @@ namespace lst {
                                   lst::Modules modulesInGPU,
                                   lst::Triplets tripletsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (tripletsInGPU.nTriplets[i] == 0) {
           rangesInGPU.tripletRanges[i * 2] = -1;
           rangesInGPU.tripletRanges[i * 2 + 1] = -1;

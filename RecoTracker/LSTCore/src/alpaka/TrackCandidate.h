@@ -389,13 +389,17 @@ namespace lst {
                                   lst::TrackCandidates trackCandidatesInGPU,
                                   lst::Segments segmentsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
       unsigned int nPixelTriplets = *pixelTripletsInGPU.nPixelTriplets;
       unsigned int pLS_offset = rangesInGPU.segmentModuleIndices[nLowerModules];
-      for (unsigned int pixelTripletIndex = globalThreadIdx[2]; pixelTripletIndex < nPixelTriplets;
-           pixelTripletIndex += gridThreadExtent[2]) {
+      for (unsigned int pixelTripletIndex = globalThreadIdx[0]; pixelTripletIndex < nPixelTriplets;
+           pixelTripletIndex += gridThreadExtent[0]) {
         if ((pixelTripletsInGPU.isDup[pixelTripletIndex]))
           continue;
 
@@ -534,13 +538,17 @@ namespace lst {
                                   lst::TrackCandidates trackCandidatesInGPU,
                                   lst::Segments segmentsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
       int nPixelQuintuplets = *pixelQuintupletsInGPU.nPixelQuintuplets;
       unsigned int pLS_offset = rangesInGPU.segmentModuleIndices[nLowerModules];
-      for (int pixelQuintupletIndex = globalThreadIdx[2]; pixelQuintupletIndex < nPixelQuintuplets;
-           pixelQuintupletIndex += gridThreadExtent[2]) {
+      for (int pixelQuintupletIndex = globalThreadIdx[0]; pixelQuintupletIndex < nPixelQuintuplets;
+           pixelQuintupletIndex += gridThreadExtent[0]) {
         if (pixelQuintupletsInGPU.isDup[pixelQuintupletIndex])
           continue;
 

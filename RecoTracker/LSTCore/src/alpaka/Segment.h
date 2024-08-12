@@ -801,6 +801,10 @@ namespace lst {
                                   lst::Modules modulesInGPU,
                                   lst::ObjectRanges rangesInGPU,
                                   lst::MiniDoublets mdsInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -811,10 +815,10 @@ namespace lst {
       }
       alpaka::syncBlockThreads(acc);
 
-      // Initialize variables outside of the for loop.
+      // Create variables outside of the for loop.
       int occupancy, category_number, eta_number;
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (modulesInGPU.nConnectedModules[i] == 0) {
           rangesInGPU.segmentModuleIndices[i] = nTotalSegments;
           rangesInGPU.segmentModuleOccupancy[i] = 0;
@@ -888,7 +892,7 @@ namespace lst {
 
       // Wait for all threads to finish before reporting final values
       alpaka::syncBlockThreads(acc);
-      if (globalThreadIdx[2] == 0) {
+      if (cms::alpakatools::once_per_block(acc)) {
         rangesInGPU.segmentModuleIndices[*modulesInGPU.nLowerModules] = nTotalSegments;
         *rangesInGPU.device_nTotalSegs = nTotalSegments;
       }
@@ -901,10 +905,14 @@ namespace lst {
                                   lst::Modules modulesInGPU,
                                   lst::Segments segmentsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (segmentsInGPU.nSegments[i] == 0) {
           rangesInGPU.segmentRanges[i * 2] = -1;
           rangesInGPU.segmentRanges[i * 2 + 1] = -1;

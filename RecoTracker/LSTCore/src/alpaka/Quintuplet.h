@@ -2669,6 +2669,10 @@ namespace lst {
                                   lst::Modules modulesInGPU,
                                   lst::Triplets tripletsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -2681,10 +2685,10 @@ namespace lst {
       }
       alpaka::syncBlockThreads(acc);
 
-      // Initialize variables outside of the for loop.
+      // Create variables outside of the for loop.
       int occupancy, category_number, eta_number;
 
-      for (int i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (int i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         // Condition for a quintuple to exist for a module
         // TCs don't exist for layers 5 and 6 barrel, and layers 2,3,4,5 endcap
         short module_rings = modulesInGPU.rings[i];
@@ -2756,7 +2760,7 @@ namespace lst {
 
       // Wait for all threads to finish before reporting final values
       alpaka::syncBlockThreads(acc);
-      if (globalThreadIdx[2] == 0) {
+      if (cms::alpakatools::once_per_block(acc)) {
         *rangesInGPU.nEligibleT5Modules = static_cast<uint16_t>(nEligibleT5Modulesx);
         *rangesInGPU.device_nTotalQuints = static_cast<unsigned int>(nTotalQuintupletsx);
       }
@@ -2769,10 +2773,14 @@ namespace lst {
                                   lst::Modules modulesInGPU,
                                   lst::Quintuplets quintupletsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (quintupletsInGPU.nQuintuplets[i] == 0 or rangesInGPU.quintupletModuleIndices[i] == -1) {
           rangesInGPU.quintupletRanges[i * 2] = -1;
           rangesInGPU.quintupletRanges[i * 2 + 1] = -1;

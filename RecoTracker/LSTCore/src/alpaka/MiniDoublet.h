@@ -968,6 +968,10 @@ namespace lst {
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   struct lst::Modules modulesInGPU,
                                   struct lst::ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -978,10 +982,10 @@ namespace lst {
       }
       alpaka::syncBlockThreads(acc);
 
-      // Initialize variables outside of the for loop.
+      // Create variables outside of the for loop.
       int occupancy, category_number, eta_number;
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         short module_rings = modulesInGPU.rings[i];
         short module_layers = modulesInGPU.layers[i];
         short module_subdets = modulesInGPU.subdets[i];
@@ -1062,10 +1066,14 @@ namespace lst {
                                   struct lst::MiniDoublets mdsInGPU,
                                   struct lst::ObjectRanges rangesInGPU,
                                   struct lst::Hits hitsInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (mdsInGPU.nMDs[i] == 0 or hitsInGPU.hitRanges[i * 2] == -1) {
           rangesInGPU.mdRanges[i * 2] = -1;
           rangesInGPU.mdRanges[i * 2 + 1] = -1;
