@@ -901,15 +901,15 @@ namespace lst {
                                                          centerY,
                                                          static_cast<unsigned int>(i_pLS));
             if (success) {
-              unsigned int totOccupancyPixelQuintuplets =
-                  alpaka::atomicOp<alpaka::AtomicAdd>(acc, pixelQuintupletsInGPU.totOccupancyPixelQuintuplets, 1u);
+              unsigned int totOccupancyPixelQuintuplets = alpaka::atomicAdd(
+                  acc, pixelQuintupletsInGPU.totOccupancyPixelQuintuplets, 1u, alpaka::hierarchy::Threads{});
               if (totOccupancyPixelQuintuplets >= n_max_pixel_quintuplets) {
 #ifdef WARNINGS
                 printf("Pixel Quintuplet excess alert!\n");
 #endif
               } else {
                 unsigned int pixelQuintupletIndex =
-                    alpaka::atomicOp<alpaka::AtomicAdd>(acc, pixelQuintupletsInGPU.nPixelQuintuplets, 1u);
+                    alpaka::atomicAdd(acc, pixelQuintupletsInGPU.nPixelQuintuplets, 1u, alpaka::hierarchy::Threads{});
                 float eta = __H2F(quintupletsInGPU.eta[quintupletIndex]);
                 float phi = __H2F(quintupletsInGPU.phi[quintupletIndex]);
 

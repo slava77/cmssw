@@ -2602,15 +2602,15 @@ namespace lst {
                                                     TightCutFlag);
 
             if (success) {
-              int totOccupancyQuintuplets =
-                  alpaka::atomicOp<alpaka::AtomicAdd>(acc, &quintupletsInGPU.totOccupancyQuintuplets[lowerModule1], 1u);
+              int totOccupancyQuintuplets = alpaka::atomicAdd(
+                  acc, &quintupletsInGPU.totOccupancyQuintuplets[lowerModule1], 1u, alpaka::hierarchy::Threads{});
               if (totOccupancyQuintuplets >= rangesInGPU.quintupletModuleOccupancy[lowerModule1]) {
 #ifdef WARNINGS
                 printf("Quintuplet excess alert! Module index = %d\n", lowerModule1);
 #endif
               } else {
-                int quintupletModuleIndex =
-                    alpaka::atomicOp<alpaka::AtomicAdd>(acc, &quintupletsInGPU.nQuintuplets[lowerModule1], 1u);
+                int quintupletModuleIndex = alpaka::atomicAdd(
+                    acc, &quintupletsInGPU.nQuintuplets[lowerModule1], 1u, alpaka::hierarchy::Threads{});
                 //this if statement should never get executed!
                 if (rangesInGPU.quintupletModuleIndices[lowerModule1] == -1) {
 #ifdef WARNINGS
@@ -2700,7 +2700,7 @@ namespace lst {
         if (module_subdets == lst::Endcap and module_layers > 1)
           continue;
 
-        int nEligibleT5Modules = alpaka::atomicOp<alpaka::AtomicAdd>(acc, &nEligibleT5Modulesx, 1);
+        int nEligibleT5Modules = alpaka::atomicAdd(acc, &nEligibleT5Modulesx, 1, alpaka::hierarchy::Threads{});
 
         if (module_layers <= 3 && module_subdets == 5)
           category_number = 0;
@@ -2749,7 +2749,7 @@ namespace lst {
 #endif
         }
 
-        int nTotQ = alpaka::atomicOp<alpaka::AtomicAdd>(acc, &nTotalQuintupletsx, occupancy);
+        int nTotQ = alpaka::atomicAdd(acc, &nTotalQuintupletsx, occupancy, alpaka::hierarchy::Threads{});
         rangesInGPU.quintupletModuleIndices[i] = nTotQ;
         rangesInGPU.indicesOfEligibleT5Modules[nEligibleT5Modules] = i;
         rangesInGPU.quintupletModuleOccupancy[i] = occupancy;

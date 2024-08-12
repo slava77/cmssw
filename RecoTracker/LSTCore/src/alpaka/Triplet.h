@@ -868,16 +868,19 @@ namespace lst {
                                                         circleCenterY);
 
             if (success) {
-              unsigned int totOccupancyTriplets = alpaka::atomicOp<alpaka::AtomicAdd>(
-                  acc, &tripletsInGPU.totOccupancyTriplets[innerInnerLowerModuleIndex], 1u);
+              unsigned int totOccupancyTriplets =
+                  alpaka::atomicAdd(acc,
+                                    &tripletsInGPU.totOccupancyTriplets[innerInnerLowerModuleIndex],
+                                    1u,
+                                    alpaka::hierarchy::Threads{});
               if (static_cast<int>(totOccupancyTriplets) >=
                   rangesInGPU.tripletModuleOccupancy[innerInnerLowerModuleIndex]) {
 #ifdef WARNINGS
                 printf("Triplet excess alert! Module index = %d\n", innerInnerLowerModuleIndex);
 #endif
               } else {
-                unsigned int tripletModuleIndex =
-                    alpaka::atomicOp<alpaka::AtomicAdd>(acc, &tripletsInGPU.nTriplets[innerInnerLowerModuleIndex], 1u);
+                unsigned int tripletModuleIndex = alpaka::atomicAdd(
+                    acc, &tripletsInGPU.nTriplets[innerInnerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
                 unsigned int tripletIndex =
                     rangesInGPU.tripletModuleIndices[innerInnerLowerModuleIndex] + tripletModuleIndex;
 #ifdef CUT_VALUE_DEBUG
@@ -1009,7 +1012,7 @@ namespace lst {
         }
 
         rangesInGPU.tripletModuleOccupancy[i] = occupancy;
-        unsigned int nTotT = alpaka::atomicOp<alpaka::AtomicAdd>(acc, &nTotalTriplets, occupancy);
+        unsigned int nTotT = alpaka::atomicAdd(acc, &nTotalTriplets, occupancy, alpaka::hierarchy::Threads{});
         rangesInGPU.tripletModuleIndices[i] = nTotT;
       }
 

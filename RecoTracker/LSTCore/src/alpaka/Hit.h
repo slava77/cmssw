@@ -244,13 +244,15 @@ namespace lst {
           hitsInGPU.lowEdgeYs[ihit] = ihit_y - 2.5f * sin_phi;
         }
         // Need to set initial value if index hasn't been seen before.
-        int old = alpaka::atomicOp<alpaka::AtomicCas>(
-            acc, &(hitsInGPU.hitRanges[lastModuleIndex * 2]), -1, static_cast<int>(ihit));
+        int old = alpaka::atomicCas(
+            acc, &(hitsInGPU.hitRanges[lastModuleIndex * 2]), -1, static_cast<int>(ihit), alpaka::hierarchy::Threads{});
         // For subsequent visits, stores the min value.
         if (old != -1)
-          alpaka::atomicOp<alpaka::AtomicMin>(acc, &hitsInGPU.hitRanges[lastModuleIndex * 2], static_cast<int>(ihit));
+          alpaka::atomicMin(
+              acc, &hitsInGPU.hitRanges[lastModuleIndex * 2], static_cast<int>(ihit), alpaka::hierarchy::Threads{});
 
-        alpaka::atomicOp<alpaka::AtomicMax>(acc, &hitsInGPU.hitRanges[lastModuleIndex * 2 + 1], static_cast<int>(ihit));
+        alpaka::atomicMax(
+            acc, &hitsInGPU.hitRanges[lastModuleIndex * 2 + 1], static_cast<int>(ihit), alpaka::hierarchy::Threads{});
       }
     }
   };
