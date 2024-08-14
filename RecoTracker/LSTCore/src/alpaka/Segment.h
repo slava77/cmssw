@@ -763,15 +763,15 @@ namespace lst {
                                       dPhiChange,
                                       dPhiChangeMin,
                                       dPhiChangeMax)) {
-              unsigned int totOccupancySegments = alpaka::atomicOp<alpaka::AtomicAdd>(
-                  acc, &segmentsInGPU.totOccupancySegments[innerLowerModuleIndex], 1u);
+              unsigned int totOccupancySegments = alpaka::atomicAdd(
+                  acc, &segmentsInGPU.totOccupancySegments[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
               if (static_cast<int>(totOccupancySegments) >= rangesInGPU.segmentModuleOccupancy[innerLowerModuleIndex]) {
 #ifdef WARNINGS
                 printf("Segment excess alert! Module index = %d\n", innerLowerModuleIndex);
 #endif
               } else {
-                unsigned int segmentModuleIdx =
-                    alpaka::atomicOp<alpaka::AtomicAdd>(acc, &segmentsInGPU.nSegments[innerLowerModuleIndex], 1u);
+                unsigned int segmentModuleIdx = alpaka::atomicAdd(
+                    acc, &segmentsInGPU.nSegments[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
                 unsigned int segmentIdx = rangesInGPU.segmentModuleIndices[innerLowerModuleIndex] + segmentModuleIdx;
 
                 addSegmentToMemory(segmentsInGPU,
@@ -882,7 +882,7 @@ namespace lst {
 #endif
         }
 
-        int nTotSegs = alpaka::atomicOp<alpaka::AtomicAdd>(acc, &nTotalSegments, occupancy);
+        int nTotSegs = alpaka::atomicAdd(acc, &nTotalSegments, occupancy, alpaka::hierarchy::Threads{});
         rangesInGPU.segmentModuleIndices[i] = nTotSegs;
         rangesInGPU.segmentModuleOccupancy[i] = occupancy;
       }

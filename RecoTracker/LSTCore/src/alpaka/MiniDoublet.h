@@ -932,13 +932,14 @@ namespace lst {
                                                    rtUpper);
           if (success) {
             int totOccupancyMDs =
-                alpaka::atomicOp<alpaka::AtomicAdd>(acc, &mdsInGPU.totOccupancyMDs[lowerModuleIndex], 1u);
+                alpaka::atomicAdd(acc, &mdsInGPU.totOccupancyMDs[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
             if (totOccupancyMDs >= (rangesInGPU.miniDoubletModuleOccupancy[lowerModuleIndex])) {
 #ifdef WARNINGS
               printf("Mini-doublet excess alert! Module index =  %d\n", lowerModuleIndex);
 #endif
             } else {
-              int mdModuleIndex = alpaka::atomicOp<alpaka::AtomicAdd>(acc, &mdsInGPU.nMDs[lowerModuleIndex], 1u);
+              int mdModuleIndex =
+                  alpaka::atomicAdd(acc, &mdsInGPU.nMDs[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
               unsigned int mdIndex = rangesInGPU.miniDoubletModuleIndices[lowerModuleIndex] + mdModuleIndex;
 
               addMDToMemory(acc,
@@ -1041,7 +1042,7 @@ namespace lst {
 #endif
         }
 
-        unsigned int nTotMDs = alpaka::atomicOp<alpaka::AtomicAdd>(acc, &nTotalMDs, occupancy);
+        unsigned int nTotMDs = alpaka::atomicAdd(acc, &nTotalMDs, occupancy, alpaka::hierarchy::Threads{});
 
         rangesInGPU.miniDoubletModuleIndices[i] = nTotMDs;
         rangesInGPU.miniDoubletModuleOccupancy[i] = occupancy;

@@ -3,8 +3,10 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+#if defined ALPAKA_ACC_GPU_CUDA_ENABLED
 #include <cuda_fp16.h>
+#elif defined ALPAKA_ACC_GPU_HIP_ENABLED
+#include <hip/hip_fp16.h>
 #endif
 
 namespace lst {

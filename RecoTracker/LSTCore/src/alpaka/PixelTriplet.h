@@ -1025,15 +1025,15 @@ namespace lst {
               float phi_pix = segmentsInGPU.phi[i_pLS];
               float pt = segmentsInGPU.ptIn[i_pLS];
               float score = rPhiChiSquared + rPhiChiSquaredInwards;
-              unsigned int totOccupancyPixelTriplets =
-                  alpaka::atomicOp<alpaka::AtomicAdd>(acc, pixelTripletsInGPU.totOccupancyPixelTriplets, 1u);
+              unsigned int totOccupancyPixelTriplets = alpaka::atomicAdd(
+                  acc, pixelTripletsInGPU.totOccupancyPixelTriplets, 1u, alpaka::hierarchy::Threads{});
               if (totOccupancyPixelTriplets >= n_max_pixel_triplets) {
 #ifdef WARNINGS
                 printf("Pixel Triplet excess alert!\n");
 #endif
               } else {
                 unsigned int pixelTripletIndex =
-                    alpaka::atomicOp<alpaka::AtomicAdd>(acc, pixelTripletsInGPU.nPixelTriplets, 1u);
+                    alpaka::atomicAdd(acc, pixelTripletsInGPU.nPixelTriplets, 1u, alpaka::hierarchy::Threads{});
                 addPixelTripletToMemory(mdsInGPU,
                                         segmentsInGPU,
                                         tripletsInGPU,

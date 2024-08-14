@@ -401,17 +401,17 @@ namespace lst {
           continue;
 
         unsigned int trackCandidateIdx =
-            alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+            alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
         if (trackCandidateIdx >= n_max_pixel_track_candidates)  // This is done before any non-pixel TCs are added
         {
 #ifdef WARNINGS
           printf("Track Candidate excess alert! Type = pT3");
 #endif
-          alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+          alpaka::atomicSub(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
           break;
 
         } else {
-          alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidatespT3, 1u);
+          alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidatespT3, 1u, alpaka::hierarchy::Threads{});
 
           float radius = 0.5f * (__H2F(pixelTripletsInGPU.pixelRadius[pixelTripletIndex]) +
                                  __H2F(pixelTripletsInGPU.tripletRadius[pixelTripletIndex]));
@@ -457,7 +457,7 @@ namespace lst {
             continue;
 
           unsigned int trackCandidateIdx =
-              alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+              alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
           if (trackCandidateIdx - *trackCandidatesInGPU.nTrackCandidatespT5 -
                   *trackCandidatesInGPU.nTrackCandidatespT3 >=
               n_max_nonpixel_track_candidates)  // pT5 and pT3 TCs have been added, but not pLS TCs
@@ -465,10 +465,10 @@ namespace lst {
 #ifdef WARNINGS
             printf("Track Candidate excess alert! Type = T5");
 #endif
-            alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+            alpaka::atomicSub(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
             break;
           } else {
-            alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidatesT5, 1u);
+            alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidatesT5, 1u, alpaka::hierarchy::Threads{});
             addTrackCandidateToMemory(trackCandidatesInGPU,
                                       4 /*track candidate type T5=4*/,
                                       quintupletIndex,
@@ -505,18 +505,18 @@ namespace lst {
           continue;
 
         unsigned int trackCandidateIdx =
-            alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+            alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
         if (trackCandidateIdx - *trackCandidatesInGPU.nTrackCandidatesT5 >=
             n_max_pixel_track_candidates)  // T5 TCs have already been added
         {
 #ifdef WARNINGS
           printf("Track Candidate excess alert! Type = pLS");
 #endif
-          alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+          alpaka::atomicSub(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
           break;
 
         } else {
-          alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidatespLS, 1u);
+          alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidatespLS, 1u, alpaka::hierarchy::Threads{});
           addpLSTrackCandidateToMemory(trackCandidatesInGPU,
                                        pixelArrayIndex,
                                        trackCandidateIdx,
@@ -546,17 +546,17 @@ namespace lst {
           continue;
 
         unsigned int trackCandidateIdx =
-            alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+            alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
         if (trackCandidateIdx >= n_max_pixel_track_candidates)  // No other TCs have been added yet
         {
 #ifdef WARNINGS
           printf("Track Candidate excess alert! Type = pT5");
 #endif
-          alpaka::atomicOp<alpaka::AtomicSub>(acc, trackCandidatesInGPU.nTrackCandidates, 1u);
+          alpaka::atomicSub(acc, trackCandidatesInGPU.nTrackCandidates, 1u, alpaka::hierarchy::Threads{});
           break;
 
         } else {
-          alpaka::atomicOp<alpaka::AtomicAdd>(acc, trackCandidatesInGPU.nTrackCandidatespT5, 1u);
+          alpaka::atomicAdd(acc, trackCandidatesInGPU.nTrackCandidatespT5, 1u, alpaka::hierarchy::Threads{});
 
           float radius = 0.5f * (__H2F(pixelQuintupletsInGPU.pixelRadius[pixelQuintupletIndex]) +
                                  __H2F(pixelQuintupletsInGPU.quintupletRadius[pixelQuintupletIndex]));
