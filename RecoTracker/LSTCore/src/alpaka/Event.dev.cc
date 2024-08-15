@@ -4,7 +4,8 @@
 
 using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 
-void lst::Event<Acc3D>::init(bool verbose) {
+void lst::Event<Acc3D>::initSync(bool verbose) {
+  alpaka::wait(queue);  // other calls can be asynchronous
   addObjects = verbose;
   hitsInGPU = nullptr;
   mdsInGPU = nullptr;
@@ -46,7 +47,8 @@ void lst::Event<Acc3D>::init(bool verbose) {
   }
 }
 
-void lst::Event<Acc3D>::resetEvent() {
+void lst::Event<Acc3D>::resetEventSync() {
+  alpaka::wait(queue);  // synchronize to reset consistently
   //reset the arrays
   for (int i = 0; i < 6; i++) {
     n_hits_by_layer_barrel_[i] = 0;
@@ -1358,7 +1360,7 @@ int lst::Event<Acc3D>::getNumberOfT5TrackCandidates() {
   return *nTrackCandidatesT5_buf_h.data();
 }
 
-lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHits()  //std::shared_ptr should take care of garbage collection
+lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHits(bool sync)  //std::shared_ptr should take care of garbage collection
 {
   if (hitsInCPU == nullptr) {
     auto nHits_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1376,11 +1378,13 @@ lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHits()  //std::shared_ptr should
     alpaka::memcpy(queue, hitsInCPU->ys_buf, hitsBuffers->ys_buf, nHits);
     alpaka::memcpy(queue, hitsInCPU->zs_buf, hitsBuffers->zs_buf, nHits);
     alpaka::memcpy(queue, hitsInCPU->moduleIndices_buf, hitsBuffers->moduleIndices_buf, nHits);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return hitsInCPU;
 }
 
-lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHitsInCMSSW() {
+lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHitsInCMSSW(bool sync) {
   if (hitsInCPU == nullptr) {
     auto nHits_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
     alpaka::memcpy(queue, nHits_buf_h, hitsBuffers->nHits_buf);
@@ -1392,11 +1396,13 @@ lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHitsInCMSSW() {
 
     *hitsInCPU->nHits_buf.data() = nHits;
     alpaka::memcpy(queue, hitsInCPU->idxs_buf, hitsBuffers->idxs_buf, nHits);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return hitsInCPU;
 }
 
-lst::ObjectRangesBuffer<DevHost>* lst::Event<Acc3D>::getRanges() {
+lst::ObjectRangesBuffer<DevHost>* lst::Event<Acc3D>::getRanges(bool sync) {
   if (rangesInCPU == nullptr) {
     rangesInCPU = new lst::ObjectRangesBuffer<DevHost>(nModules_, nLowerModules_, devHost, queue);
     rangesInCPU->setData(*rangesInCPU);
@@ -1406,12 +1412,13 @@ lst::ObjectRangesBuffer<DevHost>* lst::Event<Acc3D>::getRanges() {
     alpaka::memcpy(queue, rangesInCPU->miniDoubletModuleIndices_buf, rangesBuffers->miniDoubletModuleIndices_buf);
     alpaka::memcpy(queue, rangesInCPU->segmentModuleIndices_buf, rangesBuffers->segmentModuleIndices_buf);
     alpaka::memcpy(queue, rangesInCPU->tripletModuleIndices_buf, rangesBuffers->tripletModuleIndices_buf);
-    alpaka::wait(queue);  // wait to get completed host data
+    if (sync)
+      alpaka::wait(queue);  // wait to get completed host data
   }
   return rangesInCPU;
 }
 
-lst::MiniDoubletsBuffer<DevHost>* lst::Event<Acc3D>::getMiniDoublets() {
+lst::MiniDoubletsBuffer<DevHost>* lst::Event<Acc3D>::getMiniDoublets(bool sync) {
   if (mdsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based mdsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1428,11 +1435,13 @@ lst::MiniDoubletsBuffer<DevHost>* lst::Event<Acc3D>::getMiniDoublets() {
     alpaka::memcpy(queue, mdsInCPU->dphichanges_buf, miniDoubletsBuffers->dphichanges_buf, nMemHost);
     alpaka::memcpy(queue, mdsInCPU->nMDs_buf, miniDoubletsBuffers->nMDs_buf);
     alpaka::memcpy(queue, mdsInCPU->totOccupancyMDs_buf, miniDoubletsBuffers->totOccupancyMDs_buf);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return mdsInCPU;
 }
 
-lst::SegmentsBuffer<DevHost>* lst::Event<Acc3D>::getSegments() {
+lst::SegmentsBuffer<DevHost>* lst::Event<Acc3D>::getSegments(bool sync) {
   if (segmentsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based segmentsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1463,11 +1472,13 @@ lst::SegmentsBuffer<DevHost>* lst::Event<Acc3D>::getSegments() {
     alpaka::memcpy(queue, segmentsInCPU->isDup_buf, segmentsBuffers->isDup_buf);
     alpaka::memcpy(queue, segmentsInCPU->isQuad_buf, segmentsBuffers->isQuad_buf);
     alpaka::memcpy(queue, segmentsInCPU->score_buf, segmentsBuffers->score_buf);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return segmentsInCPU;
 }
 
-lst::TripletsBuffer<DevHost>* lst::Event<Acc3D>::getTriplets() {
+lst::TripletsBuffer<DevHost>* lst::Event<Acc3D>::getTriplets(bool sync) {
   if (tripletsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based tripletsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1498,11 +1509,13 @@ lst::TripletsBuffer<DevHost>* lst::Event<Acc3D>::getTriplets() {
     alpaka::memcpy(queue, tripletsInCPU->circleRadius_buf, tripletsBuffers->circleRadius_buf, nMemHost);
     alpaka::memcpy(queue, tripletsInCPU->nTriplets_buf, tripletsBuffers->nTriplets_buf);
     alpaka::memcpy(queue, tripletsInCPU->totOccupancyTriplets_buf, tripletsBuffers->totOccupancyTriplets_buf);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return tripletsInCPU;
 }
 
-lst::QuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getQuintuplets() {
+lst::QuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getQuintuplets(bool sync) {
   if (quintupletsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based quintupletsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1533,11 +1546,13 @@ lst::QuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getQuintuplets() {
     alpaka::memcpy(queue, quintupletsInCPU->rzChiSquared_buf, quintupletsBuffers->rzChiSquared_buf, nMemHost);
     alpaka::memcpy(
         queue, quintupletsInCPU->nonAnchorChiSquared_buf, quintupletsBuffers->nonAnchorChiSquared_buf, nMemHost);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return quintupletsInCPU;
 }
 
-lst::PixelTripletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelTriplets() {
+lst::PixelTripletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelTriplets(bool sync) {
   if (pixelTripletsInCPU == nullptr) {
     // Get nPixelTriplets parameter to initialize host based quintupletsInCPU
     auto nPixelTriplets_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1571,11 +1586,13 @@ lst::PixelTripletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelTriplets() {
     alpaka::memcpy(queue, pixelTripletsInCPU->eta_buf, pixelTripletsBuffers->eta_buf, nPixelTriplets);
     alpaka::memcpy(queue, pixelTripletsInCPU->phi_buf, pixelTripletsBuffers->phi_buf, nPixelTriplets);
     alpaka::memcpy(queue, pixelTripletsInCPU->score_buf, pixelTripletsBuffers->score_buf, nPixelTriplets);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return pixelTripletsInCPU;
 }
 
-lst::PixelQuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelQuintuplets() {
+lst::PixelQuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelQuintuplets(bool sync) {
   if (pixelQuintupletsInCPU == nullptr) {
     // Get nPixelQuintuplets parameter to initialize host based quintupletsInCPU
     auto nPixelQuintuplets_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1606,11 +1623,13 @@ lst::PixelQuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelQuintuplets() {
         queue, pixelQuintupletsInCPU->T5Indices_buf, pixelQuintupletsBuffers->T5Indices_buf, nPixelQuintuplets);
     alpaka::memcpy(queue, pixelQuintupletsInCPU->isDup_buf, pixelQuintupletsBuffers->isDup_buf, nPixelQuintuplets);
     alpaka::memcpy(queue, pixelQuintupletsInCPU->score_buf, pixelQuintupletsBuffers->score_buf, nPixelQuintuplets);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return pixelQuintupletsInCPU;
 }
 
-lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidates() {
+lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidates(bool sync) {
   if (trackCandidatesInCPU == nullptr) {
     // Get nTrackCanHost parameter to initialize host based trackCandidatesInCPU
     auto nTrackCanHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1643,11 +1662,13 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidates() {
                    trackCandidatesInCPU->trackCandidateType_buf,
                    trackCandidatesBuffers->trackCandidateType_buf,
                    nTrackCanHost);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return trackCandidatesInCPU;
 }
 
-lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSSW() {
+lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSSW(bool sync) {
   if (trackCandidatesInCPU == nullptr) {
     // Get nTrackCanHost parameter to initialize host based trackCandidatesInCPU
     auto nTrackCanHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1670,16 +1691,20 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSS
                    trackCandidatesInCPU->trackCandidateType_buf,
                    trackCandidatesBuffers->trackCandidateType_buf,
                    nTrackCanHost);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return trackCandidatesInCPU;
 }
 
-lst::ModulesBuffer<DevHost>* lst::Event<Acc3D>::getModules(bool isFull) {
+lst::ModulesBuffer<DevHost>* lst::Event<Acc3D>::getModules(bool isFull, bool sync) {
   if (modulesInCPU == nullptr) {
     // The last input here is just a small placeholder for the allocation.
     modulesInCPU = new lst::ModulesBuffer<DevHost>(devHost, nModules_, nPixels_);
 
     modulesInCPU->copyFromSrc(queue, modulesBuffers_, isFull);
+    if (sync)
+      alpaka::wait(queue);  // host consumers expect filled data
   }
   return modulesInCPU;
 }

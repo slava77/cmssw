@@ -28,6 +28,7 @@ float runMiniDoublet(lst::Event<Acc3D> *event, int evt) {
     std::cout << "Reco Mini-Doublet start " << evt << std::endl;
   my_timer.Start();
   event->createMiniDoublets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float md_elapsed = my_timer.RealTime();
 
   if (ana.verbose >= 2)
@@ -80,6 +81,7 @@ float runSegment(lst::Event<Acc3D> *event) {
     std::cout << "Reco Segment start" << std::endl;
   my_timer.Start();
   event->createSegmentsWithModuleMap();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float sg_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Segment processing time: " << sg_elapsed << " secs" << std::endl;
@@ -117,6 +119,7 @@ float runT3(lst::Event<Acc3D> *event) {
     std::cout << "Reco T3 start" << std::endl;
   my_timer.Start();
   event->createTriplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float t3_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco T3 processing time: " << t3_elapsed << " secs" << std::endl;
@@ -158,6 +161,7 @@ float runpT3(lst::Event<Acc3D> *event) {
     std::cout << "Reco Pixel Triplet pT3 start" << std::endl;
   my_timer.Start();
   event->createPixelTriplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float pt3_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco pT3 processing time: " << pt3_elapsed << " secs" << std::endl;
@@ -174,6 +178,7 @@ float runQuintuplet(lst::Event<Acc3D> *event) {
     std::cout << "Reco Quintuplet start" << std::endl;
   my_timer.Start();
   event->createQuintuplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float t5_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Quintuplet processing time: " << t5_elapsed << " secs" << std::endl;
@@ -219,6 +224,7 @@ float runPixelLineSegment(lst::Event<Acc3D> *event, bool no_pls_dupclean) {
     std::cout << "Reco Pixel Line Segment start" << std::endl;
   my_timer.Start();
   event->pixelLineSegmentCleaning(no_pls_dupclean);
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float pls_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Line Segment processing time: " << pls_elapsed << " secs" << std::endl;
@@ -233,6 +239,7 @@ float runPixelQuintuplet(lst::Event<Acc3D> *event) {
     std::cout << "Reco Pixel Quintuplet start" << std::endl;
   my_timer.Start();
   event->createPixelQuintuplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float pt5_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Quintuplet processing time: " << pt5_elapsed << " secs" << std::endl;
@@ -249,6 +256,7 @@ float runTrackCandidate(lst::Event<Acc3D> *event, bool no_pls_dupclean, bool tc_
     std::cout << "Reco TrackCandidate start" << std::endl;
   my_timer.Start();
   event->createTrackCandidates(no_pls_dupclean, tc_pls_triplets);
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float tc_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco TrackCandidate processing time: " << tc_elapsed << " secs" << std::endl;
@@ -892,6 +900,7 @@ float addInputsToEventPreLoad(lst::Event<Acc3D> *event,
                                 superbin_vec,
                                 pixelType_vec,
                                 isQuad_vec);
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float hit_loading_elapsed = my_timer.RealTime();
 
   if (ana.verbose >= 2)
@@ -1331,6 +1340,7 @@ void writeMetaData() {
                                pixelType_vec,
                                isQuad_vec);
 
+  event.wait();  // device side event calls are asynchronous: wait to measure time or print
   float hit_loading_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Loading inputs processing time: " << hit_loading_elapsed << " secs" << std::endl;
