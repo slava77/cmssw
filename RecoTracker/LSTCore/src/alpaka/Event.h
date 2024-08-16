@@ -44,9 +44,9 @@ namespace lst {
     std::array<unsigned int, 5> n_trackCandidates_by_layer_endcap_;
     std::array<unsigned int, 6> n_quintuplets_by_layer_barrel_;
     std::array<unsigned int, 5> n_quintuplets_by_layer_endcap_;
+    unsigned int nTotalSegments_;
 
     //Device stuff
-    unsigned int nTotalSegments;
     ObjectRanges* rangesInGPU;
     ObjectRangesBuffer<Device>* rangesBuffers;
     Hits* hitsInGPU;
@@ -78,7 +78,7 @@ namespace lst {
     PixelTripletsBuffer<DevHost>* pixelTripletsInCPU;
     PixelQuintupletsBuffer<DevHost>* pixelQuintupletsInCPU;
 
-    void init(bool verbose);
+    void initSync(bool verbose);
 
     int* superbinCPU;
     int8_t* pixelTypeCPU;
@@ -105,9 +105,10 @@ namespace lst {
           modulesBuffers_(deviceESData->modulesBuffers),
           pixelMapping_(*deviceESData->pixelMapping),
           endcapGeometryBuffers_(deviceESData->endcapGeometryBuffers) {
-      init(verbose);
+      initSync(verbose);
     }
-    void resetEvent();
+    void resetEventSync();  // synchronizes
+    void wait() const { alpaka::wait(queue); }
 
     // Calls the appropriate hit function, then increments the counter
     void addHitToEvent(std::vector<float> const& x,
@@ -134,24 +135,21 @@ namespace lst {
                                 std::vector<int8_t> const& pixelType,
                                 std::vector<char> const& isQuad);
 
-    // functions that map the objects to the appropriate modules
-    void addMiniDoubletsToEventExplicit();
-    void addSegmentsToEventExplicit();
-    void addTripletsToEventExplicit();
-    void addQuintupletsToEventExplicit();
-    void resetObjectsInModule();
-
     void createMiniDoublets();
     void createSegmentsWithModuleMap();
     void createTriplets();
-    void createPixelTracklets();
-    void createPixelTrackletsWithMap();
     void createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets);
-    void createExtendedTracks();
-    void createQuintuplets();
     void createPixelTriplets();
-    void createPixelQuintuplets();
+    void createQuintuplets();
     void pixelLineSegmentCleaning(bool no_pls_dupclean);
+    void createPixelQuintuplets();
+
+    // functions that map the objects to the appropriate modules
+    void addMiniDoubletsToEventExplicit();
+    void addSegmentsToEventExplicit();
+    void addQuintupletsToEventExplicit();
+    void addTripletsToEventExplicit();
+    void resetObjectsInModule();
 
     unsigned int getNumberOfHits();
     unsigned int getNumberOfHitsByLayer(unsigned int layer);
@@ -173,33 +171,37 @@ namespace lst {
     unsigned int getNumberOfTripletsByLayerBarrel(unsigned int layer);
     unsigned int getNumberOfTripletsByLayerEndcap(unsigned int layer);
 
-    int getNumberOfTrackCandidates();
-    int getNumberOfPixelTrackCandidates();
-    int getNumberOfPT5TrackCandidates();
-    int getNumberOfPT3TrackCandidates();
-    int getNumberOfT5TrackCandidates();
-    int getNumberOfPLSTrackCandidates();
+    int getNumberOfPixelTriplets();
+    int getNumberOfPixelQuintuplets();
 
     unsigned int getNumberOfQuintuplets();
     unsigned int getNumberOfQuintupletsByLayer(unsigned int layer);
     unsigned int getNumberOfQuintupletsByLayerBarrel(unsigned int layer);
     unsigned int getNumberOfQuintupletsByLayerEndcap(unsigned int layer);
 
-    int getNumberOfPixelTriplets();
-    int getNumberOfPixelQuintuplets();
+    int getNumberOfTrackCandidates();
+    int getNumberOfPT5TrackCandidates();
+    int getNumberOfPT3TrackCandidates();
+    int getNumberOfPLSTrackCandidates();
+    int getNumberOfPixelTrackCandidates();
+    int getNumberOfT5TrackCandidates();
 
-    ObjectRangesBuffer<DevHost>* getRanges();
-    HitsBuffer<DevHost>* getHits();
-    HitsBuffer<DevHost>* getHitsInCMSSW();
-    MiniDoubletsBuffer<DevHost>* getMiniDoublets();
-    SegmentsBuffer<DevHost>* getSegments();
-    TripletsBuffer<DevHost>* getTriplets();
-    QuintupletsBuffer<DevHost>* getQuintuplets();
-    TrackCandidatesBuffer<DevHost>* getTrackCandidates();
-    TrackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW();
-    PixelTripletsBuffer<DevHost>* getPixelTriplets();
-    PixelQuintupletsBuffer<DevHost>* getPixelQuintuplets();
-    ModulesBuffer<DevHost>* getModules(bool isFull = false);
+    // sync adds alpaka::wait at the end of filling a buffer during lazy fill
+    // (has no effect on repeated calls)
+    // set to false may allow faster operation with concurrent calls of get*
+    // HANDLE WITH CARE
+    HitsBuffer<DevHost>* getHits(bool sync = true);
+    HitsBuffer<DevHost>* getHitsInCMSSW(bool sync = true);
+    ObjectRangesBuffer<DevHost>* getRanges(bool sync = true);
+    MiniDoubletsBuffer<DevHost>* getMiniDoublets(bool sync = true);
+    SegmentsBuffer<DevHost>* getSegments(bool sync = true);
+    TripletsBuffer<DevHost>* getTriplets(bool sync = true);
+    QuintupletsBuffer<DevHost>* getQuintuplets(bool sync = true);
+    PixelTripletsBuffer<DevHost>* getPixelTriplets(bool sync = true);
+    PixelQuintupletsBuffer<DevHost>* getPixelQuintuplets(bool sync = true);
+    TrackCandidatesBuffer<DevHost>* getTrackCandidates(bool sync = true);
+    TrackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW(bool sync = true);
+    ModulesBuffer<DevHost>* getModules(bool isFull = false, bool sync = true);
   };
 
 }  // namespace lst

@@ -255,10 +255,11 @@ void lst::LST<Acc3D>::getOutput(lst::Event<Acc3D>& event) {
   std::vector<int> tc_seedIdx;
   std::vector<short> tc_trackCandidateType;
 
-  lst::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW());
+  lst::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW(false));  // sync on next line
   lst::TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
 
   unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
+
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {
     short trackCandidateType = trackCandidates->trackCandidateType[idx];
     std::vector<unsigned int> hit_idx =
@@ -344,6 +345,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
                                in_isQuad_vec_);
   event.createMiniDoublets();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Mini-doublets produced: %d\n", event.getNumberOfMiniDoublets());
     printf("# of Mini-doublets produced barrel layer 1: %d\n", event.getNumberOfMiniDoubletsByLayerBarrel(0));
     printf("# of Mini-doublets produced barrel layer 2: %d\n", event.getNumberOfMiniDoubletsByLayerBarrel(1));
@@ -360,6 +362,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   event.createSegmentsWithModuleMap();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Segments produced: %d\n", event.getNumberOfSegments());
     printf("# of Segments produced layer 1-2:  %d\n", event.getNumberOfSegmentsByLayerBarrel(0));
     printf("# of Segments produced layer 2-3:  %d\n", event.getNumberOfSegmentsByLayerBarrel(1));
@@ -375,6 +378,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   event.createTriplets();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of T3s produced: %d\n", event.getNumberOfTriplets());
     printf("# of T3s produced layer 1-2-3: %d\n", event.getNumberOfTripletsByLayerBarrel(0));
     printf("# of T3s produced layer 2-3-4: %d\n", event.getNumberOfTripletsByLayerBarrel(1));
@@ -392,6 +396,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   event.createQuintuplets();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Quintuplets produced: %d\n", event.getNumberOfQuintuplets());
     printf("# of Quintuplets produced layer 1-2-3-4-5-6: %d\n", event.getNumberOfQuintupletsByLayerBarrel(0));
     printf("# of Quintuplets produced layer 2: %d\n", event.getNumberOfQuintupletsByLayerBarrel(1));
@@ -409,15 +414,20 @@ void lst::LST<Acc3D>::run(Queue& queue,
   event.pixelLineSegmentCleaning(no_pls_dupclean);
 
   event.createPixelQuintuplets();
-  if (verbose)
+  if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Pixel Quintuplets produced: %d\n", event.getNumberOfPixelQuintuplets());
+  }
 
   event.createPixelTriplets();
-  if (verbose)
+  if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Pixel T3s produced: %d\n", event.getNumberOfPixelTriplets());
+  }
 
   event.createTrackCandidates(no_pls_dupclean, tc_pls_triplets);
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of TrackCandidates produced: %d\n", event.getNumberOfTrackCandidates());
     printf("        # of Pixel TrackCandidates produced: %d\n", event.getNumberOfPixelTrackCandidates());
     printf("        # of pT5 TrackCandidates produced: %d\n", event.getNumberOfPT5TrackCandidates());
@@ -428,5 +438,5 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   getOutput(event);
 
-  event.resetEvent();
+  event.resetEventSync();
 }

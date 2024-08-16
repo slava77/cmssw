@@ -478,7 +478,7 @@ void run_lst() {
       // Clear this event
       TStopwatch my_timer;
       my_timer.Start();
-      events.at(omp_get_thread_num())->resetEvent();
+      events.at(omp_get_thread_num())->resetEventSync();
       float timing_resetEvent = my_timer.RealTime();
 
       timing_information.push_back({timing_input_loading,
