@@ -1,7 +1,5 @@
 #include "write_lst_ntuple.h"
 
-using namespace ALPAKA_ACCELERATOR_NAMESPACE;
-
 //________________________________________________________________________________________________________________________________
 void createOutputBranches() {
   createRequiredOutputBranches();
@@ -9,7 +7,7 @@ void createOutputBranches() {
 }
 
 //________________________________________________________________________________________________________________________________
-void fillOutputBranches(lst::Event<Acc3D>* event) {
+void fillOutputBranches(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   setOutputBranches(event);
   setOptionalOutputBranches(event);
   if (ana.gnn_ntuple)
@@ -183,7 +181,7 @@ void createGnnNtupleBranches() {
 }
 
 //________________________________________________________________________________________________________________________________
-void setOutputBranches(lst::Event<Acc3D>* event) {
+void setOutputBranches(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   // ============ Sim tracks =============
   int n_accepted_simtrk = 0;
   for (unsigned int isimtrk = 0; isimtrk < trk.sim_pt().size(); ++isimtrk) {
@@ -278,7 +276,7 @@ void setOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setOptionalOutputBranches(lst::Event<Acc3D>* event) {
+void setOptionalOutputBranches(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
 #ifdef CUT_VALUE_DEBUG
 
   setPixelQuintupletOutputBranches(event);
@@ -289,7 +287,7 @@ void setOptionalOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setPixelQuintupletOutputBranches(lst::Event<Acc3D>* event) {
+void setPixelQuintupletOutputBranches(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   // ============ pT5 =============
   lst::PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets()->data();
   lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
@@ -365,7 +363,7 @@ void setPixelQuintupletOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setQuintupletOutputBranches(lst::Event<Acc3D>* event) {
+void setQuintupletOutputBranches(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
   lst::ObjectRanges const* ranges = event->getRanges()->data();
   lst::Modules const* modules = event->getModules()->data();
@@ -436,7 +434,7 @@ void setQuintupletOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setPixelTripletOutputBranches(lst::Event<Acc3D>* event) {
+void setPixelTripletOutputBranches(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::PixelTriplets const* pixelTriplets = event->getPixelTriplets()->data();
   lst::Modules const* modules = event->getModules()->data();
   lst::Segments const* segments = event->getSegments()->data();
@@ -499,7 +497,7 @@ void setPixelTripletOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setGnnNtupleBranches(lst::Event<Acc3D>* event) {
+void setGnnNtupleBranches(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   // Get relevant information
   lst::Segments const* segments = event->getSegments()->data();
   lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
@@ -640,7 +638,7 @@ void setGnnNtupleBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setGnnNtupleMiniDoublet(lst::Event<Acc3D>* event, unsigned int MD) {
+void setGnnNtupleMiniDoublet(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event, unsigned int MD) {
   // Get relevant information
   lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
   lst::Hits const* hitsEvt = event->getHits()->data();
@@ -708,8 +706,8 @@ void setGnnNtupleMiniDoublet(lst::Event<Acc3D>* event, unsigned int MD) {
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(lst::Event<Acc3D>* event,
-                                                                                unsigned int idx) {
+std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
+    ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event, unsigned int idx) {
   // Get the type of the track candidate
   lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   short type = trackCandidates->trackCandidateType[idx];
@@ -742,8 +740,8 @@ std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(lst::Event<Acc3D>* event,
-                                                                                               unsigned int idx) {
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(
+    ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event, unsigned int idx) {
   // Get relevant information
   lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
@@ -854,8 +852,8 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(lst::Event<Acc3D>* event,
-                                                                                               unsigned int idx) {
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(
+    ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event, unsigned int idx) {
   // Get relevant information
   lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   lst::Triplets const* triplets = event->getTriplets()->data();
@@ -889,8 +887,8 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(lst::Event<Acc3D>* event,
-                                                                                              unsigned int idx) {
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(
+    ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event, unsigned int idx) {
   lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
   unsigned int T5 = trackCandidates->directObjectIndices[idx];
@@ -923,8 +921,8 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(lst::Event<Acc3D>* event,
-                                                                                               unsigned int idx) {
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(
+    ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event, unsigned int idx) {
   lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   lst::Segments const* segments = event->getSegments()->data();
 
@@ -944,7 +942,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-void printHitMultiplicities(lst::Event<Acc3D>* event) {
+void printHitMultiplicities(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::Modules const* modules = event->getModules()->data();
   lst::ObjectRanges const* ranges = event->getRanges()->data();
 
@@ -959,7 +957,7 @@ void printHitMultiplicities(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printMiniDoubletMultiplicities(lst::Event<Acc3D>* event) {
+void printMiniDoubletMultiplicities(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
   lst::Modules const* modules = event->getModules()->data();
 
@@ -978,7 +976,7 @@ void printMiniDoubletMultiplicities(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printAllObjects(lst::Event<Acc3D>* event) {
+void printAllObjects(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   printMDs(event);
   printLSs(event);
   printpLSs(event);
@@ -986,7 +984,7 @@ void printAllObjects(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printMDs(lst::Event<Acc3D>* event) {
+void printMDs(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
   lst::Hits const* hitsEvt = event->getHits()->data();
   lst::Modules const* modules = event->getModules()->data();
@@ -1008,7 +1006,7 @@ void printMDs(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printLSs(lst::Event<Acc3D>* event) {
+void printLSs(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::Segments const* segments = event->getSegments()->data();
   lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
   lst::Hits const* hitsEvt = event->getHits()->data();
@@ -1040,7 +1038,7 @@ void printLSs(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printpLSs(lst::Event<Acc3D>* event) {
+void printpLSs(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::Segments const* segments = event->getSegments()->data();
   lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
   lst::Hits const* hitsEvt = event->getHits()->data();
@@ -1070,7 +1068,7 @@ void printpLSs(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printT3s(lst::Event<Acc3D>* event) {
+void printT3s(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::Triplets const* triplets = event->getTriplets()->data();
   lst::Segments const* segments = event->getSegments()->data();
   lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
@@ -1112,7 +1110,7 @@ void printT3s(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void debugPrintOutlierMultiplicities(lst::Event<Acc3D>* event) {
+void debugPrintOutlierMultiplicities(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event* event) {
   lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   lst::Triplets const* triplets = event->getTriplets()->data();
   lst::Segments const* segments = event->getSegments()->data();

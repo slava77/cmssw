@@ -390,7 +390,7 @@ namespace lst {
                                   lst::Segments segmentsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
-      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
 
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -539,7 +539,7 @@ namespace lst {
                                   lst::Segments segmentsInGPU,
                                   lst::ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
-      static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
+      static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
 
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);

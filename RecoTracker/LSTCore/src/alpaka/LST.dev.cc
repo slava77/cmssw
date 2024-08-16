@@ -19,26 +19,25 @@ namespace {
   }
 }  // namespace
 
-template <>
-void lst::LST<Acc3D>::prepareInput(std::vector<float> const& see_px,
-                                   std::vector<float> const& see_py,
-                                   std::vector<float> const& see_pz,
-                                   std::vector<float> const& see_dxy,
-                                   std::vector<float> const& see_dz,
-                                   std::vector<float> const& see_ptErr,
-                                   std::vector<float> const& see_etaErr,
-                                   std::vector<float> const& see_stateTrajGlbX,
-                                   std::vector<float> const& see_stateTrajGlbY,
-                                   std::vector<float> const& see_stateTrajGlbZ,
-                                   std::vector<float> const& see_stateTrajGlbPx,
-                                   std::vector<float> const& see_stateTrajGlbPy,
-                                   std::vector<float> const& see_stateTrajGlbPz,
-                                   std::vector<int> const& see_q,
-                                   std::vector<std::vector<int>> const& see_hitIdx,
-                                   std::vector<unsigned int> const& ph2_detId,
-                                   std::vector<float> const& ph2_x,
-                                   std::vector<float> const& ph2_y,
-                                   std::vector<float> const& ph2_z) {
+void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::prepareInput(std::vector<float> const& see_px,
+                                                          std::vector<float> const& see_py,
+                                                          std::vector<float> const& see_pz,
+                                                          std::vector<float> const& see_dxy,
+                                                          std::vector<float> const& see_dz,
+                                                          std::vector<float> const& see_ptErr,
+                                                          std::vector<float> const& see_etaErr,
+                                                          std::vector<float> const& see_stateTrajGlbX,
+                                                          std::vector<float> const& see_stateTrajGlbY,
+                                                          std::vector<float> const& see_stateTrajGlbZ,
+                                                          std::vector<float> const& see_stateTrajGlbPx,
+                                                          std::vector<float> const& see_stateTrajGlbPy,
+                                                          std::vector<float> const& see_stateTrajGlbPz,
+                                                          std::vector<int> const& see_q,
+                                                          std::vector<std::vector<int>> const& see_hitIdx,
+                                                          std::vector<unsigned int> const& ph2_detId,
+                                                          std::vector<float> const& ph2_x,
+                                                          std::vector<float> const& ph2_y,
+                                                          std::vector<float> const& ph2_z) {
   unsigned int count = 0;
   auto n_see = see_stateTrajGlbPx.size();
   std::vector<float> px_vec;
@@ -212,25 +211,24 @@ void lst::LST<Acc3D>::prepareInput(std::vector<float> const& see_px,
   in_isQuad_vec_ = isQuad_vec;
 }
 
-template <>
-std::vector<unsigned int> lst::LST<Acc3D>::getHitIdxs(short trackCandidateType,
-                                                      unsigned int TCIdx,
-                                                      unsigned int const* TCHitIndices,
-                                                      unsigned int const* hitIndices) {
+std::vector<unsigned int> ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::getHitIdxs(short trackCandidateType,
+                                                                             unsigned int TCIdx,
+                                                                             unsigned int const* TCHitIndices,
+                                                                             unsigned int const* hitIndices) {
   std::vector<unsigned int> hits;
 
   unsigned int maxNHits = 0;
   if (trackCandidateType == 7)
-    maxNHits = Params_pT5::kHits;  // pT5
+    maxNHits = ::lst::Params_pT5::kHits;  // pT5
   else if (trackCandidateType == 5)
-    maxNHits = Params_pT3::kHits;  // pT3
+    maxNHits = ::lst::Params_pT3::kHits;  // pT3
   else if (trackCandidateType == 4)
-    maxNHits = Params_T5::kHits;  // T5
+    maxNHits = ::lst::Params_T5::kHits;  // T5
   else if (trackCandidateType == 8)
-    maxNHits = Params_pLS::kHits;  // pLS
+    maxNHits = ::lst::Params_pLS::kHits;  // pLS
 
   for (unsigned int i = 0; i < maxNHits; i++) {
-    unsigned int hitIdxInGPU = TCHitIndices[Params_pT5::kHits * TCIdx + i];
+    unsigned int hitIdxInGPU = TCHitIndices[::lst::Params_pT5::kHits * TCIdx + i];
     unsigned int hitIdx =
         (trackCandidateType == 8)
             ? hitIdxInGPU
@@ -248,15 +246,14 @@ std::vector<unsigned int> lst::LST<Acc3D>::getHitIdxs(short trackCandidateType,
   return hits;
 }
 
-template <>
-void lst::LST<Acc3D>::getOutput(lst::Event<Acc3D>& event) {
+void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::getOutput(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event& event) {
   std::vector<std::vector<unsigned int>> tc_hitIdxs;
   std::vector<unsigned int> tc_len;
   std::vector<int> tc_seedIdx;
   std::vector<short> tc_trackCandidateType;
 
-  lst::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW(false));  // sync on next line
-  lst::TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
+  ::lst::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW(false));  // sync on next line
+  ::lst::TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
 
   unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
 
@@ -277,33 +274,31 @@ void lst::LST<Acc3D>::getOutput(lst::Event<Acc3D>& event) {
   out_tc_trackCandidateType_ = tc_trackCandidateType;
 }
 
-template <>
-template <>
-void lst::LST<Acc3D>::run(Queue& queue,
-                          bool verbose,
-                          LSTESData<Device> const* deviceESData,
-                          std::vector<float> const& see_px,
-                          std::vector<float> const& see_py,
-                          std::vector<float> const& see_pz,
-                          std::vector<float> const& see_dxy,
-                          std::vector<float> const& see_dz,
-                          std::vector<float> const& see_ptErr,
-                          std::vector<float> const& see_etaErr,
-                          std::vector<float> const& see_stateTrajGlbX,
-                          std::vector<float> const& see_stateTrajGlbY,
-                          std::vector<float> const& see_stateTrajGlbZ,
-                          std::vector<float> const& see_stateTrajGlbPx,
-                          std::vector<float> const& see_stateTrajGlbPy,
-                          std::vector<float> const& see_stateTrajGlbPz,
-                          std::vector<int> const& see_q,
-                          std::vector<std::vector<int>> const& see_hitIdx,
-                          std::vector<unsigned int> const& ph2_detId,
-                          std::vector<float> const& ph2_x,
-                          std::vector<float> const& ph2_y,
-                          std::vector<float> const& ph2_z,
-                          bool no_pls_dupclean,
-                          bool tc_pls_triplets) {
-  auto event = lst::Event<Acc3D>(verbose, queue, deviceESData);
+void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::run(Queue& queue,
+                                                 bool verbose,
+                                                 ::lst::LSTESData<Device> const* deviceESData,
+                                                 std::vector<float> const& see_px,
+                                                 std::vector<float> const& see_py,
+                                                 std::vector<float> const& see_pz,
+                                                 std::vector<float> const& see_dxy,
+                                                 std::vector<float> const& see_dz,
+                                                 std::vector<float> const& see_ptErr,
+                                                 std::vector<float> const& see_etaErr,
+                                                 std::vector<float> const& see_stateTrajGlbX,
+                                                 std::vector<float> const& see_stateTrajGlbY,
+                                                 std::vector<float> const& see_stateTrajGlbZ,
+                                                 std::vector<float> const& see_stateTrajGlbPx,
+                                                 std::vector<float> const& see_stateTrajGlbPy,
+                                                 std::vector<float> const& see_stateTrajGlbPz,
+                                                 std::vector<int> const& see_q,
+                                                 std::vector<std::vector<int>> const& see_hitIdx,
+                                                 std::vector<unsigned int> const& ph2_detId,
+                                                 std::vector<float> const& ph2_x,
+                                                 std::vector<float> const& ph2_y,
+                                                 std::vector<float> const& ph2_z,
+                                                 bool no_pls_dupclean,
+                                                 bool tc_pls_triplets) {
+  auto event = ALPAKA_ACCELERATOR_NAMESPACE::lst::Event(verbose, queue, deviceESData);
   prepareInput(see_px,
                see_py,
                see_pz,

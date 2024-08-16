@@ -11,7 +11,7 @@
 
 namespace lst {
 
-  using namespace ALPAKA_ACCELERATOR_NAMESPACE;
+  using namespace alpaka_common;
 
 // Half precision wrapper functions.
 #if defined(FP16_Base)
@@ -46,7 +46,7 @@ namespace lst {
     Vec adjustedThreads = threadsPerBlock;
 
     // special overrides for CPU/host cases
-    if constexpr (std::is_same_v<Platform, alpaka::PlatformCpu>) {
+    if constexpr (std::is_same_v<ALPAKA_ACCELERATOR_NAMESPACE::Platform, alpaka::PlatformCpu>) {
       adjustedBlocks = Vec::all(static_cast<Idx>(1));
 
       if constexpr (alpaka::accMatchesTags<TAcc, alpaka::TagCpuSerial>) {

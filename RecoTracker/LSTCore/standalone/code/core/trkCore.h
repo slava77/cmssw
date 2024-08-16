@@ -11,7 +11,7 @@
 #include <numeric>
 #include <filesystem>
 
-using LSTEvent = lst::Event<ALPAKA_ACCELERATOR_NAMESPACE::Acc3D>;
+using LSTEvent = ALPAKA_ACCELERATOR_NAMESPACE::lst::Event;
 
 // --------------------- ======================== ---------------------
 

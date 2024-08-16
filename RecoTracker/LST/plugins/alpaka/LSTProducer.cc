@@ -87,11 +87,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   private:
     edm::EDGetTokenT<LSTPixelSeedInput> lstPixelSeedInputToken_;
     edm::EDGetTokenT<LSTPhase2OTHitsInput> lstPhase2OTHitsInputToken_;
-    device::ESGetToken<lst::LSTESData<Device>, TrackerRecoGeometryRecord> lstESToken_;
+    device::ESGetToken<::lst::LSTESData<Device>, TrackerRecoGeometryRecord> lstESToken_;
     const bool verbose_, nopLSDupClean_, tcpLSTriplets_;
     edm::EDPutTokenT<LSTOutput> lstOutputToken_;
 
-    lst::LST<Acc3D> lst_;
+    lst::LST lst_;
   };
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE

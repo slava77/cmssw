@@ -5,7 +5,7 @@
 #include <tuple>
 #include "Event.h"
 
-using LSTEvent = lst::Event<ALPAKA_ACCELERATOR_NAMESPACE::Acc3D>;
+using LSTEvent = ALPAKA_ACCELERATOR_NAMESPACE::lst::Event;
 
 enum { kpT5 = 7, kpT3 = 5, kT5 = 4, kpLS = 8 };
 
