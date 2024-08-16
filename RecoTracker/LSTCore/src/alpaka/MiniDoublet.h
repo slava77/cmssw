@@ -966,9 +966,7 @@ namespace lst {
 
   struct CreateMDArrayRangesGPU {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, lst::Modules modulesInGPU, lst::ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
