@@ -16,8 +16,6 @@ public:
         seedIdx_(std::move(seedIdx)),
         trackCandidateType_(std::move(trackCandidateType)) {}
 
-  ~LSTOutput() = default;
-
   enum LSTTCType { T5 = 4, pT3 = 5, pT5 = 7, pLS = 8 };
 
   // Hit indices of each of the LST track candidates.

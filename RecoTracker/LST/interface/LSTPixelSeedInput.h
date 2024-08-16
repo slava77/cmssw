@@ -38,8 +38,6 @@ public:
         q_(std::move(q)),
         hitIdx_(std::move(hitIdx)) {}
 
-  ~LSTPixelSeedInput() = default;
-
   std::vector<float> const& px() const { return px_; }
   std::vector<float> const& py() const { return py_; }
   std::vector<float> const& pz() const { return pz_; }

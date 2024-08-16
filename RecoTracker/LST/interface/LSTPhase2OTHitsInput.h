@@ -16,8 +16,6 @@ public:
                        std::vector<TrackingRecHit const*> const hits)
       : detId_(std::move(detId)), x_(std::move(x)), y_(std::move(y)), z_(std::move(z)), hits_(std::move(hits)) {}
 
-  ~LSTPhase2OTHitsInput() = default;
-
   std::vector<unsigned int> const& detId() const { return detId_; }
   std::vector<float> const& x() const { return x_; }
   std::vector<float> const& y() const { return y_; }

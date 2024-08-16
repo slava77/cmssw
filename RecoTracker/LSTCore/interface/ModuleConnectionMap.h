@@ -16,7 +16,6 @@ namespace lst {
   public:
     ModuleConnectionMap();
     ModuleConnectionMap(std::string const& filename);
-    ~ModuleConnectionMap();
 
     void load(std::string const&);
     void add(std::string const&);
