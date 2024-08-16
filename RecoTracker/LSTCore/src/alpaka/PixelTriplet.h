@@ -925,7 +925,7 @@ namespace lst {
     return true;
   };
 
-  struct createPixelTripletsInGPUFromMapv2 {
+  struct CreatePixelTripletsInGPUFromMapv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,

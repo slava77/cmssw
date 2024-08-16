@@ -2185,10 +2185,10 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runQuintupletDefaultAlgo(TAcc const& acc,
-                                                               struct lst::Modules& modulesInGPU,
-                                                               struct lst::MiniDoublets& mdsInGPU,
-                                                               struct lst::Segments& segmentsInGPU,
-                                                               struct lst::Triplets& tripletsInGPU,
+                                                               lst::Modules& modulesInGPU,
+                                                               lst::MiniDoublets& mdsInGPU,
+                                                               lst::Segments& segmentsInGPU,
+                                                               lst::Triplets& tripletsInGPU,
                                                                uint16_t lowerModuleIndex1,
                                                                uint16_t lowerModuleIndex2,
                                                                uint16_t lowerModuleIndex3,
@@ -2534,7 +2534,7 @@ namespace lst {
     return true;
   }
 
-  struct createQuintupletsInGPUv2 {
+  struct CreateQuintupletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -2663,7 +2663,7 @@ namespace lst {
     }
   };
 
-  struct createEligibleModulesListForQuintupletsGPU {
+  struct CreateEligibleModulesListForQuintupletsGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -2767,7 +2767,7 @@ namespace lst {
     }
   };
 
-  struct addQuintupletRangesToEventExplicit {
+  struct AddQuintupletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,

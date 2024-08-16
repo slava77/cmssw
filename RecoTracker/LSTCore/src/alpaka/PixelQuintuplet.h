@@ -832,7 +832,7 @@ namespace lst {
     return RMSE;
   }
 
-  struct createPixelQuintupletsInGPUFromMapv2 {
+  struct CreatePixelQuintupletsInGPUFromMapv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,

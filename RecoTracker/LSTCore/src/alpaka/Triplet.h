@@ -808,7 +808,7 @@ namespace lst {
     return true;
   }
 
-  struct createTripletsInGPUv2 {
+  struct CreateTripletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -925,7 +925,7 @@ namespace lst {
     }
   };
 
-  struct createTripletArrayRanges {
+  struct CreateTripletArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -1028,7 +1028,7 @@ namespace lst {
     }
   };
 
-  struct addTripletRangesToEventExplicit {
+  struct AddTripletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,

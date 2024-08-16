@@ -191,7 +191,7 @@ void lst::Event<Acc3D>::addHitToEvent(std::vector<float> const& x,
   Vec3D const blocksPerGrid1{1, 1, max_blocks};
   WorkDiv3D const hit_loop_workdiv = createWorkDiv(blocksPerGrid1, threadsPerBlock1, elementsPerThread);
 
-  hitLoopKernel hit_loop_kernel;
+  HitLoopKernel hit_loop_kernel;
   alpaka::exec<Acc3D>(queue,
                       hit_loop_workdiv,
                       hit_loop_kernel,
@@ -209,7 +209,7 @@ void lst::Event<Acc3D>::addHitToEvent(std::vector<float> const& x,
   Vec3D const blocksPerGrid2{1, 1, max_blocks};
   WorkDiv3D const module_ranges_workdiv = createWorkDiv(blocksPerGrid2, threadsPerBlock2, elementsPerThread);
 
-  moduleRangesKernel module_ranges_kernel;
+  ModuleRangesKernel module_ranges_kernel;
   alpaka::exec<Acc3D>(
       queue, module_ranges_workdiv, module_ranges_kernel, *modulesBuffers_.data(), *hitsInGPU, nLowerModules_);
 }
@@ -259,7 +259,7 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
 
     WorkDiv1D const createMDArrayRangesGPU_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-    lst::createMDArrayRangesGPU createMDArrayRangesGPU_kernel;
+    lst::CreateMDArrayRangesGPU createMDArrayRangesGPU_kernel;
     alpaka::exec<Acc1D>(
         queue, createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU);
 
@@ -282,7 +282,7 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
 
     WorkDiv1D const createSegmentArrayRanges_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-    lst::createSegmentArrayRanges createSegmentArrayRanges_kernel;
+    lst::CreateSegmentArrayRanges createSegmentArrayRanges_kernel;
     alpaka::exec<Acc1D>(queue,
                         createSegmentArrayRanges_workDiv,
                         createSegmentArrayRanges_kernel,
@@ -355,7 +355,7 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
   Vec3D const blocksPerGrid{1, 1, max_blocks};
   WorkDiv3D const addPixelSegmentToEvent_workdiv = createWorkDiv(blocksPerGrid, threadsPerBlock, elementsPerThread);
 
-  addPixelSegmentToEventKernel addPixelSegmentToEvent_kernel;
+  AddPixelSegmentToEventKernel addPixelSegmentToEvent_kernel;
   alpaka::exec<Acc3D>(queue,
                       addPixelSegmentToEvent_workdiv,
                       addPixelSegmentToEvent_kernel,
@@ -386,7 +386,7 @@ void lst::Event<Acc3D>::createMiniDoublets() {
 
   WorkDiv1D const createMDArrayRangesGPU_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::createMDArrayRangesGPU createMDArrayRangesGPU_kernel;
+  lst::CreateMDArrayRangesGPU createMDArrayRangesGPU_kernel;
   alpaka::exec<Acc1D>(
       queue, createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU);
 
@@ -408,7 +408,7 @@ void lst::Event<Acc3D>::createMiniDoublets() {
   WorkDiv3D const createMiniDoubletsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridCreateMDInGPU, threadsPerBlockCreateMDInGPU, elementsPerThread);
 
-  lst::createMiniDoubletsInGPUv2 createMiniDoubletsInGPUv2_kernel;
+  lst::CreateMiniDoubletsInGPUv2 createMiniDoubletsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createMiniDoubletsInGPUv2_workDiv,
                       createMiniDoubletsInGPUv2_kernel,
@@ -419,7 +419,7 @@ void lst::Event<Acc3D>::createMiniDoublets() {
 
   WorkDiv1D const addMiniDoubletRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::addMiniDoubletRangesToEventExplicit addMiniDoubletRangesToEventExplicit_kernel;
+  lst::AddMiniDoubletRangesToEventExplicit addMiniDoubletRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addMiniDoubletRangesToEventExplicit_workDiv,
                       addMiniDoubletRangesToEventExplicit_kernel,
@@ -446,7 +446,7 @@ void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
   WorkDiv3D const createSegmentsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridCreateSeg, threadsPerBlockCreateSeg, elementsPerThread);
 
-  lst::createSegmentsInGPUv2 createSegmentsInGPUv2_kernel;
+  lst::CreateSegmentsInGPUv2 createSegmentsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createSegmentsInGPUv2_workDiv,
                       createSegmentsInGPUv2_kernel,
@@ -457,7 +457,7 @@ void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
 
   WorkDiv1D const addSegmentRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::addSegmentRangesToEventExplicit addSegmentRangesToEventExplicit_kernel;
+  lst::AddSegmentRangesToEventExplicit addSegmentRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addSegmentRangesToEventExplicit_workDiv,
                       addSegmentRangesToEventExplicit_kernel,
@@ -474,7 +474,7 @@ void lst::Event<Acc3D>::createTriplets() {
   if (tripletsInGPU == nullptr) {
     WorkDiv1D const createTripletArrayRanges_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-    lst::createTripletArrayRanges createTripletArrayRanges_kernel;
+    lst::CreateTripletArrayRanges createTripletArrayRanges_kernel;
     alpaka::exec<Acc1D>(queue,
                         createTripletArrayRanges_workDiv,
                         createTripletArrayRanges_kernel,
@@ -535,7 +535,7 @@ void lst::Event<Acc3D>::createTriplets() {
   WorkDiv3D const createTripletsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridCreateTrip, threadsPerBlockCreateTrip, elementsPerThread);
 
-  lst::createTripletsInGPUv2 createTripletsInGPUv2_kernel;
+  lst::CreateTripletsInGPUv2 createTripletsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createTripletsInGPUv2_workDiv,
                       createTripletsInGPUv2_kernel,
@@ -549,7 +549,7 @@ void lst::Event<Acc3D>::createTriplets() {
 
   WorkDiv1D const addTripletRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::addTripletRangesToEventExplicit addTripletRangesToEventExplicit_kernel;
+  lst::AddTripletRangesToEventExplicit addTripletRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addTripletRangesToEventExplicit_workDiv,
                       addTripletRangesToEventExplicit_kernel,
@@ -575,7 +575,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const crossCleanpT3_workDiv =
       createWorkDiv(blocksPerGrid_crossCleanpT3, threadsPerBlock_crossCleanpT3, elementsPerThread);
 
-  lst::crossCleanpT3 crossCleanpT3_kernel;
+  lst::CrossCleanpT3 crossCleanpT3_kernel;
   alpaka::exec<Acc3D>(queue,
                       crossCleanpT3_workDiv,
                       crossCleanpT3_kernel,
@@ -587,7 +587,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
 
   WorkDiv1D const addpT3asTrackCandidatesInGPU_workDiv = createWorkDiv<Vec1D>({1}, {512}, {1});
 
-  lst::addpT3asTrackCandidatesInGPU addpT3asTrackCandidatesInGPU_kernel;
+  lst::AddpT3asTrackCandidatesInGPU addpT3asTrackCandidatesInGPU_kernel;
   alpaka::exec<Acc1D>(queue,
                       addpT3asTrackCandidatesInGPU_workDiv,
                       addpT3asTrackCandidatesInGPU_kernel,
@@ -608,7 +608,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const removeDupQuintupletsInGPUBeforeTC_workDiv =
       createWorkDiv(blocksPerGridRemoveDupQuints, threadsPerBlockRemoveDupQuints, elementsPerThread);
 
-  lst::removeDupQuintupletsInGPUBeforeTC removeDupQuintupletsInGPUBeforeTC_kernel;
+  lst::RemoveDupQuintupletsInGPUBeforeTC removeDupQuintupletsInGPUBeforeTC_kernel;
   alpaka::exec<Acc3D>(queue,
                       removeDupQuintupletsInGPUBeforeTC_workDiv,
                       removeDupQuintupletsInGPUBeforeTC_kernel,
@@ -620,7 +620,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const crossCleanT5_workDiv =
       createWorkDiv(blocksPerGrid_crossCleanT5, threadsPerBlock_crossCleanT5, elementsPerThread);
 
-  lst::crossCleanT5 crossCleanT5_kernel;
+  lst::CrossCleanT5 crossCleanT5_kernel;
   alpaka::exec<Acc3D>(queue,
                       crossCleanT5_workDiv,
                       crossCleanT5_kernel,
@@ -635,7 +635,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const addT5asTrackCandidateInGPU_workDiv = createWorkDiv(
       blocksPerGrid_addT5asTrackCandidateInGPU, threadsPerBlock_addT5asTrackCandidateInGPU, elementsPerThread);
 
-  lst::addT5asTrackCandidateInGPU addT5asTrackCandidateInGPU_kernel;
+  lst::AddT5asTrackCandidateInGPU addT5asTrackCandidateInGPU_kernel;
   alpaka::exec<Acc3D>(queue,
                       addT5asTrackCandidateInGPU_workDiv,
                       addT5asTrackCandidateInGPU_kernel,
@@ -650,7 +650,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
     WorkDiv3D const checkHitspLS_workDiv =
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
-    lst::checkHitspLS checkHitspLS_kernel;
+    lst::CheckHitspLS checkHitspLS_kernel;
     alpaka::exec<Acc3D>(
         queue, checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, true);
   }
@@ -660,7 +660,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const crossCleanpLS_workDiv =
       createWorkDiv(blocksPerGrid_crossCleanpLS, threadsPerBlock_crossCleanpLS, elementsPerThread);
 
-  lst::crossCleanpLS crossCleanpLS_kernel;
+  lst::CrossCleanpLS crossCleanpLS_kernel;
   alpaka::exec<Acc3D>(queue,
                       crossCleanpLS_workDiv,
                       crossCleanpLS_kernel,
@@ -678,7 +678,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const addpLSasTrackCandidateInGPU_workDiv = createWorkDiv(
       blocksPerGrid_addpLSasTrackCandidateInGPU, threadsPerBlock_addpLSasTrackCandidateInGPU, elementsPerThread);
 
-  lst::addpLSasTrackCandidateInGPU addpLSasTrackCandidateInGPU_kernel;
+  lst::AddpLSasTrackCandidateInGPU addpLSasTrackCandidateInGPU_kernel;
   alpaka::exec<Acc3D>(queue,
                       addpLSasTrackCandidateInGPU_workDiv,
                       addpLSasTrackCandidateInGPU_kernel,
@@ -789,7 +789,7 @@ void lst::Event<Acc3D>::createPixelTriplets() {
   WorkDiv3D const createPixelTripletsInGPUFromMapv2_workDiv =
       createWorkDiv(blocksPerGrid, threadsPerBlock, elementsPerThread);
 
-  lst::createPixelTripletsInGPUFromMapv2 createPixelTripletsInGPUFromMapv2_kernel;
+  lst::CreatePixelTripletsInGPUFromMapv2 createPixelTripletsInGPUFromMapv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createPixelTripletsInGPUFromMapv2_workDiv,
                       createPixelTripletsInGPUFromMapv2_kernel,
@@ -819,7 +819,7 @@ void lst::Event<Acc3D>::createPixelTriplets() {
   WorkDiv3D const removeDupPixelTripletsInGPUFromMap_workDiv =
       createWorkDiv(blocksPerGridDupPixTrip, threadsPerBlockDupPixTrip, elementsPerThread);
 
-  lst::removeDupPixelTripletsInGPUFromMap removeDupPixelTripletsInGPUFromMap_kernel;
+  lst::RemoveDupPixelTripletsInGPUFromMap removeDupPixelTripletsInGPUFromMap_kernel;
   alpaka::exec<Acc3D>(queue,
                       removeDupPixelTripletsInGPUFromMap_workDiv,
                       removeDupPixelTripletsInGPUFromMap_kernel,
@@ -829,7 +829,7 @@ void lst::Event<Acc3D>::createPixelTriplets() {
 void lst::Event<Acc3D>::createQuintuplets() {
   WorkDiv1D const createEligibleModulesListForQuintupletsGPU_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::createEligibleModulesListForQuintupletsGPU createEligibleModulesListForQuintupletsGPU_kernel;
+  lst::CreateEligibleModulesListForQuintupletsGPU createEligibleModulesListForQuintupletsGPU_kernel;
   alpaka::exec<Acc1D>(queue,
                       createEligibleModulesListForQuintupletsGPU_workDiv,
                       createEligibleModulesListForQuintupletsGPU_kernel,
@@ -860,7 +860,7 @@ void lst::Event<Acc3D>::createQuintuplets() {
   WorkDiv3D const createQuintupletsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridQuints, threadsPerBlockQuints, elementsPerThread);
 
-  lst::createQuintupletsInGPUv2 createQuintupletsInGPUv2_kernel;
+  lst::CreateQuintupletsInGPUv2 createQuintupletsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createQuintupletsInGPUv2_workDiv,
                       createQuintupletsInGPUv2_kernel,
@@ -877,7 +877,7 @@ void lst::Event<Acc3D>::createQuintuplets() {
   WorkDiv3D const removeDupQuintupletsInGPUAfterBuild_workDiv =
       createWorkDiv(blocksPerGridDupQuint, threadsPerBlockDupQuint, elementsPerThread);
 
-  lst::removeDupQuintupletsInGPUAfterBuild removeDupQuintupletsInGPUAfterBuild_kernel;
+  lst::RemoveDupQuintupletsInGPUAfterBuild removeDupQuintupletsInGPUAfterBuild_kernel;
   alpaka::exec<Acc3D>(queue,
                       removeDupQuintupletsInGPUAfterBuild_workDiv,
                       removeDupQuintupletsInGPUAfterBuild_kernel,
@@ -887,7 +887,7 @@ void lst::Event<Acc3D>::createQuintuplets() {
 
   WorkDiv1D const addQuintupletRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::addQuintupletRangesToEventExplicit addQuintupletRangesToEventExplicit_kernel;
+  lst::AddQuintupletRangesToEventExplicit addQuintupletRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addQuintupletRangesToEventExplicit_workDiv,
                       addQuintupletRangesToEventExplicit_kernel,
@@ -907,7 +907,7 @@ void lst::Event<Acc3D>::pixelLineSegmentCleaning(bool no_pls_dupclean) {
     WorkDiv3D const checkHitspLS_workDiv =
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
-    lst::checkHitspLS checkHitspLS_kernel;
+    lst::CheckHitspLS checkHitspLS_kernel;
     alpaka::exec<Acc3D>(
         queue, checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, false);
   }
@@ -990,7 +990,7 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
   WorkDiv3D const createPixelQuintupletsInGPUFromMapv2_workDiv =
       createWorkDiv(blocksPerGridCreatePixQuints, threadsPerBlockCreatePixQuints, elementsPerThread);
 
-  lst::createPixelQuintupletsInGPUFromMapv2 createPixelQuintupletsInGPUFromMapv2_kernel;
+  lst::CreatePixelQuintupletsInGPUFromMapv2 createPixelQuintupletsInGPUFromMapv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createPixelQuintupletsInGPUFromMapv2_workDiv,
                       createPixelQuintupletsInGPUFromMapv2_kernel,
@@ -1010,7 +1010,7 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
   WorkDiv3D const removeDupPixelQuintupletsInGPUFromMap_workDiv =
       createWorkDiv(blocksPerGridDupPix, threadsPerBlockDupPix, elementsPerThread);
 
-  lst::removeDupPixelQuintupletsInGPUFromMap removeDupPixelQuintupletsInGPUFromMap_kernel;
+  lst::RemoveDupPixelQuintupletsInGPUFromMap removeDupPixelQuintupletsInGPUFromMap_kernel;
   alpaka::exec<Acc3D>(queue,
                       removeDupPixelQuintupletsInGPUFromMap_workDiv,
                       removeDupPixelQuintupletsInGPUFromMap_kernel,
@@ -1018,7 +1018,7 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
 
   WorkDiv1D const addpT5asTrackCandidateInGPU_workDiv = createWorkDiv<Vec1D>({1}, {256}, {1});
 
-  lst::addpT5asTrackCandidateInGPU addpT5asTrackCandidateInGPU_kernel;
+  lst::AddpT5asTrackCandidateInGPU addpT5asTrackCandidateInGPU_kernel;
   alpaka::exec<Acc1D>(queue,
                       addpT5asTrackCandidateInGPU_workDiv,
                       addpT5asTrackCandidateInGPU_kernel,

@@ -204,7 +204,7 @@ namespace lst {
     return npMatched;
   }
 
-  struct crossCleanpT3 {
+  struct CrossCleanpT3 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -245,7 +245,7 @@ namespace lst {
     }
   };
 
-  struct crossCleanT5 {
+  struct CrossCleanT5 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -300,7 +300,7 @@ namespace lst {
     }
   };
 
-  struct crossCleanpLS {
+  struct CrossCleanpLS {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -381,7 +381,7 @@ namespace lst {
     }
   };
 
-  struct addpT3asTrackCandidatesInGPU {
+  struct AddpT3asTrackCandidatesInGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
@@ -437,7 +437,7 @@ namespace lst {
     }
   };
 
-  struct addT5asTrackCandidateInGPU {
+  struct AddT5asTrackCandidateInGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
@@ -491,7 +491,7 @@ namespace lst {
     }
   };
 
-  struct addpLSasTrackCandidateInGPU {
+  struct AddpLSasTrackCandidateInGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
@@ -530,7 +530,7 @@ namespace lst {
     }
   };
 
-  struct addpT5asTrackCandidateInGPU {
+  struct AddpT5asTrackCandidateInGPU {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t nLowerModules,
