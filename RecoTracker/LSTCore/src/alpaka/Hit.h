@@ -176,7 +176,7 @@ namespace lst {
     return -1;
   }
 
-  struct moduleRangesKernel {
+  struct ModuleRangesKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -199,7 +199,7 @@ namespace lst {
     }
   };
 
-  struct hitLoopKernel {
+  struct HitLoopKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   uint16_t Endcap,                  // Integer corresponding to endcap in module subdets
