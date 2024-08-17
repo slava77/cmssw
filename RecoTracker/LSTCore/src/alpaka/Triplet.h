@@ -11,7 +11,7 @@
 #include "Hit.h"
 #include "ObjectRanges.h"
 
-namespace lst {
+namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   struct Triplets {
     unsigned int* segmentIndices;
     uint16_t* lowerModuleIndices;  //3 of them
@@ -136,10 +136,10 @@ namespace lst {
   };
 
 #ifdef CUT_VALUE_DEBUG
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(lst::Modules const& modulesInGPU,
-                                                         lst::MiniDoublets const& mdsInGPU,
-                                                         lst::Segments const& segmentsInGPU,
-                                                         lst::Triplets& tripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(Modules const& modulesInGPU,
+                                                         MiniDoublets const& mdsInGPU,
+                                                         Segments const& segmentsInGPU,
+                                                         Triplets& tripletsInGPU,
                                                          unsigned int innerSegmentIndex,
                                                          unsigned int outerSegmentIndex,
                                                          uint16_t innerInnerLowerModuleIndex,
@@ -154,10 +154,10 @@ namespace lst {
                                                          float circleCenterY,
                                                          unsigned int tripletIndex)
 #else
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(lst::Modules const& modulesInGPU,
-                                                         lst::MiniDoublets const& mdsInGPU,
-                                                         lst::Segments const& segmentsInGPU,
-                                                         lst::Triplets& tripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(Modules const& modulesInGPU,
+                                                         MiniDoublets const& mdsInGPU,
+                                                         Segments const& segmentsInGPU,
+                                                         Triplets& tripletsInGPU,
                                                          unsigned int innerSegmentIndex,
                                                          unsigned int outerSegmentIndex,
                                                          uint16_t innerInnerLowerModuleIndex,
@@ -206,9 +206,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRZConstraint(TAcc const& acc,
-                                                       lst::Modules const& modulesInGPU,
-                                                       lst::MiniDoublets const& mdsInGPU,
-                                                       lst::Segments const& segmentsInGPU,
+                                                       Modules const& modulesInGPU,
+                                                       MiniDoublets const& mdsInGPU,
+                                                       Segments const& segmentsInGPU,
                                                        uint16_t innerInnerLowerModuleIndex,
                                                        uint16_t middleLowerModuleIndex,
                                                        uint16_t outerOuterLowerModuleIndex,
@@ -266,9 +266,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBB(TAcc const& acc,
-                                                                lst::Modules const& modulesInGPU,
-                                                                lst::MiniDoublets const& mdsInGPU,
-                                                                lst::Segments const& segmentsInGPU,
+                                                                Modules const& modulesInGPU,
+                                                                MiniDoublets const& mdsInGPU,
+                                                                Segments const& segmentsInGPU,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -280,8 +280,8 @@ namespace lst {
                                                                 unsigned int innerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
-    bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS);
-    bool isPSOut = (modulesInGPU.moduleType[outerOuterLowerModuleIndex] == lst::PS);
+    bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == ::lst::PS);
+    bool isPSOut = (modulesInGPU.moduleType[outerOuterLowerModuleIndex] == ::lst::PS);
 
     float rtIn = mdsInGPU.anchorRt[firstMDIndex];
     float rtMid = mdsInGPU.anchorRt[secondMDIndex];
@@ -291,17 +291,16 @@ namespace lst {
     float zMid = mdsInGPU.anchorZ[secondMDIndex];
     zOut = mdsInGPU.anchorZ[thirdMDIndex];
 
-    float alpha1GeVOut =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax));
+    float alpha1GeVOut = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, kSinAlphaMax));
 
     float rtRatio_OutIn = rtOut / rtIn;  // Outer segment beginning rt divided by inner segment beginning rt;
     float dzDrtScale = alpaka::math::tan(acc, alpha1GeVOut) / alpha1GeVOut;  // The track can bend in r-z plane slightly
-    float zpitchIn = (isPSIn ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
-    float zpitchOut = (isPSOut ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
+    float zpitchIn = (isPSIn ? kPixelPSZpitch : kStrip2SZpitch);
+    float zpitchOut = (isPSOut ? kPixelPSZpitch : kStrip2SZpitch);
 
     const float zHi =
-        zIn + (zIn + lst::kDeltaZLum) * (rtRatio_OutIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + (zpitchIn + zpitchOut);
-    const float zLo = zIn + (zIn - lst::kDeltaZLum) * (rtRatio_OutIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
+        zIn + (zIn + kDeltaZLum) * (rtRatio_OutIn - 1.f) * (zIn < 0.f ? 1.f : dzDrtScale) + (zpitchIn + zpitchOut);
+    const float zLo = zIn + (zIn - kDeltaZLum) * (rtRatio_OutIn - 1.f) * (zIn > 0.f ? 1.f : dzDrtScale) -
                       (zpitchIn + zpitchOut);  //slope-correction only on outer end
 
     //Cut 1 - z compatibility
@@ -320,15 +319,14 @@ namespace lst {
     float dzErr = (zpitchIn + zpitchOut) * (zpitchIn + zpitchOut) * 2.f;
 
     float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f) * (r3In / rtIn);
-    float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
     dzErr += muls2 * drt_OutIn * drt_OutIn / 3.f * coshEta * coshEta;
     dzErr = alpaka::math::sqrt(acc, dzErr);
 
     // Constructing upper and lower bound
     const float dzMean = dz_InSeg / drt_InSeg * drt_OutIn;
-    const float zWindow =
-        dzErr / drt_InSeg * drt_OutIn +
-        (zpitchIn + zpitchOut);  //FIXME for lst::ptCut lower than ~0.8 need to add curv path correction
+    const float zWindow = dzErr / drt_InSeg * drt_OutIn +
+                          (zpitchIn + zpitchOut);  //FIXME for ptCut lower than ~0.8 need to add curv path correction
     const float zLoPointed = zIn + dzMean * (zIn > 0.f ? 1.f : dzDrtScale) - zWindow;
     const float zHiPointed = zIn + dzMean * (zIn < 0.f ? 1.f : dzDrtScale) + zWindow;
 
@@ -342,7 +340,7 @@ namespace lst {
     float alpha_InLo = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
-    betaIn = alpha_InLo - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = alpha_InLo - phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     //beta computation
     float drt_tl_axis = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
@@ -355,8 +353,7 @@ namespace lst {
                                (mdsInGPU.anchorY[secondMDIndex] - mdsInGPU.anchorY[firstMDIndex]) *
                                    (mdsInGPU.anchorY[secondMDIndex] - mdsInGPU.anchorY[firstMDIndex]));
     betaInCut =
-        alpaka::math::asin(
-            acc, alpaka::math::min(acc, (-rt_InSeg + drt_tl_axis) * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax)) +
+        alpaka::math::asin(acc, alpaka::math::min(acc, (-rt_InSeg + drt_tl_axis) * k2Rinv1GeVf / ptCut, kSinAlphaMax)) +
         (0.02f / drt_InSeg);
 
     //Cut #3: first beta cut
@@ -365,9 +362,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBE(TAcc const& acc,
-                                                                lst::Modules const& modulesInGPU,
-                                                                lst::MiniDoublets const& mdsInGPU,
-                                                                lst::Segments const& segmentsInGPU,
+                                                                Modules const& modulesInGPU,
+                                                                MiniDoublets const& mdsInGPU,
+                                                                Segments const& segmentsInGPU,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -381,8 +378,8 @@ namespace lst {
                                                                 unsigned int outerSegmentIndex,
                                                                 float& betaIn,
                                                                 float& betaInCut) {
-    bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS);
-    bool isPSOut = (modulesInGPU.moduleType[outerOuterLowerModuleIndex] == lst::PS);
+    bool isPSIn = (modulesInGPU.moduleType[innerInnerLowerModuleIndex] == ::lst::PS);
+    bool isPSOut = (modulesInGPU.moduleType[outerOuterLowerModuleIndex] == ::lst::PS);
 
     float rtIn = mdsInGPU.anchorRt[firstMDIndex];
     float rtMid = mdsInGPU.anchorRt[secondMDIndex];
@@ -392,22 +389,21 @@ namespace lst {
     float zMid = mdsInGPU.anchorZ[secondMDIndex];
     zOut = mdsInGPU.anchorZ[thirdMDIndex];
 
-    float alpha1GeV_OutLo =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax));
+    float alpha1GeV_OutLo = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, kSinAlphaMax));
 
     float dzDrtScale =
         alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;  // The track can bend in r-z plane slightly
-    float zpitchIn = (isPSIn ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
-    float zpitchOut = (isPSOut ? lst::kPixelPSZpitch : lst::kStrip2SZpitch);
+    float zpitchIn = (isPSIn ? kPixelPSZpitch : kStrip2SZpitch);
+    float zpitchOut = (isPSOut ? kPixelPSZpitch : kStrip2SZpitch);
     float zGeom = zpitchIn + zpitchOut;
 
     // Cut #0: Preliminary (Only here in endcap case)
     if (zIn * zOut <= 0)
       return false;
 
-    float dLum = alpaka::math::copysign(acc, lst::kDeltaZLum, zIn);
-    bool isOutSgInnerMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == lst::PS;
-    float rtGeom1 = isOutSgInnerMDPS ? lst::kPixelPSZpitch : lst::kStrip2SZpitch;
+    float dLum = alpaka::math::copysign(acc, kDeltaZLum, zIn);
+    bool isOutSgInnerMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == ::lst::PS;
+    float rtGeom1 = isOutSgInnerMDPS ? kPixelPSZpitch : kStrip2SZpitch;
     float zGeom1 = alpaka::math::copysign(acc, zGeom, zIn);
     float rtLo = rtIn * (1.f + (zOut - zIn - zGeom1) / (zIn + zGeom1 + dLum) / dzDrtScale) -
                  rtGeom1;  //slope correction only on the lower end
@@ -433,12 +429,12 @@ namespace lst {
     const float coshEta = dr3SDIn / drtSDIn;  //direction estimate
     const float dzOutInAbs = alpaka::math::abs(acc, zOut - zIn);
     const float multDzDr = dzOutInAbs * coshEta / (coshEta * coshEta - 1.f);
-    const float zGeom1_another = lst::kPixelPSZpitch;
+    const float zGeom1_another = kPixelPSZpitch;
     const float kZ = (zOut - zIn) / dzSDIn;
     float drtErr =
         zGeom1_another * zGeom1_another * drtSDIn * drtSDIn / dzSDIn / dzSDIn * (1.f - 2.f * kZ + 2.f * kZ * kZ);
     const float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2 * (rtOut - rtIn) / 50.f) * (rIn / rtIn);
-    const float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    const float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
     drtErr += muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
 
@@ -455,7 +451,7 @@ namespace lst {
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float betaInRHmin = betaIn;
     float betaInRHmax = betaIn;
@@ -476,8 +472,7 @@ namespace lst {
     float sdIn_d = rt_InOut - rt_InLo;
 
     float dr = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
-    betaInCut = alpaka::math::asin(
-                    acc, alpaka::math::min(acc, (-sdIn_dr + dr) * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax)) +
+    betaInCut = alpaka::math::asin(acc, alpaka::math::min(acc, (-sdIn_dr + dr) * k2Rinv1GeVf / ptCut, kSinAlphaMax)) +
                 (0.02f / sdIn_d);
 
     //Cut #4: first beta cut
@@ -486,9 +481,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintEEE(TAcc const& acc,
-                                                                lst::Modules const& modulesInGPU,
-                                                                lst::MiniDoublets const& mdsInGPU,
-                                                                lst::Segments const& segmentsInGPU,
+                                                                Modules const& modulesInGPU,
+                                                                MiniDoublets const& mdsInGPU,
+                                                                Segments const& segmentsInGPU,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -509,8 +504,7 @@ namespace lst {
     float zMid = mdsInGPU.anchorZ[secondMDIndex];
     zOut = mdsInGPU.anchorZ[thirdMDIndex];
 
-    float alpha1GeV_Out =
-        alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax));
+    float alpha1GeV_Out = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, kSinAlphaMax));
 
     float dzDrtScale =
         alpaka::math::tan(acc, alpha1GeV_Out) / alpha1GeV_Out;  // The track can bend in r-z plane slightly
@@ -519,13 +513,13 @@ namespace lst {
     if (zIn * zOut <= 0)
       return false;
 
-    float dLum = alpaka::math::copysign(acc, lst::kDeltaZLum, zIn);
-    bool isOutSgOuterMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == lst::PS;
-    bool isInSgInnerMDPS = modulesInGPU.moduleType[innerInnerLowerModuleIndex] == lst::PS;
+    float dLum = alpaka::math::copysign(acc, kDeltaZLum, zIn);
+    bool isOutSgOuterMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == ::lst::PS;
+    bool isInSgInnerMDPS = modulesInGPU.moduleType[innerInnerLowerModuleIndex] == ::lst::PS;
 
-    float rtGeom = (isInSgInnerMDPS and isOutSgOuterMDPS)  ? 2.f * lst::kPixelPSZpitch
-                   : (isInSgInnerMDPS or isOutSgOuterMDPS) ? lst::kPixelPSZpitch + lst::kStrip2SZpitch
-                                                           : 2.f * lst::kStrip2SZpitch;
+    float rtGeom = (isInSgInnerMDPS and isOutSgOuterMDPS)  ? 2.f * kPixelPSZpitch
+                   : (isInSgInnerMDPS or isOutSgOuterMDPS) ? kPixelPSZpitch + kStrip2SZpitch
+                                                           : 2.f * kStrip2SZpitch;
 
     float dz = zOut - zIn;
     const float rtLo = rtIn * (1.f + dz / (zIn + dLum) / dzDrtScale) - rtGeom;  //slope correction only on the lower end
@@ -535,7 +529,7 @@ namespace lst {
     if ((rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
-    bool isInSgOuterMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == lst::PS;
+    bool isInSgOuterMDPS = modulesInGPU.moduleType[outerOuterLowerModuleIndex] == ::lst::PS;
 
     float drtSDIn = rtMid - rtIn;
     float dzSDIn = zMid - zIn;
@@ -549,12 +543,12 @@ namespace lst {
     float kZ = (zOut - zIn) / dzSDIn;
     float thetaMuls2 = (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rtOut - rtIn) / 50.f);
 
-    float muls2 = thetaMuls2 * 9.f / (lst::ptCut * lst::ptCut) * 16.f;
+    float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
 
-    float drtErr = alpaka::math::sqrt(
-        acc,
-        lst::kPixelPSZpitch * lst::kPixelPSZpitch * 2.f / (dzSDIn * dzSDIn) * (dzOutInAbs * dzOutInAbs) +
-            muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
+    float drtErr =
+        alpaka::math::sqrt(acc,
+                           kPixelPSZpitch * kPixelPSZpitch * 2.f / (dzSDIn * dzSDIn) * (dzOutInAbs * dzOutInAbs) +
+                               muls2 * multDzDr * multDzDr / 3.f * coshEta * coshEta);
 
     float drtMean = drtSDIn * dzOutInAbs / alpaka::math::abs(acc, dzSDIn);
     float rtWindow = drtErr + rtGeom;
@@ -577,7 +571,7 @@ namespace lst {
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
-    betaIn = sdIn_alpha - lst::phi_mpi_pi(acc, lst::phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
+    betaIn = sdIn_alpha - phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
     float sdIn_alphaRHmin = __H2F(segmentsInGPU.dPhiChangeMins[innerSegmentIndex]);
     float sdIn_alphaRHmax = __H2F(segmentsInGPU.dPhiChangeMaxs[innerSegmentIndex]);
@@ -599,8 +593,7 @@ namespace lst {
     float sdIn_d = rt_InOut - rt_InLo;
 
     float dr = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
-    betaInCut = alpaka::math::asin(
-                    acc, alpaka::math::min(acc, (-sdIn_dr + dr) * lst::k2Rinv1GeVf / lst::ptCut, lst::kSinAlphaMax)) +
+    betaInCut = alpaka::math::asin(acc, alpaka::math::min(acc, (-sdIn_dr + dr) * k2Rinv1GeVf / ptCut, kSinAlphaMax)) +
                 (0.02f / sdIn_d);
 
     //Cut #4: first beta cut
@@ -609,9 +602,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraint(TAcc const& acc,
-                                                             lst::Modules const& modulesInGPU,
-                                                             lst::MiniDoublets const& mdsInGPU,
-                                                             lst::Segments const& segmentsInGPU,
+                                                             Modules const& modulesInGPU,
+                                                             MiniDoublets const& mdsInGPU,
+                                                             Segments const& segmentsInGPU,
                                                              uint16_t innerInnerLowerModuleIndex,
                                                              uint16_t middleLowerModuleIndex,
                                                              uint16_t outerOuterLowerModuleIndex,
@@ -629,8 +622,8 @@ namespace lst {
     short middleLowerModuleSubdet = modulesInGPU.subdets[middleLowerModuleIndex];
     short outerOuterLowerModuleSubdet = modulesInGPU.subdets[outerOuterLowerModuleIndex];
 
-    if (innerInnerLowerModuleSubdet == lst::Barrel and middleLowerModuleSubdet == lst::Barrel and
-        outerOuterLowerModuleSubdet == lst::Barrel) {
+    if (innerInnerLowerModuleSubdet == ::lst::Barrel and middleLowerModuleSubdet == ::lst::Barrel and
+        outerOuterLowerModuleSubdet == ::lst::Barrel) {
       return passPointingConstraintBBB(acc,
                                        modulesInGPU,
                                        mdsInGPU,
@@ -646,8 +639,8 @@ namespace lst {
                                        innerSegmentIndex,
                                        betaIn,
                                        betaInCut);
-    } else if (innerInnerLowerModuleSubdet == lst::Barrel and middleLowerModuleSubdet == lst::Barrel and
-               outerOuterLowerModuleSubdet == lst::Endcap) {
+    } else if (innerInnerLowerModuleSubdet == ::lst::Barrel and middleLowerModuleSubdet == ::lst::Barrel and
+               outerOuterLowerModuleSubdet == ::lst::Endcap) {
       return passPointingConstraintBBE(acc,
                                        modulesInGPU,
                                        mdsInGPU,
@@ -665,8 +658,8 @@ namespace lst {
                                        outerSegmentIndex,
                                        betaIn,
                                        betaInCut);
-    } else if (innerInnerLowerModuleSubdet == lst::Barrel and middleLowerModuleSubdet == lst::Endcap and
-               outerOuterLowerModuleSubdet == lst::Endcap) {
+    } else if (innerInnerLowerModuleSubdet == ::lst::Barrel and middleLowerModuleSubdet == ::lst::Endcap and
+               outerOuterLowerModuleSubdet == ::lst::Endcap) {
       return passPointingConstraintBBE(acc,
                                        modulesInGPU,
                                        mdsInGPU,
@@ -687,8 +680,8 @@ namespace lst {
 
     }
 
-    else if (innerInnerLowerModuleSubdet == lst::Endcap and middleLowerModuleSubdet == lst::Endcap and
-             outerOuterLowerModuleSubdet == lst::Endcap) {
+    else if (innerInnerLowerModuleSubdet == ::lst::Endcap and middleLowerModuleSubdet == ::lst::Endcap and
+             outerOuterLowerModuleSubdet == ::lst::Endcap) {
       return passPointingConstraintEEE(acc,
                                        modulesInGPU,
                                        mdsInGPU,
@@ -744,9 +737,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletConstraintsAndAlgo(TAcc const& acc,
-                                                                   lst::Modules const& modulesInGPU,
-                                                                   lst::MiniDoublets const& mdsInGPU,
-                                                                   lst::Segments const& segmentsInGPU,
+                                                                   Modules const& modulesInGPU,
+                                                                   MiniDoublets const& mdsInGPU,
+                                                                   Segments const& segmentsInGPU,
                                                                    uint16_t innerInnerLowerModuleIndex,
                                                                    uint16_t middleLowerModuleIndex,
                                                                    uint16_t outerOuterLowerModuleIndex,
@@ -811,11 +804,11 @@ namespace lst {
   struct CreateTripletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::MiniDoublets mdsInGPU,
-                                  lst::Segments segmentsInGPU,
-                                  lst::Triplets tripletsInGPU,
-                                  lst::ObjectRanges rangesInGPU,
+                                  Modules modulesInGPU,
+                                  MiniDoublets mdsInGPU,
+                                  Segments segmentsInGPU,
+                                  Triplets tripletsInGPU,
+                                  ObjectRanges rangesInGPU,
                                   uint16_t* index_gpu,
                                   uint16_t nonZeroModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -928,9 +921,9 @@ namespace lst {
   struct CreateTripletArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::ObjectRanges rangesInGPU,
-                                  lst::Segments segmentsInGPU) const {
+                                  Modules modulesInGPU,
+                                  ObjectRanges rangesInGPU,
+                                  Segments segmentsInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -1031,9 +1024,9 @@ namespace lst {
   struct AddTripletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::Triplets tripletsInGPU,
-                                  lst::ObjectRanges rangesInGPU) const {
+                                  Modules modulesInGPU,
+                                  Triplets tripletsInGPU,
+                                  ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -1052,5 +1045,5 @@ namespace lst {
       }
     }
   };
-}  // namespace lst
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 #endif

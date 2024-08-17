@@ -1,4 +1,4 @@
-#include "RecoTracker/LSTCore/interface/LST.h"
+#include "RecoTracker/LSTCore/interface/alpaka/LST.h"
 
 #include "Event.h"
 
@@ -219,16 +219,16 @@ std::vector<unsigned int> ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::getHitIdxs(sho
 
   unsigned int maxNHits = 0;
   if (trackCandidateType == 7)
-    maxNHits = ::lst::Params_pT5::kHits;  // pT5
+    maxNHits = Params_pT5::kHits;  // pT5
   else if (trackCandidateType == 5)
-    maxNHits = ::lst::Params_pT3::kHits;  // pT3
+    maxNHits = Params_pT3::kHits;  // pT3
   else if (trackCandidateType == 4)
-    maxNHits = ::lst::Params_T5::kHits;  // T5
+    maxNHits = Params_T5::kHits;  // T5
   else if (trackCandidateType == 8)
-    maxNHits = ::lst::Params_pLS::kHits;  // pLS
+    maxNHits = Params_pLS::kHits;  // pLS
 
   for (unsigned int i = 0; i < maxNHits; i++) {
-    unsigned int hitIdxInGPU = TCHitIndices[::lst::Params_pT5::kHits * TCIdx + i];
+    unsigned int hitIdxInGPU = TCHitIndices[Params_pT5::kHits * TCIdx + i];
     unsigned int hitIdx =
         (trackCandidateType == 8)
             ? hitIdxInGPU
@@ -252,8 +252,8 @@ void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::getOutput(ALPAKA_ACCELERATOR_NAMESP
   std::vector<int> tc_seedIdx;
   std::vector<short> tc_trackCandidateType;
 
-  ::lst::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW(false));  // sync on next line
-  ::lst::TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
+  HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW(false));  // sync on next line
+  TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
 
   unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
 
@@ -276,7 +276,7 @@ void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::getOutput(ALPAKA_ACCELERATOR_NAMESP
 
 void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::run(Queue& queue,
                                                  bool verbose,
-                                                 ::lst::LSTESData<Device> const* deviceESData,
+                                                 LSTESData<Device> const* deviceESData,
                                                  std::vector<float> const& see_px,
                                                  std::vector<float> const& see_py,
                                                  std::vector<float> const& see_pz,

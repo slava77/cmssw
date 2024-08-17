@@ -20,7 +20,7 @@ bool goodEvent() {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runMiniDoublet(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event, int evt) {
+float runMiniDoublet(LSTEvent *event, int evt) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Mini-Doublet start " << evt << std::endl;
@@ -73,7 +73,7 @@ float runMiniDoublet(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event, int evt) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runSegment(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
+float runSegment(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Segment start" << std::endl;
@@ -111,7 +111,7 @@ float runSegment(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runT3(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
+float runT3(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco T3 start" << std::endl;
@@ -153,7 +153,7 @@ float runT3(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runpT3(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
+float runpT3(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Triplet pT3 start" << std::endl;
@@ -170,7 +170,7 @@ float runpT3(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runQuintuplet(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
+float runQuintuplet(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Quintuplet start" << std::endl;
@@ -216,7 +216,7 @@ float runQuintuplet(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runPixelLineSegment(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event, bool no_pls_dupclean) {
+float runPixelLineSegment(LSTEvent *event, bool no_pls_dupclean) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Line Segment start" << std::endl;
@@ -231,7 +231,7 @@ float runPixelLineSegment(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event, bool 
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runPixelQuintuplet(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
+float runPixelQuintuplet(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Quintuplet start" << std::endl;
@@ -248,7 +248,7 @@ float runPixelQuintuplet(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runTrackCandidate(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event, bool no_pls_dupclean, bool tc_pls_triplets) {
+float runTrackCandidate(LSTEvent *event, bool no_pls_dupclean, bool tc_pls_triplets) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco TrackCandidate start" << std::endl;
@@ -845,7 +845,7 @@ void addInputsToLineSegmentTrackingPreLoad(std::vector<std::vector<float>> &out_
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float addInputsToEventPreLoad(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event,
+float addInputsToEventPreLoad(LSTEvent *event,
                               bool useOMP,
                               std::vector<float> trkX,
                               std::vector<float> trkY,
@@ -1150,7 +1150,7 @@ void writeMetaData() {
 // DEPRECATED FUNCTIONS
 
 //__________________________________________________________________________________________
-[[deprecated]] float addInputsToLineSegmentTracking(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event &event, bool useOMP) {
+[[deprecated]] float addInputsToLineSegmentTracking(LSTEvent &event, bool useOMP) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Loading Inputs (i.e. outer tracker hits, and pixel line segements) to the Line Segment Tracking.... "
@@ -1346,6 +1346,6 @@ void writeMetaData() {
 }
 
 //__________________________________________________________________________________________
-[[deprecated]] float addInputsToLineSegmentTrackingUsingExplicitMemory(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event &event) {
+[[deprecated]] float addInputsToLineSegmentTrackingUsingExplicitMemory(LSTEvent &event) {
   return addInputsToLineSegmentTracking(event, true);
 }

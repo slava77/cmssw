@@ -2,8 +2,8 @@
 #define RecoTracker_LSTCore_src_alpaka_Event_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
+#include "RecoTracker/LSTCore/interface/alpaka/LST.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
-#include "RecoTracker/LSTCore/interface/LST.h"
 
 #include "Hit.h"
 #include "Segment.h"
@@ -16,6 +16,11 @@
 #include "TrackCandidate.h"
 
 #include "HeterogeneousCore/AlpakaInterface/interface/host.h"
+
+using ::lst::EndcapGeometryBuffer;
+using ::lst::LSTESData;
+using ::lst::ModulesBuffer;
+using ::lst::PixelMap;
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   namespace lst {
@@ -42,36 +47,36 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       unsigned int nTotalSegments_;
 
       //Device stuff
-      ::lst::ObjectRanges* rangesInGPU;
-      ::lst::ObjectRangesBuffer<Device>* rangesBuffers;
-      ::lst::Hits* hitsInGPU;
-      ::lst::HitsBuffer<Device>* hitsBuffers;
-      ::lst::MiniDoublets* mdsInGPU;
-      ::lst::MiniDoubletsBuffer<Device>* miniDoubletsBuffers;
-      ::lst::Segments* segmentsInGPU;
-      ::lst::SegmentsBuffer<Device>* segmentsBuffers;
-      ::lst::Triplets* tripletsInGPU;
-      ::lst::TripletsBuffer<Device>* tripletsBuffers;
-      ::lst::Quintuplets* quintupletsInGPU;
-      ::lst::QuintupletsBuffer<Device>* quintupletsBuffers;
-      ::lst::TrackCandidates* trackCandidatesInGPU;
-      ::lst::TrackCandidatesBuffer<Device>* trackCandidatesBuffers;
-      ::lst::PixelTriplets* pixelTripletsInGPU;
-      ::lst::PixelTripletsBuffer<Device>* pixelTripletsBuffers;
-      ::lst::PixelQuintuplets* pixelQuintupletsInGPU;
-      ::lst::PixelQuintupletsBuffer<Device>* pixelQuintupletsBuffers;
+      ObjectRanges* rangesInGPU;
+      ObjectRangesBuffer<Device>* rangesBuffers;
+      Hits* hitsInGPU;
+      HitsBuffer<Device>* hitsBuffers;
+      MiniDoublets* mdsInGPU;
+      MiniDoubletsBuffer<Device>* miniDoubletsBuffers;
+      Segments* segmentsInGPU;
+      SegmentsBuffer<Device>* segmentsBuffers;
+      Triplets* tripletsInGPU;
+      TripletsBuffer<Device>* tripletsBuffers;
+      Quintuplets* quintupletsInGPU;
+      QuintupletsBuffer<Device>* quintupletsBuffers;
+      TrackCandidates* trackCandidatesInGPU;
+      TrackCandidatesBuffer<Device>* trackCandidatesBuffers;
+      PixelTriplets* pixelTripletsInGPU;
+      PixelTripletsBuffer<Device>* pixelTripletsBuffers;
+      PixelQuintuplets* pixelQuintupletsInGPU;
+      PixelQuintupletsBuffer<Device>* pixelQuintupletsBuffers;
 
       //CPU interface stuff
-      ::lst::ObjectRangesBuffer<DevHost>* rangesInCPU;
-      ::lst::HitsBuffer<DevHost>* hitsInCPU;
-      ::lst::MiniDoubletsBuffer<DevHost>* mdsInCPU;
-      ::lst::SegmentsBuffer<DevHost>* segmentsInCPU;
-      ::lst::TripletsBuffer<DevHost>* tripletsInCPU;
-      ::lst::TrackCandidatesBuffer<DevHost>* trackCandidatesInCPU;
-      ::lst::ModulesBuffer<DevHost>* modulesInCPU;
-      ::lst::QuintupletsBuffer<DevHost>* quintupletsInCPU;
-      ::lst::PixelTripletsBuffer<DevHost>* pixelTripletsInCPU;
-      ::lst::PixelQuintupletsBuffer<DevHost>* pixelQuintupletsInCPU;
+      ObjectRangesBuffer<DevHost>* rangesInCPU;
+      HitsBuffer<DevHost>* hitsInCPU;
+      MiniDoubletsBuffer<DevHost>* mdsInCPU;
+      SegmentsBuffer<DevHost>* segmentsInCPU;
+      TripletsBuffer<DevHost>* tripletsInCPU;
+      TrackCandidatesBuffer<DevHost>* trackCandidatesInCPU;
+      ModulesBuffer<DevHost>* modulesInCPU;
+      QuintupletsBuffer<DevHost>* quintupletsInCPU;
+      PixelTripletsBuffer<DevHost>* pixelTripletsInCPU;
+      PixelQuintupletsBuffer<DevHost>* pixelQuintupletsInCPU;
 
       void initSync(bool verbose);
 
@@ -82,13 +87,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const uint16_t nLowerModules_;
       const unsigned int nPixels_;
       const unsigned int nEndCapMap_;
-      ::lst::ModulesBuffer<Device> const& modulesBuffers_;
-      ::lst::PixelMap const& pixelMapping_;
-      ::lst::EndcapGeometryBuffer<Device> const& endcapGeometryBuffers_;
+      ModulesBuffer<Device> const& modulesBuffers_;
+      PixelMap const& pixelMapping_;
+      EndcapGeometryBuffer<Device> const& endcapGeometryBuffers_;
 
     public:
       // Constructor used for CMSSW integration. Uses an external queue.
-      Event(bool verbose, Queue const& q, const ::lst::LSTESData<Device>* deviceESData)
+      Event(bool verbose, Queue const& q, const LSTESData<Device>* deviceESData)
           : queue(q),
             devAcc(alpaka::getDev(q)),
             devHost(cms::alpakatools::host()),
@@ -184,18 +189,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       // (has no effect on repeated calls)
       // set to false may allow faster operation with concurrent calls of get*
       // HANDLE WITH CARE
-      ::lst::HitsBuffer<DevHost>* getHits(bool sync = true);
-      ::lst::HitsBuffer<DevHost>* getHitsInCMSSW(bool sync = true);
-      ::lst::ObjectRangesBuffer<DevHost>* getRanges(bool sync = true);
-      ::lst::MiniDoubletsBuffer<DevHost>* getMiniDoublets(bool sync = true);
-      ::lst::SegmentsBuffer<DevHost>* getSegments(bool sync = true);
-      ::lst::TripletsBuffer<DevHost>* getTriplets(bool sync = true);
-      ::lst::QuintupletsBuffer<DevHost>* getQuintuplets(bool sync = true);
-      ::lst::PixelTripletsBuffer<DevHost>* getPixelTriplets(bool sync = true);
-      ::lst::PixelQuintupletsBuffer<DevHost>* getPixelQuintuplets(bool sync = true);
-      ::lst::TrackCandidatesBuffer<DevHost>* getTrackCandidates(bool sync = true);
-      ::lst::TrackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW(bool sync = true);
-      ::lst::ModulesBuffer<DevHost>* getModules(bool isFull = false, bool sync = true);
+      HitsBuffer<DevHost>* getHits(bool sync = true);
+      HitsBuffer<DevHost>* getHitsInCMSSW(bool sync = true);
+      ObjectRangesBuffer<DevHost>* getRanges(bool sync = true);
+      MiniDoubletsBuffer<DevHost>* getMiniDoublets(bool sync = true);
+      SegmentsBuffer<DevHost>* getSegments(bool sync = true);
+      TripletsBuffer<DevHost>* getTriplets(bool sync = true);
+      QuintupletsBuffer<DevHost>* getQuintuplets(bool sync = true);
+      PixelTripletsBuffer<DevHost>* getPixelTriplets(bool sync = true);
+      PixelQuintupletsBuffer<DevHost>* getPixelQuintuplets(bool sync = true);
+      TrackCandidatesBuffer<DevHost>* getTrackCandidates(bool sync = true);
+      TrackCandidatesBuffer<DevHost>* getTrackCandidatesInCMSSW(bool sync = true);
+      ModulesBuffer<DevHost>* getModules(bool isFull = false, bool sync = true);
     };
 
   }  // namespace lst

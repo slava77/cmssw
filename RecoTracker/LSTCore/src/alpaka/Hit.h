@@ -4,7 +4,9 @@
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
 
-namespace lst {
+using ::lst::Modules;
+
+namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   struct Hits {
     unsigned int* nHits;
     float* xs;
@@ -178,10 +180,7 @@ namespace lst {
 
   struct ModuleRangesKernel {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::Hits hitsInGPU,
-                                  int nLowerModules) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, Modules modulesInGPU, Hits hitsInGPU, int nLowerModules) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -208,8 +207,8 @@ namespace lst {
                                   unsigned int nEndCapMap,          // Number of elements in endcap map
                                   const unsigned int* geoMapDetId,  // DetId's from endcap map
                                   const float* geoMapPhi,           // Phi values from endcap map
-                                  lst::Modules modulesInGPU,
-                                  lst::Hits hitsInGPU,
+                                  Modules modulesInGPU,
+                                  Hits hitsInGPU,
                                   unsigned int nHits) const  // Total number of hits in event
     {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -221,7 +220,7 @@ namespace lst {
         int iDetId = hitsInGPU.detid[ihit];
 
         hitsInGPU.rts[ihit] = alpaka::math::sqrt(acc, ihit_x * ihit_x + ihit_y * ihit_y);
-        hitsInGPU.phis[ihit] = lst::phi(acc, ihit_x, ihit_y);
+        hitsInGPU.phis[ihit] = phi(acc, ihit_x, ihit_y);
         hitsInGPU.etas[ihit] =
             ((ihit_z > 0) - (ihit_z < 0)) *
             alpaka::math::acosh(
@@ -255,5 +254,5 @@ namespace lst {
       }
     }
   };
-}  // namespace lst
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 #endif

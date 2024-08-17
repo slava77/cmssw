@@ -1,5 +1,5 @@
-#ifndef RecoTracker_LSTCore_interface_LST_h
-#define RecoTracker_LSTCore_interface_LST_h
+#ifndef RecoTracker_LSTCore_interface_alpaka_LST_h
+#define RecoTracker_LSTCore_interface_alpaka_LST_h
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 #include "RecoTracker/LSTCore/interface/LSTESData.h"
@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <numeric>
 #include <alpaka/alpaka.hpp>
+
+using ::lst::LSTESData;
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   namespace lst {
@@ -18,7 +20,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       void run(Queue& queue,
                bool verbose,
-               ::lst::LSTESData<Device> const* deviceESData,
+               LSTESData<Device> const* deviceESData,
                std::vector<float> const& see_px,
                std::vector<float> const& see_py,
                std::vector<float> const& see_pz,

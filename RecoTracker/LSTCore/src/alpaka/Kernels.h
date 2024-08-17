@@ -13,24 +13,24 @@
 #include "PixelQuintuplet.h"
 #include "PixelTriplet.h"
 
-namespace lst {
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(lst::Quintuplets& quintupletsInGPU,
+namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(Quintuplets& quintupletsInGPU,
                                                              unsigned int quintupletIndex,
                                                              bool secondpass = false) {
     quintupletsInGPU.isDup[quintupletIndex] |= 1 + secondpass;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(lst::PixelTriplets& pixelTripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(PixelTriplets& pixelTripletsInGPU,
                                                                unsigned int pixelTripletIndex) {
     pixelTripletsInGPU.isDup[pixelTripletIndex] = true;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelQuintupletFromMemory(lst::PixelQuintuplets& pixelQuintupletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelQuintupletFromMemory(PixelQuintuplets& pixelQuintupletsInGPU,
                                                                   unsigned int pixelQuintupletIndex) {
     pixelQuintupletsInGPU.isDup[pixelQuintupletIndex] = true;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelSegmentFromMemory(lst::Segments& segmentsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelSegmentFromMemory(Segments& segmentsInGPU,
                                                                unsigned int pixelSegmentArrayIndex,
                                                                bool secondpass = false) {
     segmentsInGPU.isDup[pixelSegmentArrayIndex] |= 1 + secondpass;
@@ -38,7 +38,7 @@ namespace lst {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitsT5(unsigned int ix,
                                                  unsigned int jx,
-                                                 lst::Quintuplets const& quintupletsInGPU) {
+                                                 Quintuplets const& quintupletsInGPU) {
     unsigned int hits1[Params_T5::kHits];
     unsigned int hits2[Params_T5::kHits];
 
@@ -65,7 +65,7 @@ namespace lst {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitspT5(unsigned int ix,
                                                   unsigned int jx,
-                                                  lst::PixelQuintuplets const& pixelQuintupletsInGPU) {
+                                                  PixelQuintuplets const& pixelQuintupletsInGPU) {
     unsigned int hits1[Params_pT5::kHits];
     unsigned int hits2[Params_pT5::kHits];
 
@@ -92,7 +92,7 @@ namespace lst {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void checkHitspT3(unsigned int ix,
                                                    unsigned int jx,
-                                                   lst::PixelTriplets const& pixelTripletsInGPU,
+                                                   PixelTriplets const& pixelTripletsInGPU,
                                                    int* matched) {
     int phits1[Params_pLS::kHits];
     int phits2[Params_pLS::kHits];
@@ -145,9 +145,9 @@ namespace lst {
   struct RemoveDupQuintupletsInGPUAfterBuild {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::Quintuplets quintupletsInGPU,
-                                  lst::ObjectRanges rangesInGPU) const {
+                                  Modules modulesInGPU,
+                                  Quintuplets quintupletsInGPU,
+                                  ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -168,7 +168,7 @@ namespace lst {
             float eta2 = __H2F(quintupletsInGPU.eta[jx]);
             float phi2 = __H2F(quintupletsInGPU.phi[jx]);
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
-            float dPhi = lst::calculate_dPhi(phi1, phi2);
+            float dPhi = calculate_dPhi(phi1, phi2);
             float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
 
             if (dEta > 0.1f)
@@ -194,9 +194,7 @@ namespace lst {
 
   struct RemoveDupQuintupletsInGPUBeforeTC {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Quintuplets quintupletsInGPU,
-                                  lst::ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, Quintuplets quintupletsInGPU, ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -240,7 +238,7 @@ namespace lst {
               float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
 
               float dEta = alpaka::math::abs(acc, eta1 - eta2);
-              float dPhi = lst::calculate_dPhi(phi1, phi2);
+              float dPhi = calculate_dPhi(phi1, phi2);
 
               if (dEta > 0.1f)
                 continue;
@@ -269,7 +267,7 @@ namespace lst {
 
   struct RemoveDupPixelTripletsInGPUFromMap {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, lst::PixelTriplets pixelTripletsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, PixelTriplets pixelTripletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -306,7 +304,7 @@ namespace lst {
 
   struct RemoveDupPixelQuintupletsInGPUFromMap {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, lst::PixelQuintuplets pixelQuintupletsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, PixelQuintuplets pixelQuintupletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -333,10 +331,7 @@ namespace lst {
 
   struct CheckHitspLS {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::Segments segmentsInGPU,
-                                  bool secondpass) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, Modules modulesInGPU, Segments segmentsInGPU, bool secondpass) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -411,7 +406,7 @@ namespace lst {
           }
           if (secondpass) {
             float dEta = alpaka::math::abs(acc, eta_pix1 - eta_pix2);
-            float dPhi = lst::calculate_dPhi(phi_pix1, phi_pix2);
+            float dPhi = calculate_dPhi(phi_pix1, phi_pix2);
 
             float dR2 = dEta * dEta + dPhi * dPhi;
             if ((npMatched >= 1) || (dR2 < 1e-5f)) {
@@ -422,5 +417,5 @@ namespace lst {
       }
     }
   };
-}  // namespace lst
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 #endif

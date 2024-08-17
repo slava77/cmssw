@@ -10,7 +10,7 @@
 #include "Hit.h"
 #include "ObjectRanges.h"
 
-namespace lst {
+namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   struct MiniDoublets {
     unsigned int* nMemoryLocations;
 
@@ -189,9 +189,9 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addMDToMemory(TAcc const& acc,
-                                                    lst::MiniDoublets& mdsInGPU,
-                                                    lst::Hits const& hitsInGPU,
-                                                    lst::Modules const& modulesInGPU,
+                                                    MiniDoublets& mdsInGPU,
+                                                    Hits const& hitsInGPU,
+                                                    Modules const& modulesInGPU,
                                                     unsigned int lowerHitIdx,
                                                     unsigned int upperHitIdx,
                                                     uint16_t lowerModuleIdx,
@@ -209,7 +209,8 @@ namespace lst {
 
     mdsInGPU.moduleIndices[idx] = lowerModuleIdx;
     unsigned int anchorHitIndex, outerHitIndex;
-    if (modulesInGPU.moduleType[lowerModuleIdx] == PS and modulesInGPU.moduleLayerType[lowerModuleIdx] == Strip) {
+    if (modulesInGPU.moduleType[lowerModuleIdx] == ::lst::PS and
+        modulesInGPU.moduleLayerType[lowerModuleIdx] == ::lst::Strip) {
       mdsInGPU.anchorHitIndices[idx] = upperHitIdx;
       mdsInGPU.outerHitIndices[idx] = lowerHitIdx;
 
@@ -261,7 +262,7 @@ namespace lst {
     mdsInGPU.outerLowEdgeY[idx] = hitsInGPU.lowEdgeYs[outerHitIndex];
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(Modules const& modulesInGPU, uint16_t moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
     // See Figure 9.1 of https://cds.cern.ch/record/2272264/files/CMS-TDR-014.pdf
@@ -270,10 +271,10 @@ namespace lst {
     short side = modulesInGPU.sides[moduleIndex];
     short rod = modulesInGPU.rods[moduleIndex];
 
-    if (subdet == Barrel) {
-      if ((side != Center and layer == 3) or (side == NegZ and layer == 2 and rod > 5) or
-          (side == PosZ and layer == 2 and rod < 8) or (side == NegZ and layer == 1 and rod > 9) or
-          (side == PosZ and layer == 1 and rod < 4))
+    if (subdet == ::lst::Barrel) {
+      if ((side != ::lst::Center and layer == 3) or (side == ::lst::NegZ and layer == 2 and rod > 5) or
+          (side == ::lst::PosZ and layer == 2 and rod < 8) or (side == ::lst::NegZ and layer == 1 and rod > 9) or
+          (side == ::lst::PosZ and layer == 1 and rod < 4))
         return true;
       else
         return false;
@@ -281,7 +282,7 @@ namespace lst {
       return false;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(Modules const& modulesInGPU, uint16_t moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -318,11 +319,11 @@ namespace lst {
 
     float moduleSeparation = 0;
 
-    if (subdet == Barrel and side == Center) {
+    if (subdet == ::lst::Barrel and side == ::lst::Center) {
       moduleSeparation = miniDeltaFlat[iL];
     } else if (isTighterTiltedModules(modulesInGPU, moduleIndex)) {
       moduleSeparation = miniDeltaTilted[iL];
-    } else if (subdet == Endcap) {
+    } else if (subdet == ::lst::Endcap) {
       moduleSeparation = miniDeltaEndcap[iL][iR];
     } else  //Loose tilted modules
     {
@@ -334,7 +335,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float dPhiThreshold(
-      TAcc const& acc, float rt, lst::Modules const& modulesInGPU, uint16_t moduleIndex, float dPhi = 0, float dz = 0) {
+      TAcc const& acc, float rt, Modules const& modulesInGPU, uint16_t moduleIndex, float dPhi = 0, float dz = 0) {
     // =================================================================
     // Various constants
     // =================================================================
@@ -347,16 +348,19 @@ namespace lst {
     unsigned int iL = modulesInGPU.layers[moduleIndex] - 1;
     const float miniSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rt * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     const float rLayNominal =
-        ((modulesInGPU.subdets[moduleIndex] == Barrel) ? kMiniRminMeanBarrel[iL] : kMiniRminMeanEndcap[iL]);
+        ((modulesInGPU.subdets[moduleIndex] == ::lst::Barrel) ? kMiniRminMeanBarrel[iL] : kMiniRminMeanEndcap[iL]);
     const float miniPVoff = 0.1f / rLayNominal;
-    const float miniMuls = ((modulesInGPU.subdets[moduleIndex] == Barrel) ? kMiniMulsPtScaleBarrel[iL] * 3.f / ptCut
-                                                                          : kMiniMulsPtScaleEndcap[iL] * 3.f / ptCut);
-    const bool isTilted = modulesInGPU.subdets[moduleIndex] == Barrel and modulesInGPU.sides[moduleIndex] != Center;
+    const float miniMuls =
+        ((modulesInGPU.subdets[moduleIndex] == ::lst::Barrel) ? kMiniMulsPtScaleBarrel[iL] * 3.f / ptCut
+                                                              : kMiniMulsPtScaleEndcap[iL] * 3.f / ptCut);
+    const bool isTilted =
+        modulesInGPU.subdets[moduleIndex] == ::lst::Barrel and modulesInGPU.sides[moduleIndex] != ::lst::Center;
     //the lower module is sent in irrespective of its layer type. We need to fetch the drdz properly
 
     float drdz;
     if (isTilted) {
-      if (modulesInGPU.moduleType[moduleIndex] == PS and modulesInGPU.moduleLayerType[moduleIndex] == Strip) {
+      if (modulesInGPU.moduleType[moduleIndex] == ::lst::PS and
+          modulesInGPU.moduleLayerType[moduleIndex] == ::lst::Strip) {
         drdz = modulesInGPU.drdzs[moduleIndex];
       } else {
         drdz = modulesInGPU.drdzs[modulesInGPU.partnerModuleIndices[moduleIndex]];
@@ -375,12 +379,12 @@ namespace lst {
     // Return the threshold value
     // =================================================================
     // Following condition is met if the module is central and flatly lying
-    if (modulesInGPU.subdets[moduleIndex] == Barrel and modulesInGPU.sides[moduleIndex] == Center) {
+    if (modulesInGPU.subdets[moduleIndex] == ::lst::Barrel and modulesInGPU.sides[moduleIndex] == ::lst::Center) {
       return miniSlope + alpaka::math::sqrt(acc, miniMuls * miniMuls + miniPVoff * miniPVoff);
     }
     // Following condition is met if the module is central and tilted
-    else if (modulesInGPU.subdets[moduleIndex] == Barrel and
-             modulesInGPU.sides[moduleIndex] != Center)  //all types of tilted modules
+    else if (modulesInGPU.subdets[moduleIndex] == ::lst::Barrel and
+             modulesInGPU.sides[moduleIndex] != ::lst::Center)  //all types of tilted modules
     {
       return miniSlope +
              alpaka::math::sqrt(acc, miniMuls * miniMuls + miniPVoff * miniPVoff + miniTilt2 * miniSlope * miniSlope);
@@ -393,7 +397,7 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_INLINE ALPAKA_FN_ACC void shiftStripHits(TAcc const& acc,
-                                                     lst::Modules const& modulesInGPU,
+                                                     Modules const& modulesInGPU,
                                                      uint16_t lowerModuleIndex,
                                                      uint16_t upperModuleIndex,
                                                      unsigned int lowerHitIndex,
@@ -419,8 +423,8 @@ namespace lst {
     // lowerModule
     // lowerHit
     // upperHit
-    // lst::endcapGeometry
-    // lst::tiltedGeometry
+    // endcapGeometry
+    // tiltedGeometry
 
     // Some variables relevant to the function
     float xp;       // pixel x (pixel hit x)
@@ -449,10 +453,11 @@ namespace lst {
     float absdzprime;  // The distance between the two points after shifting
     const float& drdz_ = modulesInGPU.drdzs[lowerModuleIndex];
     // Assign hit pointers based on their hit type
-    if (modulesInGPU.moduleType[lowerModuleIndex] == PS) {
+    if (modulesInGPU.moduleType[lowerModuleIndex] == ::lst::PS) {
       // TODO: This is somewhat of an mystery.... somewhat confused why this is the case
-      if (modulesInGPU.subdets[lowerModuleIndex] == Barrel ? modulesInGPU.moduleLayerType[lowerModuleIndex] != Pixel
-                                                           : modulesInGPU.moduleLayerType[lowerModuleIndex] == Pixel) {
+      if (modulesInGPU.subdets[lowerModuleIndex] == ::lst::Barrel
+              ? modulesInGPU.moduleLayerType[lowerModuleIndex] != ::lst::Pixel
+              : modulesInGPU.moduleLayerType[lowerModuleIndex] == ::lst::Pixel) {
         xo = xUpper;
         yo = yUpper;
         xp = xLower;
@@ -477,7 +482,7 @@ namespace lst {
     }
 
     // If it is endcap some of the math gets simplified (and also computers don't like infinities)
-    isEndcap = modulesInGPU.subdets[lowerModuleIndex] == Endcap;
+    isEndcap = modulesInGPU.subdets[lowerModuleIndex] == ::lst::Endcap;
 
     // NOTE: TODO: Keep in mind that the sin(atan) function can be simplified to something like x / sqrt(1 + x^2) and similar for cos
     // I am not sure how slow sin, atan, cos, functions are in c++. If x / sqrt(1 + x^2) are faster change this later to reduce arithmetic computation time
@@ -492,14 +497,15 @@ namespace lst {
     moduleSeparation = moduleGapSize(modulesInGPU, lowerModuleIndex);
 
     // Sign flips if the pixel is later layer
-    if (modulesInGPU.moduleType[lowerModuleIndex] == PS and modulesInGPU.moduleLayerType[lowerModuleIndex] != Pixel) {
+    if (modulesInGPU.moduleType[lowerModuleIndex] == ::lst::PS and
+        modulesInGPU.moduleLayerType[lowerModuleIndex] != ::lst::Pixel) {
       moduleSeparation *= -1;
     }
 
     drprime = (moduleSeparation / alpaka::math::sin(acc, angleA + angleB)) * alpaka::math::sin(acc, angleA);
 
     // Compute arctan of the slope and take care of the slope = infinity case
-    absArctanSlope = ((slope != lst::lst_INF) ? fabs(alpaka::math::atan(acc, slope)) : float(M_PI) / 2.f);
+    absArctanSlope = ((slope != lst_INF) ? fabs(alpaka::math::atan(acc, slope)) : float(M_PI) / 2.f);
 
     // Depending on which quadrant the pixel hit lies, we define the angleM by shifting them slightly differently
     if (xp > 0 and yp > 0) {
@@ -523,7 +529,7 @@ namespace lst {
 
     // Compute the new strip hit position (if the slope value is in special condition take care of the exceptions)
     if (slope ==
-        lst::lst_INF)  // Designated for tilted module when the slope is exactly infinity (module lying along y-axis)
+        lst_INF)  // Designated for tilted module when the slope is exactly infinity (module lying along y-axis)
     {
       xn = xa;  // New x point is simply where the anchor is
       yn = yo;  // No shift in y
@@ -544,7 +550,7 @@ namespace lst {
                 angleA));  // module separation sign is for shifting in radial direction for z-axis direction take care of the sign later
 
     // Depending on which one as closer to the interactin point compute the new z wrt to the pixel properly
-    if (modulesInGPU.moduleLayerType[lowerModuleIndex] == Pixel) {
+    if (modulesInGPU.moduleLayerType[lowerModuleIndex] == ::lst::Pixel) {
       abszn = alpaka::math::abs(acc, zp) + absdzprime;
     } else {
       abszn = alpaka::math::abs(acc, zp) - absdzprime;
@@ -558,8 +564,246 @@ namespace lst {
   }
 
   template <typename TAcc>
+  ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
+                                                     Modules const& modulesInGPU,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
+                                                     unsigned int lowerHitIndex,
+                                                     unsigned int upperHitIndex,
+                                                     float& dz,
+                                                     float& dPhi,
+                                                     float& dPhiChange,
+                                                     float& shiftedX,
+                                                     float& shiftedY,
+                                                     float& shiftedZ,
+                                                     float& noShiftedDphi,
+                                                     float& noShiftedDphiChange,
+                                                     float xLower,
+                                                     float yLower,
+                                                     float zLower,
+                                                     float rtLower,
+                                                     float xUpper,
+                                                     float yUpper,
+                                                     float zUpper,
+                                                     float rtUpper) {
+    dz = zLower - zUpper;
+    const float dzCut = modulesInGPU.moduleType[lowerModuleIndex] == ::lst::PS ? 2.f : 10.f;
+    const float sign = ((dz > 0) - (dz < 0)) * ((zLower > 0) - (zLower < 0));
+    const float invertedcrossercut = (alpaka::math::abs(acc, dz) > 2) * sign;
+
+    if ((alpaka::math::abs(acc, dz) >= dzCut) || (invertedcrossercut > 0))
+      return false;
+
+    float miniCut = 0;
+
+    miniCut = modulesInGPU.moduleLayerType[lowerModuleIndex] == ::lst::Pixel
+                  ? dPhiThreshold(acc, rtLower, modulesInGPU, lowerModuleIndex)
+                  : dPhiThreshold(acc, rtUpper, modulesInGPU, lowerModuleIndex);
+
+    // Cut #2: dphi difference
+    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3085
+    float xn = 0.f, yn = 0.f;  // , zn = 0;
+    float shiftedRt2;
+    if (modulesInGPU.sides[lowerModuleIndex] != ::lst::Center)  // If barrel and not center it is tilted
+    {
+      // Shift the hits and calculate new xn, yn position
+      float shiftedCoords[3];
+      shiftStripHits(acc,
+                     modulesInGPU,
+                     lowerModuleIndex,
+                     upperModuleIndex,
+                     lowerHitIndex,
+                     upperHitIndex,
+                     shiftedCoords,
+                     xLower,
+                     yLower,
+                     zLower,
+                     rtLower,
+                     xUpper,
+                     yUpper,
+                     zUpper,
+                     rtUpper);
+      xn = shiftedCoords[0];
+      yn = shiftedCoords[1];
+
+      // Lower or the upper hit needs to be modified depending on which one was actually shifted
+      if (modulesInGPU.moduleLayerType[lowerModuleIndex] == ::lst::Pixel) {
+        shiftedX = xn;
+        shiftedY = yn;
+        shiftedZ = zUpper;
+        shiftedRt2 = xn * xn + yn * yn;
+
+        dPhi = deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);  //function from Hit.cc
+        noShiftedDphi = deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      } else {
+        shiftedX = xn;
+        shiftedY = yn;
+        shiftedZ = zLower;
+        shiftedRt2 = xn * xn + yn * yn;
+        dPhi = deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
+        noShiftedDphi = deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      }
+    } else {
+      shiftedX = 0;
+      shiftedY = 0;
+      shiftedZ = 0;
+      dPhi = deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      noShiftedDphi = dPhi;
+    }
+
+    if (alpaka::math::abs(acc, dPhi) >= miniCut)
+      return false;
+
+    // Cut #3: The dphi change going from lower Hit to upper Hit
+    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3076
+    if (modulesInGPU.sides[lowerModuleIndex] != ::lst::Center) {
+      // When it is tilted, use the new shifted positions
+      // TODO: This is somewhat of an mystery.... somewhat confused why this is the case
+      if (modulesInGPU.moduleLayerType[lowerModuleIndex] != ::lst::Pixel) {
+        // dPhi Change should be calculated so that the upper hit has higher rt.
+        // In principle, this kind of check rt_lower < rt_upper should not be necessary because the hit shifting should have taken care of this.
+        // (i.e. the strip hit is shifted to be aligned in the line of sight from interaction point to pixel hit of PS module guaranteeing rt ordering)
+        // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
+        // setdeltaPhiChange(lowerHit.rt() < upperHitMod.rt() ? lowerHit.deltaPhiChange(upperHitMod) : upperHitMod.deltaPhiChange(lowerHit));
+
+        dPhiChange = (rtLower * rtLower < shiftedRt2) ? deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
+                                                      : deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
+        noShiftedDphiChange = rtLower < rtUpper ? deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
+                                                : deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
+      } else {
+        // dPhi Change should be calculated so that the upper hit has higher rt.
+        // In principle, this kind of check rt_lower < rt_upper should not be necessary because the hit shifting should have taken care of this.
+        // (i.e. the strip hit is shifted to be aligned in the line of sight from interaction point to pixel hit of PS module guaranteeing rt ordering)
+        // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
+
+        dPhiChange = (shiftedRt2 < rtUpper * rtUpper) ? deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
+                                                      : deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
+        noShiftedDphiChange = rtLower < rtUpper ? deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
+                                                : deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
+      }
+    } else {
+      // When it is flat lying module, whichever is the lowerSide will always have rt lower
+      dPhiChange = deltaPhiChange(acc, xLower, yLower, xUpper, yUpper);
+      noShiftedDphiChange = dPhiChange;
+    }
+
+    return alpaka::math::abs(acc, dPhiChange) < miniCut;
+  }
+
+  template <typename TAcc>
+  ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
+                                                     Modules const& modulesInGPU,
+                                                     uint16_t lowerModuleIndex,
+                                                     uint16_t upperModuleIndex,
+                                                     unsigned int lowerHitIndex,
+                                                     unsigned int upperHitIndex,
+                                                     float& drt,
+                                                     float& dPhi,
+                                                     float& dPhiChange,
+                                                     float& shiftedX,
+                                                     float& shiftedY,
+                                                     float& shiftedZ,
+                                                     float& noShiftedDphi,
+                                                     float& noShiftedDphichange,
+                                                     float xLower,
+                                                     float yLower,
+                                                     float zLower,
+                                                     float rtLower,
+                                                     float xUpper,
+                                                     float yUpper,
+                                                     float zUpper,
+                                                     float rtUpper) {
+    // There are series of cuts that applies to mini-doublet in a "endcap" region
+    // Cut #1 : dz cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
+    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3093
+    // For PS module in case when it is tilted a different dz (after the strip hit shift) is calculated later.
+
+    float dz = zLower - zUpper;  // Not const since later it might change depending on the type of module
+
+    const float dzCut = 1.f;
+
+    if (alpaka::math::abs(acc, dz) >= dzCut)
+      return false;
+    // Cut #2 : drt cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
+    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3100
+    const float drtCut = modulesInGPU.moduleType[lowerModuleIndex] == ::lst::PS ? 2.f : 10.f;
+    drt = rtLower - rtUpper;
+    if (alpaka::math::abs(acc, drt) >= drtCut)
+      return false;
+    // The new scheme shifts strip hits to be "aligned" along the line of sight from interaction point to the pixel hit (if it is PS modules)
+    float xn = 0, yn = 0, zn = 0;
+
+    float shiftedCoords[3];
+    shiftStripHits(acc,
+                   modulesInGPU,
+                   lowerModuleIndex,
+                   upperModuleIndex,
+                   lowerHitIndex,
+                   upperHitIndex,
+                   shiftedCoords,
+                   xLower,
+                   yLower,
+                   zLower,
+                   rtLower,
+                   xUpper,
+                   yUpper,
+                   zUpper,
+                   rtUpper);
+
+    xn = shiftedCoords[0];
+    yn = shiftedCoords[1];
+    zn = shiftedCoords[2];
+
+    if (modulesInGPU.moduleType[lowerModuleIndex] == ::lst::PS) {
+      // Appropriate lower or upper hit is modified after checking which one was actually shifted
+      if (modulesInGPU.moduleLayerType[lowerModuleIndex] == ::lst::Pixel) {
+        shiftedX = xn;
+        shiftedY = yn;
+        shiftedZ = zUpper;
+        dPhi = deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);
+        noShiftedDphi = deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      } else {
+        shiftedX = xn;
+        shiftedY = yn;
+        shiftedZ = zLower;
+        dPhi = deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
+        noShiftedDphi = deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+      }
+    } else {
+      shiftedX = xn;
+      shiftedY = yn;
+      shiftedZ = zUpper;
+      dPhi = deltaPhi(acc, xLower, yLower, xn, yn);
+      noShiftedDphi = deltaPhi(acc, xLower, yLower, xUpper, yUpper);
+    }
+
+    // dz needs to change if it is a PS module where the strip hits are shifted in order to properly account for the case when a tilted module falls under "endcap logic"
+    // if it was an endcap it will have zero effect
+    if (modulesInGPU.moduleType[lowerModuleIndex] == ::lst::PS) {
+      dz = modulesInGPU.moduleLayerType[lowerModuleIndex] == ::lst::Pixel ? zLower - zn : zUpper - zn;
+    }
+
+    float miniCut = 0;
+    miniCut = modulesInGPU.moduleLayerType[lowerModuleIndex] == ::lst::Pixel
+                  ? dPhiThreshold(acc, rtLower, modulesInGPU, lowerModuleIndex, dPhi, dz)
+                  : dPhiThreshold(acc, rtUpper, modulesInGPU, lowerModuleIndex, dPhi, dz);
+
+    if (alpaka::math::abs(acc, dPhi) >= miniCut)
+      return false;
+
+    // Cut #4: Another cut on the dphi after some modification
+    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3119-L3124
+
+    float dzFrac = alpaka::math::abs(acc, dz) / alpaka::math::abs(acc, zLower);
+    dPhiChange = dPhi / dzFrac * (1.f + dzFrac);
+    noShiftedDphichange = noShiftedDphi / dzFrac * (1.f + dzFrac);
+
+    return alpaka::math::abs(acc, dPhiChange) < miniCut;
+  }
+
+  template <typename TAcc>
   ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgo(TAcc const& acc,
-                                               lst::Modules const& modulesInGPU,
+                                               Modules const& modulesInGPU,
                                                uint16_t lowerModuleIndex,
                                                uint16_t upperModuleIndex,
                                                unsigned int lowerHitIndex,
@@ -580,7 +824,7 @@ namespace lst {
                                                float yUpper,
                                                float zUpper,
                                                float rtUpper) {
-    if (modulesInGPU.subdets[lowerModuleIndex] == lst::Barrel) {
+    if (modulesInGPU.subdets[lowerModuleIndex] == ::lst::Barrel) {
       return runMiniDoubletDefaultAlgoBarrel(acc,
                                              modulesInGPU,
                                              lowerModuleIndex,
@@ -629,251 +873,10 @@ namespace lst {
     }
   }
 
-  template <typename TAcc>
-  ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoBarrel(TAcc const& acc,
-                                                     lst::Modules const& modulesInGPU,
-                                                     uint16_t lowerModuleIndex,
-                                                     uint16_t upperModuleIndex,
-                                                     unsigned int lowerHitIndex,
-                                                     unsigned int upperHitIndex,
-                                                     float& dz,
-                                                     float& dPhi,
-                                                     float& dPhiChange,
-                                                     float& shiftedX,
-                                                     float& shiftedY,
-                                                     float& shiftedZ,
-                                                     float& noShiftedDphi,
-                                                     float& noShiftedDphiChange,
-                                                     float xLower,
-                                                     float yLower,
-                                                     float zLower,
-                                                     float rtLower,
-                                                     float xUpper,
-                                                     float yUpper,
-                                                     float zUpper,
-                                                     float rtUpper) {
-    dz = zLower - zUpper;
-    const float dzCut = modulesInGPU.moduleType[lowerModuleIndex] == lst::PS ? 2.f : 10.f;
-    const float sign = ((dz > 0) - (dz < 0)) * ((zLower > 0) - (zLower < 0));
-    const float invertedcrossercut = (alpaka::math::abs(acc, dz) > 2) * sign;
-
-    if ((alpaka::math::abs(acc, dz) >= dzCut) || (invertedcrossercut > 0))
-      return false;
-
-    float miniCut = 0;
-
-    miniCut = modulesInGPU.moduleLayerType[lowerModuleIndex] == lst::Pixel
-                  ? dPhiThreshold(acc, rtLower, modulesInGPU, lowerModuleIndex)
-                  : dPhiThreshold(acc, rtUpper, modulesInGPU, lowerModuleIndex);
-
-    // Cut #2: dphi difference
-    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3085
-    float xn = 0.f, yn = 0.f;  // , zn = 0;
-    float shiftedRt2;
-    if (modulesInGPU.sides[lowerModuleIndex] != Center)  // If barrel and not center it is tilted
-    {
-      // Shift the hits and calculate new xn, yn position
-      float shiftedCoords[3];
-      shiftStripHits(acc,
-                     modulesInGPU,
-                     lowerModuleIndex,
-                     upperModuleIndex,
-                     lowerHitIndex,
-                     upperHitIndex,
-                     shiftedCoords,
-                     xLower,
-                     yLower,
-                     zLower,
-                     rtLower,
-                     xUpper,
-                     yUpper,
-                     zUpper,
-                     rtUpper);
-      xn = shiftedCoords[0];
-      yn = shiftedCoords[1];
-
-      // Lower or the upper hit needs to be modified depending on which one was actually shifted
-      if (modulesInGPU.moduleLayerType[lowerModuleIndex] == lst::Pixel) {
-        shiftedX = xn;
-        shiftedY = yn;
-        shiftedZ = zUpper;
-        shiftedRt2 = xn * xn + yn * yn;
-
-        dPhi = lst::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);  //function from Hit.cc
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
-      } else {
-        shiftedX = xn;
-        shiftedY = yn;
-        shiftedZ = zLower;
-        shiftedRt2 = xn * xn + yn * yn;
-        dPhi = lst::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
-      }
-    } else {
-      shiftedX = 0;
-      shiftedY = 0;
-      shiftedZ = 0;
-      dPhi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
-      noShiftedDphi = dPhi;
-    }
-
-    if (alpaka::math::abs(acc, dPhi) >= miniCut)
-      return false;
-
-    // Cut #3: The dphi change going from lower Hit to upper Hit
-    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3076
-    if (modulesInGPU.sides[lowerModuleIndex] != Center) {
-      // When it is tilted, use the new shifted positions
-      // TODO: This is somewhat of an mystery.... somewhat confused why this is the case
-      if (modulesInGPU.moduleLayerType[lowerModuleIndex] != lst::Pixel) {
-        // dPhi Change should be calculated so that the upper hit has higher rt.
-        // In principle, this kind of check rt_lower < rt_upper should not be necessary because the hit shifting should have taken care of this.
-        // (i.e. the strip hit is shifted to be aligned in the line of sight from interaction point to pixel hit of PS module guaranteeing rt ordering)
-        // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
-        // setdeltaPhiChange(lowerHit.rt() < upperHitMod.rt() ? lowerHit.deltaPhiChange(upperHitMod) : upperHitMod.deltaPhiChange(lowerHit));
-
-        dPhiChange = (rtLower * rtLower < shiftedRt2) ? lst::deltaPhiChange(acc, xLower, yLower, shiftedX, shiftedY)
-                                                      : lst::deltaPhiChange(acc, shiftedX, shiftedY, xLower, yLower);
-        noShiftedDphiChange = rtLower < rtUpper ? lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
-                                                : lst::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
-      } else {
-        // dPhi Change should be calculated so that the upper hit has higher rt.
-        // In principle, this kind of check rt_lower < rt_upper should not be necessary because the hit shifting should have taken care of this.
-        // (i.e. the strip hit is shifted to be aligned in the line of sight from interaction point to pixel hit of PS module guaranteeing rt ordering)
-        // But I still placed this check for safety. (TODO: After checking explicitly if not needed remove later?)
-
-        dPhiChange = (shiftedRt2 < rtUpper * rtUpper) ? lst::deltaPhiChange(acc, shiftedX, shiftedY, xUpper, yUpper)
-                                                      : lst::deltaPhiChange(acc, xUpper, yUpper, shiftedX, shiftedY);
-        noShiftedDphiChange = rtLower < rtUpper ? lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper)
-                                                : lst::deltaPhiChange(acc, xUpper, yUpper, xLower, yLower);
-      }
-    } else {
-      // When it is flat lying module, whichever is the lowerSide will always have rt lower
-      dPhiChange = lst::deltaPhiChange(acc, xLower, yLower, xUpper, yUpper);
-      noShiftedDphiChange = dPhiChange;
-    }
-
-    return alpaka::math::abs(acc, dPhiChange) < miniCut;
-  }
-
-  template <typename TAcc>
-  ALPAKA_FN_ACC bool runMiniDoubletDefaultAlgoEndcap(TAcc const& acc,
-                                                     lst::Modules const& modulesInGPU,
-                                                     uint16_t lowerModuleIndex,
-                                                     uint16_t upperModuleIndex,
-                                                     unsigned int lowerHitIndex,
-                                                     unsigned int upperHitIndex,
-                                                     float& drt,
-                                                     float& dPhi,
-                                                     float& dPhiChange,
-                                                     float& shiftedX,
-                                                     float& shiftedY,
-                                                     float& shiftedZ,
-                                                     float& noShiftedDphi,
-                                                     float& noShiftedDphichange,
-                                                     float xLower,
-                                                     float yLower,
-                                                     float zLower,
-                                                     float rtLower,
-                                                     float xUpper,
-                                                     float yUpper,
-                                                     float zUpper,
-                                                     float rtUpper) {
-    // There are series of cuts that applies to mini-doublet in a "endcap" region
-    // Cut #1 : dz cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
-    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3093
-    // For PS module in case when it is tilted a different dz (after the strip hit shift) is calculated later.
-
-    float dz = zLower - zUpper;  // Not const since later it might change depending on the type of module
-
-    const float dzCut = 1.f;
-
-    if (alpaka::math::abs(acc, dz) >= dzCut)
-      return false;
-    // Cut #2 : drt cut. The dz difference can't be larger than 1cm. (max separation is 4mm for modules in the endcap)
-    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3100
-    const float drtCut = modulesInGPU.moduleType[lowerModuleIndex] == lst::PS ? 2.f : 10.f;
-    drt = rtLower - rtUpper;
-    if (alpaka::math::abs(acc, drt) >= drtCut)
-      return false;
-    // The new scheme shifts strip hits to be "aligned" along the line of sight from interaction point to the pixel hit (if it is PS modules)
-    float xn = 0, yn = 0, zn = 0;
-
-    float shiftedCoords[3];
-    shiftStripHits(acc,
-                   modulesInGPU,
-                   lowerModuleIndex,
-                   upperModuleIndex,
-                   lowerHitIndex,
-                   upperHitIndex,
-                   shiftedCoords,
-                   xLower,
-                   yLower,
-                   zLower,
-                   rtLower,
-                   xUpper,
-                   yUpper,
-                   zUpper,
-                   rtUpper);
-
-    xn = shiftedCoords[0];
-    yn = shiftedCoords[1];
-    zn = shiftedCoords[2];
-
-    if (modulesInGPU.moduleType[lowerModuleIndex] == lst::PS) {
-      // Appropriate lower or upper hit is modified after checking which one was actually shifted
-      if (modulesInGPU.moduleLayerType[lowerModuleIndex] == lst::Pixel) {
-        shiftedX = xn;
-        shiftedY = yn;
-        shiftedZ = zUpper;
-        dPhi = lst::deltaPhi(acc, xLower, yLower, shiftedX, shiftedY);
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
-      } else {
-        shiftedX = xn;
-        shiftedY = yn;
-        shiftedZ = zLower;
-        dPhi = lst::deltaPhi(acc, shiftedX, shiftedY, xUpper, yUpper);
-        noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
-      }
-    } else {
-      shiftedX = xn;
-      shiftedY = yn;
-      shiftedZ = zUpper;
-      dPhi = lst::deltaPhi(acc, xLower, yLower, xn, yn);
-      noShiftedDphi = lst::deltaPhi(acc, xLower, yLower, xUpper, yUpper);
-    }
-
-    // dz needs to change if it is a PS module where the strip hits are shifted in order to properly account for the case when a tilted module falls under "endcap logic"
-    // if it was an endcap it will have zero effect
-    if (modulesInGPU.moduleType[lowerModuleIndex] == lst::PS) {
-      dz = modulesInGPU.moduleLayerType[lowerModuleIndex] == lst::Pixel ? zLower - zn : zUpper - zn;
-    }
-
-    float miniCut = 0;
-    miniCut = modulesInGPU.moduleLayerType[lowerModuleIndex] == lst::Pixel
-                  ? dPhiThreshold(acc, rtLower, modulesInGPU, lowerModuleIndex, dPhi, dz)
-                  : dPhiThreshold(acc, rtUpper, modulesInGPU, lowerModuleIndex, dPhi, dz);
-
-    if (alpaka::math::abs(acc, dPhi) >= miniCut)
-      return false;
-
-    // Cut #4: Another cut on the dphi after some modification
-    // Ref to original code: https://github.com/slava77/cms-tkph2-ntuple/blob/184d2325147e6930030d3d1f780136bc2dd29ce6/doubletAnalysis.C#L3119-L3124
-
-    float dzFrac = alpaka::math::abs(acc, dz) / alpaka::math::abs(acc, zLower);
-    dPhiChange = dPhi / dzFrac * (1.f + dzFrac);
-    noShiftedDphichange = noShiftedDphi / dzFrac * (1.f + dzFrac);
-
-    return alpaka::math::abs(acc, dPhiChange) < miniCut;
-  }
-
   struct CreateMiniDoubletsInGPUv2 {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::Hits hitsInGPU,
-                                  lst::MiniDoublets mdsInGPU,
-                                  lst::ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(
+        TAcc const& acc, Modules modulesInGPU, Hits hitsInGPU, MiniDoublets mdsInGPU, ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -966,7 +969,7 @@ namespace lst {
 
   struct CreateMDArrayRangesGPU {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, lst::Modules modulesInGPU, lst::ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, Modules modulesInGPU, ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -1060,11 +1063,8 @@ namespace lst {
 
   struct AddMiniDoubletRangesToEventExplicit {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::MiniDoublets mdsInGPU,
-                                  lst::ObjectRanges rangesInGPU,
-                                  lst::Hits hitsInGPU) const {
+    ALPAKA_FN_ACC void operator()(
+        TAcc const& acc, Modules modulesInGPU, MiniDoublets mdsInGPU, ObjectRanges rangesInGPU, Hits hitsInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -1083,5 +1083,5 @@ namespace lst {
       }
     }
   };
-}  // namespace lst
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 #endif
