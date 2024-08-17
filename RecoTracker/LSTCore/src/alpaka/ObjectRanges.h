@@ -3,7 +3,7 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-namespace lst {
+namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   struct ObjectRanges {
     int* hitRanges;
@@ -150,5 +150,5 @@ namespace lst {
     void setData(ObjectRangesBuffer& buf) { data_.setData(buf); }
   };
 
-}  // namespace lst
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 #endif

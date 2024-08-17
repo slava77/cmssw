@@ -2,9 +2,14 @@
 
 #include "Event.h"
 
-using namespace ALPAKA_ACCELERATOR_NAMESPACE;
+using Device = ALPAKA_ACCELERATOR_NAMESPACE::Device;
+using Queue = ALPAKA_ACCELERATOR_NAMESPACE::Queue;
+using Acc1D = ALPAKA_ACCELERATOR_NAMESPACE::Acc1D;
+using Acc3D = ALPAKA_ACCELERATOR_NAMESPACE::Acc3D;
 
-void lst::Event<Acc3D>::initSync(bool verbose) {
+using namespace ALPAKA_ACCELERATOR_NAMESPACE::lst;
+
+void Event::initSync(bool verbose) {
   alpaka::wait(queue);  // other calls can be asynchronous
   addObjects = verbose;
   hitsInGPU = nullptr;
@@ -47,7 +52,7 @@ void lst::Event<Acc3D>::initSync(bool verbose) {
   }
 }
 
-void lst::Event<Acc3D>::resetEventSync() {
+void Event::resetEventSync() {
   alpaka::wait(queue);  // synchronize to reset consistently
   //reset the arrays
   for (int i = 0; i < 6; i++) {
@@ -154,24 +159,24 @@ void lst::Event<Acc3D>::resetEventSync() {
   }
 }
 
-void lst::Event<Acc3D>::addHitToEvent(std::vector<float> const& x,
-                                      std::vector<float> const& y,
-                                      std::vector<float> const& z,
-                                      std::vector<unsigned int> const& detId,
-                                      std::vector<unsigned int> const& idxInNtuple) {
+void Event::addHitToEvent(std::vector<float> const& x,
+                          std::vector<float> const& y,
+                          std::vector<float> const& z,
+                          std::vector<unsigned int> const& detId,
+                          std::vector<unsigned int> const& idxInNtuple) {
   // Use the actual number of hits instead of a max.
   unsigned int nHits = x.size();
 
   // Initialize space on device/host for next event.
   if (hitsInGPU == nullptr) {
-    hitsInGPU = new lst::Hits();
-    hitsBuffers = new lst::HitsBuffer<Device>(nModules_, nHits, devAcc, queue);
+    hitsInGPU = new Hits();
+    hitsBuffers = new HitsBuffer<Device>(nModules_, nHits, devAcc, queue);
     hitsInGPU->setData(*hitsBuffers);
   }
 
   if (rangesInGPU == nullptr) {
-    rangesInGPU = new lst::ObjectRanges();
-    rangesBuffers = new lst::ObjectRangesBuffer<Device>(nModules_, nLowerModules_, devAcc, queue);
+    rangesInGPU = new ObjectRanges();
+    rangesBuffers = new ObjectRangesBuffer<Device>(nModules_, nLowerModules_, devAcc, queue);
     rangesInGPU->setData(*rangesBuffers);
   }
 
@@ -191,12 +196,11 @@ void lst::Event<Acc3D>::addHitToEvent(std::vector<float> const& x,
   Vec3D const blocksPerGrid1{1, 1, max_blocks};
   WorkDiv3D const hit_loop_workdiv = createWorkDiv(blocksPerGrid1, threadsPerBlock1, elementsPerThread);
 
-  HitLoopKernel hit_loop_kernel;
   alpaka::exec<Acc3D>(queue,
                       hit_loop_workdiv,
-                      hit_loop_kernel,
-                      Endcap,
-                      TwoS,
+                      HitLoopKernel{},
+                      ::lst::Endcap,
+                      ::lst::TwoS,
                       nModules_,
                       nEndCapMap_,
                       endcapGeometryBuffers_.geoMapDetId_buf.data(),
@@ -209,29 +213,28 @@ void lst::Event<Acc3D>::addHitToEvent(std::vector<float> const& x,
   Vec3D const blocksPerGrid2{1, 1, max_blocks};
   WorkDiv3D const module_ranges_workdiv = createWorkDiv(blocksPerGrid2, threadsPerBlock2, elementsPerThread);
 
-  ModuleRangesKernel module_ranges_kernel;
   alpaka::exec<Acc3D>(
-      queue, module_ranges_workdiv, module_ranges_kernel, *modulesBuffers_.data(), *hitsInGPU, nLowerModules_);
+      queue, module_ranges_workdiv, ModuleRangesKernel{}, *modulesBuffers_.data(), *hitsInGPU, nLowerModules_);
 }
 
-void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
-                                               std::vector<unsigned int> const& hitIndices1,
-                                               std::vector<unsigned int> const& hitIndices2,
-                                               std::vector<unsigned int> const& hitIndices3,
-                                               std::vector<float> const& dPhiChange,
-                                               std::vector<float> const& ptIn,
-                                               std::vector<float> const& ptErr,
-                                               std::vector<float> const& px,
-                                               std::vector<float> const& py,
-                                               std::vector<float> const& pz,
-                                               std::vector<float> const& eta,
-                                               std::vector<float> const& etaErr,
-                                               std::vector<float> const& phi,
-                                               std::vector<int> const& charge,
-                                               std::vector<unsigned int> const& seedIdx,
-                                               std::vector<int> const& superbin,
-                                               std::vector<int8_t> const& pixelType,
-                                               std::vector<char> const& isQuad) {
+void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
+                                   std::vector<unsigned int> const& hitIndices1,
+                                   std::vector<unsigned int> const& hitIndices2,
+                                   std::vector<unsigned int> const& hitIndices3,
+                                   std::vector<float> const& dPhiChange,
+                                   std::vector<float> const& ptIn,
+                                   std::vector<float> const& ptErr,
+                                   std::vector<float> const& px,
+                                   std::vector<float> const& py,
+                                   std::vector<float> const& pz,
+                                   std::vector<float> const& eta,
+                                   std::vector<float> const& etaErr,
+                                   std::vector<float> const& phi,
+                                   std::vector<int> const& charge,
+                                   std::vector<unsigned int> const& seedIdx,
+                                   std::vector<int> const& superbin,
+                                   std::vector<int8_t> const& pixelType,
+                                   std::vector<char> const& isQuad) {
   unsigned int size = ptIn.size();
 
   if (size > n_max_pixel_segments_per_module) {
@@ -259,9 +262,8 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
 
     WorkDiv1D const createMDArrayRangesGPU_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-    lst::CreateMDArrayRangesGPU createMDArrayRangesGPU_kernel;
     alpaka::exec<Acc1D>(
-        queue, createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU);
+        queue, createMDArrayRangesGPU_workDiv, CreateMDArrayRangesGPU{}, *modulesBuffers_.data(), *rangesInGPU);
 
     auto nTotalMDs_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, (Idx)1u);
     alpaka::memcpy(queue, nTotalMDs_buf_h, rangesBuffers->device_nTotalMDs_buf);
@@ -270,8 +272,8 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
     *nTotalMDs_buf_h.data() += n_max_pixel_md_per_modules;
     unsigned int nTotalMDs = *nTotalMDs_buf_h.data();
 
-    mdsInGPU = new lst::MiniDoublets();
-    miniDoubletsBuffers = new lst::MiniDoubletsBuffer<Device>(nTotalMDs, nLowerModules_, devAcc, queue);
+    mdsInGPU = new MiniDoublets();
+    miniDoubletsBuffers = new MiniDoubletsBuffer<Device>(nTotalMDs, nLowerModules_, devAcc, queue);
     mdsInGPU->setData(*miniDoubletsBuffers);
 
     alpaka::memcpy(queue, miniDoubletsBuffers->nMemoryLocations_buf, nTotalMDs_buf_h);
@@ -282,10 +284,9 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
 
     WorkDiv1D const createSegmentArrayRanges_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-    lst::CreateSegmentArrayRanges createSegmentArrayRanges_kernel;
     alpaka::exec<Acc1D>(queue,
                         createSegmentArrayRanges_workDiv,
-                        createSegmentArrayRanges_kernel,
+                        CreateSegmentArrayRanges{},
                         *modulesBuffers_.data(),
                         *rangesInGPU,
                         *mdsInGPU);
@@ -297,9 +298,9 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
 
     nTotalSegments_ += n_max_pixel_segments_per_module;
 
-    segmentsInGPU = new lst::Segments();
-    segmentsBuffers = new lst::SegmentsBuffer<Device>(
-        nTotalSegments_, nLowerModules_, n_max_pixel_segments_per_module, devAcc, queue);
+    segmentsInGPU = new Segments();
+    segmentsBuffers =
+        new SegmentsBuffer<Device>(nTotalSegments_, nLowerModules_, n_max_pixel_segments_per_module, devAcc, queue);
     segmentsInGPU->setData(*segmentsBuffers);
 
     alpaka::memcpy(queue, segmentsBuffers->nMemoryLocations_buf, nTotalSegments_view);
@@ -355,10 +356,9 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
   Vec3D const blocksPerGrid{1, 1, max_blocks};
   WorkDiv3D const addPixelSegmentToEvent_workdiv = createWorkDiv(blocksPerGrid, threadsPerBlock, elementsPerThread);
 
-  AddPixelSegmentToEventKernel addPixelSegmentToEvent_kernel;
   alpaka::exec<Acc3D>(queue,
                       addPixelSegmentToEvent_workdiv,
-                      addPixelSegmentToEvent_kernel,
+                      AddPixelSegmentToEventKernel{},
                       *modulesBuffers_.data(),
                       *rangesInGPU,
                       *hitsInGPU,
@@ -373,7 +373,7 @@ void lst::Event<Acc3D>::addPixelSegmentToEvent(std::vector<unsigned int> const& 
                       size);
 }
 
-void lst::Event<Acc3D>::createMiniDoublets() {
+void Event::createMiniDoublets() {
   // Create a view for the element nLowerModules_ inside rangesBuffers->miniDoubletModuleOccupancy
   auto dst_view_miniDoubletModuleOccupancy =
       alpaka::createSubView(rangesBuffers->miniDoubletModuleOccupancy_buf, (Idx)1u, (Idx)nLowerModules_);
@@ -386,9 +386,8 @@ void lst::Event<Acc3D>::createMiniDoublets() {
 
   WorkDiv1D const createMDArrayRangesGPU_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::CreateMDArrayRangesGPU createMDArrayRangesGPU_kernel;
   alpaka::exec<Acc1D>(
-      queue, createMDArrayRangesGPU_workDiv, createMDArrayRangesGPU_kernel, *modulesBuffers_.data(), *rangesInGPU);
+      queue, createMDArrayRangesGPU_workDiv, CreateMDArrayRangesGPU{}, *modulesBuffers_.data(), *rangesInGPU);
 
   auto nTotalMDs_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, (Idx)1u);
   alpaka::memcpy(queue, nTotalMDs_buf_h, rangesBuffers->device_nTotalMDs_buf);
@@ -398,8 +397,8 @@ void lst::Event<Acc3D>::createMiniDoublets() {
   unsigned int nTotalMDs = *nTotalMDs_buf_h.data();
 
   if (mdsInGPU == nullptr) {
-    mdsInGPU = new lst::MiniDoublets();
-    miniDoubletsBuffers = new lst::MiniDoubletsBuffer<Device>(nTotalMDs, nLowerModules_, devAcc, queue);
+    mdsInGPU = new MiniDoublets();
+    miniDoubletsBuffers = new MiniDoubletsBuffer<Device>(nTotalMDs, nLowerModules_, devAcc, queue);
     mdsInGPU->setData(*miniDoubletsBuffers);
   }
 
@@ -408,10 +407,9 @@ void lst::Event<Acc3D>::createMiniDoublets() {
   WorkDiv3D const createMiniDoubletsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridCreateMDInGPU, threadsPerBlockCreateMDInGPU, elementsPerThread);
 
-  lst::CreateMiniDoubletsInGPUv2 createMiniDoubletsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createMiniDoubletsInGPUv2_workDiv,
-                      createMiniDoubletsInGPUv2_kernel,
+                      CreateMiniDoubletsInGPUv2{},
                       *modulesBuffers_.data(),
                       *hitsInGPU,
                       *mdsInGPU,
@@ -419,10 +417,9 @@ void lst::Event<Acc3D>::createMiniDoublets() {
 
   WorkDiv1D const addMiniDoubletRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::AddMiniDoubletRangesToEventExplicit addMiniDoubletRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addMiniDoubletRangesToEventExplicit_workDiv,
-                      addMiniDoubletRangesToEventExplicit_kernel,
+                      AddMiniDoubletRangesToEventExplicit{},
                       *modulesBuffers_.data(),
                       *mdsInGPU,
                       *rangesInGPU,
@@ -433,11 +430,11 @@ void lst::Event<Acc3D>::createMiniDoublets() {
   }
 }
 
-void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
+void Event::createSegmentsWithModuleMap() {
   if (segmentsInGPU == nullptr) {
-    segmentsInGPU = new lst::Segments();
-    segmentsBuffers = new lst::SegmentsBuffer<Device>(
-        nTotalSegments_, nLowerModules_, n_max_pixel_segments_per_module, devAcc, queue);
+    segmentsInGPU = new Segments();
+    segmentsBuffers =
+        new SegmentsBuffer<Device>(nTotalSegments_, nLowerModules_, n_max_pixel_segments_per_module, devAcc, queue);
     segmentsInGPU->setData(*segmentsBuffers);
   }
 
@@ -446,10 +443,9 @@ void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
   WorkDiv3D const createSegmentsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridCreateSeg, threadsPerBlockCreateSeg, elementsPerThread);
 
-  lst::CreateSegmentsInGPUv2 createSegmentsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createSegmentsInGPUv2_workDiv,
-                      createSegmentsInGPUv2_kernel,
+                      CreateSegmentsInGPUv2{},
                       *modulesBuffers_.data(),
                       *mdsInGPU,
                       *segmentsInGPU,
@@ -457,10 +453,9 @@ void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
 
   WorkDiv1D const addSegmentRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::AddSegmentRangesToEventExplicit addSegmentRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addSegmentRangesToEventExplicit_workDiv,
-                      addSegmentRangesToEventExplicit_kernel,
+                      AddSegmentRangesToEventExplicit{},
                       *modulesBuffers_.data(),
                       *segmentsInGPU,
                       *rangesInGPU);
@@ -470,14 +465,13 @@ void lst::Event<Acc3D>::createSegmentsWithModuleMap() {
   }
 }
 
-void lst::Event<Acc3D>::createTriplets() {
+void Event::createTriplets() {
   if (tripletsInGPU == nullptr) {
     WorkDiv1D const createTripletArrayRanges_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-    lst::CreateTripletArrayRanges createTripletArrayRanges_kernel;
     alpaka::exec<Acc1D>(queue,
                         createTripletArrayRanges_workDiv,
-                        createTripletArrayRanges_kernel,
+                        CreateTripletArrayRanges{},
                         *modulesBuffers_.data(),
                         *rangesInGPU,
                         *segmentsInGPU);
@@ -488,8 +482,8 @@ void lst::Event<Acc3D>::createTriplets() {
     alpaka::memcpy(queue, maxTriplets_buf_h, rangesBuffers->device_nTotalTrips_buf);
     alpaka::wait(queue);  // wait to get the value before using it
 
-    tripletsInGPU = new lst::Triplets();
-    tripletsBuffers = new lst::TripletsBuffer<Device>(*maxTriplets_buf_h.data(), nLowerModules_, devAcc, queue);
+    tripletsInGPU = new Triplets();
+    tripletsBuffers = new TripletsBuffer<Device>(*maxTriplets_buf_h.data(), nLowerModules_, devAcc, queue);
     tripletsInGPU->setData(*tripletsBuffers);
 
     alpaka::memcpy(queue, tripletsBuffers->nMemoryLocations_buf, maxTriplets_buf_h);
@@ -535,10 +529,9 @@ void lst::Event<Acc3D>::createTriplets() {
   WorkDiv3D const createTripletsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridCreateTrip, threadsPerBlockCreateTrip, elementsPerThread);
 
-  lst::CreateTripletsInGPUv2 createTripletsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createTripletsInGPUv2_workDiv,
-                      createTripletsInGPUv2_kernel,
+                      CreateTripletsInGPUv2{},
                       *modulesBuffers_.data(),
                       *mdsInGPU,
                       *segmentsInGPU,
@@ -549,10 +542,9 @@ void lst::Event<Acc3D>::createTriplets() {
 
   WorkDiv1D const addTripletRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::AddTripletRangesToEventExplicit addTripletRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addTripletRangesToEventExplicit_workDiv,
-                      addTripletRangesToEventExplicit_kernel,
+                      AddTripletRangesToEventExplicit{},
                       *modulesBuffers_.data(),
                       *tripletsInGPU,
                       *rangesInGPU);
@@ -562,10 +554,10 @@ void lst::Event<Acc3D>::createTriplets() {
   }
 }
 
-void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets) {
+void Event::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets) {
   if (trackCandidatesInGPU == nullptr) {
-    trackCandidatesInGPU = new lst::TrackCandidates();
-    trackCandidatesBuffers = new lst::TrackCandidatesBuffer<Device>(
+    trackCandidatesInGPU = new TrackCandidates();
+    trackCandidatesBuffers = new TrackCandidatesBuffer<Device>(
         n_max_nonpixel_track_candidates + n_max_pixel_track_candidates, devAcc, queue);
     trackCandidatesInGPU->setData(*trackCandidatesBuffers);
   }
@@ -575,10 +567,9 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const crossCleanpT3_workDiv =
       createWorkDiv(blocksPerGrid_crossCleanpT3, threadsPerBlock_crossCleanpT3, elementsPerThread);
 
-  lst::CrossCleanpT3 crossCleanpT3_kernel;
   alpaka::exec<Acc3D>(queue,
                       crossCleanpT3_workDiv,
-                      crossCleanpT3_kernel,
+                      CrossCleanpT3{},
                       *modulesBuffers_.data(),
                       *rangesInGPU,
                       *pixelTripletsInGPU,
@@ -587,10 +578,9 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
 
   WorkDiv1D const addpT3asTrackCandidatesInGPU_workDiv = createWorkDiv<Vec1D>({1}, {512}, {1});
 
-  lst::AddpT3asTrackCandidatesInGPU addpT3asTrackCandidatesInGPU_kernel;
   alpaka::exec<Acc1D>(queue,
                       addpT3asTrackCandidatesInGPU_workDiv,
-                      addpT3asTrackCandidatesInGPU_kernel,
+                      AddpT3asTrackCandidatesInGPU{},
                       nLowerModules_,
                       *pixelTripletsInGPU,
                       *trackCandidatesInGPU,
@@ -608,10 +598,9 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const removeDupQuintupletsInGPUBeforeTC_workDiv =
       createWorkDiv(blocksPerGridRemoveDupQuints, threadsPerBlockRemoveDupQuints, elementsPerThread);
 
-  lst::RemoveDupQuintupletsInGPUBeforeTC removeDupQuintupletsInGPUBeforeTC_kernel;
   alpaka::exec<Acc3D>(queue,
                       removeDupQuintupletsInGPUBeforeTC_workDiv,
-                      removeDupQuintupletsInGPUBeforeTC_kernel,
+                      RemoveDupQuintupletsInGPUBeforeTC{},
                       *quintupletsInGPU,
                       *rangesInGPU);
 
@@ -620,10 +609,9 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const crossCleanT5_workDiv =
       createWorkDiv(blocksPerGrid_crossCleanT5, threadsPerBlock_crossCleanT5, elementsPerThread);
 
-  lst::CrossCleanT5 crossCleanT5_kernel;
   alpaka::exec<Acc3D>(queue,
                       crossCleanT5_workDiv,
-                      crossCleanT5_kernel,
+                      CrossCleanT5{},
                       *modulesBuffers_.data(),
                       *quintupletsInGPU,
                       *pixelQuintupletsInGPU,
@@ -635,10 +623,9 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const addT5asTrackCandidateInGPU_workDiv = createWorkDiv(
       blocksPerGrid_addT5asTrackCandidateInGPU, threadsPerBlock_addT5asTrackCandidateInGPU, elementsPerThread);
 
-  lst::AddT5asTrackCandidateInGPU addT5asTrackCandidateInGPU_kernel;
   alpaka::exec<Acc3D>(queue,
                       addT5asTrackCandidateInGPU_workDiv,
-                      addT5asTrackCandidateInGPU_kernel,
+                      AddT5asTrackCandidateInGPU{},
                       nLowerModules_,
                       *quintupletsInGPU,
                       *trackCandidatesInGPU,
@@ -650,9 +637,7 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
     WorkDiv3D const checkHitspLS_workDiv =
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
-    lst::CheckHitspLS checkHitspLS_kernel;
-    alpaka::exec<Acc3D>(
-        queue, checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, true);
+    alpaka::exec<Acc3D>(queue, checkHitspLS_workDiv, CheckHitspLS{}, *modulesBuffers_.data(), *segmentsInGPU, true);
   }
 
   Vec3D const threadsPerBlock_crossCleanpLS{1, 16, 32};
@@ -660,10 +645,9 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const crossCleanpLS_workDiv =
       createWorkDiv(blocksPerGrid_crossCleanpLS, threadsPerBlock_crossCleanpLS, elementsPerThread);
 
-  lst::CrossCleanpLS crossCleanpLS_kernel;
   alpaka::exec<Acc3D>(queue,
                       crossCleanpLS_workDiv,
-                      crossCleanpLS_kernel,
+                      CrossCleanpLS{},
                       *modulesBuffers_.data(),
                       *rangesInGPU,
                       *pixelTripletsInGPU,
@@ -678,10 +662,9 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   WorkDiv3D const addpLSasTrackCandidateInGPU_workDiv = createWorkDiv(
       blocksPerGrid_addpLSasTrackCandidateInGPU, threadsPerBlock_addpLSasTrackCandidateInGPU, elementsPerThread);
 
-  lst::AddpLSasTrackCandidateInGPU addpLSasTrackCandidateInGPU_kernel;
   alpaka::exec<Acc3D>(queue,
                       addpLSasTrackCandidateInGPU_workDiv,
-                      addpLSasTrackCandidateInGPU_kernel,
+                      AddpLSasTrackCandidateInGPU{},
                       nLowerModules_,
                       *trackCandidatesInGPU,
                       *segmentsInGPU,
@@ -713,10 +696,10 @@ void lst::Event<Acc3D>::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_
   }
 }
 
-void lst::Event<Acc3D>::createPixelTriplets() {
+void Event::createPixelTriplets() {
   if (pixelTripletsInGPU == nullptr) {
-    pixelTripletsInGPU = new lst::PixelTriplets();
-    pixelTripletsBuffers = new lst::PixelTripletsBuffer<Device>(n_max_pixel_triplets, devAcc, queue);
+    pixelTripletsInGPU = new PixelTriplets();
+    pixelTripletsBuffers = new PixelTripletsBuffer<Device>(n_max_pixel_triplets, devAcc, queue);
     pixelTripletsInGPU->setData(*pixelTripletsBuffers);
   }
 
@@ -789,10 +772,9 @@ void lst::Event<Acc3D>::createPixelTriplets() {
   WorkDiv3D const createPixelTripletsInGPUFromMapv2_workDiv =
       createWorkDiv(blocksPerGrid, threadsPerBlock, elementsPerThread);
 
-  lst::CreatePixelTripletsInGPUFromMapv2 createPixelTripletsInGPUFromMapv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createPixelTripletsInGPUFromMapv2_workDiv,
-                      createPixelTripletsInGPUFromMapv2_kernel,
+                      CreatePixelTripletsInGPUFromMapv2{},
                       *modulesBuffers_.data(),
                       *rangesInGPU,
                       *mdsInGPU,
@@ -819,20 +801,16 @@ void lst::Event<Acc3D>::createPixelTriplets() {
   WorkDiv3D const removeDupPixelTripletsInGPUFromMap_workDiv =
       createWorkDiv(blocksPerGridDupPixTrip, threadsPerBlockDupPixTrip, elementsPerThread);
 
-  lst::RemoveDupPixelTripletsInGPUFromMap removeDupPixelTripletsInGPUFromMap_kernel;
-  alpaka::exec<Acc3D>(queue,
-                      removeDupPixelTripletsInGPUFromMap_workDiv,
-                      removeDupPixelTripletsInGPUFromMap_kernel,
-                      *pixelTripletsInGPU);
+  alpaka::exec<Acc3D>(
+      queue, removeDupPixelTripletsInGPUFromMap_workDiv, RemoveDupPixelTripletsInGPUFromMap{}, *pixelTripletsInGPU);
 }
 
-void lst::Event<Acc3D>::createQuintuplets() {
+void Event::createQuintuplets() {
   WorkDiv1D const createEligibleModulesListForQuintupletsGPU_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::CreateEligibleModulesListForQuintupletsGPU createEligibleModulesListForQuintupletsGPU_kernel;
   alpaka::exec<Acc1D>(queue,
                       createEligibleModulesListForQuintupletsGPU_workDiv,
-                      createEligibleModulesListForQuintupletsGPU_kernel,
+                      CreateEligibleModulesListForQuintupletsGPU{},
                       *modulesBuffers_.data(),
                       *tripletsInGPU,
                       *rangesInGPU);
@@ -848,8 +826,8 @@ void lst::Event<Acc3D>::createQuintuplets() {
   auto nTotalQuintuplets = *nTotalQuintuplets_buf.data();
 
   if (quintupletsInGPU == nullptr) {
-    quintupletsInGPU = new lst::Quintuplets();
-    quintupletsBuffers = new lst::QuintupletsBuffer<Device>(nTotalQuintuplets, nLowerModules_, devAcc, queue);
+    quintupletsInGPU = new Quintuplets();
+    quintupletsBuffers = new QuintupletsBuffer<Device>(nTotalQuintuplets, nLowerModules_, devAcc, queue);
     quintupletsInGPU->setData(*quintupletsBuffers);
 
     alpaka::memcpy(queue, quintupletsBuffers->nMemoryLocations_buf, nTotalQuintuplets_buf);
@@ -860,10 +838,9 @@ void lst::Event<Acc3D>::createQuintuplets() {
   WorkDiv3D const createQuintupletsInGPUv2_workDiv =
       createWorkDiv(blocksPerGridQuints, threadsPerBlockQuints, elementsPerThread);
 
-  lst::CreateQuintupletsInGPUv2 createQuintupletsInGPUv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createQuintupletsInGPUv2_workDiv,
-                      createQuintupletsInGPUv2_kernel,
+                      CreateQuintupletsInGPUv2{},
                       *modulesBuffers_.data(),
                       *mdsInGPU,
                       *segmentsInGPU,
@@ -877,20 +854,18 @@ void lst::Event<Acc3D>::createQuintuplets() {
   WorkDiv3D const removeDupQuintupletsInGPUAfterBuild_workDiv =
       createWorkDiv(blocksPerGridDupQuint, threadsPerBlockDupQuint, elementsPerThread);
 
-  lst::RemoveDupQuintupletsInGPUAfterBuild removeDupQuintupletsInGPUAfterBuild_kernel;
   alpaka::exec<Acc3D>(queue,
                       removeDupQuintupletsInGPUAfterBuild_workDiv,
-                      removeDupQuintupletsInGPUAfterBuild_kernel,
+                      RemoveDupQuintupletsInGPUAfterBuild{},
                       *modulesBuffers_.data(),
                       *quintupletsInGPU,
                       *rangesInGPU);
 
   WorkDiv1D const addQuintupletRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
 
-  lst::AddQuintupletRangesToEventExplicit addQuintupletRangesToEventExplicit_kernel;
   alpaka::exec<Acc1D>(queue,
                       addQuintupletRangesToEventExplicit_workDiv,
-                      addQuintupletRangesToEventExplicit_kernel,
+                      AddQuintupletRangesToEventExplicit{},
                       *modulesBuffers_.data(),
                       *quintupletsInGPU,
                       *rangesInGPU);
@@ -900,28 +875,26 @@ void lst::Event<Acc3D>::createQuintuplets() {
   }
 }
 
-void lst::Event<Acc3D>::pixelLineSegmentCleaning(bool no_pls_dupclean) {
+void Event::pixelLineSegmentCleaning(bool no_pls_dupclean) {
   if (!no_pls_dupclean) {
     Vec3D const threadsPerBlockCheckHitspLS{1, 16, 16};
     Vec3D const blocksPerGridCheckHitspLS{1, max_blocks * 4, max_blocks / 4};
     WorkDiv3D const checkHitspLS_workDiv =
         createWorkDiv(blocksPerGridCheckHitspLS, threadsPerBlockCheckHitspLS, elementsPerThread);
 
-    lst::CheckHitspLS checkHitspLS_kernel;
-    alpaka::exec<Acc3D>(
-        queue, checkHitspLS_workDiv, checkHitspLS_kernel, *modulesBuffers_.data(), *segmentsInGPU, false);
+    alpaka::exec<Acc3D>(queue, checkHitspLS_workDiv, CheckHitspLS{}, *modulesBuffers_.data(), *segmentsInGPU, false);
   }
 }
 
-void lst::Event<Acc3D>::createPixelQuintuplets() {
+void Event::createPixelQuintuplets() {
   if (pixelQuintupletsInGPU == nullptr) {
-    pixelQuintupletsInGPU = new lst::PixelQuintuplets();
-    pixelQuintupletsBuffers = new lst::PixelQuintupletsBuffer<Device>(n_max_pixel_quintuplets, devAcc, queue);
+    pixelQuintupletsInGPU = new PixelQuintuplets();
+    pixelQuintupletsBuffers = new PixelQuintupletsBuffer<Device>(n_max_pixel_quintuplets, devAcc, queue);
     pixelQuintupletsInGPU->setData(*pixelQuintupletsBuffers);
   }
   if (trackCandidatesInGPU == nullptr) {
-    trackCandidatesInGPU = new lst::TrackCandidates();
-    trackCandidatesBuffers = new lst::TrackCandidatesBuffer<Device>(
+    trackCandidatesInGPU = new TrackCandidates();
+    trackCandidatesBuffers = new TrackCandidatesBuffer<Device>(
         n_max_nonpixel_track_candidates + n_max_pixel_track_candidates, devAcc, queue);
     trackCandidatesInGPU->setData(*trackCandidatesBuffers);
   }
@@ -951,16 +924,16 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
   auto* connectedPixelSize_host = connectedPixelSize_host_buf.data();
   auto* connectedPixelIndex_host = connectedPixelIndex_host_buf.data();
 
-  int pixelIndexOffsetPos =
-      pixelMapping_.connectedPixelsIndex[size_superbins - 1] + pixelMapping_.connectedPixelsSizes[size_superbins - 1];
-  int pixelIndexOffsetNeg = pixelMapping_.connectedPixelsIndexPos[size_superbins - 1] +
-                            pixelMapping_.connectedPixelsSizesPos[size_superbins - 1] + pixelIndexOffsetPos;
+  int pixelIndexOffsetPos = pixelMapping_.connectedPixelsIndex[::size_superbins - 1] +
+                            pixelMapping_.connectedPixelsSizes[::size_superbins - 1];
+  int pixelIndexOffsetNeg = pixelMapping_.connectedPixelsIndexPos[::size_superbins - 1] +
+                            pixelMapping_.connectedPixelsSizesPos[::size_superbins - 1] + pixelIndexOffsetPos;
 
   // Loop over # pLS
   for (unsigned int i = 0; i < nInnerSegments; i++) {
     int8_t pixelType = pixelTypes[i];  // Get pixel type for this pLS
     int superbin = superbins[i];       // Get superbin for this pixel
-    if ((superbin < 0) or (superbin >= (int)size_superbins) or (pixelType > 2) or (pixelType < 0)) {
+    if ((superbin < 0) or (superbin >= (int)::size_superbins) or (pixelType > 2) or (pixelType < 0)) {
       connectedPixelIndex_host[i] = 0;
       connectedPixelSize_host[i] = 0;
       continue;
@@ -990,10 +963,9 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
   WorkDiv3D const createPixelQuintupletsInGPUFromMapv2_workDiv =
       createWorkDiv(blocksPerGridCreatePixQuints, threadsPerBlockCreatePixQuints, elementsPerThread);
 
-  lst::CreatePixelQuintupletsInGPUFromMapv2 createPixelQuintupletsInGPUFromMapv2_kernel;
   alpaka::exec<Acc3D>(queue,
                       createPixelQuintupletsInGPUFromMapv2_workDiv,
-                      createPixelQuintupletsInGPUFromMapv2_kernel,
+                      CreatePixelQuintupletsInGPUFromMapv2{},
                       *modulesBuffers_.data(),
                       *mdsInGPU,
                       *segmentsInGPU,
@@ -1010,18 +982,16 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
   WorkDiv3D const removeDupPixelQuintupletsInGPUFromMap_workDiv =
       createWorkDiv(blocksPerGridDupPix, threadsPerBlockDupPix, elementsPerThread);
 
-  lst::RemoveDupPixelQuintupletsInGPUFromMap removeDupPixelQuintupletsInGPUFromMap_kernel;
   alpaka::exec<Acc3D>(queue,
                       removeDupPixelQuintupletsInGPUFromMap_workDiv,
-                      removeDupPixelQuintupletsInGPUFromMap_kernel,
+                      RemoveDupPixelQuintupletsInGPUFromMap{},
                       *pixelQuintupletsInGPU);
 
   WorkDiv1D const addpT5asTrackCandidateInGPU_workDiv = createWorkDiv<Vec1D>({1}, {256}, {1});
 
-  lst::AddpT5asTrackCandidateInGPU addpT5asTrackCandidateInGPU_kernel;
   alpaka::exec<Acc1D>(queue,
                       addpT5asTrackCandidateInGPU_workDiv,
-                      addpT5asTrackCandidateInGPU_kernel,
+                      AddpT5asTrackCandidateInGPU{},
                       nLowerModules_,
                       *pixelQuintupletsInGPU,
                       *trackCandidatesInGPU,
@@ -1038,7 +1008,7 @@ void lst::Event<Acc3D>::createPixelQuintuplets() {
 #endif
 }
 
-void lst::Event<Acc3D>::addMiniDoubletsToEventExplicit() {
+void Event::addMiniDoubletsToEventExplicit() {
   auto nMDsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nMDsCPU_buf, miniDoubletsBuffers->nMDs_buf, nLowerModules_);
 
@@ -1061,7 +1031,7 @@ void lst::Event<Acc3D>::addMiniDoubletsToEventExplicit() {
 
   for (unsigned int i = 0; i < nLowerModules_; i++) {
     if (!(nMDsCPU[i] == 0 or module_hitRanges[i * 2] == -1)) {
-      if (module_subdets[i] == Barrel) {
+      if (module_subdets[i] == ::lst::Barrel) {
         n_minidoublets_by_layer_barrel_[module_layers[i] - 1] += nMDsCPU[i];
       } else {
         n_minidoublets_by_layer_endcap_[module_layers[i] - 1] += nMDsCPU[i];
@@ -1070,7 +1040,7 @@ void lst::Event<Acc3D>::addMiniDoubletsToEventExplicit() {
   }
 }
 
-void lst::Event<Acc3D>::addSegmentsToEventExplicit() {
+void Event::addSegmentsToEventExplicit() {
   auto nSegmentsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nSegmentsCPU_buf, segmentsBuffers->nSegments_buf, nLowerModules_);
 
@@ -1089,7 +1059,7 @@ void lst::Event<Acc3D>::addSegmentsToEventExplicit() {
 
   for (unsigned int i = 0; i < nLowerModules_; i++) {
     if (!(nSegmentsCPU[i] == 0)) {
-      if (module_subdets[i] == Barrel) {
+      if (module_subdets[i] == ::lst::Barrel) {
         n_segments_by_layer_barrel_[module_layers[i] - 1] += nSegmentsCPU[i];
       } else {
         n_segments_by_layer_endcap_[module_layers[i] - 1] += nSegmentsCPU[i];
@@ -1098,7 +1068,7 @@ void lst::Event<Acc3D>::addSegmentsToEventExplicit() {
   }
 }
 
-void lst::Event<Acc3D>::addQuintupletsToEventExplicit() {
+void Event::addQuintupletsToEventExplicit() {
   auto nQuintupletsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nQuintupletsCPU_buf, quintupletsBuffers->nQuintuplets_buf);
 
@@ -1121,7 +1091,7 @@ void lst::Event<Acc3D>::addQuintupletsToEventExplicit() {
 
   for (uint16_t i = 0; i < nLowerModules_; i++) {
     if (!(nQuintupletsCPU[i] == 0 or module_quintupletModuleIndices[i] == -1)) {
-      if (module_subdets[i] == Barrel) {
+      if (module_subdets[i] == ::lst::Barrel) {
         n_quintuplets_by_layer_barrel_[module_layers[i] - 1] += nQuintupletsCPU[i];
       } else {
         n_quintuplets_by_layer_endcap_[module_layers[i] - 1] += nQuintupletsCPU[i];
@@ -1130,7 +1100,7 @@ void lst::Event<Acc3D>::addQuintupletsToEventExplicit() {
   }
 }
 
-void lst::Event<Acc3D>::addTripletsToEventExplicit() {
+void Event::addTripletsToEventExplicit() {
   auto nTripletsCPU_buf = allocBufWrapper<unsigned int>(devHost, nLowerModules_, queue);
   alpaka::memcpy(queue, nTripletsCPU_buf, tripletsBuffers->nTriplets_buf);
 
@@ -1149,7 +1119,7 @@ void lst::Event<Acc3D>::addTripletsToEventExplicit() {
 
   for (uint16_t i = 0; i < nLowerModules_; i++) {
     if (nTripletsCPU[i] != 0) {
-      if (module_subdets[i] == Barrel) {
+      if (module_subdets[i] == ::lst::Barrel) {
         n_triplets_by_layer_barrel_[module_layers[i] - 1] += nTripletsCPU[i];
       } else {
         n_triplets_by_layer_endcap_[module_layers[i] - 1] += nTripletsCPU[i];
@@ -1158,7 +1128,7 @@ void lst::Event<Acc3D>::addTripletsToEventExplicit() {
   }
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfHits() {
+unsigned int Event::getNumberOfHits() {
   unsigned int hits = 0;
   for (auto& it : n_hits_by_layer_barrel_) {
     hits += it;
@@ -1170,22 +1140,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfHits() {
   return hits;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayer(unsigned int layer) {
+unsigned int Event::getNumberOfHitsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_hits_by_layer_barrel_[layer];
   else
     return n_hits_by_layer_barrel_[layer] + n_hits_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayerBarrel(unsigned int layer) {
-  return n_hits_by_layer_barrel_[layer];
-}
+unsigned int Event::getNumberOfHitsByLayerBarrel(unsigned int layer) { return n_hits_by_layer_barrel_[layer]; }
 
-unsigned int lst::Event<Acc3D>::getNumberOfHitsByLayerEndcap(unsigned int layer) {
-  return n_hits_by_layer_endcap_[layer];
-}
+unsigned int Event::getNumberOfHitsByLayerEndcap(unsigned int layer) { return n_hits_by_layer_endcap_[layer]; }
 
-unsigned int lst::Event<Acc3D>::getNumberOfMiniDoublets() {
+unsigned int Event::getNumberOfMiniDoublets() {
   unsigned int miniDoublets = 0;
   for (auto& it : n_minidoublets_by_layer_barrel_) {
     miniDoublets += it;
@@ -1197,22 +1163,22 @@ unsigned int lst::Event<Acc3D>::getNumberOfMiniDoublets() {
   return miniDoublets;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayer(unsigned int layer) {
+unsigned int Event::getNumberOfMiniDoubletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_minidoublets_by_layer_barrel_[layer];
   else
     return n_minidoublets_by_layer_barrel_[layer] + n_minidoublets_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayerBarrel(unsigned int layer) {
+unsigned int Event::getNumberOfMiniDoubletsByLayerBarrel(unsigned int layer) {
   return n_minidoublets_by_layer_barrel_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfMiniDoubletsByLayerEndcap(unsigned int layer) {
+unsigned int Event::getNumberOfMiniDoubletsByLayerEndcap(unsigned int layer) {
   return n_minidoublets_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfSegments() {
+unsigned int Event::getNumberOfSegments() {
   unsigned int segments = 0;
   for (auto& it : n_segments_by_layer_barrel_) {
     segments += it;
@@ -1224,22 +1190,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfSegments() {
   return segments;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayer(unsigned int layer) {
+unsigned int Event::getNumberOfSegmentsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_segments_by_layer_barrel_[layer];
   else
     return n_segments_by_layer_barrel_[layer] + n_segments_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayerBarrel(unsigned int layer) {
-  return n_segments_by_layer_barrel_[layer];
-}
+unsigned int Event::getNumberOfSegmentsByLayerBarrel(unsigned int layer) { return n_segments_by_layer_barrel_[layer]; }
 
-unsigned int lst::Event<Acc3D>::getNumberOfSegmentsByLayerEndcap(unsigned int layer) {
-  return n_segments_by_layer_endcap_[layer];
-}
+unsigned int Event::getNumberOfSegmentsByLayerEndcap(unsigned int layer) { return n_segments_by_layer_endcap_[layer]; }
 
-unsigned int lst::Event<Acc3D>::getNumberOfTriplets() {
+unsigned int Event::getNumberOfTriplets() {
   unsigned int triplets = 0;
   for (auto& it : n_triplets_by_layer_barrel_) {
     triplets += it;
@@ -1251,22 +1213,18 @@ unsigned int lst::Event<Acc3D>::getNumberOfTriplets() {
   return triplets;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayer(unsigned int layer) {
+unsigned int Event::getNumberOfTripletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_triplets_by_layer_barrel_[layer];
   else
     return n_triplets_by_layer_barrel_[layer] + n_triplets_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayerBarrel(unsigned int layer) {
-  return n_triplets_by_layer_barrel_[layer];
-}
+unsigned int Event::getNumberOfTripletsByLayerBarrel(unsigned int layer) { return n_triplets_by_layer_barrel_[layer]; }
 
-unsigned int lst::Event<Acc3D>::getNumberOfTripletsByLayerEndcap(unsigned int layer) {
-  return n_triplets_by_layer_endcap_[layer];
-}
+unsigned int Event::getNumberOfTripletsByLayerEndcap(unsigned int layer) { return n_triplets_by_layer_endcap_[layer]; }
 
-int lst::Event<Acc3D>::getNumberOfPixelTriplets() {
+int Event::getNumberOfPixelTriplets() {
   auto nPixelTriplets_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
   alpaka::memcpy(queue, nPixelTriplets_buf_h, pixelTripletsBuffers->nPixelTriplets_buf);
@@ -1274,7 +1232,7 @@ int lst::Event<Acc3D>::getNumberOfPixelTriplets() {
   return *nPixelTriplets_buf_h.data();
 }
 
-int lst::Event<Acc3D>::getNumberOfPixelQuintuplets() {
+int Event::getNumberOfPixelQuintuplets() {
   auto nPixelQuintuplets_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
   alpaka::memcpy(queue, nPixelQuintuplets_buf_h, pixelQuintupletsBuffers->nPixelQuintuplets_buf);
@@ -1282,7 +1240,7 @@ int lst::Event<Acc3D>::getNumberOfPixelQuintuplets() {
   return *nPixelQuintuplets_buf_h.data();
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfQuintuplets() {
+unsigned int Event::getNumberOfQuintuplets() {
   unsigned int quintuplets = 0;
   for (auto& it : n_quintuplets_by_layer_barrel_) {
     quintuplets += it;
@@ -1294,22 +1252,22 @@ unsigned int lst::Event<Acc3D>::getNumberOfQuintuplets() {
   return quintuplets;
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayer(unsigned int layer) {
+unsigned int Event::getNumberOfQuintupletsByLayer(unsigned int layer) {
   if (layer == 6)
     return n_quintuplets_by_layer_barrel_[layer];
   else
     return n_quintuplets_by_layer_barrel_[layer] + n_quintuplets_by_layer_endcap_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayerBarrel(unsigned int layer) {
+unsigned int Event::getNumberOfQuintupletsByLayerBarrel(unsigned int layer) {
   return n_quintuplets_by_layer_barrel_[layer];
 }
 
-unsigned int lst::Event<Acc3D>::getNumberOfQuintupletsByLayerEndcap(unsigned int layer) {
+unsigned int Event::getNumberOfQuintupletsByLayerEndcap(unsigned int layer) {
   return n_quintuplets_by_layer_endcap_[layer];
 }
 
-int lst::Event<Acc3D>::getNumberOfTrackCandidates() {
+int Event::getNumberOfTrackCandidates() {
   auto nTrackCandidates_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
   alpaka::memcpy(queue, nTrackCandidates_buf_h, trackCandidatesBuffers->nTrackCandidates_buf);
@@ -1317,7 +1275,7 @@ int lst::Event<Acc3D>::getNumberOfTrackCandidates() {
   return *nTrackCandidates_buf_h.data();
 }
 
-int lst::Event<Acc3D>::getNumberOfPT5TrackCandidates() {
+int Event::getNumberOfPT5TrackCandidates() {
   auto nTrackCandidatesPT5_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
   alpaka::memcpy(queue, nTrackCandidatesPT5_buf_h, trackCandidatesBuffers->nTrackCandidatespT5_buf);
@@ -1326,7 +1284,7 @@ int lst::Event<Acc3D>::getNumberOfPT5TrackCandidates() {
   return *nTrackCandidatesPT5_buf_h.data();
 }
 
-int lst::Event<Acc3D>::getNumberOfPT3TrackCandidates() {
+int Event::getNumberOfPT3TrackCandidates() {
   auto nTrackCandidatesPT3_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
   alpaka::memcpy(queue, nTrackCandidatesPT3_buf_h, trackCandidatesBuffers->nTrackCandidatespT3_buf);
@@ -1334,7 +1292,7 @@ int lst::Event<Acc3D>::getNumberOfPT3TrackCandidates() {
   return *nTrackCandidatesPT3_buf_h.data();
 }
 
-int lst::Event<Acc3D>::getNumberOfPLSTrackCandidates() {
+int Event::getNumberOfPLSTrackCandidates() {
   auto nTrackCandidatesPLS_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
   alpaka::memcpy(queue, nTrackCandidatesPLS_buf_h, trackCandidatesBuffers->nTrackCandidatespLS_buf);
@@ -1342,7 +1300,7 @@ int lst::Event<Acc3D>::getNumberOfPLSTrackCandidates() {
   return *nTrackCandidatesPLS_buf_h.data();
 }
 
-int lst::Event<Acc3D>::getNumberOfPixelTrackCandidates() {
+int Event::getNumberOfPixelTrackCandidates() {
   auto nTrackCandidates_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
   auto nTrackCandidatesT5_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
@@ -1352,7 +1310,7 @@ int lst::Event<Acc3D>::getNumberOfPixelTrackCandidates() {
   return (*nTrackCandidates_buf_h.data()) - (*nTrackCandidatesT5_buf_h.data());
 }
 
-int lst::Event<Acc3D>::getNumberOfT5TrackCandidates() {
+int Event::getNumberOfT5TrackCandidates() {
   auto nTrackCandidatesT5_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
 
   alpaka::memcpy(queue, nTrackCandidatesT5_buf_h, trackCandidatesBuffers->nTrackCandidatesT5_buf);
@@ -1360,7 +1318,7 @@ int lst::Event<Acc3D>::getNumberOfT5TrackCandidates() {
   return *nTrackCandidatesT5_buf_h.data();
 }
 
-lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHits(bool sync)  //std::shared_ptr should take care of garbage collection
+HitsBuffer<alpaka_common::DevHost>* Event::getHits(bool sync)  //std::shared_ptr should take care of garbage collection
 {
   if (hitsInCPU == nullptr) {
     auto nHits_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1368,7 +1326,7 @@ lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHits(bool sync)  //std::shared_p
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nHits = *nHits_buf_h.data();
-    hitsInCPU = new lst::HitsBuffer<DevHost>(nModules_, nHits, devHost, queue);
+    hitsInCPU = new HitsBuffer<DevHost>(nModules_, nHits, devHost, queue);
     hitsInCPU->setData(*hitsInCPU);
 
     *hitsInCPU->nHits_buf.data() = nHits;
@@ -1384,14 +1342,14 @@ lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHits(bool sync)  //std::shared_p
   return hitsInCPU;
 }
 
-lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHitsInCMSSW(bool sync) {
+HitsBuffer<alpaka_common::DevHost>* Event::getHitsInCMSSW(bool sync) {
   if (hitsInCPU == nullptr) {
     auto nHits_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
     alpaka::memcpy(queue, nHits_buf_h, hitsBuffers->nHits_buf);
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nHits = *nHits_buf_h.data();
-    hitsInCPU = new lst::HitsBuffer<DevHost>(nModules_, nHits, devHost, queue);
+    hitsInCPU = new HitsBuffer<DevHost>(nModules_, nHits, devHost, queue);
     hitsInCPU->setData(*hitsInCPU);
 
     *hitsInCPU->nHits_buf.data() = nHits;
@@ -1402,9 +1360,9 @@ lst::HitsBuffer<DevHost>* lst::Event<Acc3D>::getHitsInCMSSW(bool sync) {
   return hitsInCPU;
 }
 
-lst::ObjectRangesBuffer<DevHost>* lst::Event<Acc3D>::getRanges(bool sync) {
+ObjectRangesBuffer<alpaka_common::DevHost>* Event::getRanges(bool sync) {
   if (rangesInCPU == nullptr) {
-    rangesInCPU = new lst::ObjectRangesBuffer<DevHost>(nModules_, nLowerModules_, devHost, queue);
+    rangesInCPU = new ObjectRangesBuffer<DevHost>(nModules_, nLowerModules_, devHost, queue);
     rangesInCPU->setData(*rangesInCPU);
 
     alpaka::memcpy(queue, rangesInCPU->hitRanges_buf, rangesBuffers->hitRanges_buf);
@@ -1418,7 +1376,7 @@ lst::ObjectRangesBuffer<DevHost>* lst::Event<Acc3D>::getRanges(bool sync) {
   return rangesInCPU;
 }
 
-lst::MiniDoubletsBuffer<DevHost>* lst::Event<Acc3D>::getMiniDoublets(bool sync) {
+MiniDoubletsBuffer<alpaka_common::DevHost>* Event::getMiniDoublets(bool sync) {
   if (mdsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based mdsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1426,7 +1384,7 @@ lst::MiniDoubletsBuffer<DevHost>* lst::Event<Acc3D>::getMiniDoublets(bool sync) 
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nMemHost = *nMemHost_buf_h.data();
-    mdsInCPU = new lst::MiniDoubletsBuffer<DevHost>(nMemHost, nLowerModules_, devHost, queue);
+    mdsInCPU = new MiniDoubletsBuffer<DevHost>(nMemHost, nLowerModules_, devHost, queue);
     mdsInCPU->setData(*mdsInCPU);
 
     *mdsInCPU->nMemoryLocations_buf.data() = nMemHost;
@@ -1441,7 +1399,7 @@ lst::MiniDoubletsBuffer<DevHost>* lst::Event<Acc3D>::getMiniDoublets(bool sync) 
   return mdsInCPU;
 }
 
-lst::SegmentsBuffer<DevHost>* lst::Event<Acc3D>::getSegments(bool sync) {
+SegmentsBuffer<alpaka_common::DevHost>* Event::getSegments(bool sync) {
   if (segmentsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based segmentsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1450,7 +1408,7 @@ lst::SegmentsBuffer<DevHost>* lst::Event<Acc3D>::getSegments(bool sync) {
 
     auto const nMemHost = *nMemHost_buf_h.data();
     segmentsInCPU =
-        new lst::SegmentsBuffer<DevHost>(nMemHost, nLowerModules_, n_max_pixel_segments_per_module, devHost, queue);
+        new SegmentsBuffer<DevHost>(nMemHost, nLowerModules_, n_max_pixel_segments_per_module, devHost, queue);
     segmentsInCPU->setData(*segmentsInCPU);
 
     *segmentsInCPU->nMemoryLocations_buf.data() = nMemHost;
@@ -1478,7 +1436,7 @@ lst::SegmentsBuffer<DevHost>* lst::Event<Acc3D>::getSegments(bool sync) {
   return segmentsInCPU;
 }
 
-lst::TripletsBuffer<DevHost>* lst::Event<Acc3D>::getTriplets(bool sync) {
+TripletsBuffer<alpaka_common::DevHost>* Event::getTriplets(bool sync) {
   if (tripletsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based tripletsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1486,7 +1444,7 @@ lst::TripletsBuffer<DevHost>* lst::Event<Acc3D>::getTriplets(bool sync) {
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nMemHost = *nMemHost_buf_h.data();
-    tripletsInCPU = new lst::TripletsBuffer<DevHost>(nMemHost, nLowerModules_, devHost, queue);
+    tripletsInCPU = new TripletsBuffer<DevHost>(nMemHost, nLowerModules_, devHost, queue);
     tripletsInCPU->setData(*tripletsInCPU);
 
     *tripletsInCPU->nMemoryLocations_buf.data() = nMemHost;
@@ -1515,7 +1473,7 @@ lst::TripletsBuffer<DevHost>* lst::Event<Acc3D>::getTriplets(bool sync) {
   return tripletsInCPU;
 }
 
-lst::QuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getQuintuplets(bool sync) {
+QuintupletsBuffer<alpaka_common::DevHost>* Event::getQuintuplets(bool sync) {
   if (quintupletsInCPU == nullptr) {
     // Get nMemoryLocations parameter to initialize host based quintupletsInCPU
     auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1523,7 +1481,7 @@ lst::QuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getQuintuplets(bool sync) {
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nMemHost = *nMemHost_buf_h.data();
-    quintupletsInCPU = new lst::QuintupletsBuffer<DevHost>(nMemHost, nLowerModules_, devHost, queue);
+    quintupletsInCPU = new QuintupletsBuffer<DevHost>(nMemHost, nLowerModules_, devHost, queue);
     quintupletsInCPU->setData(*quintupletsInCPU);
 
     *quintupletsInCPU->nMemoryLocations_buf.data() = nMemHost;
@@ -1552,7 +1510,7 @@ lst::QuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getQuintuplets(bool sync) {
   return quintupletsInCPU;
 }
 
-lst::PixelTripletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelTriplets(bool sync) {
+PixelTripletsBuffer<alpaka_common::DevHost>* Event::getPixelTriplets(bool sync) {
   if (pixelTripletsInCPU == nullptr) {
     // Get nPixelTriplets parameter to initialize host based quintupletsInCPU
     auto nPixelTriplets_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1560,7 +1518,7 @@ lst::PixelTripletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelTriplets(bool sync
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nPixelTriplets = *nPixelTriplets_buf_h.data();
-    pixelTripletsInCPU = new lst::PixelTripletsBuffer<DevHost>(nPixelTriplets, devHost, queue);
+    pixelTripletsInCPU = new PixelTripletsBuffer<DevHost>(nPixelTriplets, devHost, queue);
     pixelTripletsInCPU->setData(*pixelTripletsInCPU);
 
     *pixelTripletsInCPU->nPixelTriplets_buf.data() = nPixelTriplets;
@@ -1592,7 +1550,7 @@ lst::PixelTripletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelTriplets(bool sync
   return pixelTripletsInCPU;
 }
 
-lst::PixelQuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelQuintuplets(bool sync) {
+PixelQuintupletsBuffer<alpaka_common::DevHost>* Event::getPixelQuintuplets(bool sync) {
   if (pixelQuintupletsInCPU == nullptr) {
     // Get nPixelQuintuplets parameter to initialize host based quintupletsInCPU
     auto nPixelQuintuplets_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1600,7 +1558,7 @@ lst::PixelQuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelQuintuplets(boo
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nPixelQuintuplets = *nPixelQuintuplets_buf_h.data();
-    pixelQuintupletsInCPU = new lst::PixelQuintupletsBuffer<DevHost>(nPixelQuintuplets, devHost, queue);
+    pixelQuintupletsInCPU = new PixelQuintupletsBuffer<DevHost>(nPixelQuintuplets, devHost, queue);
     pixelQuintupletsInCPU->setData(*pixelQuintupletsInCPU);
 
     *pixelQuintupletsInCPU->nPixelQuintuplets_buf.data() = nPixelQuintuplets;
@@ -1629,7 +1587,7 @@ lst::PixelQuintupletsBuffer<DevHost>* lst::Event<Acc3D>::getPixelQuintuplets(boo
   return pixelQuintupletsInCPU;
 }
 
-lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidates(bool sync) {
+TrackCandidatesBuffer<alpaka_common::DevHost>* Event::getTrackCandidates(bool sync) {
   if (trackCandidatesInCPU == nullptr) {
     // Get nTrackCanHost parameter to initialize host based trackCandidatesInCPU
     auto nTrackCanHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1637,7 +1595,7 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidates(bool 
     alpaka::wait(queue);
 
     auto const nTrackCanHost = *nTrackCanHost_buf_h.data();
-    trackCandidatesInCPU = new lst::TrackCandidatesBuffer<DevHost>(
+    trackCandidatesInCPU = new TrackCandidatesBuffer<DevHost>(
         n_max_nonpixel_track_candidates + n_max_pixel_track_candidates, devHost, queue);
     trackCandidatesInCPU->setData(*trackCandidatesInCPU);
 
@@ -1668,7 +1626,7 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidates(bool 
   return trackCandidatesInCPU;
 }
 
-lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSSW(bool sync) {
+TrackCandidatesBuffer<alpaka_common::DevHost>* Event::getTrackCandidatesInCMSSW(bool sync) {
   if (trackCandidatesInCPU == nullptr) {
     // Get nTrackCanHost parameter to initialize host based trackCandidatesInCPU
     auto nTrackCanHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue, 1u);
@@ -1676,7 +1634,7 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSS
     alpaka::wait(queue);  // wait for the value before using
 
     auto const nTrackCanHost = *nTrackCanHost_buf_h.data();
-    trackCandidatesInCPU = new lst::TrackCandidatesBuffer<DevHost>(
+    trackCandidatesInCPU = new TrackCandidatesBuffer<DevHost>(
         n_max_nonpixel_track_candidates + n_max_pixel_track_candidates, devHost, queue);
     trackCandidatesInCPU->setData(*trackCandidatesInCPU);
 
@@ -1697,10 +1655,10 @@ lst::TrackCandidatesBuffer<DevHost>* lst::Event<Acc3D>::getTrackCandidatesInCMSS
   return trackCandidatesInCPU;
 }
 
-lst::ModulesBuffer<DevHost>* lst::Event<Acc3D>::getModules(bool isFull, bool sync) {
+ModulesBuffer<alpaka_common::DevHost>* Event::getModules(bool isFull, bool sync) {
   if (modulesInCPU == nullptr) {
     // The last input here is just a small placeholder for the allocation.
-    modulesInCPU = new lst::ModulesBuffer<DevHost>(devHost, nModules_, nPixels_);
+    modulesInCPU = new ModulesBuffer<DevHost>(devHost, nModules_, nPixels_);
 
     modulesInCPU->copyFromSrc(queue, modulesBuffers_, isFull);
     if (sync)

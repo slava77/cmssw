@@ -1,6 +1,6 @@
 #include "write_lst_ntuple.h"
 
-using namespace ALPAKA_ACCELERATOR_NAMESPACE;
+using namespace ALPAKA_ACCELERATOR_NAMESPACE::lst;
 
 //________________________________________________________________________________________________________________________________
 void createOutputBranches() {
@@ -9,7 +9,7 @@ void createOutputBranches() {
 }
 
 //________________________________________________________________________________________________________________________________
-void fillOutputBranches(lst::Event<Acc3D>* event) {
+void fillOutputBranches(Event* event) {
   setOutputBranches(event);
   setOptionalOutputBranches(event);
   if (ana.gnn_ntuple)
@@ -183,7 +183,7 @@ void createGnnNtupleBranches() {
 }
 
 //________________________________________________________________________________________________________________________________
-void setOutputBranches(lst::Event<Acc3D>* event) {
+void setOutputBranches(Event* event) {
   // ============ Sim tracks =============
   int n_accepted_simtrk = 0;
   for (unsigned int isimtrk = 0; isimtrk < trk.sim_pt().size(); ++isimtrk) {
@@ -226,7 +226,7 @@ void setOutputBranches(lst::Event<Acc3D>* event) {
   std::vector<std::vector<int>> tc_matched_simIdx;
 
   // ============ Track candidates =============
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {
     // Compute reco quantities of track candidate based on final object
@@ -278,7 +278,7 @@ void setOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setOptionalOutputBranches(lst::Event<Acc3D>* event) {
+void setOptionalOutputBranches(Event* event) {
 #ifdef CUT_VALUE_DEBUG
 
   setPixelQuintupletOutputBranches(event);
@@ -289,12 +289,12 @@ void setOptionalOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setPixelQuintupletOutputBranches(lst::Event<Acc3D>* event) {
+void setPixelQuintupletOutputBranches(Event* event) {
   // ============ pT5 =============
-  lst::PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets()->data();
-  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
-  lst::Segments const* segments = event->getSegments()->data();
-  lst::Modules const* modules = event->getModules()->data();
+  PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets()->data();
+  Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  Segments const* segments = event->getSegments()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
   unsigned int nPixelQuintuplets =
@@ -305,7 +305,7 @@ void setPixelQuintupletOutputBranches(lst::Event<Acc3D>* event) {
   for (unsigned int pT5 = 0; pT5 < nPixelQuintuplets; pT5++) {
     unsigned int T5Index = getT5FrompT5(event, pT5);
     unsigned int pLSIndex = getPixelLSFrompT5(event, pT5);
-    float pt = (__H2F(quintuplets->innerRadius[T5Index]) * lst::k2Rinv1GeVf * 2 + segments->ptIn[pLSIndex]) / 2;
+    float pt = (__H2F(quintuplets->innerRadius[T5Index]) * k2Rinv1GeVf * 2 + segments->ptIn[pLSIndex]) / 2;
     float eta = segments->eta[pLSIndex];
     float phi = segments->phi[pLSIndex];
 
@@ -365,10 +365,10 @@ void setPixelQuintupletOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setQuintupletOutputBranches(lst::Event<Acc3D>* event) {
-  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
-  lst::ObjectRanges const* ranges = event->getRanges()->data();
-  lst::Modules const* modules = event->getModules()->data();
+void setQuintupletOutputBranches(Event* event) {
+  Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  ObjectRanges const* ranges = event->getRanges()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
   std::vector<int> sim_t5_matched(n_accepted_simtrk);
@@ -378,7 +378,7 @@ void setQuintupletOutputBranches(lst::Event<Acc3D>* event) {
     int nQuintuplets = quintuplets->nQuintuplets[lowerModuleIdx];
     for (unsigned int idx = 0; idx < nQuintuplets; idx++) {
       unsigned int quintupletIndex = ranges->quintupletModuleIndices[lowerModuleIdx] + idx;
-      float pt = __H2F(quintuplets->innerRadius[quintupletIndex]) * lst::k2Rinv1GeVf * 2;
+      float pt = __H2F(quintuplets->innerRadius[quintupletIndex]) * k2Rinv1GeVf * 2;
       float eta = __H2F(quintuplets->eta[quintupletIndex]);
       float phi = __H2F(quintuplets->phi[quintupletIndex]);
 
@@ -436,10 +436,10 @@ void setQuintupletOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setPixelTripletOutputBranches(lst::Event<Acc3D>* event) {
-  lst::PixelTriplets const* pixelTriplets = event->getPixelTriplets()->data();
-  lst::Modules const* modules = event->getModules()->data();
-  lst::Segments const* segments = event->getSegments()->data();
+void setPixelTripletOutputBranches(Event* event) {
+  PixelTriplets const* pixelTriplets = event->getPixelTriplets()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
+  Segments const* segments = event->getSegments()->data();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
   unsigned int nPixelTriplets = *pixelTriplets->nPixelTriplets;
@@ -499,14 +499,14 @@ void setPixelTripletOutputBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setGnnNtupleBranches(lst::Event<Acc3D>* event) {
+void setGnnNtupleBranches(Event* event) {
   // Get relevant information
-  lst::Segments const* segments = event->getSegments()->data();
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Hits const* hitsEvt = event->getHits()->data();
-  lst::Modules const* modules = event->getModules()->data();
-  lst::ObjectRanges const* ranges = event->getRanges()->data();
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  Segments const* segments = event->getSegments()->data();
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  Hits const* hitsEvt = event->getHits()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
+  ObjectRanges const* ranges = event->getRanges()->data();
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
 
   std::set<unsigned int> mds_used_in_sg;
   std::map<unsigned int, unsigned int> md_index_map;
@@ -640,10 +640,10 @@ void setGnnNtupleBranches(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void setGnnNtupleMiniDoublet(lst::Event<Acc3D>* event, unsigned int MD) {
+void setGnnNtupleMiniDoublet(Event* event, unsigned int MD) {
   // Get relevant information
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Hits const* hitsEvt = event->getHits()->data();
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  Hits const* hitsEvt = event->getHits()->data();
 
   // Get the hit indices
   unsigned int hit0 = miniDoublets->anchorHitIndices[MD];
@@ -680,7 +680,7 @@ void setGnnNtupleMiniDoublet(lst::Event<Acc3D>* event, unsigned int MD) {
   float dphichange = miniDoublets->dphichanges[MD];
 
   // Computing pt
-  float pt = hit0_r * lst::k2Rinv1GeVf / sin(dphichange);
+  float pt = hit0_r * k2Rinv1GeVf / sin(dphichange);
 
   // T5 eta and phi are computed using outer and innermost hits
   lst_math::Hit hitA(trk.ph2_x()[anchitidx], trk.ph2_y()[anchitidx], trk.ph2_z()[anchitidx]);
@@ -708,10 +708,9 @@ void setGnnNtupleMiniDoublet(lst::Event<Acc3D>* event, unsigned int MD) {
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(lst::Event<Acc3D>* event,
-                                                                                unsigned int idx) {
+std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(Event* event, unsigned int idx) {
   // Get the type of the track candidate
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
   short type = trackCandidates->trackCandidateType[idx];
 
   enum { pT5 = 7, pT3 = 5, T5 = 4, pLS = 8 };
@@ -742,12 +741,12 @@ std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(lst::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(Event* event,
                                                                                                unsigned int idx) {
   // Get relevant information
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
-  lst::Segments const* segments = event->getSegments()->data();
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  Segments const* segments = event->getSegments()->data();
 
   //
   // pictorial representation of a pT5
@@ -843,7 +842,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   const float pt_pLS = segments->ptIn[pLS];
   const float eta_pLS = segments->eta[pLS];
   const float phi_pLS = segments->phi[pLS];
-  float pt_T5 = __H2F(quintuplets->innerRadius[T5Index]) * 2 * lst::k2Rinv1GeVf;
+  float pt_T5 = __H2F(quintuplets->innerRadius[T5Index]) * 2 * k2Rinv1GeVf;
   const float pt = (pt_T5 + pt_pLS) / 2;
 
   // Form the hit idx/type std::vector
@@ -854,12 +853,12 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(lst::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(Event* event,
                                                                                                unsigned int idx) {
   // Get relevant information
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  lst::Triplets const* triplets = event->getTriplets()->data();
-  lst::Segments const* segments = event->getSegments()->data();
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  Triplets const* triplets = event->getTriplets()->data();
+  Segments const* segments = event->getSegments()->data();
 
   //
   // pictorial representation of a pT3
@@ -876,7 +875,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   const float pt_pLS = segments->ptIn[pLS];
   const float eta_pLS = segments->eta[pLS];
   const float phi_pLS = segments->phi[pLS];
-  float pt_T3 = triplets->circleRadius[T3] * 2 * lst::k2Rinv1GeVf;
+  float pt_T3 = triplets->circleRadius[T3] * 2 * k2Rinv1GeVf;
 
   // average pt
   const float pt = (pt_pLS + pt_T3) / 2;
@@ -889,10 +888,10 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(lst::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(Event* event,
                                                                                               unsigned int idx) {
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  lst::Quintuplets const* quintuplets = event->getQuintuplets()->data();
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  Quintuplets const* quintuplets = event->getQuintuplets()->data();
   unsigned int T5 = trackCandidates->directObjectIndices[idx];
   std::vector<unsigned int> hits = getHitsFromT5(event, T5);
 
@@ -908,7 +907,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   unsigned int Hit_8 = hits[8];
 
   // T5 radius is average of the inner and outer radius
-  const float pt = quintuplets->innerRadius[T5] * lst::k2Rinv1GeVf * 2;
+  const float pt = quintuplets->innerRadius[T5] * k2Rinv1GeVf * 2;
 
   // T5 eta and phi are computed using outer and innermost hits
   lst_math::Hit hitA(trk.ph2_x()[Hit_0], trk.ph2_y()[Hit_0], trk.ph2_z()[Hit_0]);
@@ -923,10 +922,10 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(lst::Event<Acc3D>* event,
+std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(Event* event,
                                                                                                unsigned int idx) {
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  lst::Segments const* segments = event->getSegments()->data();
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  Segments const* segments = event->getSegments()->data();
 
   // Getting pLS index
   unsigned int pLS = trackCandidates->directObjectIndices[idx];
@@ -944,9 +943,9 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 }
 
 //________________________________________________________________________________________________________________________________
-void printHitMultiplicities(lst::Event<Acc3D>* event) {
-  lst::Modules const* modules = event->getModules()->data();
-  lst::ObjectRanges const* ranges = event->getRanges()->data();
+void printHitMultiplicities(Event* event) {
+  ::lst::Modules const* modules = event->getModules()->data();
+  ObjectRanges const* ranges = event->getRanges()->data();
 
   int nHits = 0;
   for (unsigned int idx = 0; idx <= *(modules->nLowerModules);
@@ -959,9 +958,9 @@ void printHitMultiplicities(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printMiniDoubletMultiplicities(lst::Event<Acc3D>* event) {
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Modules const* modules = event->getModules()->data();
+void printMiniDoubletMultiplicities(Event* event) {
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
 
   int nMiniDoublets = 0;
   int totOccupancyMiniDoublets = 0;
@@ -978,7 +977,7 @@ void printMiniDoubletMultiplicities(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printAllObjects(lst::Event<Acc3D>* event) {
+void printAllObjects(Event* event) {
   printMDs(event);
   printLSs(event);
   printpLSs(event);
@@ -986,11 +985,11 @@ void printAllObjects(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printMDs(lst::Event<Acc3D>* event) {
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Hits const* hitsEvt = event->getHits()->data();
-  lst::Modules const* modules = event->getModules()->data();
-  lst::ObjectRanges const* ranges = event->getRanges()->data();
+void printMDs(Event* event) {
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  Hits const* hitsEvt = event->getHits()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
+  ObjectRanges const* ranges = event->getRanges()->data();
 
   // Then obtain the lower module index
   for (unsigned int idx = 0; idx <= *(modules->nLowerModules); ++idx) {
@@ -1008,12 +1007,12 @@ void printMDs(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printLSs(lst::Event<Acc3D>* event) {
-  lst::Segments const* segments = event->getSegments()->data();
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Hits const* hitsEvt = event->getHits()->data();
-  lst::Modules const* modules = event->getModules()->data();
-  lst::ObjectRanges const* ranges = event->getRanges()->data();
+void printLSs(Event* event) {
+  Segments const* segments = event->getSegments()->data();
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  Hits const* hitsEvt = event->getHits()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
+  ObjectRanges const* ranges = event->getRanges()->data();
 
   int nSegments = 0;
   for (unsigned int i = 0; i < *(modules->nLowerModules); ++i) {
@@ -1040,12 +1039,12 @@ void printLSs(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printpLSs(lst::Event<Acc3D>* event) {
-  lst::Segments const* segments = event->getSegments()->data();
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Hits const* hitsEvt = event->getHits()->data();
-  lst::Modules const* modules = event->getModules()->data();
-  lst::ObjectRanges const* ranges = event->getRanges()->data();
+void printpLSs(Event* event) {
+  Segments const* segments = event->getSegments()->data();
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  Hits const* hitsEvt = event->getHits()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
+  ObjectRanges const* ranges = event->getRanges()->data();
 
   unsigned int i = *(modules->nLowerModules);
   unsigned int idx = i;  //modules->lowerModuleIndices[i];
@@ -1070,12 +1069,12 @@ void printpLSs(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void printT3s(lst::Event<Acc3D>* event) {
-  lst::Triplets const* triplets = event->getTriplets()->data();
-  lst::Segments const* segments = event->getSegments()->data();
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Hits const* hitsEvt = event->getHits()->data();
-  lst::Modules const* modules = event->getModules()->data();
+void printT3s(Event* event) {
+  Triplets const* triplets = event->getTriplets()->data();
+  Segments const* segments = event->getSegments()->data();
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  Hits const* hitsEvt = event->getHits()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
   int nTriplets = 0;
   for (unsigned int i = 0; i < *(modules->nLowerModules); ++i) {
     // unsigned int idx = modules->lowerModuleIndices[i];
@@ -1112,13 +1111,13 @@ void printT3s(lst::Event<Acc3D>* event) {
 }
 
 //________________________________________________________________________________________________________________________________
-void debugPrintOutlierMultiplicities(lst::Event<Acc3D>* event) {
-  lst::TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
-  lst::Triplets const* triplets = event->getTriplets()->data();
-  lst::Segments const* segments = event->getSegments()->data();
-  lst::MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
-  lst::Modules const* modules = event->getModules()->data();
-  lst::ObjectRanges const* ranges = event->getRanges()->data();
+void debugPrintOutlierMultiplicities(Event* event) {
+  TrackCandidates const* trackCandidates = event->getTrackCandidates()->data();
+  Triplets const* triplets = event->getTriplets()->data();
+  Segments const* segments = event->getSegments()->data();
+  MiniDoublets const* miniDoublets = event->getMiniDoublets()->data();
+  ::lst::Modules const* modules = event->getModules()->data();
+  ObjectRanges const* ranges = event->getRanges()->data();
   //int nTrackCandidates = 0;
   for (unsigned int idx = 0; idx <= *(modules->nLowerModules); ++idx) {
     if (trackCandidates->nTrackCandidates[idx] > 50000) {

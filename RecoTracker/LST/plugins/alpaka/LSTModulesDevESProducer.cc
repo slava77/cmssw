@@ -9,7 +9,7 @@
 
 // LST includes
 #include "RecoTracker/LSTCore/interface/Module.h"
-#include "RecoTracker/LSTCore/interface/LST.h"
+#include "RecoTracker/LSTCore/interface/alpaka/LST.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
@@ -22,8 +22,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       descriptions.addWithDefaultLabel(desc);
     }
 
-    std::unique_ptr<lst::LSTESData<DevHost>> produce(TrackerRecoGeometryRecord const& iRecord) {
-      return lst::loadAndFillESHost();
+    std::unique_ptr<::lst::LSTESData<DevHost>> produce(TrackerRecoGeometryRecord const& iRecord) {
+      return ::lst::loadAndFillESHost();
     }
   };
 
