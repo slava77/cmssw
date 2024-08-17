@@ -142,7 +142,7 @@ namespace lst {
     matched[1] = nMatched;
   }
 
-  struct removeDupQuintupletsInGPUAfterBuild {
+  struct RemoveDupQuintupletsInGPUAfterBuild {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -192,7 +192,7 @@ namespace lst {
     }
   };
 
-  struct removeDupQuintupletsInGPUBeforeTC {
+  struct RemoveDupQuintupletsInGPUBeforeTC {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Quintuplets quintupletsInGPU,
@@ -267,7 +267,7 @@ namespace lst {
     }
   };
 
-  struct removeDupPixelTripletsInGPUFromMap {
+  struct RemoveDupPixelTripletsInGPUFromMap {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, lst::PixelTriplets pixelTripletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -304,7 +304,7 @@ namespace lst {
     }
   };
 
-  struct removeDupPixelQuintupletsInGPUFromMap {
+  struct RemoveDupPixelQuintupletsInGPUFromMap {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, lst::PixelQuintuplets pixelQuintupletsInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
@@ -331,7 +331,7 @@ namespace lst {
     }
   };
 
-  struct checkHitspLS {
+  struct CheckHitspLS {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,

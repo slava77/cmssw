@@ -701,7 +701,7 @@ namespace lst {
     }
   }
 
-  struct createSegmentsInGPUv2 {
+  struct CreateSegmentsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -795,7 +795,7 @@ namespace lst {
     }
   };
 
-  struct createSegmentArrayRanges {
+  struct CreateSegmentArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -899,7 +899,7 @@ namespace lst {
     }
   };
 
-  struct addSegmentRangesToEventExplicit {
+  struct AddSegmentRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,
@@ -924,7 +924,7 @@ namespace lst {
     }
   };
 
-  struct addPixelSegmentToEventKernel {
+  struct AddPixelSegmentToEventKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   lst::Modules modulesInGPU,

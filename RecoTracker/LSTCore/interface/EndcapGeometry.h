@@ -23,7 +23,6 @@ namespace lst {
 
     EndcapGeometry() = default;
     EndcapGeometry(std::string const& filename);
-    ~EndcapGeometry() = default;
 
     void load(std::string const&);
     void fillGeoMapArraysExplicit();

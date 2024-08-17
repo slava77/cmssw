@@ -281,7 +281,7 @@ namespace lst {
       return false;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(struct lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize(lst::Modules const& modulesInGPU, uint16_t moduleIndex) {
     float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -867,13 +867,13 @@ namespace lst {
     return alpaka::math::abs(acc, dPhiChange) < miniCut;
   }
 
-  struct createMiniDoubletsInGPUv2 {
+  struct CreateMiniDoubletsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::Hits hitsInGPU,
-                                  struct lst::MiniDoublets mdsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::Hits hitsInGPU,
+                                  lst::MiniDoublets mdsInGPU,
+                                  lst::ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -964,11 +964,9 @@ namespace lst {
     }
   };
 
-  struct createMDArrayRangesGPU {
+  struct CreateMDArrayRangesGPU {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, lst::Modules modulesInGPU, lst::ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -1060,13 +1058,13 @@ namespace lst {
     }
   };
 
-  struct addMiniDoubletRangesToEventExplicit {
+  struct AddMiniDoubletRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  struct lst::Modules modulesInGPU,
-                                  struct lst::MiniDoublets mdsInGPU,
-                                  struct lst::ObjectRanges rangesInGPU,
-                                  struct lst::Hits hitsInGPU) const {
+                                  lst::Modules modulesInGPU,
+                                  lst::MiniDoublets mdsInGPU,
+                                  lst::ObjectRanges rangesInGPU,
+                                  lst::Hits hitsInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));

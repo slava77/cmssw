@@ -4,8 +4,6 @@ lst::ModuleConnectionMap::ModuleConnectionMap() {}
 
 lst::ModuleConnectionMap::ModuleConnectionMap(std::string const& filename) { load(filename); }
 
-lst::ModuleConnectionMap::~ModuleConnectionMap() {}
-
 void lst::ModuleConnectionMap::load(std::string const& filename) {
   moduleConnections_.clear();
 
