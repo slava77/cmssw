@@ -2,8 +2,6 @@
 
 #include <typeinfo>
 
-using namespace ALPAKA_ACCELERATOR_NAMESPACE;
-
 //___________________________________________________________________________________________________________________________________________________________________________________________
 int main(int argc, char **argv) {
   //********************************************************************************
@@ -255,7 +253,7 @@ int main(int argc, char **argv) {
 
   // Printing out the option settings overview
   std::cout << "=========================================================" << std::endl;
-  std::cout << " Running for Acc = " << alpaka::getAccName<Acc3D>() << std::endl;
+  std::cout << " Running for Acc = " << alpaka::getAccName<ALPAKA_ACCELERATOR_NAMESPACE::Acc3D>() << std::endl;
   std::cout << " Setting of the analysis job based on provided arguments " << std::endl;
   std::cout << "---------------------------------------------------------" << std::endl;
   std::cout << " ana.input_file_list_tstring: " << ana.input_file_list_tstring << std::endl;
@@ -298,17 +296,18 @@ int main(int argc, char **argv) {
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
 void run_lst() {
-  Device devAcc = alpaka::getDevByIdx(ALPAKA_ACCELERATOR_NAMESPACE::Platform{}, 0u);
-  std::vector<Queue> queues;
+  ALPAKA_ACCELERATOR_NAMESPACE::Device devAcc = alpaka::getDevByIdx(ALPAKA_ACCELERATOR_NAMESPACE::Platform{}, 0u);
+  std::vector<ALPAKA_ACCELERATOR_NAMESPACE::Queue> queues;
   for (int s = 0; s < ana.streams; s++) {
-    queues.push_back(Queue(devAcc));
+    queues.push_back(ALPAKA_ACCELERATOR_NAMESPACE::Queue(devAcc));
   }
 
   // Load various maps used in the lst reconstruction
   TStopwatch full_timer;
   full_timer.Start();
   auto hostESData = lst::loadAndFillESHost();
-  auto deviceESData = cms::alpakatools::CopyToDevice<lst::LSTESData<DevHost>>::copyAsync(queues[0], *hostESData.get());
+  auto deviceESData =
+      cms::alpakatools::CopyToDevice<lst::LSTESData<alpaka_common::DevHost>>::copyAsync(queues[0], *hostESData.get());
   float timeForMapLoading = full_timer.RealTime() * 1000;
 
   if (ana.do_write_ntuple) {
@@ -384,9 +383,10 @@ void run_lst() {
 
   full_timer.Reset();
   full_timer.Start();
-  std::vector<lst::Event<Acc3D> *> events;
+  std::vector<ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *> events;
   for (int s = 0; s < ana.streams; s++) {
-    lst::Event<Acc3D> *event = new lst::Event<Acc3D>(ana.verbose >= 2, queues[s], &deviceESData);
+    ALPAKA_ACCELERATOR_NAMESPACE::lst::Event *event =
+        new ALPAKA_ACCELERATOR_NAMESPACE::lst::Event(ana.verbose >= 2, queues[s], &deviceESData);
     events.push_back(event);
   }
   float timeForEventCreation = full_timer.RealTime() * 1000;
@@ -478,7 +478,7 @@ void run_lst() {
       // Clear this event
       TStopwatch my_timer;
       my_timer.Start();
-      events.at(omp_get_thread_num())->resetEvent();
+      events.at(omp_get_thread_num())->resetEventSync();
       float timing_resetEvent = my_timer.RealTime();
 
       timing_information.push_back({timing_input_loading,

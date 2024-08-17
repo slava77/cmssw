@@ -11,7 +11,7 @@
 #include "Hit.h"
 #include "ObjectRanges.h"
 
-namespace lst {
+namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   struct Segments {
     FPX* dPhis;
     FPX* dPhiMins;
@@ -50,40 +50,40 @@ namespace lst {
 
     template <typename TBuff>
     void setData(TBuff& buf) {
-      dPhis = alpaka::getPtrNative(buf.dPhis_buf);
-      dPhiMins = alpaka::getPtrNative(buf.dPhiMins_buf);
-      dPhiMaxs = alpaka::getPtrNative(buf.dPhiMaxs_buf);
-      dPhiChanges = alpaka::getPtrNative(buf.dPhiChanges_buf);
-      dPhiChangeMins = alpaka::getPtrNative(buf.dPhiChangeMins_buf);
-      dPhiChangeMaxs = alpaka::getPtrNative(buf.dPhiChangeMaxs_buf);
-      innerLowerModuleIndices = alpaka::getPtrNative(buf.innerLowerModuleIndices_buf);
-      outerLowerModuleIndices = alpaka::getPtrNative(buf.outerLowerModuleIndices_buf);
-      seedIdx = alpaka::getPtrNative(buf.seedIdx_buf);
-      mdIndices = alpaka::getPtrNative(buf.mdIndices_buf);
-      nMemoryLocations = alpaka::getPtrNative(buf.nMemoryLocations_buf);
-      innerMiniDoubletAnchorHitIndices = alpaka::getPtrNative(buf.innerMiniDoubletAnchorHitIndices_buf);
-      outerMiniDoubletAnchorHitIndices = alpaka::getPtrNative(buf.outerMiniDoubletAnchorHitIndices_buf);
-      charge = alpaka::getPtrNative(buf.charge_buf);
-      superbin = alpaka::getPtrNative(buf.superbin_buf);
-      nSegments = alpaka::getPtrNative(buf.nSegments_buf);
-      totOccupancySegments = alpaka::getPtrNative(buf.totOccupancySegments_buf);
-      pLSHitsIdxs = alpaka::getPtrNative(buf.pLSHitsIdxs_buf);
-      pixelType = alpaka::getPtrNative(buf.pixelType_buf);
-      isQuad = alpaka::getPtrNative(buf.isQuad_buf);
-      isDup = alpaka::getPtrNative(buf.isDup_buf);
-      partOfPT5 = alpaka::getPtrNative(buf.partOfPT5_buf);
-      ptIn = alpaka::getPtrNative(buf.ptIn_buf);
-      ptErr = alpaka::getPtrNative(buf.ptErr_buf);
-      px = alpaka::getPtrNative(buf.px_buf);
-      py = alpaka::getPtrNative(buf.py_buf);
-      pz = alpaka::getPtrNative(buf.pz_buf);
-      etaErr = alpaka::getPtrNative(buf.etaErr_buf);
-      eta = alpaka::getPtrNative(buf.eta_buf);
-      phi = alpaka::getPtrNative(buf.phi_buf);
-      score = alpaka::getPtrNative(buf.score_buf);
-      circleCenterX = alpaka::getPtrNative(buf.circleCenterX_buf);
-      circleCenterY = alpaka::getPtrNative(buf.circleCenterY_buf);
-      circleRadius = alpaka::getPtrNative(buf.circleRadius_buf);
+      dPhis = buf.dPhis_buf.data();
+      dPhiMins = buf.dPhiMins_buf.data();
+      dPhiMaxs = buf.dPhiMaxs_buf.data();
+      dPhiChanges = buf.dPhiChanges_buf.data();
+      dPhiChangeMins = buf.dPhiChangeMins_buf.data();
+      dPhiChangeMaxs = buf.dPhiChangeMaxs_buf.data();
+      innerLowerModuleIndices = buf.innerLowerModuleIndices_buf.data();
+      outerLowerModuleIndices = buf.outerLowerModuleIndices_buf.data();
+      seedIdx = buf.seedIdx_buf.data();
+      mdIndices = buf.mdIndices_buf.data();
+      nMemoryLocations = buf.nMemoryLocations_buf.data();
+      innerMiniDoubletAnchorHitIndices = buf.innerMiniDoubletAnchorHitIndices_buf.data();
+      outerMiniDoubletAnchorHitIndices = buf.outerMiniDoubletAnchorHitIndices_buf.data();
+      charge = buf.charge_buf.data();
+      superbin = buf.superbin_buf.data();
+      nSegments = buf.nSegments_buf.data();
+      totOccupancySegments = buf.totOccupancySegments_buf.data();
+      pLSHitsIdxs = buf.pLSHitsIdxs_buf.data();
+      pixelType = buf.pixelType_buf.data();
+      isQuad = buf.isQuad_buf.data();
+      isDup = buf.isDup_buf.data();
+      partOfPT5 = buf.partOfPT5_buf.data();
+      ptIn = buf.ptIn_buf.data();
+      ptErr = buf.ptErr_buf.data();
+      px = buf.px_buf.data();
+      py = buf.py_buf.data();
+      pz = buf.pz_buf.data();
+      etaErr = buf.etaErr_buf.data();
+      eta = buf.eta_buf.data();
+      phi = buf.phi_buf.data();
+      score = buf.score_buf.data();
+      circleCenterX = buf.circleCenterX_buf.data();
+      circleCenterY = buf.circleCenterY_buf.data();
+      circleRadius = buf.circleRadius_buf.data();
     }
   };
 
@@ -170,14 +170,13 @@ namespace lst {
       alpaka::memset(queue, totOccupancySegments_buf, 0u);
       alpaka::memset(queue, partOfPT5_buf, false);
       alpaka::memset(queue, pLSHitsIdxs_buf, 0u);
-      alpaka::wait(queue);
     }
 
     inline Segments const* data() const { return &data_; }
     inline void setData(SegmentsBuffer& buf) { data_.setData(buf); }
   };
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(lst::Modules const& modulesInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(Modules const& modulesInGPU,
                                                                   unsigned int moduleIndex) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
@@ -187,19 +186,21 @@ namespace lst {
     short side = modulesInGPU.sides[moduleIndex];
     short rod = modulesInGPU.rods[moduleIndex];
 
-    return (subdet == Barrel) && (((side != Center) && (layer == 3)) ||
-                                  ((side == NegZ) && (((layer == 2) && (rod > 5)) || ((layer == 1) && (rod > 9)))) ||
-                                  ((side == PosZ) && (((layer == 2) && (rod < 8)) || ((layer == 1) && (rod < 4)))));
-  };
+    return (subdet == ::lst::Barrel) &&
+           (((side != ::lst::Center) && (layer == 3)) ||
+            ((side == ::lst::NegZ) && (((layer == 2) && (rod > 5)) || ((layer == 1) && (rod > 9)))) ||
+            ((side == ::lst::PosZ) && (((layer == 2) && (rod < 8)) || ((layer == 1) && (rod < 4)))));
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(short subdet, short layer, short side, short rod) {
     // The "tighter" tilted modules are the subset of tilted modules that have smaller spacing
     // This is the same as what was previously considered as"isNormalTiltedModules"
     // See Figure 9.1 of https://cds.cern.ch/record/2272264/files/CMS-TDR-014.pdf
-    return (subdet == Barrel) && (((side != Center) && (layer == 3)) ||
-                                  ((side == NegZ) && (((layer == 2) && (rod > 5)) || ((layer == 1) && (rod > 9)))) ||
-                                  ((side == PosZ) && (((layer == 2) && (rod < 8)) || ((layer == 1) && (rod < 4)))));
-  };
+    return (subdet == ::lst::Barrel) &&
+           (((side != ::lst::Center) && (layer == 3)) ||
+            ((side == ::lst::NegZ) && (((layer == 2) && (rod > 5)) || ((layer == 1) && (rod > 9)))) ||
+            ((side == ::lst::PosZ) && (((layer == 2) && (rod < 8)) || ((layer == 1) && (rod < 4)))));
+  }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(short layer, short ring, short subdet, short side, short rod) {
     static constexpr float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
@@ -217,11 +218,11 @@ namespace lst {
 
     float moduleSeparation = 0;
 
-    if (subdet == Barrel and side == Center) {
+    if (subdet == ::lst::Barrel and side == ::lst::Center) {
       moduleSeparation = miniDeltaFlat[iL];
     } else if (isTighterTiltedModules_seg(subdet, layer, side, rod)) {
       moduleSeparation = miniDeltaTilted[iL];
-    } else if (subdet == Endcap) {
+    } else if (subdet == ::lst::Endcap) {
       moduleSeparation = miniDeltaEndcap[iL][iR];
     } else  //Loose tilted modules
     {
@@ -229,9 +230,9 @@ namespace lst {
     }
 
     return moduleSeparation;
-  };
+  }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(lst::Modules const& modulesInGPU, unsigned int moduleIndex) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE float moduleGapSize_seg(Modules const& modulesInGPU, unsigned int moduleIndex) {
     static constexpr float miniDeltaTilted[3] = {0.26f, 0.26f, 0.26f};
     static constexpr float miniDeltaFlat[6] = {0.26f, 0.16f, 0.16f, 0.18f, 0.18f, 0.18f};
     static constexpr float miniDeltaLooseTilted[3] = {0.4f, 0.4f, 0.4f};
@@ -249,11 +250,11 @@ namespace lst {
 
     float moduleSeparation = 0;
 
-    if (subdet == Barrel and side == Center) {
+    if (subdet == ::lst::Barrel and side == ::lst::Center) {
       moduleSeparation = miniDeltaFlat[iL];
     } else if (isTighterTiltedModules_seg(modulesInGPU, moduleIndex)) {
       moduleSeparation = miniDeltaTilted[iL];
-    } else if (subdet == Endcap) {
+    } else if (subdet == ::lst::Endcap) {
       moduleSeparation = miniDeltaEndcap[iL][iR];
     } else  //Loose tilted modules
     {
@@ -261,13 +262,13 @@ namespace lst {
     }
 
     return moduleSeparation;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void dAlphaThreshold(TAcc const& acc,
                                                       float* dAlphaThresholdValues,
-                                                      lst::Modules const& modulesInGPU,
-                                                      lst::MiniDoublets const& mdsInGPU,
+                                                      Modules const& modulesInGPU,
+                                                      MiniDoublets const& mdsInGPU,
                                                       float xIn,
                                                       float yIn,
                                                       float zIn,
@@ -280,7 +281,7 @@ namespace lst {
                                                       uint16_t outerLowerModuleIndex,
                                                       unsigned int innerMDIndex,
                                                       unsigned int outerMDIndex) {
-    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
+    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == ::lst::Barrel)
                        ? kMiniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
                        : kMiniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
 
@@ -290,15 +291,15 @@ namespace lst {
     const float dAlpha_Bfield =
         alpaka::math::asin(acc, alpaka::math::min(acc, segmentDr * k2Rinv1GeVf / ptCut, kSinAlphaMax));
 
-    bool isInnerTilted = modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
-                         modulesInGPU.sides[innerLowerModuleIndex] != lst::Center;
-    bool isOuterTilted = modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel and
-                         modulesInGPU.sides[outerLowerModuleIndex] != lst::Center;
+    bool isInnerTilted = modulesInGPU.subdets[innerLowerModuleIndex] == ::lst::Barrel and
+                         modulesInGPU.sides[innerLowerModuleIndex] != ::lst::Center;
+    bool isOuterTilted = modulesInGPU.subdets[outerLowerModuleIndex] == ::lst::Barrel and
+                         modulesInGPU.sides[outerLowerModuleIndex] != ::lst::Center;
 
     float drdzInner = modulesInGPU.drdzs[innerLowerModuleIndex];
     float drdzOuter = modulesInGPU.drdzs[outerLowerModuleIndex];
-    float innerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, innerLowerModuleIndex);
-    float outerModuleGapSize = lst::moduleGapSize_seg(modulesInGPU, outerLowerModuleIndex);
+    float innerModuleGapSize = moduleGapSize_seg(modulesInGPU, innerLowerModuleIndex);
+    float outerModuleGapSize = moduleGapSize_seg(modulesInGPU, outerLowerModuleIndex);
     const float innerminiTilt2 = isInnerTilted
                                      ? ((0.5f * 0.5f) * (kPixelPSZpitch * kPixelPSZpitch) * (drdzInner * drdzInner) /
                                         (1.f + drdzInner * drdzInner) / (innerModuleGapSize * innerModuleGapSize))
@@ -314,14 +315,14 @@ namespace lst {
     float sdLumForInnerMini2;
     float sdLumForOuterMini2;
 
-    if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel) {
+    if (modulesInGPU.subdets[innerLowerModuleIndex] == ::lst::Barrel) {
       sdLumForInnerMini2 = innerminiTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
       sdLumForInnerMini2 = (mdsInGPU.dphis[innerMDIndex] * mdsInGPU.dphis[innerMDIndex]) * (kDeltaZLum * kDeltaZLum) /
                            (mdsInGPU.dzs[innerMDIndex] * mdsInGPU.dzs[innerMDIndex]);
     }
 
-    if (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel) {
+    if (modulesInGPU.subdets[outerLowerModuleIndex] == ::lst::Barrel) {
       sdLumForOuterMini2 = outerminiTilt2 * (dAlpha_Bfield * dAlpha_Bfield);
     } else {
       sdLumForOuterMini2 = (mdsInGPU.dphis[outerMDIndex] * mdsInGPU.dphis[outerMDIndex]) * (kDeltaZLum * kDeltaZLum) /
@@ -331,23 +332,23 @@ namespace lst {
     // Unique stuff for the segment dudes alone
     float dAlpha_res_inner =
         0.02f / miniDelta *
-        (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel ? 1.0f : alpaka::math::abs(acc, zIn) / rtIn);
+        (modulesInGPU.subdets[innerLowerModuleIndex] == ::lst::Barrel ? 1.0f : alpaka::math::abs(acc, zIn) / rtIn);
     float dAlpha_res_outer =
         0.02f / miniDelta *
-        (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel ? 1.0f : alpaka::math::abs(acc, zOut) / rtOut);
+        (modulesInGPU.subdets[outerLowerModuleIndex] == ::lst::Barrel ? 1.0f : alpaka::math::abs(acc, zOut) / rtOut);
 
     float dAlpha_res = dAlpha_res_inner + dAlpha_res_outer;
 
-    if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
-        modulesInGPU.sides[innerLowerModuleIndex] == lst::Center) {
+    if (modulesInGPU.subdets[innerLowerModuleIndex] == ::lst::Barrel and
+        modulesInGPU.sides[innerLowerModuleIndex] == ::lst::Center) {
       dAlphaThresholdValues[0] = dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls);
     } else {
       dAlphaThresholdValues[0] =
           dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls + sdLumForInnerMini2);
     }
 
-    if (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel and
-        modulesInGPU.sides[outerLowerModuleIndex] == lst::Center) {
+    if (modulesInGPU.subdets[outerLowerModuleIndex] == ::lst::Barrel and
+        modulesInGPU.sides[outerLowerModuleIndex] == ::lst::Center) {
       dAlphaThresholdValues[1] = dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls);
     } else {
       dAlphaThresholdValues[1] =
@@ -356,9 +357,9 @@ namespace lst {
 
     //Inner to outer
     dAlphaThresholdValues[2] = dAlpha_Bfield + alpaka::math::sqrt(acc, dAlpha_res * dAlpha_res + sdMuls * sdMuls);
-  };
+  }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addSegmentToMemory(lst::Segments& segmentsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addSegmentToMemory(Segments& segmentsInGPU,
                                                          unsigned int lowerMDIndex,
                                                          unsigned int upperMDIndex,
                                                          uint16_t innerLowerModuleIndex,
@@ -389,8 +390,8 @@ namespace lst {
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelSegmentToMemory(TAcc const& acc,
-                                                              lst::Segments& segmentsInGPU,
-                                                              lst::MiniDoublets const& mdsInGPU,
+                                                              Segments& segmentsInGPU,
+                                                              MiniDoublets const& mdsInGPU,
                                                               unsigned int innerMDIndex,
                                                               unsigned int outerMDIndex,
                                                               uint16_t pixelModuleIndex,
@@ -428,7 +429,7 @@ namespace lst {
                                  mdsInGPU.anchorY[innerMDIndex] + circleRadius * alpaka::math::cos(acc, circlePhi)};
 
     //check which of the circles can accommodate r3LH better (we won't get perfect agreement)
-    float bestChiSquared = lst::lst_INF;
+    float bestChiSquared = lst_INF;
     float chiSquared;
     size_t bestIndex;
     for (size_t i = 0; i < 2; i++) {
@@ -448,12 +449,12 @@ namespace lst {
     segmentsInGPU.circleCenterX[pixelSegmentArrayIndex] = candidateCenterXs[bestIndex];
     segmentsInGPU.circleCenterY[pixelSegmentArrayIndex] = candidateCenterYs[bestIndex];
     segmentsInGPU.circleRadius[pixelSegmentArrayIndex] = circleRadius;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoBarrel(TAcc const& acc,
-                                                                  lst::Modules const& modulesInGPU,
-                                                                  lst::MiniDoublets const& mdsInGPU,
+                                                                  Modules const& modulesInGPU,
+                                                                  MiniDoublets const& mdsInGPU,
                                                                   uint16_t innerLowerModuleIndex,
                                                                   uint16_t outerLowerModuleIndex,
                                                                   unsigned int innerMDIndex,
@@ -464,7 +465,7 @@ namespace lst {
                                                                   float& dPhiChange,
                                                                   float& dPhiChangeMin,
                                                                   float& dPhiChangeMax) {
-    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel)
+    float sdMuls = (modulesInGPU.subdets[innerLowerModuleIndex] == ::lst::Barrel)
                        ? kMiniMulsPtScaleBarrel[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut
                        : kMiniMulsPtScaleEndcap[modulesInGPU.layers[innerLowerModuleIndex] - 1] * 3.f / ptCut;
 
@@ -495,12 +496,12 @@ namespace lst {
 
     float sdCut = sdSlope + alpaka::math::sqrt(acc, sdMuls * sdMuls + sdPVoff * sdPVoff);
 
-    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhi) > sdCut)
       return false;
 
-    dPhiChange = lst::phi_mpi_pi(acc, lst::phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhiChange = phi_mpi_pi(acc, phi(acc, xOut - xIn, yOut - yIn) - mdsInGPU.anchorPhi[innerMDIndex]);
 
     if (alpaka::math::abs(acc, dPhiChange) > sdCut)
       return false;
@@ -538,12 +539,12 @@ namespace lst {
     if (alpaka::math::abs(acc, dAlphaOuterMDSegment) >= dAlphaOuterMDSegmentThreshold)
       return false;
     return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaInnerMDOuterMDThreshold;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgoEndcap(TAcc const& acc,
-                                                                  lst::Modules const& modulesInGPU,
-                                                                  lst::MiniDoublets const& mdsInGPU,
+                                                                  Modules const& modulesInGPU,
+                                                                  MiniDoublets const& mdsInGPU,
                                                                   uint16_t innerLowerModuleIndex,
                                                                   uint16_t outerLowerModuleIndex,
                                                                   unsigned int innerMDIndex,
@@ -566,8 +567,8 @@ namespace lst {
     zOut = mdsInGPU.anchorZ[outerMDIndex];
     rtOut = mdsInGPU.anchorRt[outerMDIndex];
 
-    bool outerLayerEndcapTwoS = (modulesInGPU.subdets[outerLowerModuleIndex] == lst::Endcap) &&
-                                (modulesInGPU.moduleType[outerLowerModuleIndex] == lst::TwoS);
+    bool outerLayerEndcapTwoS = (modulesInGPU.subdets[outerLowerModuleIndex] == ::lst::Endcap) &&
+                                (modulesInGPU.moduleType[outerLowerModuleIndex] == ::lst::TwoS);
 
     float sdSlope = alpaka::math::asin(acc, alpaka::math::min(acc, rtOut * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     float disks2SMinRadius = 60.f;
@@ -595,14 +596,12 @@ namespace lst {
     if ((rtOut < rtLo) || (rtOut > rtHi))
       return false;
 
-    dPhi = lst::phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+    dPhi = phi_mpi_pi(acc, mdsInGPU.anchorPhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
     float sdCut = sdSlope;
     if (outerLayerEndcapTwoS) {
-      float dPhiPos_high =
-          lst::phi_mpi_pi(acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
-      float dPhiPos_low =
-          lst::phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+      float dPhiPos_high = phi_mpi_pi(acc, mdsInGPU.anchorHighEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
+      float dPhiPos_low = phi_mpi_pi(acc, mdsInGPU.anchorLowEdgePhi[outerMDIndex] - mdsInGPU.anchorPhi[innerMDIndex]);
 
       dPhiMax = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_high : dPhiPos_low;
       dPhiMin = alpaka::math::abs(acc, dPhiPos_high) > alpaka::math::abs(acc, dPhiPos_low) ? dPhiPos_low : dPhiPos_high;
@@ -654,12 +653,12 @@ namespace lst {
     if (alpaka::math::abs(acc, dAlphaOuterMDSegment) >= dAlphaOuterMDSegmentThreshold)
       return false;
     return alpaka::math::abs(acc, dAlphaInnerMDOuterMD) < dAlphaInnerMDOuterMDThreshold;
-  };
+  }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runSegmentDefaultAlgo(TAcc const& acc,
-                                                            lst::Modules const& modulesInGPU,
-                                                            lst::MiniDoublets const& mdsInGPU,
+                                                            Modules const& modulesInGPU,
+                                                            MiniDoublets const& mdsInGPU,
                                                             uint16_t innerLowerModuleIndex,
                                                             uint16_t outerLowerModuleIndex,
                                                             unsigned int innerMDIndex,
@@ -670,8 +669,8 @@ namespace lst {
                                                             float& dPhiChange,
                                                             float& dPhiChangeMin,
                                                             float& dPhiChangeMax) {
-    if (modulesInGPU.subdets[innerLowerModuleIndex] == lst::Barrel and
-        modulesInGPU.subdets[outerLowerModuleIndex] == lst::Barrel) {
+    if (modulesInGPU.subdets[innerLowerModuleIndex] == ::lst::Barrel and
+        modulesInGPU.subdets[outerLowerModuleIndex] == ::lst::Barrel) {
       return runSegmentDefaultAlgoBarrel(acc,
                                          modulesInGPU,
                                          mdsInGPU,
@@ -700,15 +699,15 @@ namespace lst {
                                          dPhiChangeMin,
                                          dPhiChangeMax);
     }
-  };
+  }
 
-  struct createSegmentsInGPUv2 {
+  struct CreateSegmentsInGPUv2 {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::MiniDoublets mdsInGPU,
-                                  lst::Segments segmentsInGPU,
-                                  lst::ObjectRanges rangesInGPU) const {
+                                  Modules modulesInGPU,
+                                  MiniDoublets mdsInGPU,
+                                  Segments segmentsInGPU,
+                                  ObjectRanges rangesInGPU) const {
       auto const globalBlockIdx = alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc);
       auto const blockThreadIdx = alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc);
       auto const gridBlockExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc);
@@ -763,15 +762,15 @@ namespace lst {
                                       dPhiChange,
                                       dPhiChangeMin,
                                       dPhiChangeMax)) {
-              unsigned int totOccupancySegments = alpaka::atomicOp<alpaka::AtomicAdd>(
-                  acc, &segmentsInGPU.totOccupancySegments[innerLowerModuleIndex], 1u);
+              unsigned int totOccupancySegments = alpaka::atomicAdd(
+                  acc, &segmentsInGPU.totOccupancySegments[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
               if (static_cast<int>(totOccupancySegments) >= rangesInGPU.segmentModuleOccupancy[innerLowerModuleIndex]) {
 #ifdef WARNINGS
                 printf("Segment excess alert! Module index = %d\n", innerLowerModuleIndex);
 #endif
               } else {
-                unsigned int segmentModuleIdx =
-                    alpaka::atomicOp<alpaka::AtomicAdd>(acc, &segmentsInGPU.nSegments[innerLowerModuleIndex], 1u);
+                unsigned int segmentModuleIdx = alpaka::atomicAdd(
+                    acc, &segmentsInGPU.nSegments[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
                 unsigned int segmentIdx = rangesInGPU.segmentModuleIndices[innerLowerModuleIndex] + segmentModuleIdx;
 
                 addSegmentToMemory(segmentsInGPU,
@@ -796,12 +795,16 @@ namespace lst {
     }
   };
 
-  struct createSegmentArrayRanges {
+  struct CreateSegmentArrayRanges {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::ObjectRanges rangesInGPU,
-                                  lst::MiniDoublets mdsInGPU) const {
+                                  Modules modulesInGPU,
+                                  ObjectRanges rangesInGPU,
+                                  MiniDoublets mdsInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -812,10 +815,10 @@ namespace lst {
       }
       alpaka::syncBlockThreads(acc);
 
-      // Initialize variables outside of the for loop.
+      // Create variables outside of the for loop.
       int occupancy, category_number, eta_number;
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (modulesInGPU.nConnectedModules[i] == 0) {
           rangesInGPU.segmentModuleIndices[i] = nTotalSegments;
           rangesInGPU.segmentModuleOccupancy[i] = 0;
@@ -882,30 +885,34 @@ namespace lst {
 #endif
         }
 
-        int nTotSegs = alpaka::atomicOp<alpaka::AtomicAdd>(acc, &nTotalSegments, occupancy);
+        int nTotSegs = alpaka::atomicAdd(acc, &nTotalSegments, occupancy, alpaka::hierarchy::Threads{});
         rangesInGPU.segmentModuleIndices[i] = nTotSegs;
         rangesInGPU.segmentModuleOccupancy[i] = occupancy;
       }
 
       // Wait for all threads to finish before reporting final values
       alpaka::syncBlockThreads(acc);
-      if (globalThreadIdx[2] == 0) {
+      if (cms::alpakatools::once_per_block(acc)) {
         rangesInGPU.segmentModuleIndices[*modulesInGPU.nLowerModules] = nTotalSegments;
         *rangesInGPU.device_nTotalSegs = nTotalSegments;
       }
     }
   };
 
-  struct addSegmentRangesToEventExplicit {
+  struct AddSegmentRangesToEventExplicit {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::Segments segmentsInGPU,
-                                  lst::ObjectRanges rangesInGPU) const {
+                                  Modules modulesInGPU,
+                                  Segments segmentsInGPU,
+                                  ObjectRanges rangesInGPU) const {
+      // implementation is 1D with a single block
+      static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
+      ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
+
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      for (uint16_t i = globalThreadIdx[2]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[2]) {
+      for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
         if (segmentsInGPU.nSegments[i] == 0) {
           rangesInGPU.segmentRanges[i * 2] = -1;
           rangesInGPU.segmentRanges[i * 2 + 1] = -1;
@@ -917,14 +924,14 @@ namespace lst {
     }
   };
 
-  struct addPixelSegmentToEventKernel {
+  struct AddPixelSegmentToEventKernel {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-                                  lst::Modules modulesInGPU,
-                                  lst::ObjectRanges rangesInGPU,
-                                  lst::Hits hitsInGPU,
-                                  lst::MiniDoublets mdsInGPU,
-                                  lst::Segments segmentsInGPU,
+                                  Modules modulesInGPU,
+                                  ObjectRanges rangesInGPU,
+                                  Hits hitsInGPU,
+                                  MiniDoublets mdsInGPU,
+                                  Segments segmentsInGPU,
                                   unsigned int* hitIndices0,
                                   unsigned int* hitIndices1,
                                   unsigned int* hitIndices2,
@@ -1002,6 +1009,6 @@ namespace lst {
       }
     }
   };
-}  // namespace lst
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 
 #endif

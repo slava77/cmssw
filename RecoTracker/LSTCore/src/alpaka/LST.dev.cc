@@ -1,4 +1,4 @@
-#include "RecoTracker/LSTCore/interface/LST.h"
+#include "RecoTracker/LSTCore/interface/alpaka/LST.h"
 
 #include "Event.h"
 
@@ -19,26 +19,25 @@ namespace {
   }
 }  // namespace
 
-template <>
-void lst::LST<Acc3D>::prepareInput(std::vector<float> const& see_px,
-                                   std::vector<float> const& see_py,
-                                   std::vector<float> const& see_pz,
-                                   std::vector<float> const& see_dxy,
-                                   std::vector<float> const& see_dz,
-                                   std::vector<float> const& see_ptErr,
-                                   std::vector<float> const& see_etaErr,
-                                   std::vector<float> const& see_stateTrajGlbX,
-                                   std::vector<float> const& see_stateTrajGlbY,
-                                   std::vector<float> const& see_stateTrajGlbZ,
-                                   std::vector<float> const& see_stateTrajGlbPx,
-                                   std::vector<float> const& see_stateTrajGlbPy,
-                                   std::vector<float> const& see_stateTrajGlbPz,
-                                   std::vector<int> const& see_q,
-                                   std::vector<std::vector<int>> const& see_hitIdx,
-                                   std::vector<unsigned int> const& ph2_detId,
-                                   std::vector<float> const& ph2_x,
-                                   std::vector<float> const& ph2_y,
-                                   std::vector<float> const& ph2_z) {
+void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::prepareInput(std::vector<float> const& see_px,
+                                                          std::vector<float> const& see_py,
+                                                          std::vector<float> const& see_pz,
+                                                          std::vector<float> const& see_dxy,
+                                                          std::vector<float> const& see_dz,
+                                                          std::vector<float> const& see_ptErr,
+                                                          std::vector<float> const& see_etaErr,
+                                                          std::vector<float> const& see_stateTrajGlbX,
+                                                          std::vector<float> const& see_stateTrajGlbY,
+                                                          std::vector<float> const& see_stateTrajGlbZ,
+                                                          std::vector<float> const& see_stateTrajGlbPx,
+                                                          std::vector<float> const& see_stateTrajGlbPy,
+                                                          std::vector<float> const& see_stateTrajGlbPz,
+                                                          std::vector<int> const& see_q,
+                                                          std::vector<std::vector<int>> const& see_hitIdx,
+                                                          std::vector<unsigned int> const& ph2_detId,
+                                                          std::vector<float> const& ph2_x,
+                                                          std::vector<float> const& ph2_y,
+                                                          std::vector<float> const& ph2_z) {
   unsigned int count = 0;
   auto n_see = see_stateTrajGlbPx.size();
   std::vector<float> px_vec;
@@ -212,11 +211,10 @@ void lst::LST<Acc3D>::prepareInput(std::vector<float> const& see_px,
   in_isQuad_vec_ = isQuad_vec;
 }
 
-template <>
-std::vector<unsigned int> lst::LST<Acc3D>::getHitIdxs(short trackCandidateType,
-                                                      unsigned int TCIdx,
-                                                      unsigned int const* TCHitIndices,
-                                                      unsigned int const* hitIndices) {
+std::vector<unsigned int> ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::getHitIdxs(short trackCandidateType,
+                                                                             unsigned int TCIdx,
+                                                                             unsigned int const* TCHitIndices,
+                                                                             unsigned int const* hitIndices) {
   std::vector<unsigned int> hits;
 
   unsigned int maxNHits = 0;
@@ -248,17 +246,17 @@ std::vector<unsigned int> lst::LST<Acc3D>::getHitIdxs(short trackCandidateType,
   return hits;
 }
 
-template <>
-void lst::LST<Acc3D>::getOutput(lst::Event<Acc3D>& event) {
+void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::getOutput(ALPAKA_ACCELERATOR_NAMESPACE::lst::Event& event) {
   std::vector<std::vector<unsigned int>> tc_hitIdxs;
   std::vector<unsigned int> tc_len;
   std::vector<int> tc_seedIdx;
   std::vector<short> tc_trackCandidateType;
 
-  lst::HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW());
-  lst::TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
+  HitsBuffer<alpaka::DevCpu>& hitsInGPU = (*event.getHitsInCMSSW(false));  // sync on next line
+  TrackCandidates const* trackCandidates = event.getTrackCandidatesInCMSSW()->data();
 
   unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
+
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {
     short trackCandidateType = trackCandidates->trackCandidateType[idx];
     std::vector<unsigned int> hit_idx =
@@ -276,33 +274,31 @@ void lst::LST<Acc3D>::getOutput(lst::Event<Acc3D>& event) {
   out_tc_trackCandidateType_ = tc_trackCandidateType;
 }
 
-template <>
-template <>
-void lst::LST<Acc3D>::run(Queue& queue,
-                          bool verbose,
-                          LSTESData<Device> const* deviceESData,
-                          std::vector<float> const& see_px,
-                          std::vector<float> const& see_py,
-                          std::vector<float> const& see_pz,
-                          std::vector<float> const& see_dxy,
-                          std::vector<float> const& see_dz,
-                          std::vector<float> const& see_ptErr,
-                          std::vector<float> const& see_etaErr,
-                          std::vector<float> const& see_stateTrajGlbX,
-                          std::vector<float> const& see_stateTrajGlbY,
-                          std::vector<float> const& see_stateTrajGlbZ,
-                          std::vector<float> const& see_stateTrajGlbPx,
-                          std::vector<float> const& see_stateTrajGlbPy,
-                          std::vector<float> const& see_stateTrajGlbPz,
-                          std::vector<int> const& see_q,
-                          std::vector<std::vector<int>> const& see_hitIdx,
-                          std::vector<unsigned int> const& ph2_detId,
-                          std::vector<float> const& ph2_x,
-                          std::vector<float> const& ph2_y,
-                          std::vector<float> const& ph2_z,
-                          bool no_pls_dupclean,
-                          bool tc_pls_triplets) {
-  auto event = lst::Event<Acc3D>(verbose, queue, deviceESData);
+void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::run(Queue& queue,
+                                                 bool verbose,
+                                                 LSTESData<Device> const* deviceESData,
+                                                 std::vector<float> const& see_px,
+                                                 std::vector<float> const& see_py,
+                                                 std::vector<float> const& see_pz,
+                                                 std::vector<float> const& see_dxy,
+                                                 std::vector<float> const& see_dz,
+                                                 std::vector<float> const& see_ptErr,
+                                                 std::vector<float> const& see_etaErr,
+                                                 std::vector<float> const& see_stateTrajGlbX,
+                                                 std::vector<float> const& see_stateTrajGlbY,
+                                                 std::vector<float> const& see_stateTrajGlbZ,
+                                                 std::vector<float> const& see_stateTrajGlbPx,
+                                                 std::vector<float> const& see_stateTrajGlbPy,
+                                                 std::vector<float> const& see_stateTrajGlbPz,
+                                                 std::vector<int> const& see_q,
+                                                 std::vector<std::vector<int>> const& see_hitIdx,
+                                                 std::vector<unsigned int> const& ph2_detId,
+                                                 std::vector<float> const& ph2_x,
+                                                 std::vector<float> const& ph2_y,
+                                                 std::vector<float> const& ph2_z,
+                                                 bool no_pls_dupclean,
+                                                 bool tc_pls_triplets) {
+  auto event = ALPAKA_ACCELERATOR_NAMESPACE::lst::Event(verbose, queue, deviceESData);
   prepareInput(see_px,
                see_py,
                see_pz,
@@ -344,6 +340,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
                                in_isQuad_vec_);
   event.createMiniDoublets();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Mini-doublets produced: %d\n", event.getNumberOfMiniDoublets());
     printf("# of Mini-doublets produced barrel layer 1: %d\n", event.getNumberOfMiniDoubletsByLayerBarrel(0));
     printf("# of Mini-doublets produced barrel layer 2: %d\n", event.getNumberOfMiniDoubletsByLayerBarrel(1));
@@ -360,6 +357,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   event.createSegmentsWithModuleMap();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Segments produced: %d\n", event.getNumberOfSegments());
     printf("# of Segments produced layer 1-2:  %d\n", event.getNumberOfSegmentsByLayerBarrel(0));
     printf("# of Segments produced layer 2-3:  %d\n", event.getNumberOfSegmentsByLayerBarrel(1));
@@ -375,6 +373,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   event.createTriplets();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of T3s produced: %d\n", event.getNumberOfTriplets());
     printf("# of T3s produced layer 1-2-3: %d\n", event.getNumberOfTripletsByLayerBarrel(0));
     printf("# of T3s produced layer 2-3-4: %d\n", event.getNumberOfTripletsByLayerBarrel(1));
@@ -392,6 +391,7 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   event.createQuintuplets();
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Quintuplets produced: %d\n", event.getNumberOfQuintuplets());
     printf("# of Quintuplets produced layer 1-2-3-4-5-6: %d\n", event.getNumberOfQuintupletsByLayerBarrel(0));
     printf("# of Quintuplets produced layer 2: %d\n", event.getNumberOfQuintupletsByLayerBarrel(1));
@@ -409,15 +409,20 @@ void lst::LST<Acc3D>::run(Queue& queue,
   event.pixelLineSegmentCleaning(no_pls_dupclean);
 
   event.createPixelQuintuplets();
-  if (verbose)
+  if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Pixel Quintuplets produced: %d\n", event.getNumberOfPixelQuintuplets());
+  }
 
   event.createPixelTriplets();
-  if (verbose)
+  if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of Pixel T3s produced: %d\n", event.getNumberOfPixelTriplets());
+  }
 
   event.createTrackCandidates(no_pls_dupclean, tc_pls_triplets);
   if (verbose) {
+    alpaka::wait(queue);  // event calls are asynchronous: wait before printing
     printf("# of TrackCandidates produced: %d\n", event.getNumberOfTrackCandidates());
     printf("        # of Pixel TrackCandidates produced: %d\n", event.getNumberOfPixelTrackCandidates());
     printf("        # of pT5 TrackCandidates produced: %d\n", event.getNumberOfPT5TrackCandidates());
@@ -428,5 +433,5 @@ void lst::LST<Acc3D>::run(Queue& queue,
 
   getOutput(event);
 
-  event.resetEvent();
+  event.resetEventSync();
 }

@@ -1,7 +1,5 @@
 #include "trkCore.h"
 
-using namespace ALPAKA_ACCELERATOR_NAMESPACE;
-
 //___________________________________________________________________________________________________________________________________________________________________________________________
 bool goodEvent() {
   if (ana.specific_event_index >= 0) {
@@ -22,12 +20,13 @@ bool goodEvent() {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runMiniDoublet(lst::Event<Acc3D> *event, int evt) {
+float runMiniDoublet(LSTEvent *event, int evt) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Mini-Doublet start " << evt << std::endl;
   my_timer.Start();
   event->createMiniDoublets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float md_elapsed = my_timer.RealTime();
 
   if (ana.verbose >= 2)
@@ -74,12 +73,13 @@ float runMiniDoublet(lst::Event<Acc3D> *event, int evt) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runSegment(lst::Event<Acc3D> *event) {
+float runSegment(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Segment start" << std::endl;
   my_timer.Start();
   event->createSegmentsWithModuleMap();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float sg_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Segment processing time: " << sg_elapsed << " secs" << std::endl;
@@ -111,12 +111,13 @@ float runSegment(lst::Event<Acc3D> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runT3(lst::Event<Acc3D> *event) {
+float runT3(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco T3 start" << std::endl;
   my_timer.Start();
   event->createTriplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float t3_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco T3 processing time: " << t3_elapsed << " secs" << std::endl;
@@ -152,12 +153,13 @@ float runT3(lst::Event<Acc3D> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runpT3(lst::Event<Acc3D> *event) {
+float runpT3(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Triplet pT3 start" << std::endl;
   my_timer.Start();
   event->createPixelTriplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float pt3_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco pT3 processing time: " << pt3_elapsed << " secs" << std::endl;
@@ -168,12 +170,13 @@ float runpT3(lst::Event<Acc3D> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runQuintuplet(lst::Event<Acc3D> *event) {
+float runQuintuplet(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Quintuplet start" << std::endl;
   my_timer.Start();
   event->createQuintuplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float t5_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Quintuplet processing time: " << t5_elapsed << " secs" << std::endl;
@@ -213,12 +216,13 @@ float runQuintuplet(lst::Event<Acc3D> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runPixelLineSegment(lst::Event<Acc3D> *event, bool no_pls_dupclean) {
+float runPixelLineSegment(LSTEvent *event, bool no_pls_dupclean) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Line Segment start" << std::endl;
   my_timer.Start();
   event->pixelLineSegmentCleaning(no_pls_dupclean);
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float pls_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Line Segment processing time: " << pls_elapsed << " secs" << std::endl;
@@ -227,12 +231,13 @@ float runPixelLineSegment(lst::Event<Acc3D> *event, bool no_pls_dupclean) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runPixelQuintuplet(lst::Event<Acc3D> *event) {
+float runPixelQuintuplet(LSTEvent *event) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Quintuplet start" << std::endl;
   my_timer.Start();
   event->createPixelQuintuplets();
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float pt5_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco Pixel Quintuplet processing time: " << pt5_elapsed << " secs" << std::endl;
@@ -243,12 +248,13 @@ float runPixelQuintuplet(lst::Event<Acc3D> *event) {
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float runTrackCandidate(lst::Event<Acc3D> *event, bool no_pls_dupclean, bool tc_pls_triplets) {
+float runTrackCandidate(LSTEvent *event, bool no_pls_dupclean, bool tc_pls_triplets) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Reco TrackCandidate start" << std::endl;
   my_timer.Start();
   event->createTrackCandidates(no_pls_dupclean, tc_pls_triplets);
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float tc_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Reco TrackCandidate processing time: " << tc_elapsed << " secs" << std::endl;
@@ -839,7 +845,7 @@ void addInputsToLineSegmentTrackingPreLoad(std::vector<std::vector<float>> &out_
 }
 
 //___________________________________________________________________________________________________________________________________________________________________________________________
-float addInputsToEventPreLoad(lst::Event<Acc3D> *event,
+float addInputsToEventPreLoad(LSTEvent *event,
                               bool useOMP,
                               std::vector<float> trkX,
                               std::vector<float> trkY,
@@ -892,6 +898,7 @@ float addInputsToEventPreLoad(lst::Event<Acc3D> *event,
                                 superbin_vec,
                                 pixelType_vec,
                                 isQuad_vec);
+  event->wait();  // device side event calls are asynchronous: wait to measure time or print
   float hit_loading_elapsed = my_timer.RealTime();
 
   if (ana.verbose >= 2)
@@ -1143,7 +1150,7 @@ void writeMetaData() {
 // DEPRECATED FUNCTIONS
 
 //__________________________________________________________________________________________
-[[deprecated]] float addInputsToLineSegmentTracking(lst::Event<Acc3D> &event, bool useOMP) {
+[[deprecated]] float addInputsToLineSegmentTracking(LSTEvent &event, bool useOMP) {
   TStopwatch my_timer;
   if (ana.verbose >= 2)
     std::cout << "Loading Inputs (i.e. outer tracker hits, and pixel line segements) to the Line Segment Tracking.... "
@@ -1331,6 +1338,7 @@ void writeMetaData() {
                                pixelType_vec,
                                isQuad_vec);
 
+  event.wait();  // device side event calls are asynchronous: wait to measure time or print
   float hit_loading_elapsed = my_timer.RealTime();
   if (ana.verbose >= 2)
     std::cout << "Loading inputs processing time: " << hit_loading_elapsed << " secs" << std::endl;
@@ -1338,6 +1346,6 @@ void writeMetaData() {
 }
 
 //__________________________________________________________________________________________
-[[deprecated]] float addInputsToLineSegmentTrackingUsingExplicitMemory(lst::Event<Acc3D> &event) {
+[[deprecated]] float addInputsToLineSegmentTrackingUsingExplicitMemory(LSTEvent &event) {
   return addInputsToLineSegmentTracking(event, true);
 }

@@ -4,8 +4,6 @@ lst::ModuleConnectionMap::ModuleConnectionMap() {}
 
 lst::ModuleConnectionMap::ModuleConnectionMap(std::string const& filename) { load(filename); }
 
-lst::ModuleConnectionMap::~ModuleConnectionMap() {}
-
 void lst::ModuleConnectionMap::load(std::string const& filename) {
   moduleConnections_.clear();
 
@@ -69,15 +67,17 @@ void lst::ModuleConnectionMap::add(std::string const& filename) {
       connected_detids.push_back(connected_detid);
     }
 
+    auto& thisModuleConnections = moduleConnections_.at(detid);
+
     // Concatenate
-    moduleConnections_[detid].insert(moduleConnections_[detid].end(), connected_detids.begin(), connected_detids.end());
+    thisModuleConnections.insert(thisModuleConnections.end(), connected_detids.begin(), connected_detids.end());
 
     // Sort
-    std::sort(moduleConnections_[detid].begin(), moduleConnections_[detid].end());
+    std::sort(thisModuleConnections.begin(), thisModuleConnections.end());
 
     // Unique
-    moduleConnections_[detid].erase(std::unique(moduleConnections_[detid].begin(), moduleConnections_[detid].end()),
-                                    moduleConnections_[detid].end());
+    thisModuleConnections.erase(std::unique(thisModuleConnections.begin(), thisModuleConnections.end()),
+                                thisModuleConnections.end());
   }
 }
 
