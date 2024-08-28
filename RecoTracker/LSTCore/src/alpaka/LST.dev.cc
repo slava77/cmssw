@@ -5,6 +5,7 @@
 using namespace ALPAKA_ACCELERATOR_NAMESPACE;
 
 #include "Math/Vector3D.h"
+#include "Math/VectorUtil.h"
 using XYZVector = ROOT::Math::XYZVector;
 
 namespace {
@@ -77,14 +78,13 @@ void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::prepareInput(std::vector<float> con
   std::vector<unsigned int> hitIdxs(ph2_detId.size());
 
   std::vector<int> superbin_vec;
-  std::vector<int8_t> pixelType_vec;
+  std::vector<::lst::PixelType> pixelType_vec;
   std::vector<char> isQuad_vec;
   std::iota(hitIdxs.begin(), hitIdxs.end(), 0);
   const int hit_size = trkX.size();
 
   for (size_t iSeed = 0; iSeed < n_see; iSeed++) {
     XYZVector p3LH(see_stateTrajGlbPx[iSeed], see_stateTrajGlbPy[iSeed], see_stateTrajGlbPz[iSeed]);
-    XYZVector p3LH_helper(see_stateTrajGlbPx[iSeed], see_stateTrajGlbPy[iSeed], see_stateTrajGlbPz[iSeed]);
     float ptIn = p3LH.rho();
     float eta = p3LH.eta();
     float ptErr = see_ptErr[iSeed];
@@ -94,22 +94,23 @@ void ALPAKA_ACCELERATOR_NAMESPACE::lst::LST::prepareInput(std::vector<float> con
       XYZVector p3PCA(see_px[iSeed], see_py[iSeed], see_pz[iSeed]);
       XYZVector r3PCA(calculateR3FromPCA(p3PCA, see_dxy[iSeed], see_dz[iSeed]));
 
-      float pixelSegmentDeltaPhiChange = (r3LH - p3LH_helper).phi();  //FIXME: this looks like a bug
+      // The charge could be used directly in the line below
+      float pixelSegmentDeltaPhiChange = ROOT::Math::VectorUtil::DeltaPhi(p3LH, r3LH);
       float etaErr = see_etaErr[iSeed];
       float px = p3LH.x();
       float py = p3LH.y();
       float pz = p3LH.z();
 
       int charge = see_q[iSeed];
-      int pixtype = -1;
+      ::lst::PixelType pixtype = ::lst::PixelType::kInvalid;
 
       if (ptIn >= 2.0)
-        pixtype = 0;
+        pixtype = ::lst::PixelType::kHighPt;
       else if (ptIn >= (0.8 - 2 * ptErr) and ptIn < 2.0) {
         if (pixelSegmentDeltaPhiChange >= 0)
-          pixtype = 1;
+          pixtype = ::lst::PixelType::kLowPtPosCurv;
         else
-          pixtype = 2;
+          pixtype = ::lst::PixelType::kLowPtNegCurv;
       } else
         continue;
 
