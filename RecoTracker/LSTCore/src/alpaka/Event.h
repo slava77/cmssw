@@ -3,6 +3,7 @@
 
 #include <optional>
 
+#include "RecoTracker/LSTCore/interface/TrackCandidatesHostCollection.h"
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/LST.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
@@ -55,7 +56,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<Quintuplets> quintupletsInGPU_;
     std::optional<QuintupletsBuffer<Device>> quintupletsBuffers_;
     std::optional<TrackCandidates> trackCandidatesInGPU_;
-    std::optional<TrackCandidatesBuffer<Device>> trackCandidatesBuffers_;
+    std::optional<TrackCandidatesDeviceCollection> trackCandidatesDC_;
     std::optional<PixelTriplets> pixelTripletsInGPU_;
     std::optional<PixelTripletsBuffer<Device>> pixelTripletsBuffers_;
     std::optional<PixelQuintuplets> pixelQuintupletsInGPU_;
@@ -67,7 +68,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<MiniDoubletsBuffer<DevHost>> mdsInCPU_;
     std::optional<SegmentsBuffer<DevHost>> segmentsInCPU_;
     std::optional<TripletsBuffer<DevHost>> tripletsInCPU_;
-    std::optional<TrackCandidatesBuffer<DevHost>> trackCandidatesInCPU_;
+    std::optional<TrackCandidatesHostCollection> trackCandidatesHC_;
     std::optional<ModulesBuffer<DevHost>> modulesInCPU_;
     std::optional<QuintupletsBuffer<DevHost>> quintupletsInCPU_;
     std::optional<PixelTripletsBuffer<DevHost>> pixelTripletsInCPU_;
@@ -189,8 +190,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     QuintupletsBuffer<DevHost>& getQuintuplets(bool sync = true);
     PixelTripletsBuffer<DevHost>& getPixelTriplets(bool sync = true);
     PixelQuintupletsBuffer<DevHost>& getPixelQuintuplets(bool sync = true);
-    TrackCandidatesBuffer<DevHost>& getTrackCandidates(bool sync = true);
-    TrackCandidatesBuffer<DevHost>& getTrackCandidatesInCMSSW(bool sync = true);
+    const TrackCandidatesHostCollection& getTrackCandidates(bool sync = true);
+    const TrackCandidatesHostCollection& getTrackCandidatesInCMSSW(bool sync = true);
     ModulesBuffer<DevHost>& getModules(bool isFull = false, bool sync = true);
   };
 

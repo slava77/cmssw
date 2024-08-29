@@ -1,8 +1,11 @@
 #ifndef RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
 #define RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
 
+#include "DataFormats/Portable/interface/alpaka/PortableCollection.h"
+
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
+#include "RecoTracker/LSTCore/interface/TrackCandidatesSoA.h"
 
 #include "Triplet.h"
 #include "Segment.h"
@@ -13,6 +16,8 @@
 #include "ObjectRanges.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
+  using TrackCandidatesDeviceCollection = PortableCollection<::lst::TrackCandidatesSoA>;
+
   struct TrackCandidates {
     short* trackCandidateType;          // 4-T5 5-pT3 7-pT5 8-pLS
     unsigned int* directObjectIndices;  // Will hold direct indices to each type containers
@@ -32,80 +37,25 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     FPX* centerY;
     FPX* radius;
 
-    template <typename TBuff>
-    void setData(TBuff& buf) {
-      trackCandidateType = buf.trackCandidateType_buf.data();
-      directObjectIndices = buf.directObjectIndices_buf.data();
-      objectIndices = buf.objectIndices_buf.data();
-      nTrackCandidates = buf.nTrackCandidates_buf.data();
-      nTrackCandidatespT3 = buf.nTrackCandidatespT3_buf.data();
-      nTrackCandidatespT5 = buf.nTrackCandidatespT5_buf.data();
-      nTrackCandidatespLS = buf.nTrackCandidatespLS_buf.data();
-      nTrackCandidatesT5 = buf.nTrackCandidatesT5_buf.data();
+    void setData(TrackCandidatesSoA::View& view) {
+      trackCandidateType = view.trackCandidateType();
+      directObjectIndices = view.directObjectIndices();
+      objectIndices = view.objectIndices()->data();
+      nTrackCandidates = &view.nTrackCandidates();
+      nTrackCandidatespT3 = &view.nTrackCandidatespT3();
+      nTrackCandidatespT5 = &view.nTrackCandidatespT5();
+      nTrackCandidatespLS = &view.nTrackCandidatespLS();
+      nTrackCandidatesT5 = &view.nTrackCandidatesT5();
 
-      logicalLayers = buf.logicalLayers_buf.data();
-      hitIndices = buf.hitIndices_buf.data();
-      pixelSeedIndex = buf.pixelSeedIndex_buf.data();
-      lowerModuleIndices = buf.lowerModuleIndices_buf.data();
+      logicalLayers = view.logicalLayers()->data();
+      hitIndices = view.hitIndices()->data();
+      pixelSeedIndex = view.pixelSeedIndex();
+      lowerModuleIndices = view.lowerModuleIndices()->data();
 
-      centerX = buf.centerX_buf.data();
-      centerY = buf.centerY_buf.data();
-      radius = buf.radius_buf.data();
+      centerX = view.centerX();
+      centerY = view.centerY();
+      radius = view.radius();
     }
-  };
-
-  template <typename TDev>
-  struct TrackCandidatesBuffer {
-    Buf<TDev, short> trackCandidateType_buf;
-    Buf<TDev, unsigned int> directObjectIndices_buf;
-    Buf<TDev, unsigned int> objectIndices_buf;
-    Buf<TDev, unsigned int> nTrackCandidates_buf;
-    Buf<TDev, unsigned int> nTrackCandidatespT3_buf;
-    Buf<TDev, unsigned int> nTrackCandidatespT5_buf;
-    Buf<TDev, unsigned int> nTrackCandidatespLS_buf;
-    Buf<TDev, unsigned int> nTrackCandidatesT5_buf;
-
-    Buf<TDev, uint8_t> logicalLayers_buf;
-    Buf<TDev, unsigned int> hitIndices_buf;
-    Buf<TDev, int> pixelSeedIndex_buf;
-    Buf<TDev, uint16_t> lowerModuleIndices_buf;
-
-    Buf<TDev, FPX> centerX_buf;
-    Buf<TDev, FPX> centerY_buf;
-    Buf<TDev, FPX> radius_buf;
-
-    TrackCandidates data_;
-
-    template <typename TQueue, typename TDevAcc>
-    TrackCandidatesBuffer(unsigned int maxTrackCandidates, TDevAcc const& devAccIn, TQueue& queue)
-        : trackCandidateType_buf(allocBufWrapper<short>(devAccIn, maxTrackCandidates, queue)),
-          directObjectIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxTrackCandidates, queue)),
-          objectIndices_buf(allocBufWrapper<unsigned int>(devAccIn, 2 * maxTrackCandidates, queue)),
-          nTrackCandidates_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          nTrackCandidatespT3_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          nTrackCandidatespT5_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          nTrackCandidatespLS_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          nTrackCandidatesT5_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, Params_pT5::kLayers * maxTrackCandidates, queue)),
-          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, Params_pT5::kHits * maxTrackCandidates, queue)),
-          pixelSeedIndex_buf(allocBufWrapper<int>(devAccIn, maxTrackCandidates, queue)),
-          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, Params_pT5::kLayers * maxTrackCandidates, queue)),
-          centerX_buf(allocBufWrapper<FPX>(devAccIn, maxTrackCandidates, queue)),
-          centerY_buf(allocBufWrapper<FPX>(devAccIn, maxTrackCandidates, queue)),
-          radius_buf(allocBufWrapper<FPX>(devAccIn, maxTrackCandidates, queue)) {
-      alpaka::memset(queue, nTrackCandidates_buf, 0u);
-      alpaka::memset(queue, nTrackCandidatesT5_buf, 0u);
-      alpaka::memset(queue, nTrackCandidatespT3_buf, 0u);
-      alpaka::memset(queue, nTrackCandidatespT5_buf, 0u);
-      alpaka::memset(queue, nTrackCandidatespLS_buf, 0u);
-      alpaka::memset(queue, logicalLayers_buf, 0u);
-      alpaka::memset(queue, lowerModuleIndices_buf, 0u);
-      alpaka::memset(queue, hitIndices_buf, 0u);
-      alpaka::memset(queue, pixelSeedIndex_buf, 0);
-    }
-
-    inline TrackCandidates const* data() const { return &data_; }
-    inline void setData(TrackCandidatesBuffer& buf) { data_.setData(buf); }
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addpLSTrackCandidateToMemory(TrackCandidates& trackCandidatesInGPU,
