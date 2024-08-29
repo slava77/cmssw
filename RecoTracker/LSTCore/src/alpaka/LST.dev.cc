@@ -254,8 +254,8 @@ void LST::getOutput(Event& event) {
   std::vector<int> tc_seedIdx;
   std::vector<short> tc_trackCandidateType;
 
-  HitsBuffer<alpaka::DevCpu>& hitsBuffer = (*event.getHitsInCMSSW(false));  // sync on next line
-  auto const& trackCandidates = event.getTrackCandidatesInCMSSW()->const_view();
+  HitsBuffer<alpaka::DevCpu>& hitsBuffer = event.getHitsInCMSSW(false);  // sync on next line
+  auto const& trackCandidates = event.getTrackCandidatesInCMSSW().const_view();
 
   unsigned int nTrackCandidates = trackCandidates.nTrackCandidates();
 

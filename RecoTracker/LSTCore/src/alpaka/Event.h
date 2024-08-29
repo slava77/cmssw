@@ -55,7 +55,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<TripletsBuffer<Device>> tripletsBuffers_;
     std::optional<Quintuplets> quintupletsInGPU_;
     std::optional<QuintupletsBuffer<Device>> quintupletsBuffers_;
-    std::optional<TrackCandidates> trackCandidatesInGPU_;
+    TrackCandidates* trackCandidatesD_;  // not owned, view from trackCandidatesDC_
     std::optional<TrackCandidatesDeviceCollection> trackCandidatesDC_;
     std::optional<PixelTriplets> pixelTripletsInGPU_;
     std::optional<PixelTripletsBuffer<Device>> pixelTripletsBuffers_;
