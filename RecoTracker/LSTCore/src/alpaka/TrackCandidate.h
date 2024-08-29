@@ -1,10 +1,12 @@
 #ifndef RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
 #define RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
 
+
 #include "DataFormats/Portable/interface/alpaka/PortableCollection.h"
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
+#include "RecoTracker/LSTCore/interface/TrackCandidatesHostCollection.h"
 #include "RecoTracker/LSTCore/interface/TrackCandidatesSoA.h"
 
 #include "Triplet.h"
@@ -537,4 +539,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
   };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
+
+ASSERT_DEVICE_MATCHES_HOST_COLLECTION(lst::TrackCandidatesDeviceCollection, lst::TrackCandidatesHostCollection);
+
 #endif
