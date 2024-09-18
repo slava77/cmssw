@@ -2,6 +2,7 @@
 #define RecoTracker_LSTCore_interface_Constants_h
 
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
+#include "DataFormats/Common/interface/StdArray.h"
 
 #ifdef CACHE_ALLOC
 #include "HeterogeneousCore/AlpakaInterface/interface/CachedBufAlloc.h"
@@ -62,6 +63,7 @@ namespace lst {
   };
   struct Params_LS {
     static constexpr int kLayers = 2, kHits = 4;
+    using ArrayUxLayers = edm::StdArray<unsigned int, kLayers>;
   };
   struct Params_T3 {
     static constexpr int kLayers = 3, kHits = 6;

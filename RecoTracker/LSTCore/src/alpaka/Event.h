@@ -48,8 +48,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<HitsBuffer<Device>> hitsBuffers_;
     std::optional<MiniDoublets> mdsInGPU_;
     std::optional<MiniDoubletsBuffer<Device>> miniDoubletsBuffers_;
-    std::optional<Segments> segmentsInGPU_;
-    std::optional<SegmentsBuffer<Device>> segmentsBuffers_;
+    std::optional<SegmentsDeviceCollection> segmentsDevCol_;
+    std::optional<Segments> segmentsDev_;
     std::optional<Triplets> tripletsInGPU_;
     std::optional<TripletsBuffer<Device>> tripletsBuffers_;
     std::optional<Quintuplets> quintupletsInGPU_;
@@ -65,7 +65,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<ObjectRangesBuffer<DevHost>> rangesInCPU_;
     std::optional<HitsBuffer<DevHost>> hitsInCPU_;
     std::optional<MiniDoubletsBuffer<DevHost>> mdsInCPU_;
-    std::optional<SegmentsBuffer<DevHost>> segmentsInCPU_;
+    std::optional<SegmentsHostCollection> segmentsHostCol_;
+    std::optional<Segments> segmentsHost_;
     std::optional<TripletsBuffer<DevHost>> tripletsInCPU_;
     std::optional<TrackCandidatesBuffer<DevHost>> trackCandidatesInCPU_;
     std::optional<ModulesBuffer<DevHost>> modulesInCPU_;
@@ -184,7 +185,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     HitsBuffer<DevHost>& getHitsInCMSSW(bool sync = true);
     ObjectRangesBuffer<DevHost>& getRanges(bool sync = true);
     MiniDoubletsBuffer<DevHost>& getMiniDoublets(bool sync = true);
-    SegmentsBuffer<DevHost>& getSegments(bool sync = true);
+    Segments& getSegments(bool sync = true);
     TripletsBuffer<DevHost>& getTriplets(bool sync = true);
     QuintupletsBuffer<DevHost>& getQuintuplets(bool sync = true);
     PixelTripletsBuffer<DevHost>& getPixelTriplets(bool sync = true);

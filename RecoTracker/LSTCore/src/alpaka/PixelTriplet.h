@@ -130,7 +130,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   };
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelTripletToMemory(MiniDoublets const& mdsInGPU,
-                                                              Segments const& segmentsInGPU,
+                                                              Segments segments,
                                                               Triplets const& tripletsInGPU,
                                                               PixelTriplets& pixelTripletsInGPU,
                                                               unsigned int pixelSegmentIndex,
@@ -173,9 +173,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         tripletsInGPU.logicalLayers[tripletIndex * Params_T3::kLayers + 2];
 
     pixelTripletsInGPU.lowerModuleIndices[Params_pT3::kLayers * pixelTripletIndex] =
-        segmentsInGPU.innerLowerModuleIndices[pixelSegmentIndex];
+        segments.mem.innerLowerModuleIndices()[pixelSegmentIndex];
     pixelTripletsInGPU.lowerModuleIndices[Params_pT3::kLayers * pixelTripletIndex + 1] =
-        segmentsInGPU.outerLowerModuleIndices[pixelSegmentIndex];
+        segments.mem.outerLowerModuleIndices()[pixelSegmentIndex];
     pixelTripletsInGPU.lowerModuleIndices[Params_pT3::kLayers * pixelTripletIndex + 2] =
         tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * tripletIndex];
     pixelTripletsInGPU.lowerModuleIndices[Params_pT3::kLayers * pixelTripletIndex + 3] =
@@ -183,8 +183,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     pixelTripletsInGPU.lowerModuleIndices[Params_pT3::kLayers * pixelTripletIndex + 4] =
         tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * tripletIndex + 2];
 
-    unsigned int pixelInnerMD = segmentsInGPU.mdIndices[2 * pixelSegmentIndex];
-    unsigned int pixelOuterMD = segmentsInGPU.mdIndices[2 * pixelSegmentIndex + 1];
+    unsigned int pixelInnerMD = segments.mem.mdIndices()[pixelSegmentIndex][0];
+    unsigned int pixelOuterMD = segments.mem.mdIndices()[pixelSegmentIndex][1];
 
     pixelTripletsInGPU.hitIndices[Params_pT3::kHits * pixelTripletIndex] = mdsInGPU.anchorHitIndices[pixelInnerMD];
     pixelTripletsInGPU.hitIndices[Params_pT3::kHits * pixelTripletIndex + 1] = mdsInGPU.outerHitIndices[pixelInnerMD];
@@ -213,7 +213,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                      Modules const& modulesInGPU,
                                                                      ObjectRanges const& rangesInGPU,
                                                                      MiniDoublets const& mdsInGPU,
-                                                                     Segments const& segmentsInGPU,
+                                                                     Segments segments,
                                                                      uint16_t pixelLowerModuleIndex,
                                                                      uint16_t outerInnerLowerModuleIndex,
                                                                      uint16_t outerOuterLowerModuleIndex,
@@ -222,11 +222,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     short outerInnerLowerModuleSubdet = modulesInGPU.subdets[outerInnerLowerModuleIndex];
     short outerOuterLowerModuleSubdet = modulesInGPU.subdets[outerOuterLowerModuleIndex];
 
-    unsigned int firstMDIndex = segmentsInGPU.mdIndices[Params_LS::kLayers * innerSegmentIndex];
-    unsigned int secondMDIndex = segmentsInGPU.mdIndices[Params_LS::kLayers * innerSegmentIndex + 1];
+    unsigned int firstMDIndex = segments.mem.mdIndices()[Params_LS::kLayers * innerSegmentIndex][0];
+    unsigned int secondMDIndex = segments.mem.mdIndices()[Params_LS::kLayers * innerSegmentIndex][1];
 
-    unsigned int thirdMDIndex = segmentsInGPU.mdIndices[Params_LS::kLayers * outerSegmentIndex];
-    unsigned int fourthMDIndex = segmentsInGPU.mdIndices[Params_LS::kLayers * outerSegmentIndex + 1];
+    unsigned int thirdMDIndex = segments.mem.mdIndices()[Params_LS::kLayers * outerSegmentIndex][0];
+    unsigned int fourthMDIndex = segments.mem.mdIndices()[Params_LS::kLayers * outerSegmentIndex][1];
 
     if (outerInnerLowerModuleSubdet == Barrel and
         (outerOuterLowerModuleSubdet == Barrel or outerOuterLowerModuleSubdet == Endcap)) {
@@ -234,7 +234,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                        modulesInGPU,
                                        rangesInGPU,
                                        mdsInGPU,
-                                       segmentsInGPU,
+                                       segments,
                                        pixelLowerModuleIndex,
                                        outerInnerLowerModuleIndex,
                                        outerOuterLowerModuleIndex,
@@ -249,7 +249,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                        modulesInGPU,
                                        rangesInGPU,
                                        mdsInGPU,
-                                       segmentsInGPU,
+                                       segments,
                                        pixelLowerModuleIndex,
                                        outerInnerLowerModuleIndex,
                                        outerOuterLowerModuleIndex,
@@ -766,7 +766,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                  Modules const& modulesInGPU,
                                                                  ObjectRanges const& rangesInGPU,
                                                                  MiniDoublets const& mdsInGPU,
-                                                                 Segments const& segmentsInGPU,
+                                                                 Segments segments,
                                                                  Triplets const& tripletsInGPU,
                                                                  unsigned int pixelSegmentIndex,
                                                                  unsigned int tripletIndex,
@@ -779,7 +779,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                  float& rPhiChiSquaredInwards,
                                                                  bool runChiSquaredCuts = true) {
     //run pT4 compatibility between the pixel segment and inner segment, and between the pixel and outer segment of the triplet
-    uint16_t pixelModuleIndex = segmentsInGPU.innerLowerModuleIndices[pixelSegmentIndex];
+    uint16_t pixelModuleIndex = segments.mem.innerLowerModuleIndices()[pixelSegmentIndex];
 
     uint16_t lowerModuleIndex = tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * tripletIndex];
     uint16_t middleModuleIndex = tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * tripletIndex + 1];
@@ -791,7 +791,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                              modulesInGPU,
                                              rangesInGPU,
                                              mdsInGPU,
-                                             segmentsInGPU,
+                                             segments,
                                              pixelModuleIndex,
                                              lowerModuleIndex,
                                              middleModuleIndex,
@@ -804,7 +804,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                              modulesInGPU,
                                              rangesInGPU,
                                              mdsInGPU,
-                                             segmentsInGPU,
+                                             segments,
                                              pixelModuleIndex,
                                              middleModuleIndex,
                                              upperModuleIndex,
@@ -815,28 +815,28 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     //pt matching between the pixel ptin and the triplet circle pt
     unsigned int pixelSegmentArrayIndex = pixelSegmentIndex - rangesInGPU.segmentModuleIndices[pixelModuleIndex];
-    float pixelSegmentPt = segmentsInGPU.ptIn[pixelSegmentArrayIndex];
-    float pixelSegmentPtError = segmentsInGPU.ptErr[pixelSegmentArrayIndex];
-    float pixelSegmentPx = segmentsInGPU.px[pixelSegmentArrayIndex];
-    float pixelSegmentPy = segmentsInGPU.py[pixelSegmentArrayIndex];
-    float pixelSegmentPz = segmentsInGPU.pz[pixelSegmentArrayIndex];
-    int pixelSegmentCharge = segmentsInGPU.charge[pixelSegmentArrayIndex];
+    float pixelSegmentPt = segments.pix.ptIn()[pixelSegmentArrayIndex];
+    float pixelSegmentPtError = segments.pix.ptErr()[pixelSegmentArrayIndex];
+    float pixelSegmentPx = segments.pix.px()[pixelSegmentArrayIndex];
+    float pixelSegmentPy = segments.pix.py()[pixelSegmentArrayIndex];
+    float pixelSegmentPz = segments.pix.pz()[pixelSegmentArrayIndex];
+    int pixelSegmentCharge = segments.pix.charge()[pixelSegmentArrayIndex];
 
-    float pixelG = segmentsInGPU.circleCenterX[pixelSegmentArrayIndex];
-    float pixelF = segmentsInGPU.circleCenterY[pixelSegmentArrayIndex];
-    float pixelRadiusPCA = segmentsInGPU.circleRadius[pixelSegmentArrayIndex];
+    float pixelG = segments.pix.circleCenterX()[pixelSegmentArrayIndex];
+    float pixelF = segments.pix.circleCenterY()[pixelSegmentArrayIndex];
+    float pixelRadiusPCA = segments.pix.circleRadius()[pixelSegmentArrayIndex];
 
-    unsigned int pixelInnerMDIndex = segmentsInGPU.mdIndices[Params_pLS::kLayers * pixelSegmentIndex];
-    unsigned int pixelOuterMDIndex = segmentsInGPU.mdIndices[Params_pLS::kLayers * pixelSegmentIndex + 1];
+    unsigned int pixelInnerMDIndex = segments.mem.mdIndices()[Params_pLS::kLayers * pixelSegmentIndex][0];
+    unsigned int pixelOuterMDIndex = segments.mem.mdIndices()[Params_pLS::kLayers * pixelSegmentIndex][1];
 
     pixelRadius = pixelSegmentPt * kR1GeVf;
     float pixelRadiusError = pixelSegmentPtError * kR1GeVf;
     unsigned int tripletInnerSegmentIndex = tripletsInGPU.segmentIndices[2 * tripletIndex];
     unsigned int tripletOuterSegmentIndex = tripletsInGPU.segmentIndices[2 * tripletIndex + 1];
 
-    unsigned int firstMDIndex = segmentsInGPU.mdIndices[2 * tripletInnerSegmentIndex];
-    unsigned int secondMDIndex = segmentsInGPU.mdIndices[2 * tripletInnerSegmentIndex + 1];
-    unsigned int thirdMDIndex = segmentsInGPU.mdIndices[2 * tripletOuterSegmentIndex + 1];
+    unsigned int firstMDIndex = segments.mem.mdIndices()[tripletInnerSegmentIndex][0];
+    unsigned int secondMDIndex = segments.mem.mdIndices()[tripletInnerSegmentIndex][1];
+    unsigned int thirdMDIndex = segments.mem.mdIndices()[tripletOuterSegmentIndex][1];
 
     float xs[Params_T3::kLayers] = {
         mdsInGPU.anchorX[firstMDIndex], mdsInGPU.anchorX[secondMDIndex], mdsInGPU.anchorX[thirdMDIndex]};
@@ -922,7 +922,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   Modules modulesInGPU,
                                   ObjectRanges rangesInGPU,
                                   MiniDoublets mdsInGPU,
-                                  Segments segmentsInGPU,
+                                  Segments segments,
                                   Triplets tripletsInGPU,
                                   PixelTriplets pixelTripletsInGPU,
                                   unsigned int* connectedPixelSize,
@@ -960,9 +960,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
           unsigned int pixelSegmentIndex = rangesInGPU.segmentModuleIndices[pixelModuleIndex] + i_pLS;
 
-          if (segmentsInGPU.isDup[i_pLS])
+          if (segments.pix.isDup()[i_pLS])
             continue;
-          if (segmentsInGPU.partOfPT5[i_pLS])
+          if (segments.pix.partOfPT5()[i_pLS])
             continue;  //don't make pT3s for those pixels that are part of pT5
 
           short layer2_adjustment;
@@ -992,7 +992,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                       modulesInGPU,
                                                       rangesInGPU,
                                                       mdsInGPU,
-                                                      segmentsInGPU,
+                                                      segments,
                                                       tripletsInGPU,
                                                       pixelSegmentIndex,
                                                       outerTripletIndex,
@@ -1006,14 +1006,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
             if (success) {
               float phi =
-                  mdsInGPU.anchorPhi[segmentsInGPU.mdIndices[2 * tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
-                                                             layer2_adjustment]];
+                  mdsInGPU.anchorPhi[segments.mem.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
+                                                             layer2_adjustment][0]];
               float eta =
-                  mdsInGPU.anchorEta[segmentsInGPU.mdIndices[2 * tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
-                                                             layer2_adjustment]];
-              float eta_pix = segmentsInGPU.eta[i_pLS];
-              float phi_pix = segmentsInGPU.phi[i_pLS];
-              float pt = segmentsInGPU.ptIn[i_pLS];
+                  mdsInGPU.anchorEta[segments.mem.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
+                                                             layer2_adjustment][0]];
+              float eta_pix = segments.pix.eta()[i_pLS];
+              float phi_pix = segments.pix.phi()[i_pLS];
+              float pt = segments.pix.ptIn()[i_pLS];
               float score = rPhiChiSquared + rPhiChiSquaredInwards;
               unsigned int totOccupancyPixelTriplets = alpaka::atomicAdd(
                   acc, pixelTripletsInGPU.totOccupancyPixelTriplets, 1u, alpaka::hierarchy::Threads{});
@@ -1025,7 +1025,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                 unsigned int pixelTripletIndex =
                     alpaka::atomicAdd(acc, pixelTripletsInGPU.nPixelTriplets, 1u, alpaka::hierarchy::Threads{});
                 addPixelTripletToMemory(mdsInGPU,
-                                        segmentsInGPU,
+                                        segments,
                                         tripletsInGPU,
                                         pixelTripletsInGPU,
                                         pixelSegmentIndex,
@@ -1157,7 +1157,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                 Modules const& modulesInGPU,
                                                                 ObjectRanges const& rangesInGPU,
                                                                 MiniDoublets const& mdsInGPU,
-                                                                Segments const& segmentsInGPU,
+                                                                Segments segments,
                                                                 uint16_t pixelModuleIndex,
                                                                 uint16_t outerInnerLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -1195,13 +1195,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       return false;
 
     unsigned int pixelSegmentArrayIndex = innerSegmentIndex - rangesInGPU.segmentModuleIndices[pixelModuleIndex];
-    float ptIn = segmentsInGPU.ptIn[pixelSegmentArrayIndex];
+    float ptIn = segments.pix.ptIn()[pixelSegmentArrayIndex];
     float ptSLo = ptIn;
-    float px = segmentsInGPU.px[pixelSegmentArrayIndex];
-    float py = segmentsInGPU.py[pixelSegmentArrayIndex];
-    float pz = segmentsInGPU.pz[pixelSegmentArrayIndex];
-    float ptErr = segmentsInGPU.ptErr[pixelSegmentArrayIndex];
-    float etaErr = segmentsInGPU.etaErr[pixelSegmentArrayIndex];
+    float px = segments.pix.px()[pixelSegmentArrayIndex];
+    float py = segments.pix.py()[pixelSegmentArrayIndex];
+    float pz = segments.pix.pz()[pixelSegmentArrayIndex];
+    float ptErr = segments.pix.ptErr()[pixelSegmentArrayIndex];
+    float etaErr = segments.pix.etaErr()[pixelSegmentArrayIndex];
     ptSLo = alpaka::math::max(acc, ptCut, ptSLo - 10.0f * alpaka::math::max(acc, ptErr, 0.005f * ptSLo));
     ptSLo = alpaka::math::min(acc, 10.0f, ptSLo);
 
@@ -1272,8 +1272,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     //lots of array accesses below this...
 
-    float alpha_InLo = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
-    float alpha_OutLo = __H2F(segmentsInGPU.dPhiChanges[outerSegmentIndex]);
+    float alpha_InLo = __H2F(segments.mem.dPhiChanges()[innerSegmentIndex]);
+    float alpha_OutLo = __H2F(segments.mem.dPhiChanges()[outerSegmentIndex]);
 
     bool isEC_lastLayer = modulesInGPU.subdets[outerOuterLowerModuleIndex] == Endcap and
                           modulesInGPU.moduleType[outerOuterLowerModuleIndex] == TwoS;
@@ -1415,7 +1415,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                 Modules const& modulesInGPU,
                                                                 ObjectRanges const& rangesInGPU,
                                                                 MiniDoublets const& mdsInGPU,
-                                                                Segments const& segmentsInGPU,
+                                                                Segments segments,
                                                                 uint16_t pixelModuleIndex,
                                                                 uint16_t outerInnerLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -1452,13 +1452,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     unsigned int pixelSegmentArrayIndex = innerSegmentIndex - rangesInGPU.segmentModuleIndices[pixelModuleIndex];
 
-    float ptIn = segmentsInGPU.ptIn[pixelSegmentArrayIndex];
+    float ptIn = segments.pix.ptIn()[pixelSegmentArrayIndex];
     float ptSLo = ptIn;
-    float px = segmentsInGPU.px[pixelSegmentArrayIndex];
-    float py = segmentsInGPU.py[pixelSegmentArrayIndex];
-    float pz = segmentsInGPU.pz[pixelSegmentArrayIndex];
-    float ptErr = segmentsInGPU.ptErr[pixelSegmentArrayIndex];
-    float etaErr = segmentsInGPU.etaErr[pixelSegmentArrayIndex];
+    float px = segments.pix.px()[pixelSegmentArrayIndex];
+    float py = segments.pix.py()[pixelSegmentArrayIndex];
+    float pz = segments.pix.pz()[pixelSegmentArrayIndex];
+    float ptErr = segments.pix.ptErr()[pixelSegmentArrayIndex];
+    float etaErr = segments.pix.etaErr()[pixelSegmentArrayIndex];
 
     ptSLo = alpaka::math::max(acc, ptCut, ptSLo - 10.0f * alpaka::math::max(acc, ptErr, 0.005f * ptSLo));
     ptSLo = alpaka::math::min(acc, 10.0f, ptSLo);
@@ -1534,8 +1534,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     if (alpaka::math::abs(acc, dPhi) > dPhiCut)
       return false;
 
-    float alpha_InLo = __H2F(segmentsInGPU.dPhiChanges[innerSegmentIndex]);
-    float alpha_OutLo = __H2F(segmentsInGPU.dPhiChanges[outerSegmentIndex]);
+    float alpha_InLo = __H2F(segments.mem.dPhiChanges()[innerSegmentIndex]);
+    float alpha_OutLo = __H2F(segments.mem.dPhiChanges()[outerSegmentIndex]);
 
     bool isEC_lastLayer = modulesInGPU.subdets[outerOuterLowerModuleIndex] == Endcap and
                           modulesInGPU.moduleType[outerOuterLowerModuleIndex] == TwoS;

@@ -28,13 +28,13 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> convertHitsToHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getPixelHitsFrompLS(Event* event, unsigned int pLS) {
-  Segments const* segments = event->getSegments().data();
+  Segments& segments = event->getSegments();
   MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
   ObjectRanges const* rangesEvt = event->getRanges().data();
   Modules const* modulesEvt = event->getModules().data();
   const unsigned int pLS_offset = rangesEvt->segmentModuleIndices[*(modulesEvt->nLowerModules)];
-  unsigned int MD_1 = segments->mdIndices[2 * (pLS + pLS_offset)];
-  unsigned int MD_2 = segments->mdIndices[2 * (pLS + pLS_offset) + 1];
+  unsigned int MD_1 = segments.mem.mdIndices()[2 * (pLS + pLS_offset)][0];
+  unsigned int MD_2 = segments.mem.mdIndices()[2 * (pLS + pLS_offset)][1];
   unsigned int hit_1 = miniDoublets->anchorHitIndices[MD_1];
   unsigned int hit_2 = miniDoublets->outerHitIndices[MD_1];
   unsigned int hit_3 = miniDoublets->anchorHitIndices[MD_2];
@@ -92,9 +92,9 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getMDsFromLS(Event* event, unsigned int LS) {
-  Segments const* segments = event->getSegments().data();
-  unsigned int MD_1 = segments->mdIndices[2 * LS];
-  unsigned int MD_2 = segments->mdIndices[2 * LS + 1];
+  Segments& segments = event->getSegments();
+  unsigned int MD_1 = segments.mem.mdIndices()[2 * LS][0];
+  unsigned int MD_2 = segments.mem.mdIndices()[2 * LS][1];
   return {MD_1, MD_2};
 }
 
