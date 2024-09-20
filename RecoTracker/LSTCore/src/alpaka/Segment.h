@@ -15,7 +15,7 @@
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
-  GENERATE_SOA_LAYOUT(SegmentsMemSoALayout,
+  GENERATE_SOA_LAYOUT(SegmentsSoALayout,
     SOA_COLUMN(FPX, dPhis),
     SOA_COLUMN(FPX, dPhiMins),
     SOA_COLUMN(FPX, dPhiMaxs),
@@ -26,14 +26,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     SOA_COLUMN(uint16_t, outerLowerModuleIndices),
     SOA_COLUMN(Params_LS::ArrayUxLayers, mdIndices),
     SOA_COLUMN(unsigned int, innerMiniDoubletAnchorHitIndices),
-    SOA_COLUMN(unsigned int, outerMiniDoubletAnchorHitIndices),
-    SOA_SCALAR(unsigned int, nMemoryLocations))
+    SOA_COLUMN(unsigned int, outerMiniDoubletAnchorHitIndices)
+    //SOA_SCALAR(unsigned int, nMemoryLocations)
+    )
 
-  GENERATE_SOA_LAYOUT(SegmentsModSoALayout,
+  GENERATE_SOA_LAYOUT(SegmentsOccupancySoALayout,
     SOA_COLUMN(unsigned int, nSegments), //number of segments per inner lower module
     SOA_COLUMN(unsigned int, totOccupancySegments))
 
-  GENERATE_SOA_LAYOUT(SegmentsPixSoALayout,
+  GENERATE_SOA_LAYOUT(SegmentsPixelSoALayout,
     SOA_COLUMN(unsigned int, seedIdx),
     SOA_COLUMN(int, charge),
     SOA_COLUMN(int, superbin),
@@ -55,25 +56,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     SOA_COLUMN(float, circleCenterY),
     SOA_COLUMN(float, circleRadius))
 
-  using SegmentsMemSoA = SegmentsMemSoALayout<>;
-  using SegmentsModSoA = SegmentsModSoALayout<>;
-  using SegmentsPixSoA = SegmentsPixSoALayout<>;
+  using SegmentsSoA = SegmentsSoALayout<>;
+  using SegmentsOccupancySoA = SegmentsOccupancySoALayout<>;
+  using SegmentsPixelSoA = SegmentsPixelSoALayout<>;
 
-  using SegmentsDeviceCollection = PortableCollection3<SegmentsMemSoA, SegmentsModSoA, SegmentsPixSoA>;
-  using SegmentsHostCollection = PortableHostMultiCollection<SegmentsMemSoA, SegmentsModSoA, SegmentsPixSoA>;
+  using Segments = SegmentsSoA::View;
+  using SegmentsConst = SegmentsSoA::ConstView;
+  using SegmentsOccupancy = SegmentsOccupancySoA::View;
+  using SegmentsOccupancyConst = SegmentsOccupancySoA::ConstView;
+  using SegmentsPixel = SegmentsPixelSoA::View;
+  using SegmentsPixelConst = SegmentsPixelSoA::ConstView;
 
-  struct Segments {
-    SegmentsMemSoA::View mem;
-    SegmentsModSoA::View mod;
-    SegmentsPixSoA::View pix;
-
-    template <typename TDev>
-    void setData(PortableMultiCollection<TDev, SegmentsMemSoA, SegmentsModSoA, SegmentsPixSoA>& segmentsCol) {
-      mem = segmentsCol.template view<SegmentsMemSoA>();
-      mod = segmentsCol.template view<SegmentsModSoA>();
-      pix = segmentsCol.template view<SegmentsPixSoA>();
-    }
-  };
+  using SegmentsDeviceCollection = PortableCollection3<SegmentsSoA, SegmentsOccupancySoA, SegmentsPixelSoA>;
+  using SegmentsHostCollection = PortableHostMultiCollection<SegmentsSoA, SegmentsOccupancySoA, SegmentsPixelSoA>;
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules_seg(Modules const& modulesInGPU,
                                                                   unsigned int moduleIndex) {
@@ -268,24 +263,25 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                          float dPhiChangeMin,
                                                          float dPhiChangeMax,
                                                          unsigned int idx) {
-    segments.mem.mdIndices()[idx][0] = lowerMDIndex;
-    segments.mem.mdIndices()[idx][1] = upperMDIndex;
-    segments.mem.innerLowerModuleIndices()[idx] = innerLowerModuleIndex;
-    segments.mem.outerLowerModuleIndices()[idx] = outerLowerModuleIndex;
-    segments.mem.innerMiniDoubletAnchorHitIndices()[idx] = innerMDAnchorHitIndex;
-    segments.mem.outerMiniDoubletAnchorHitIndices()[idx] = outerMDAnchorHitIndex;
+    segments.mdIndices()[idx][0] = lowerMDIndex;
+    segments.mdIndices()[idx][1] = upperMDIndex;
+    segments.innerLowerModuleIndices()[idx] = innerLowerModuleIndex;
+    segments.outerLowerModuleIndices()[idx] = outerLowerModuleIndex;
+    segments.innerMiniDoubletAnchorHitIndices()[idx] = innerMDAnchorHitIndex;
+    segments.outerMiniDoubletAnchorHitIndices()[idx] = outerMDAnchorHitIndex;
 
-    segments.mem.dPhis()[idx] = __F2H(dPhi);
-    segments.mem.dPhiMins()[idx] = __F2H(dPhiMin);
-    segments.mem.dPhiMaxs()[idx] = __F2H(dPhiMax);
-    segments.mem.dPhiChanges()[idx] = __F2H(dPhiChange);
-    segments.mem.dPhiChangeMins()[idx] = __F2H(dPhiChangeMin);
-    segments.mem.dPhiChangeMaxs()[idx] = __F2H(dPhiChangeMax);
+    segments.dPhis()[idx] = __F2H(dPhi);
+    segments.dPhiMins()[idx] = __F2H(dPhiMin);
+    segments.dPhiMaxs()[idx] = __F2H(dPhiMax);
+    segments.dPhiChanges()[idx] = __F2H(dPhiChange);
+    segments.dPhiChangeMins()[idx] = __F2H(dPhiChangeMin);
+    segments.dPhiChangeMaxs()[idx] = __F2H(dPhiChangeMax);
   }
 
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelSegmentToMemory(TAcc const& acc,
                                                               Segments segments,
+                                                              SegmentsPixel segmentsPixel,
                                                               MiniDoublets const& mdsInGPU,
                                                               unsigned int innerMDIndex,
                                                               unsigned int outerMDIndex,
@@ -297,20 +293,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                               unsigned int idx,
                                                               unsigned int pixelSegmentArrayIndex,
                                                               float score) {
-    segments.mem.mdIndices()[idx][0] = innerMDIndex;
-    segments.mem.mdIndices()[idx][1] = outerMDIndex;
-    segments.mem.innerLowerModuleIndices()[idx] = pixelModuleIndex;
-    segments.mem.outerLowerModuleIndices()[idx] = pixelModuleIndex;
-    segments.mem.innerMiniDoubletAnchorHitIndices()[idx] = innerAnchorHitIndex;
-    segments.mem.outerMiniDoubletAnchorHitIndices()[idx] = outerAnchorHitIndex;
-    segments.mem.dPhiChanges()[idx] = __F2H(dPhiChange);
+    segments.mdIndices()[idx][0] = innerMDIndex;
+    segments.mdIndices()[idx][1] = outerMDIndex;
+    segments.innerLowerModuleIndices()[idx] = pixelModuleIndex;
+    segments.outerLowerModuleIndices()[idx] = pixelModuleIndex;
+    segments.innerMiniDoubletAnchorHitIndices()[idx] = innerAnchorHitIndex;
+    segments.outerMiniDoubletAnchorHitIndices()[idx] = outerAnchorHitIndex;
+    segments.dPhiChanges()[idx] = __F2H(dPhiChange);
 
-    segments.pix.isDup()[pixelSegmentArrayIndex] = false;
-    segments.pix.score()[pixelSegmentArrayIndex] = score;
-    segments.pix.pLSHitsIdxs()[pixelSegmentArrayIndex].x = hitIdxs[0];
-    segments.pix.pLSHitsIdxs()[pixelSegmentArrayIndex].y = hitIdxs[1];
-    segments.pix.pLSHitsIdxs()[pixelSegmentArrayIndex].z = hitIdxs[2];
-    segments.pix.pLSHitsIdxs()[pixelSegmentArrayIndex].w = hitIdxs[3];
+    segmentsPixel.isDup()[pixelSegmentArrayIndex] = false;
+    segmentsPixel.score()[pixelSegmentArrayIndex] = score;
+    segmentsPixel.pLSHitsIdxs()[pixelSegmentArrayIndex].x = hitIdxs[0];
+    segmentsPixel.pLSHitsIdxs()[pixelSegmentArrayIndex].y = hitIdxs[1];
+    segmentsPixel.pLSHitsIdxs()[pixelSegmentArrayIndex].z = hitIdxs[2];
+    segmentsPixel.pLSHitsIdxs()[pixelSegmentArrayIndex].w = hitIdxs[3];
 
     //computing circle parameters
     /*
@@ -341,9 +337,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         bestIndex = i;
       }
     }
-    segments.pix.circleCenterX()[pixelSegmentArrayIndex] = candidateCenterXs[bestIndex];
-    segments.pix.circleCenterY()[pixelSegmentArrayIndex] = candidateCenterYs[bestIndex];
-    segments.pix.circleRadius()[pixelSegmentArrayIndex] = circleRadius;
+    segmentsPixel.circleCenterX()[pixelSegmentArrayIndex] = candidateCenterXs[bestIndex];
+    segmentsPixel.circleCenterY()[pixelSegmentArrayIndex] = candidateCenterYs[bestIndex];
+    segmentsPixel.circleRadius()[pixelSegmentArrayIndex] = circleRadius;
   }
 
   template <typename TAcc>
@@ -602,6 +598,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   Modules modulesInGPU,
                                   MiniDoublets mdsInGPU,
                                   Segments segments,
+                                  SegmentsOccupancy segmentsOccupancy,
                                   ObjectRanges rangesInGPU) const {
       auto const globalBlockIdx = alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc);
       auto const blockThreadIdx = alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc);
@@ -658,14 +655,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                       dPhiChangeMin,
                                       dPhiChangeMax)) {
               unsigned int totOccupancySegments = alpaka::atomicAdd(
-                  acc, &segments.mod.totOccupancySegments()[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
+                  acc, &segmentsOccupancy.totOccupancySegments()[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
               if (static_cast<int>(totOccupancySegments) >= rangesInGPU.segmentModuleOccupancy[innerLowerModuleIndex]) {
 #ifdef WARNINGS
                 printf("Segment excess alert! Module index = %d\n", innerLowerModuleIndex);
 #endif
               } else {
                 unsigned int segmentModuleIdx = alpaka::atomicAdd(
-                    acc, &segments.mod.nSegments()[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
+                    acc, &segmentsOccupancy.nSegments()[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
                 unsigned int segmentIdx = rangesInGPU.segmentModuleIndices[innerLowerModuleIndex] + segmentModuleIdx;
 
                 addSegmentToMemory(segments,
@@ -798,7 +795,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   Modules modulesInGPU,
-                                  Segments segments,
+                                  SegmentsOccupancyConst segmentsOccupancy,
                                   ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
@@ -808,12 +805,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
       for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
-        if (segments.mod.nSegments()[i] == 0) {
+        if (segmentsOccupancy.nSegments()[i] == 0) {
           rangesInGPU.segmentRanges[i * 2] = -1;
           rangesInGPU.segmentRanges[i * 2 + 1] = -1;
         } else {
           rangesInGPU.segmentRanges[i * 2] = rangesInGPU.segmentModuleIndices[i];
-          rangesInGPU.segmentRanges[i * 2 + 1] = rangesInGPU.segmentModuleIndices[i] + segments.mod.nSegments()[i] - 1;
+          rangesInGPU.segmentRanges[i * 2 + 1] = rangesInGPU.segmentModuleIndices[i] + segmentsOccupancy.nSegments()[i] - 1;
         }
       }
     }
@@ -827,6 +824,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   Hits hitsInGPU,
                                   MiniDoublets mdsInGPU,
                                   Segments segments,
+                                  SegmentsPixel segmentsPixel,
                                   unsigned int* hitIndices0,
                                   unsigned int* hitIndices1,
                                   unsigned int* hitIndices2,
@@ -890,6 +888,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         hits1[3] = hitsInGPU.idxs[mdsInGPU.outerHitIndices[outerMDIndex]];
         addPixelSegmentToMemory(acc,
                                 segments,
+                                segmentsPixel,
                                 mdsInGPU,
                                 innerMDIndex,
                                 outerMDIndex,

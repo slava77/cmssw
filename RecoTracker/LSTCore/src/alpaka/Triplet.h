@@ -138,7 +138,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 #ifdef CUT_VALUE_DEBUG
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(Modules const& modulesInGPU,
                                                          MiniDoublets const& mdsInGPU,
-                                                         Segments segments,
+                                                         SegmentsConst segments,
                                                          Triplets& tripletsInGPU,
                                                          unsigned int innerSegmentIndex,
                                                          unsigned int outerSegmentIndex,
@@ -156,7 +156,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 #else
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addTripletToMemory(Modules const& modulesInGPU,
                                                          MiniDoublets const& mdsInGPU,
-                                                         Segments segments,
+                                                         SegmentsConst segments,
                                                          Triplets& tripletsInGPU,
                                                          unsigned int innerSegmentIndex,
                                                          unsigned int outerSegmentIndex,
@@ -187,9 +187,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     tripletsInGPU.logicalLayers[tripletIndex * Params_T3::kLayers + 2] =
         modulesInGPU.layers[outerOuterLowerModuleIndex] + (modulesInGPU.subdets[outerOuterLowerModuleIndex] == 4) * 6;
     //get the hits
-    unsigned int firstMDIndex = segments.mem.mdIndices()[innerSegmentIndex][0];
-    unsigned int secondMDIndex = segments.mem.mdIndices()[innerSegmentIndex][1];
-    unsigned int thirdMDIndex = segments.mem.mdIndices()[outerSegmentIndex][1];
+    unsigned int firstMDIndex = segments.mdIndices()[innerSegmentIndex][0];
+    unsigned int secondMDIndex = segments.mdIndices()[innerSegmentIndex][1];
+    unsigned int thirdMDIndex = segments.mdIndices()[outerSegmentIndex][1];
 
     tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits] = mdsInGPU.anchorHitIndices[firstMDIndex];
     tripletsInGPU.hitIndices[tripletIndex * Params_T3::kHits + 1] = mdsInGPU.outerHitIndices[firstMDIndex];
@@ -208,7 +208,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passRZConstraint(TAcc const& acc,
                                                        Modules const& modulesInGPU,
                                                        MiniDoublets const& mdsInGPU,
-                                                       Segments segments,
                                                        uint16_t innerInnerLowerModuleIndex,
                                                        uint16_t middleLowerModuleIndex,
                                                        uint16_t outerOuterLowerModuleIndex,
@@ -268,7 +267,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBB(TAcc const& acc,
                                                                 Modules const& modulesInGPU,
                                                                 MiniDoublets const& mdsInGPU,
-                                                                Segments segments,
+                                                                SegmentsConst segments,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -337,7 +336,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       return false;
 
     // raw betaIn value without any correction, based on the mini-doublet hit positions
-    float alpha_InLo = __H2F(segments.mem.dPhiChanges()[innerSegmentIndex]);
+    float alpha_InLo = __H2F(segments.dPhiChanges()[innerSegmentIndex]);
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
     betaIn = alpha_InLo - phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
@@ -364,7 +363,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintBBE(TAcc const& acc,
                                                                 Modules const& modulesInGPU,
                                                                 MiniDoublets const& mdsInGPU,
-                                                                Segments segments,
+                                                                SegmentsConst segments,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -446,7 +445,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float rt_InLo = mdsInGPU.anchorRt[firstMDIndex];
     float rt_InOut = mdsInGPU.anchorRt[secondMDIndex];
 
-    float sdIn_alpha = __H2F(segments.mem.dPhiChanges()[innerSegmentIndex]);
+    float sdIn_alpha = __H2F(segments.dPhiChanges()[innerSegmentIndex]);
 
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
@@ -483,7 +482,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraintEEE(TAcc const& acc,
                                                                 Modules const& modulesInGPU,
                                                                 MiniDoublets const& mdsInGPU,
-                                                                Segments segments,
+                                                                SegmentsConst segments,
                                                                 uint16_t innerInnerLowerModuleIndex,
                                                                 uint16_t middleLowerModuleIndex,
                                                                 uint16_t outerOuterLowerModuleIndex,
@@ -566,15 +565,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float rt_InLo = mdsInGPU.anchorRt[firstMDIndex];
     float rt_InOut = mdsInGPU.anchorRt[secondMDIndex];
-    float sdIn_alpha = __H2F(segments.mem.dPhiChanges()[innerSegmentIndex]);
+    float sdIn_alpha = __H2F(segments.dPhiChanges()[innerSegmentIndex]);
 
     float tl_axis_x = mdsInGPU.anchorX[thirdMDIndex] - mdsInGPU.anchorX[firstMDIndex];
     float tl_axis_y = mdsInGPU.anchorY[thirdMDIndex] - mdsInGPU.anchorY[firstMDIndex];
 
     betaIn = sdIn_alpha - phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mdsInGPU.anchorPhi[firstMDIndex]);
 
-    float sdIn_alphaRHmin = __H2F(segments.mem.dPhiChangeMins()[innerSegmentIndex]);
-    float sdIn_alphaRHmax = __H2F(segments.mem.dPhiChangeMaxs()[innerSegmentIndex]);
+    float sdIn_alphaRHmin = __H2F(segments.dPhiChangeMins()[innerSegmentIndex]);
+    float sdIn_alphaRHmax = __H2F(segments.dPhiChangeMaxs()[innerSegmentIndex]);
     float betaInRHmin = betaIn + sdIn_alphaRHmin - sdIn_alpha;
     float betaInRHmax = betaIn + sdIn_alphaRHmax - sdIn_alpha;
 
@@ -604,7 +603,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPointingConstraint(TAcc const& acc,
                                                              Modules const& modulesInGPU,
                                                              MiniDoublets const& mdsInGPU,
-                                                             Segments segments,
+                                                             SegmentsConst segments,
                                                              uint16_t innerInnerLowerModuleIndex,
                                                              uint16_t middleLowerModuleIndex,
                                                              uint16_t outerOuterLowerModuleIndex,
@@ -739,7 +738,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool runTripletConstraintsAndAlgo(TAcc const& acc,
                                                                    Modules const& modulesInGPU,
                                                                    MiniDoublets const& mdsInGPU,
-                                                                   Segments segments,
+                                                                   SegmentsConst segments,
                                                                    uint16_t innerInnerLowerModuleIndex,
                                                                    uint16_t middleLowerModuleIndex,
                                                                    uint16_t outerOuterLowerModuleIndex,
@@ -753,17 +752,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                    float& circleCenterX,
                                                                    float& circleCenterY) {
     //this cut reduces the number of candidates by a factor of 4, i.e., 3 out of 4 warps can end right here!
-    if (segments.mem.mdIndices()[innerSegmentIndex][1] != segments.mem.mdIndices()[outerSegmentIndex][0])
+    if (segments.mdIndices()[innerSegmentIndex][1] != segments.mdIndices()[outerSegmentIndex][0])
       return false;
 
-    unsigned int firstMDIndex = segments.mem.mdIndices()[innerSegmentIndex][0];
-    unsigned int secondMDIndex = segments.mem.mdIndices()[outerSegmentIndex][0];
-    unsigned int thirdMDIndex = segments.mem.mdIndices()[outerSegmentIndex][1];
+    unsigned int firstMDIndex = segments.mdIndices()[innerSegmentIndex][0];
+    unsigned int secondMDIndex = segments.mdIndices()[outerSegmentIndex][0];
+    unsigned int thirdMDIndex = segments.mdIndices()[outerSegmentIndex][1];
 
     if (not(passRZConstraint(acc,
                              modulesInGPU,
                              mdsInGPU,
-                             segments,
                              innerInnerLowerModuleIndex,
                              middleLowerModuleIndex,
                              outerOuterLowerModuleIndex,
@@ -806,7 +804,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   Modules modulesInGPU,
                                   MiniDoublets mdsInGPU,
-                                  Segments segments,
+                                  SegmentsConst segments,
+                                  SegmentsOccupancyConst segmentsOccupancy,
                                   Triplets tripletsInGPU,
                                   ObjectRanges rangesInGPU,
                                   uint16_t* index_gpu,
@@ -824,22 +823,22 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         if (nConnectedModules == 0)
           continue;
 
-        unsigned int nInnerSegments = segments.mod.nSegments()[innerInnerLowerModuleIndex];
+        unsigned int nInnerSegments = segmentsOccupancy.nSegments()[innerInnerLowerModuleIndex];
         for (unsigned int innerSegmentArrayIndex = globalThreadIdx[1]; innerSegmentArrayIndex < nInnerSegments;
              innerSegmentArrayIndex += gridThreadExtent[1]) {
           unsigned int innerSegmentIndex =
               rangesInGPU.segmentRanges[innerInnerLowerModuleIndex * 2] + innerSegmentArrayIndex;
 
           // middle lower module - outer lower module of inner segment
-          uint16_t middleLowerModuleIndex = segments.mem.outerLowerModuleIndices()[innerSegmentIndex];
+          uint16_t middleLowerModuleIndex = segments.outerLowerModuleIndices()[innerSegmentIndex];
 
-          unsigned int nOuterSegments = segments.mod.nSegments()[middleLowerModuleIndex];
+          unsigned int nOuterSegments = segmentsOccupancy.nSegments()[middleLowerModuleIndex];
           for (unsigned int outerSegmentArrayIndex = globalThreadIdx[2]; outerSegmentArrayIndex < nOuterSegments;
                outerSegmentArrayIndex += gridThreadExtent[2]) {
             unsigned int outerSegmentIndex =
                 rangesInGPU.segmentRanges[2 * middleLowerModuleIndex] + outerSegmentArrayIndex;
 
-            uint16_t outerOuterLowerModuleIndex = segments.mem.outerLowerModuleIndices()[outerSegmentIndex];
+            uint16_t outerOuterLowerModuleIndex = segments.outerLowerModuleIndices()[outerSegmentIndex];
 
             float zOut, rtOut, betaIn, betaInCut, circleRadius, circleCenterX, circleCenterY;
 
@@ -923,7 +922,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   Modules modulesInGPU,
                                   ObjectRanges rangesInGPU,
-                                  Segments segments) const {
+                                  SegmentsOccupancyConst segmentsOccupancy) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -942,7 +941,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       int occupancy, category_number, eta_number;
 
       for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
-        if (segments.mod.nSegments()[i] == 0) {
+        if (segmentsOccupancy.nSegments()[i] == 0) {
           rangesInGPU.tripletModuleIndices[i] = nTotalTriplets;
           rangesInGPU.tripletModuleOccupancy[i] = 0;
           continue;
