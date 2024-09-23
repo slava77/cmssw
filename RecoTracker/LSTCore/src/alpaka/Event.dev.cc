@@ -222,7 +222,8 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
 
     std::array<int, 3> const segments_sizes{{static_cast<int>(nTotalSegments_), static_cast<int>(nLowerModules_+1), static_cast<int>(n_max_pixel_segments_per_module)}};
     segmentsDev_.emplace(segments_sizes, queue_);
-    alpaka::memset(queue_, segmentsDev_->buffer(), 0u); // TODO: We don't need to initialize the entire buffer
+    auto buf = segmentsDev_->buffer();
+    alpaka::memset(queue_, buf, 0u); // TODO: We don't need to initialize the entire buffer
   }
 
   auto hitIndices0_dev = allocBufWrapper<unsigned int>(devAcc_, size, queue_);
@@ -358,7 +359,8 @@ void Event::createSegmentsWithModuleMap() {
   if (!segmentsDev_) {
     std::array<int, 3> const segments_sizes{{static_cast<int>(nTotalSegments_), static_cast<int>(nLowerModules_+1), static_cast<int>(n_max_pixel_segments_per_module)}};
     segmentsDev_.emplace(segments_sizes, queue_);
-    alpaka::memset(queue_, segmentsDev_->buffer(), 0u); // TODO: We don't need to initialize the entire buffer
+    auto buf = segmentsDev_->buffer();
+    alpaka::memset(queue_, buf, 0u); // TODO: We don't need to initialize the entire buffer
   }
 
   Vec3D const threadsPerBlockCreateSeg{1, 1, 64};
