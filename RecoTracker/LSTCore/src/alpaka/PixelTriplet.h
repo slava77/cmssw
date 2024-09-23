@@ -1013,10 +1013,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                       rPhiChiSquaredInwards);
 
             if (success) {
-              float phi =
-                  mdsInGPU.anchorPhi[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]][layer2_adjustment]];
-              float eta =
-                  mdsInGPU.anchorEta[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]][layer2_adjustment]];
+              float phi = mdsInGPU.anchorPhi[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]]
+                                                                 [layer2_adjustment]];
+              float eta = mdsInGPU.anchorEta[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]]
+                                                                 [layer2_adjustment]];
               float eta_pix = segmentsPixel.eta()[i_pLS];
               float phi_pix = segmentsPixel.phi()[i_pLS];
               float pt = segmentsPixel.ptIn()[i_pLS];
@@ -1054,8 +1054,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
               }
             }
           }  // for outerTripletArrayIndex
-        }    // for iLSModule < iLSModule_max
-      }      // for i_pLS
+        }  // for iLSModule < iLSModule_max
+      }  // for i_pLS
     }
   };
 

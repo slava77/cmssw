@@ -331,7 +331,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   struct CheckHitspLS {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, Modules modulesInGPU, SegmentsOccupancyConst segmentsOccupancy, SegmentsPixel segmentsPixel, bool secondpass) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc,
+                                  Modules modulesInGPU,
+                                  SegmentsOccupancyConst segmentsOccupancy,
+                                  SegmentsPixel segmentsPixel,
+                                  bool secondpass) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 

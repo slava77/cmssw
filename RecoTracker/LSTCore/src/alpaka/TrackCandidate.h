@@ -164,11 +164,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     trackCandidatesInGPU.radius[trackCandidateIndex] = __F2H(radius);
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(unsigned int ix,
-                                                    unsigned int jx,
-                                                    MiniDoublets const& mdsInGPU,
-                                                    SegmentsConst segments,
-                                                    Hits const& hitsInGPU) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(
+      unsigned int ix, unsigned int jx, MiniDoublets const& mdsInGPU, SegmentsConst segments, Hits const& hitsInGPU) {
     int phits1[Params_pLS::kHits];
     int phits2[Params_pLS::kHits];
 
@@ -391,7 +388,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   TrackCandidates trackCandidatesInGPU,
                                   SegmentsPixelConst segmentsPixel,
                                   ObjectRanges rangesInGPU) const {
-
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -508,7 +504,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       unsigned int nPixels = segmentsOccupancy.nSegments()[nLowerModules];
       for (unsigned int pixelArrayIndex = globalThreadIdx[2]; pixelArrayIndex < nPixels;
            pixelArrayIndex += gridThreadExtent[2]) {
-        if ((tc_pls_triplets ? 0 : !segmentsPixel.isQuad()[pixelArrayIndex]) || (segmentsPixel.isDup()[pixelArrayIndex]))
+        if ((tc_pls_triplets ? 0 : !segmentsPixel.isQuad()[pixelArrayIndex]) ||
+            (segmentsPixel.isDup()[pixelArrayIndex]))
           continue;
 
         unsigned int trackCandidateIdx =
@@ -542,7 +539,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   TrackCandidates trackCandidatesInGPU,
                                   SegmentsPixelConst segmentsPixel,
                                   ObjectRanges rangesInGPU) const {
-
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));

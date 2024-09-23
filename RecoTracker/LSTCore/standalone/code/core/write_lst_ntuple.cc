@@ -1128,7 +1128,8 @@ void debugPrintOutlierMultiplicities(Event* event) {
                 << " trackCandidates->nTrackCandidates[idx]: " << trackCandidates->nTrackCandidates[idx] << std::endl;
       std::cout << " idx: " << idx << " triplets->nTriplets[idx]: " << triplets->nTriplets[idx] << std::endl;
       unsigned int i = idx;  //modules->lowerModuleIndices[idx];
-      std::cout << " idx: " << idx << " i: " << i << " segmentsOccupancy.nSegments()[i]: " << segmentsOccupancy.nSegments()[i] << std::endl;
+      std::cout << " idx: " << idx << " i: " << i
+                << " segmentsOccupancy.nSegments()[i]: " << segmentsOccupancy.nSegments()[i] << std::endl;
       int nMD = miniDoublets->nMDs[2 * idx] + miniDoublets->nMDs[2 * idx + 1];
       std::cout << " idx: " << idx << " nMD: " << nMD << std::endl;
       int nHits = 0;

@@ -16,45 +16,45 @@
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   GENERATE_SOA_LAYOUT(SegmentsSoALayout,
-    SOA_COLUMN(FPX, dPhis),
-    SOA_COLUMN(FPX, dPhiMins),
-    SOA_COLUMN(FPX, dPhiMaxs),
-    SOA_COLUMN(FPX, dPhiChanges),
-    SOA_COLUMN(FPX, dPhiChangeMins),
-    SOA_COLUMN(FPX, dPhiChangeMaxs),
-    SOA_COLUMN(uint16_t, innerLowerModuleIndices),
-    SOA_COLUMN(uint16_t, outerLowerModuleIndices),
-    SOA_COLUMN(Params_LS::ArrayUxLayers, mdIndices),
-    SOA_COLUMN(unsigned int, innerMiniDoubletAnchorHitIndices),
-    SOA_COLUMN(unsigned int, outerMiniDoubletAnchorHitIndices)
-    //SOA_SCALAR(unsigned int, nMemoryLocations)
-    )
+                      SOA_COLUMN(FPX, dPhis),
+                      SOA_COLUMN(FPX, dPhiMins),
+                      SOA_COLUMN(FPX, dPhiMaxs),
+                      SOA_COLUMN(FPX, dPhiChanges),
+                      SOA_COLUMN(FPX, dPhiChangeMins),
+                      SOA_COLUMN(FPX, dPhiChangeMaxs),
+                      SOA_COLUMN(uint16_t, innerLowerModuleIndices),
+                      SOA_COLUMN(uint16_t, outerLowerModuleIndices),
+                      SOA_COLUMN(Params_LS::ArrayUxLayers, mdIndices),
+                      SOA_COLUMN(unsigned int, innerMiniDoubletAnchorHitIndices),
+                      SOA_COLUMN(unsigned int, outerMiniDoubletAnchorHitIndices)
+                      //SOA_SCALAR(unsigned int, nMemoryLocations)
+  )
 
   GENERATE_SOA_LAYOUT(SegmentsOccupancySoALayout,
-    SOA_COLUMN(unsigned int, nSegments), //number of segments per inner lower module
-    SOA_COLUMN(unsigned int, totOccupancySegments))
+                      SOA_COLUMN(unsigned int, nSegments),  //number of segments per inner lower module
+                      SOA_COLUMN(unsigned int, totOccupancySegments))
 
   GENERATE_SOA_LAYOUT(SegmentsPixelSoALayout,
-    SOA_COLUMN(unsigned int, seedIdx),
-    SOA_COLUMN(int, charge),
-    SOA_COLUMN(int, superbin),
-    SOA_COLUMN(uint4, pLSHitsIdxs),
-    SOA_COLUMN(PixelType, pixelType),
-    SOA_COLUMN(char, isQuad),
-    SOA_COLUMN(char, isDup),
-    SOA_COLUMN(bool, partOfPT5),
-    SOA_COLUMN(float, ptIn),
-    SOA_COLUMN(float, ptErr),
-    SOA_COLUMN(float, px),
-    SOA_COLUMN(float, py),
-    SOA_COLUMN(float, pz),
-    SOA_COLUMN(float, etaErr),
-    SOA_COLUMN(float, eta),
-    SOA_COLUMN(float, phi),
-    SOA_COLUMN(float, score),
-    SOA_COLUMN(float, circleCenterX),
-    SOA_COLUMN(float, circleCenterY),
-    SOA_COLUMN(float, circleRadius))
+                      SOA_COLUMN(unsigned int, seedIdx),
+                      SOA_COLUMN(int, charge),
+                      SOA_COLUMN(int, superbin),
+                      SOA_COLUMN(uint4, pLSHitsIdxs),
+                      SOA_COLUMN(PixelType, pixelType),
+                      SOA_COLUMN(char, isQuad),
+                      SOA_COLUMN(char, isDup),
+                      SOA_COLUMN(bool, partOfPT5),
+                      SOA_COLUMN(float, ptIn),
+                      SOA_COLUMN(float, ptErr),
+                      SOA_COLUMN(float, px),
+                      SOA_COLUMN(float, py),
+                      SOA_COLUMN(float, pz),
+                      SOA_COLUMN(float, etaErr),
+                      SOA_COLUMN(float, eta),
+                      SOA_COLUMN(float, phi),
+                      SOA_COLUMN(float, score),
+                      SOA_COLUMN(float, circleCenterX),
+                      SOA_COLUMN(float, circleCenterY),
+                      SOA_COLUMN(float, circleRadius))
 
   using SegmentsSoA = SegmentsSoALayout<>;
   using SegmentsOccupancySoA = SegmentsOccupancySoALayout<>;
@@ -654,8 +654,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                       dPhiChange,
                                       dPhiChangeMin,
                                       dPhiChangeMax)) {
-              unsigned int totOccupancySegments = alpaka::atomicAdd(
-                  acc, &segmentsOccupancy.totOccupancySegments()[innerLowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
+              unsigned int totOccupancySegments =
+                  alpaka::atomicAdd(acc,
+                                    &segmentsOccupancy.totOccupancySegments()[innerLowerModuleIndex],
+                                    1u,
+                                    alpaka::hierarchy::Threads{});
               if (static_cast<int>(totOccupancySegments) >= rangesInGPU.segmentModuleOccupancy[innerLowerModuleIndex]) {
 #ifdef WARNINGS
                 printf("Segment excess alert! Module index = %d\n", innerLowerModuleIndex);
@@ -810,7 +813,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
           rangesInGPU.segmentRanges[i * 2 + 1] = -1;
         } else {
           rangesInGPU.segmentRanges[i * 2] = rangesInGPU.segmentModuleIndices[i];
-          rangesInGPU.segmentRanges[i * 2 + 1] = rangesInGPU.segmentModuleIndices[i] + segmentsOccupancy.nSegments()[i] - 1;
+          rangesInGPU.segmentRanges[i * 2 + 1] =
+              rangesInGPU.segmentModuleIndices[i] + segmentsOccupancy.nSegments()[i] - 1;
         }
       }
     }
