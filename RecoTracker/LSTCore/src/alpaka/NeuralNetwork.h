@@ -59,7 +59,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         layer2_adjustment = 1;  // get upper segment to be in second layer
       }
       unsigned int md_idx_for_t5_eta_phi =
-          segments.mdIndices()[2 * tripletsInGPU.segmentIndices[2 * innerTripletIndex + layer2_adjustment]][0];
+          segments.mdIndices()[tripletsInGPU.segmentIndices[2 * innerTripletIndex]][layer2_adjustment];
       bool is_endcap1 = (modulesInGPU.subdets[lowerModuleIndex1] == 4);  // true if anchor hit 1 is in the endcap
       bool is_endcap2 = (modulesInGPU.subdets[lowerModuleIndex2] == 4);  // true if anchor hit 2 is in the endcap
       bool is_endcap3 = (modulesInGPU.subdets[lowerModuleIndex3] == 4);  // true if anchor hit 3 is in the endcap

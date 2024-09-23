@@ -223,11 +223,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     short outerInnerLowerModuleSubdet = modulesInGPU.subdets[outerInnerLowerModuleIndex];
     short outerOuterLowerModuleSubdet = modulesInGPU.subdets[outerOuterLowerModuleIndex];
 
-    unsigned int firstMDIndex = segments.mdIndices()[Params_LS::kLayers * innerSegmentIndex][0];
-    unsigned int secondMDIndex = segments.mdIndices()[Params_LS::kLayers * innerSegmentIndex][1];
+    unsigned int firstMDIndex = segments.mdIndices()[innerSegmentIndex][0];
+    unsigned int secondMDIndex = segments.mdIndices()[innerSegmentIndex][1];
 
-    unsigned int thirdMDIndex = segments.mdIndices()[Params_LS::kLayers * outerSegmentIndex][0];
-    unsigned int fourthMDIndex = segments.mdIndices()[Params_LS::kLayers * outerSegmentIndex][1];
+    unsigned int thirdMDIndex = segments.mdIndices()[outerSegmentIndex][0];
+    unsigned int fourthMDIndex = segments.mdIndices()[outerSegmentIndex][1];
 
     if (outerInnerLowerModuleSubdet == Barrel and
         (outerOuterLowerModuleSubdet == Barrel or outerOuterLowerModuleSubdet == Endcap)) {
@@ -832,8 +832,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float pixelF = segmentsPixel.circleCenterY()[pixelSegmentArrayIndex];
     float pixelRadiusPCA = segmentsPixel.circleRadius()[pixelSegmentArrayIndex];
 
-    unsigned int pixelInnerMDIndex = segments.mdIndices()[Params_pLS::kLayers * pixelSegmentIndex][0];
-    unsigned int pixelOuterMDIndex = segments.mdIndices()[Params_pLS::kLayers * pixelSegmentIndex][1];
+    unsigned int pixelInnerMDIndex = segments.mdIndices()[pixelSegmentIndex][0];
+    unsigned int pixelOuterMDIndex = segments.mdIndices()[pixelSegmentIndex][1];
 
     pixelRadius = pixelSegmentPt * kR1GeVf;
     float pixelRadiusError = pixelSegmentPtError * kR1GeVf;
@@ -1014,11 +1014,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
             if (success) {
               float phi =
-                  mdsInGPU.anchorPhi[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
-                                                             layer2_adjustment][0]];
+                  mdsInGPU.anchorPhi[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]][layer2_adjustment]];
               float eta =
-                  mdsInGPU.anchorEta[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
-                                                             layer2_adjustment][0]];
+                  mdsInGPU.anchorEta[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]][layer2_adjustment]];
               float eta_pix = segmentsPixel.eta()[i_pLS];
               float phi_pix = segmentsPixel.phi()[i_pLS];
               float pt = segmentsPixel.ptIn()[i_pLS];

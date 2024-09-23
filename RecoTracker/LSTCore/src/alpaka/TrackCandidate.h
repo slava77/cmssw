@@ -175,7 +175,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     phits1[0] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[segments.mdIndices()[ix][0]]];
     phits1[1] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[segments.mdIndices()[ix][1]]];
     phits1[2] = hitsInGPU.idxs[mdsInGPU.outerHitIndices[segments.mdIndices()[ix][0]]];
-    phits1[3] = hitsInGPU.idxs[mdsInGPU.outerHitIndices[segments.mdIndices()[ix][0]]];
+    phits1[3] = hitsInGPU.idxs[mdsInGPU.outerHitIndices[segments.mdIndices()[ix][1]]];
 
     phits2[0] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[segments.mdIndices()[jx][0]]];
     phits2[1] = hitsInGPU.idxs[mdsInGPU.anchorHitIndices[segments.mdIndices()[jx][1]]];

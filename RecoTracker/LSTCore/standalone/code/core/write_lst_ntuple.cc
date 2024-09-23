@@ -1021,8 +1021,8 @@ void printLSs(Event* event) {
     nSegments += segmentsOccupancy.nSegments()[idx];
     for (unsigned int jdx = 0; jdx < segmentsOccupancy.nSegments()[idx]; jdx++) {
       unsigned int sgIdx = ranges->segmentModuleIndices[idx] + jdx;
-      unsigned int InnerMiniDoubletIndex = segments.mdIndices()[2 * sgIdx][0];
-      unsigned int OuterMiniDoubletIndex = segments.mdIndices()[2 * sgIdx][1];
+      unsigned int InnerMiniDoubletIndex = segments.mdIndices()[sgIdx][0];
+      unsigned int OuterMiniDoubletIndex = segments.mdIndices()[sgIdx][1];
       unsigned int InnerMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[InnerMiniDoubletIndex];
       unsigned int InnerMiniDoubletUpperHitIndex = miniDoublets->outerHitIndices[InnerMiniDoubletIndex];
       unsigned int OuterMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[OuterMiniDoubletIndex];
@@ -1053,8 +1053,8 @@ void printpLSs(Event* event) {
   int npLS = segmentsOccupancy.nSegments()[idx];
   for (unsigned int jdx = 0; jdx < segmentsOccupancy.nSegments()[idx]; jdx++) {
     unsigned int sgIdx = ranges->segmentModuleIndices[idx] + jdx;
-    unsigned int InnerMiniDoubletIndex = segments.mdIndices()[2 * sgIdx][0];
-    unsigned int OuterMiniDoubletIndex = segments.mdIndices()[2 * sgIdx][1];
+    unsigned int InnerMiniDoubletIndex = segments.mdIndices()[sgIdx][0];
+    unsigned int OuterMiniDoubletIndex = segments.mdIndices()[sgIdx][1];
     unsigned int InnerMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[InnerMiniDoubletIndex];
     unsigned int InnerMiniDoubletUpperHitIndex = miniDoublets->outerHitIndices[InnerMiniDoubletIndex];
     unsigned int OuterMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[OuterMiniDoubletIndex];
@@ -1086,9 +1086,9 @@ void printT3s(Event* event) {
       unsigned int tpIdx = idx * 5000 + jdx;
       unsigned int InnerSegmentIndex = triplets->segmentIndices[2 * tpIdx];
       unsigned int OuterSegmentIndex = triplets->segmentIndices[2 * tpIdx + 1];
-      unsigned int InnerSegmentInnerMiniDoubletIndex = segments.mdIndices()[2 * InnerSegmentIndex][0];
-      unsigned int InnerSegmentOuterMiniDoubletIndex = segments.mdIndices()[2 * InnerSegmentIndex][1];
-      unsigned int OuterSegmentOuterMiniDoubletIndex = segments.mdIndices()[2 * OuterSegmentIndex][1];
+      unsigned int InnerSegmentInnerMiniDoubletIndex = segments.mdIndices()[InnerSegmentIndex][0];
+      unsigned int InnerSegmentOuterMiniDoubletIndex = segments.mdIndices()[InnerSegmentIndex][1];
+      unsigned int OuterSegmentOuterMiniDoubletIndex = segments.mdIndices()[OuterSegmentIndex][1];
 
       unsigned int hit_idx0 = miniDoublets->anchorHitIndices[InnerSegmentInnerMiniDoubletIndex];
       unsigned int hit_idx1 = miniDoublets->outerHitIndices[InnerSegmentInnerMiniDoubletIndex];

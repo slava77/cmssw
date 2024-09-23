@@ -164,8 +164,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 6] =
         quintupletsInGPU.lowerModuleIndices[T5Index * Params_T5::kLayers + 4];
 
-    unsigned int pixelInnerMD = segments.mdIndices()[Params_pLS::kLayers * pixelIndex][0];
-    unsigned int pixelOuterMD = segments.mdIndices()[Params_pLS::kLayers * pixelIndex][1];
+    unsigned int pixelInnerMD = segments.mdIndices()[pixelIndex][0];
+    unsigned int pixelOuterMD = segments.mdIndices()[pixelIndex][1];
 
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex] =
         mdsInGPU.anchorHitIndices[pixelInnerMD];

@@ -1365,7 +1365,7 @@ MiniDoubletsBuffer<alpaka_common::DevHost>& Event::getMiniDoublets(bool sync) {
 template <typename TSoA>
 typename TSoA::ConstView Event::getSegments(bool sync) {
   if constexpr (std::is_same_v<Device, DevHost>)
-      return segmentsDev_->const_view<TSoA>();
+    return segmentsDev_->const_view<TSoA>();
   if (!segmentsHost_) {
     segmentsHost_.emplace(cms::alpakatools::CopyToHost<SegmentsDeviceCollection>::copyAsync(queue_, *segmentsDev_));
     if (sync)
