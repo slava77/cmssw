@@ -224,8 +224,13 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
                                              static_cast<int>(nLowerModules_ + 1),
                                              static_cast<int>(n_max_pixel_segments_per_module)}};
     segmentsDev_.emplace(segments_sizes, queue_);
-    auto buf = segmentsDev_->buffer();
-    alpaka::memset(queue_, buf, 0u);  // TODO: We don't need to initialize the entire buffer
+
+    auto nSegments_view =
+        alpaka::createView(devAcc_, segmentsDev_->view<SegmentsOccupancySoA>().nSegments(), nLowerModules_ + 1);
+    auto totOccupancySegments_view = alpaka::createView(
+        devAcc_, segmentsDev_->view<SegmentsOccupancySoA>().totOccupancySegments(), nLowerModules_ + 1);
+    alpaka::memset(queue_, nSegments_view, 0u);
+    alpaka::memset(queue_, totOccupancySegments_view, 0u);
   }
 
   auto hitIndices0_dev = allocBufWrapper<unsigned int>(devAcc_, size, queue_);
@@ -363,8 +368,13 @@ void Event::createSegmentsWithModuleMap() {
                                              static_cast<int>(nLowerModules_ + 1),
                                              static_cast<int>(n_max_pixel_segments_per_module)}};
     segmentsDev_.emplace(segments_sizes, queue_);
-    auto buf = segmentsDev_->buffer();
-    alpaka::memset(queue_, buf, 0u);  // TODO: We don't need to initialize the entire buffer
+
+    auto nSegments_view =
+        alpaka::createView(devAcc_, segmentsDev_->view<SegmentsOccupancySoA>().nSegments(), nLowerModules_ + 1);
+    auto totOccupancySegments_view = alpaka::createView(
+        devAcc_, segmentsDev_->view<SegmentsOccupancySoA>().totOccupancySegments(), nLowerModules_ + 1);
+    alpaka::memset(queue_, nSegments_view, 0u);
+    alpaka::memset(queue_, totOccupancySegments_view, 0u);
   }
 
   Vec3D const threadsPerBlockCreateSeg{1, 1, 64};

@@ -302,6 +302,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     segments.dPhiChanges()[idx] = __F2H(dPhiChange);
 
     segmentsPixel.isDup()[pixelSegmentArrayIndex] = false;
+    segmentsPixel.partOfPT5()[pixelSegmentArrayIndex] = false;
     segmentsPixel.score()[pixelSegmentArrayIndex] = score;
     segmentsPixel.pLSHitsIdxs()[pixelSegmentArrayIndex].x = hitIdxs[0];
     segmentsPixel.pLSHitsIdxs()[pixelSegmentArrayIndex].y = hitIdxs[1];
