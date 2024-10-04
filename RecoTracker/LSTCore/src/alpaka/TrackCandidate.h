@@ -1,12 +1,11 @@
 #ifndef RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
 #define RecoTracker_LSTCore_src_alpaka_TrackCandidate_h
 
-#include "DataFormats/Portable/interface/alpaka/PortableCollection.h"
-
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
 #include "RecoTracker/LSTCore/interface/TrackCandidatesHostCollection.h"
 #include "RecoTracker/LSTCore/interface/TrackCandidatesSoA.h"
+#include "RecoTracker/LSTCore/interface/alpaka/TrackCandidatesDeviceCollection.h"
 
 #include "Triplet.h"
 #include "Segment.h"
@@ -17,11 +16,6 @@
 #include "ObjectRanges.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
-  using TrackCandidatesDeviceCollection = PortableCollection<::lst::TrackCandidatesSoA>;
-
-  using TrackCandidates = ::lst::TrackCandidatesSoA::View;
-  using TrackCandidatesConst = ::lst::TrackCandidatesSoA::ConstView;
-
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addpLSTrackCandidateToMemory(TrackCandidates& cands,
                                                                    unsigned int trackletIndex,
                                                                    unsigned int trackCandidateIndex,

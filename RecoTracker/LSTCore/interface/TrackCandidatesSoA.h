@@ -26,14 +26,7 @@ namespace lst {
                       SOA_SCALAR(unsigned int, nTrackCandidatesT5))                 //
 
   using TrackCandidatesSoA = TrackCandidatesSoALayout<>;
-
-  ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE void initScalars(TrackCandidatesSoA::View& v) {
-    v.nTrackCandidates() = 0;
-    v.nTrackCandidatesT5() = 0;
-    v.nTrackCandidatespT3() = 0;
-    v.nTrackCandidatespT5() = 0;
-    v.nTrackCandidatespLS() = 0;
-  }
-
+  using TrackCandidates = TrackCandidatesSoA::View;
+  using TrackCandidatesConst = TrackCandidatesSoA::ConstView;
 }  // namespace lst
 #endif
