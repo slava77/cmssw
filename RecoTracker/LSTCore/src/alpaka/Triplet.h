@@ -346,12 +346,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float drt_tl_axis = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
 
     //innerOuterAnchor - innerInnerAnchor
-    const float rt_InSeg =
-        alpaka::math::sqrt(acc,
-                           (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) *
-                                   (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) +
-                               (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]) *
-                                   (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]));
+    const float rt_InSeg = alpaka::math::sqrt(acc,
+                                              (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) *
+                                                      (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) +
+                                                  (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]) *
+                                                      (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]));
     betaInCut =
         alpaka::math::asin(acc, alpaka::math::min(acc, (-rt_InSeg + drt_tl_axis) * k2Rinv1GeVf / ptCut, kSinAlphaMax)) +
         (0.02f / drt_InSeg);

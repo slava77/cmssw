@@ -1494,12 +1494,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float corrF = 1.f;
     //innerOuterAnchor - innerInnerAnchor
-    const float rt_InSeg =
-        alpaka::math::sqrt(acc,
-                           (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) *
-                                   (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) +
-                               (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]) *
-                                   (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]));
+    const float rt_InSeg = alpaka::math::sqrt(acc,
+                                              (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) *
+                                                      (mds.anchorX()[secondMDIndex] - mds.anchorX()[firstMDIndex]) +
+                                                  (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]) *
+                                                      (mds.anchorY()[secondMDIndex] - mds.anchorY()[firstMDIndex]));
     float betaInCut =
         alpaka::math::asin(
             acc, alpaka::math::min(acc, (-rt_InSeg * corrF + drt_tl_axis) * k2Rinv1GeVf / ptCut, kSinAlphaMax)) +
@@ -1553,14 +1552,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float dBetaRIn2 = 0;  // TODO-RH
     float dBetaROut = 0;
     if (isEC_lastLayer) {
-      dBetaROut =
-          (alpaka::math::sqrt(acc,
-                              mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
-                                  mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
-           alpaka::math::sqrt(acc,
-                              mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
-                                  mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
-          sinDPhi / drt_tl_axis;
+      dBetaROut = (alpaka::math::sqrt(acc,
+                                      mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
+                                          mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
+                   alpaka::math::sqrt(acc,
+                                      mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
+                                          mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
+                  sinDPhi / drt_tl_axis;
     }
 
     const float dBetaROut2 = dBetaROut * dBetaROut;
@@ -1709,8 +1707,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float betaInRHmin = betaIn;
     float betaInRHmax = betaIn;
-    float betaOut =
-        -sdOut_alphaOut + phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mds.anchorPhi()[fourthMDIndex]);
+    float betaOut = -sdOut_alphaOut + phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mds.anchorPhi()[fourthMDIndex]);
 
     float betaOutRHmin = betaOut;
     float betaOutRHmax = betaOut;
@@ -1802,14 +1799,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float dBetaRIn2 = 0;  // TODO-RH
     float dBetaROut = 0;
     if (modulesInGPU.moduleType[outerOuterLowerModuleIndex] == TwoS) {
-      dBetaROut =
-          (alpaka::math::sqrt(acc,
-                              mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
-                                  mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
-           alpaka::math::sqrt(acc,
-                              mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
-                                  mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
-          sinDPhi / dr;
+      dBetaROut = (alpaka::math::sqrt(acc,
+                                      mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
+                                          mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
+                   alpaka::math::sqrt(acc,
+                                      mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
+                                          mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
+                  sinDPhi / dr;
     }
 
     const float dBetaROut2 = dBetaROut * dBetaROut;
@@ -1959,8 +1955,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float betaInRHmin = betaIn + sdIn_alphaRHmin - sdIn_alpha;
     float betaInRHmax = betaIn + sdIn_alphaRHmax - sdIn_alpha;
 
-    float betaOut =
-        -sdOut_alphaOut + phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mds.anchorPhi()[fourthMDIndex]);
+    float betaOut = -sdOut_alphaOut + phi_mpi_pi(acc, phi(acc, tl_axis_x, tl_axis_y) - mds.anchorPhi()[fourthMDIndex]);
 
     float betaOutRHmin = betaOut - sdOut_alphaOutRHmin + sdOut_alphaOut;
     float betaOutRHmax = betaOut - sdOut_alphaOutRHmax + sdOut_alphaOut;
@@ -2590,10 +2585,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                       rangesInGPU.quintupletModuleIndices[lowerModule1] + quintupletModuleIndex;
                   float phi =
                       mds.anchorPhi()[segmentsInGPU.mdIndices[2 * tripletsInGPU.segmentIndices[2 * innerTripletIndex +
-                                                                                                  layer2_adjustment]]];
+                                                                                               layer2_adjustment]]];
                   float eta =
                       mds.anchorEta()[segmentsInGPU.mdIndices[2 * tripletsInGPU.segmentIndices[2 * innerTripletIndex +
-                                                                                                  layer2_adjustment]]];
+                                                                                               layer2_adjustment]]];
                   float pt = (innerRadius + outerRadius) * k2Rinv1GeVf;
                   float scores = chiSquared + nonAnchorChiSquared;
                   addQuintupletToMemory(tripletsInGPU,

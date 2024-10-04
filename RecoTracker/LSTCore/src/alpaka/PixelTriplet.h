@@ -1007,10 +1007,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             if (success) {
               float phi =
                   mds.anchorPhi()[segmentsInGPU.mdIndices[2 * tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
-                                                             layer2_adjustment]];
+                                                          layer2_adjustment]];
               float eta =
                   mds.anchorEta()[segmentsInGPU.mdIndices[2 * tripletsInGPU.segmentIndices[2 * outerTripletIndex] +
-                                                             layer2_adjustment]];
+                                                          layer2_adjustment]];
               float eta_pix = segmentsInGPU.eta[i_pLS];
               float phi_pix = segmentsInGPU.phi[i_pLS];
               float pt = segmentsInGPU.ptIn[i_pLS];
@@ -1381,14 +1381,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float dBetaROut = 0;
     if (isEC_lastLayer) {
-      dBetaROut =
-          (alpaka::math::sqrt(acc,
-                              mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
-                                  mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
-           alpaka::math::sqrt(acc,
-                              mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
-                                  mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
-          sinDPhi / drt_tl_axis;
+      dBetaROut = (alpaka::math::sqrt(acc,
+                                      mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
+                                          mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
+                   alpaka::math::sqrt(acc,
+                                      mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
+                                          mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
+                  sinDPhi / drt_tl_axis;
     }
 
     const float dBetaROut2 = dBetaROut * dBetaROut;
@@ -1641,14 +1640,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float dBetaROut = 0;
     if (isEC_lastLayer) {
-      dBetaROut =
-          (alpaka::math::sqrt(acc,
-                              mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
-                                  mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
-           alpaka::math::sqrt(acc,
-                              mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
-                                  mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
-          sinDPhi / drt_tl_axis;
+      dBetaROut = (alpaka::math::sqrt(acc,
+                                      mds.anchorHighEdgeX()[fourthMDIndex] * mds.anchorHighEdgeX()[fourthMDIndex] +
+                                          mds.anchorHighEdgeY()[fourthMDIndex] * mds.anchorHighEdgeY()[fourthMDIndex]) -
+                   alpaka::math::sqrt(acc,
+                                      mds.anchorLowEdgeX()[fourthMDIndex] * mds.anchorLowEdgeX()[fourthMDIndex] +
+                                          mds.anchorLowEdgeY()[fourthMDIndex] * mds.anchorLowEdgeY()[fourthMDIndex])) *
+                  sinDPhi / drt_tl_axis;
     }
 
     const float dBetaROut2 = dBetaROut * dBetaROut;

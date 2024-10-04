@@ -121,10 +121,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     mds.anchorHighEdgeY()[idx] = hitsInGPU.highEdgeYs[anchorHitIndex];
     mds.anchorLowEdgeX()[idx] = hitsInGPU.lowEdgeXs[anchorHitIndex];
     mds.anchorLowEdgeY()[idx] = hitsInGPU.lowEdgeYs[anchorHitIndex];
-    mds.anchorHighEdgePhi()[idx] =
-        alpaka::math::atan2(acc, mds.anchorHighEdgeY()[idx], mds.anchorHighEdgeX()[idx]);
-    mds.anchorLowEdgePhi()[idx] =
-        alpaka::math::atan2(acc, mds.anchorLowEdgeY()[idx], mds.anchorLowEdgeX()[idx]);
+    mds.anchorHighEdgePhi()[idx] = alpaka::math::atan2(acc, mds.anchorHighEdgeY()[idx], mds.anchorHighEdgeX()[idx]);
+    mds.anchorLowEdgePhi()[idx] = alpaka::math::atan2(acc, mds.anchorLowEdgeY()[idx], mds.anchorLowEdgeX()[idx]);
 
     mds.outerX()[idx] = hitsInGPU.xs[outerHitIndex];
     mds.outerY()[idx] = hitsInGPU.ys[outerHitIndex];
@@ -746,8 +744,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   struct CreateMiniDoubletsInGPUv2 {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(
-        TAcc const& acc, Modules modulesInGPU, Hits hitsInGPU, MiniDoublets mds, MiniDoubletsOccupancy mdsOccupancy, ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc,
+                                  Modules modulesInGPU,
+                                  Hits hitsInGPU,
+                                  MiniDoublets mds,
+                                  MiniDoubletsOccupancy mdsOccupancy,
+                                  ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -804,8 +806,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                    zUpper,
                                                    rtUpper);
           if (success) {
-            int totOccupancyMDs =
-                alpaka::atomicAdd(acc, &mdsOccupancy.totOccupancyMDs()[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
+            int totOccupancyMDs = alpaka::atomicAdd(
+                acc, &mdsOccupancy.totOccupancyMDs()[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
             if (totOccupancyMDs >= (rangesInGPU.miniDoubletModuleOccupancy[lowerModuleIndex])) {
 #ifdef WARNINGS
               printf("Mini-doublet excess alert! Module index =  %d\n", lowerModuleIndex);
@@ -934,8 +936,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   struct AddMiniDoubletRangesToEventExplicit {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(
-        TAcc const& acc, Modules modulesInGPU, MiniDoubletsOccupancy mdsOccupancy, ObjectRanges rangesInGPU, Hits hitsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc,
+                                  Modules modulesInGPU,
+                                  MiniDoubletsOccupancy mdsOccupancy,
+                                  ObjectRanges rangesInGPU,
+                                  Hits hitsInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -955,18 +960,5 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
   };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
-
-namespace cms::alpakatools {
-  // This is not used, but it is needed for compilation
-  template <typename T0, typename... Args>
-  struct CopyToHost<PortableHostMultiCollection<T0, Args...>> {
-    template <typename TQueue>
-    static auto copyAsync(TQueue& queue, PortableHostMultiCollection<T0, Args...> const& srcData) {
-      PortableHostMultiCollection<T0, Args...> dstData(srcData.sizes(), queue);
-      alpaka::memcpy(queue, dstData.buffer(), srcData.buffer());
-      return dstData;
-    }
-  };
-}  // namespace cms::alpakatools
 
 #endif

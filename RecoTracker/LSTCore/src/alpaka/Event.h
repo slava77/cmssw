@@ -182,7 +182,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     HitsBuffer<DevHost>& getHits(bool sync = true);
     HitsBuffer<DevHost>& getHitsInCMSSW(bool sync = true);
     ObjectRangesBuffer<DevHost>& getRanges(bool sync = true);
-    template <typename TSoA>
+    template <typename TSoA, typename TDev = Device>
     typename TSoA::ConstView getMiniDoublets(bool sync = true);
     SegmentsBuffer<DevHost>& getSegments(bool sync = true);
     TripletsBuffer<DevHost>& getTriplets(bool sync = true);

@@ -429,14 +429,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float chiSquared;
     size_t bestIndex;
     for (size_t i = 0; i < 2; i++) {
-      chiSquared =
-          alpaka::math::abs(acc,
-                            alpaka::math::sqrt(acc,
-                                               (mds.anchorX()[outerMDIndex] - candidateCenterXs[i]) *
-                                                       (mds.anchorX()[outerMDIndex] - candidateCenterXs[i]) +
-                                                   (mds.anchorY()[outerMDIndex] - candidateCenterYs[i]) *
-                                                       (mds.anchorY()[outerMDIndex] - candidateCenterYs[i])) -
-                                circleRadius);
+      chiSquared = alpaka::math::abs(acc,
+                                     alpaka::math::sqrt(acc,
+                                                        (mds.anchorX()[outerMDIndex] - candidateCenterXs[i]) *
+                                                                (mds.anchorX()[outerMDIndex] - candidateCenterXs[i]) +
+                                                            (mds.anchorY()[outerMDIndex] - candidateCenterYs[i]) *
+                                                                (mds.anchorY()[outerMDIndex] - candidateCenterYs[i])) -
+                                         circleRadius);
       if (chiSquared < bestChiSquared) {
         bestChiSquared = chiSquared;
         bestIndex = i;

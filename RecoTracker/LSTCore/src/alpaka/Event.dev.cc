@@ -194,12 +194,10 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
     *nTotalMDs_buf_h.data() += n_max_pixel_md_per_modules;
     unsigned int nTotalMDs = *nTotalMDs_buf_h.data();
 
-    std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs),
-                                             static_cast<int>(nLowerModules_ + 1)}};
+    std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs), static_cast<int>(nLowerModules_ + 1)}};
     mdsDev_.emplace(mds_sizes, queue_);
 
-    auto nMDs_view =
-        alpaka::createView(devAcc_, mdsDev_->view<MiniDoubletsOccupancySoA>().nMDs(), nLowerModules_ + 1);
+    auto nMDs_view = alpaka::createView(devAcc_, mdsDev_->view<MiniDoubletsOccupancySoA>().nMDs(), nLowerModules_ + 1);
     auto totOccupancyMDs_view =
         alpaka::createView(devAcc_, mdsDev_->view<MiniDoubletsOccupancySoA>().totOccupancyMDs(), nLowerModules_ + 1);
     alpaka::memset(queue_, nMDs_view, 0u);
@@ -275,8 +273,7 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
   alpaka::memcpy(queue_, dst_view_nMDs, src_view_mdSize);
 
   auto totOccupancyMDs_view = alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), (Idx)nLowerModules_ + 1);
-  auto dst_view_totOccupancyMDs =
-      alpaka::createSubView(totOccupancyMDs_view, (Idx)1u, (Idx)pixelModuleIndex);
+  auto dst_view_totOccupancyMDs = alpaka::createSubView(totOccupancyMDs_view, (Idx)1u, (Idx)pixelModuleIndex);
   alpaka::memcpy(queue_, dst_view_totOccupancyMDs, src_view_mdSize);
 
   alpaka::wait(queue_);  // FIXME: remove synch after inputs refactored to be in pinned memory
@@ -326,12 +323,10 @@ void Event::createMiniDoublets() {
   unsigned int nTotalMDs = *nTotalMDs_buf_h.data();
 
   if (!mdsDev_) {
-    std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs),
-                                             static_cast<int>(nLowerModules_ + 1)}};
+    std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs), static_cast<int>(nLowerModules_ + 1)}};
     mdsDev_.emplace(mds_sizes, queue_);
 
-    auto nMDs_view =
-        alpaka::createView(devAcc_, mdsDev_->view<MiniDoubletsOccupancySoA>().nMDs(), nLowerModules_ + 1);
+    auto nMDs_view = alpaka::createView(devAcc_, mdsDev_->view<MiniDoubletsOccupancySoA>().nMDs(), nLowerModules_ + 1);
     auto totOccupancyMDs_view =
         alpaka::createView(devAcc_, mdsDev_->view<MiniDoubletsOccupancySoA>().totOccupancyMDs(), nLowerModules_ + 1);
     alpaka::memset(queue_, nMDs_view, 0u);
@@ -1337,16 +1332,20 @@ ObjectRangesBuffer<alpaka_common::DevHost>& Event::getRanges(bool sync) {
   return rangesInCPU_.value();
 }
 
-template <typename TSoA>
+template <typename TSoA, typename TDev>
 typename TSoA::ConstView Event::getMiniDoublets(bool sync) {
-  if constexpr (std::is_same_v<Device, DevHost>)
+  if constexpr (std::is_same_v<TDev, DevHost>) {
     return mdsDev_->const_view<TSoA>();
-  if (!mdsHost_) {
-    mdsHost_.emplace(cms::alpakatools::CopyToHost<MiniDoubletsDeviceCollection>::copyAsync(queue_, *mdsDev_));
-    if (sync)
-      alpaka::wait(queue_);  // host consumers expect filled data
+  } else {
+    if (!mdsHost_) {
+      mdsHost_.emplace(
+          cms::alpakatools::CopyToHost<
+              PortableMultiCollection<TDev, MiniDoubletsSoA, MiniDoubletsOccupancySoA>>::copyAsync(queue_, *mdsDev_));
+      if (sync)
+        alpaka::wait(queue_);  // host consumers expect filled data
+    }
+    return mdsHost_->const_view<TSoA>();
   }
-  return mdsHost_->const_view<TSoA>();
 }
 template MiniDoubletsConst Event::getMiniDoublets<MiniDoubletsSoA>(bool);
 template MiniDoubletsOccupancyConst Event::getMiniDoublets<MiniDoubletsOccupancySoA>(bool);

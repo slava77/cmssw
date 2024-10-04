@@ -164,11 +164,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     trackCandidatesInGPU.radius[trackCandidateIndex] = __F2H(radius);
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(unsigned int ix,
-                                                    unsigned int jx,
-                                                    MiniDoubletsConst mds,
-                                                    Segments const& segmentsInGPU,
-                                                    Hits const& hitsInGPU) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkPixelHits(
+      unsigned int ix, unsigned int jx, MiniDoubletsConst mds, Segments const& segmentsInGPU, Hits const& hitsInGPU) {
     int phits1[Params_pLS::kHits];
     int phits2[Params_pLS::kHits];
 
