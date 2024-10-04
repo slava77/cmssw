@@ -910,17 +910,4 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 
-namespace cms::alpakatools {
-  // This is not used, but it is needed for compilation
-  template <typename T0, typename... Args>
-  struct CopyToHost<PortableHostMultiCollection<T0, Args...>> {
-    template <typename TQueue>
-    static auto copyAsync(TQueue& queue, PortableHostMultiCollection<T0, Args...> const& srcData) {
-      PortableHostMultiCollection<T0, Args...> dstData(srcData.sizes(), queue);
-      alpaka::memcpy(queue, dstData.buffer(), srcData.buffer());
-      return dstData;
-    }
-  };
-}  // namespace cms::alpakatools
-
 #endif

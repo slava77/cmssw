@@ -1396,16 +1396,21 @@ MiniDoubletsBuffer<alpaka_common::DevHost>& Event::getMiniDoublets(bool sync) {
   return mdsInCPU_.value();
 }
 
-template <typename TSoA>
+template <typename TSoA, typename TDev>
 typename TSoA::ConstView Event::getSegments(bool sync) {
-  if constexpr (std::is_same_v<Device, DevHost>)
+  if constexpr (std::is_same_v<TDev, DevHost>) {
     return segmentsDev_->const_view<TSoA>();
-  if (!segmentsHost_) {
-    segmentsHost_.emplace(cms::alpakatools::CopyToHost<SegmentsDeviceCollection>::copyAsync(queue_, *segmentsDev_));
-    if (sync)
-      alpaka::wait(queue_);  // host consumers expect filled data
+  } else {
+    if (!segmentsHost_) {
+      segmentsHost_.emplace(
+          cms::alpakatools::
+              CopyToHost<PortableMultiCollection<TDev, SegmentsSoA, SegmentsOccupancySoA, SegmentsPixelSoA>>::copyAsync(
+                  queue_, *segmentsDev_));
+      if (sync)
+        alpaka::wait(queue_);  // host consumers expect filled data
+    }
+    return segmentsHost_->const_view<TSoA>();
   }
-  return segmentsHost_->const_view<TSoA>();
 }
 template SegmentsConst Event::getSegments<SegmentsSoA>(bool);
 template SegmentsOccupancyConst Event::getSegments<SegmentsOccupancySoA>(bool);
