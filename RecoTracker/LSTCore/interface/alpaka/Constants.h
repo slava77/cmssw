@@ -3,26 +3,9 @@
 
 #include "RecoTracker/LSTCore/interface/Constants.h"
 
-#if defined ALPAKA_ACC_GPU_CUDA_ENABLED
-#include <cuda_fp16.h>
-#elif defined ALPAKA_ACC_GPU_HIP_ENABLED
-#include <hip/hip_fp16.h>
-#endif
-
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   using namespace ::lst;
-
-// Half precision wrapper functions.
-#if defined(FP16_Base)
-#define __F2H __float2half
-#define __H2F __half2float
-  typedef __half float FPX;
-#else
-#define __F2H
-#define __H2F
-  typedef float FPX;
-#endif
 
   Vec3D constexpr elementsPerThread(Vec3D::all(static_cast<Idx>(1)));
 
