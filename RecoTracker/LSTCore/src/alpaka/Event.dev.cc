@@ -196,10 +196,10 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
     std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs), static_cast<int>(nLowerModules_ + 1)}};
     miniDoubletsDC_.emplace(mds_sizes, queue_);
 
-    auto nMDs_view =
-        alpaka::createView(devAcc_, miniDoubletsDC_->view<MiniDoubletsOccupancySoA>().nMDs(), nLowerModules_ + 1);
-    auto totOccupancyMDs_view = alpaka::createView(
-        devAcc_, miniDoubletsDC_->view<MiniDoubletsOccupancySoA>().totOccupancyMDs(), nLowerModules_ + 1);
+    auto mdsOccupancy = miniDoubletsDC_->view<MiniDoubletsOccupancySoA>();
+    auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), mdsOccupancy.metadata().size());
+    auto totOccupancyMDs_view =
+        alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), mdsOccupancy.metadata().size());
     alpaka::memset(queue_, nMDs_view, 0u);
     alpaka::memset(queue_, totOccupancyMDs_view, 0u);
   }
@@ -267,12 +267,13 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
       alpaka::createSubView(segmentsBuffers_->totOccupancySegments_buf, (Idx)1u, (Idx)pixelModuleIndex);
   alpaka::memcpy(queue_, dst_view_totOccupancySegments, src_view_size);
 
-  MiniDoubletsOccupancy mdsOccupancy = miniDoubletsDC_->view<MiniDoubletsOccupancySoA>();
-  auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), (Idx)nLowerModules_ + 1);
+  auto mdsOccupancy = miniDoubletsDC_->view<MiniDoubletsOccupancySoA>();
+  auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), (Idx)mdsOccupancy.metadata().size());
   auto dst_view_nMDs = alpaka::createSubView(nMDs_view, (Idx)1u, (Idx)pixelModuleIndex);
   alpaka::memcpy(queue_, dst_view_nMDs, src_view_mdSize);
 
-  auto totOccupancyMDs_view = alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), (Idx)nLowerModules_ + 1);
+  auto totOccupancyMDs_view =
+      alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), (Idx)mdsOccupancy.metadata().size());
   auto dst_view_totOccupancyMDs = alpaka::createSubView(totOccupancyMDs_view, (Idx)1u, (Idx)pixelModuleIndex);
   alpaka::memcpy(queue_, dst_view_totOccupancyMDs, src_view_mdSize);
 
@@ -326,10 +327,10 @@ void Event::createMiniDoublets() {
     std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs), static_cast<int>(nLowerModules_ + 1)}};
     miniDoubletsDC_.emplace(mds_sizes, queue_);
 
-    auto nMDs_view =
-        alpaka::createView(devAcc_, miniDoubletsDC_->view<MiniDoubletsOccupancySoA>().nMDs(), nLowerModules_ + 1);
-    auto totOccupancyMDs_view = alpaka::createView(
-        devAcc_, miniDoubletsDC_->view<MiniDoubletsOccupancySoA>().totOccupancyMDs(), nLowerModules_ + 1);
+    auto mdsOccupancy = miniDoubletsDC_->view<MiniDoubletsOccupancySoA>();
+    auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), mdsOccupancy.metadata().size());
+    auto totOccupancyMDs_view =
+        alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), mdsOccupancy.metadata().size());
     alpaka::memset(queue_, nMDs_view, 0u);
     alpaka::memset(queue_, totOccupancyMDs_view, 0u);
   }
@@ -963,8 +964,8 @@ void Event::createPixelQuintuplets() {
 
 void Event::addMiniDoubletsToEventExplicit() {
   auto nMDsCPU_buf = allocBufWrapper<unsigned int>(cms::alpakatools::host(), nLowerModules_, queue_);
-  auto nMDs_view =
-      alpaka::createView(devAcc_, miniDoubletsDC_->const_view<MiniDoubletsOccupancySoA>().nMDs(), nLowerModules_);
+  auto mdsOccupancy = miniDoubletsDC_->const_view<MiniDoubletsOccupancySoA>();
+  auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), nLowerModules_);  // exclude pixel part
   alpaka::memcpy(queue_, nMDsCPU_buf, nMDs_view, nLowerModules_);
 
   // FIXME: replace by ES host data
