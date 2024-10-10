@@ -226,8 +226,8 @@ void setOutputBranches(Event* event) {
   std::vector<std::vector<int>> tc_matched_simIdx;
 
   // ============ Track candidates =============
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
-  unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
+  auto const& trackCandidates = event->getTrackCandidates().const_view();
+  unsigned int nTrackCandidates = trackCandidates.nTrackCandidates();
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {
     // Compute reco quantities of track candidate based on final object
     int type, isFake;
@@ -506,7 +506,7 @@ void setGnnNtupleBranches(Event* event) {
   Hits const* hitsEvt = event->getHits().data();
   Modules const* modules = event->getModules().data();
   ObjectRanges const* ranges = event->getRanges().data();
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
+  auto const& trackCandidates = event->getTrackCandidates().const_view();
 
   std::set<unsigned int> mds_used_in_sg;
   std::map<unsigned int, unsigned int> md_index_map;
@@ -521,7 +521,7 @@ void setGnnNtupleBranches(Event* event) {
   }
 
   std::set<unsigned int> lss_used_in_true_tc;
-  unsigned int nTrackCandidates = *trackCandidates->nTrackCandidates;
+  unsigned int nTrackCandidates = trackCandidates.nTrackCandidates();
   for (unsigned int idx = 0; idx < nTrackCandidates; idx++) {
     // Only consider true track candidates
     std::vector<unsigned int> hitidxs;
@@ -710,8 +710,8 @@ void setGnnNtupleMiniDoublet(Event* event, unsigned int MD) {
 //________________________________________________________________________________________________________________________________
 std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(Event* event, unsigned int idx) {
   // Get the type of the track candidate
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
-  short type = trackCandidates->trackCandidateType[idx];
+  auto const& trackCandidates = event->getTrackCandidates().const_view();
+  short type = trackCandidates.trackCandidateType()[idx];
 
   enum { pT5 = 7, pT3 = 5, T5 = 4, pLS = 8 };
 
@@ -744,7 +744,7 @@ std::tuple<int, float, float, float, int, std::vector<int>> parseTrackCandidate(
 std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT5(Event* event,
                                                                                                unsigned int idx) {
   // Get relevant information
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
+  auto const& trackCandidates = event->getTrackCandidates().const_view();
   Quintuplets const* quintuplets = event->getQuintuplets().data();
   Segments const* segments = event->getSegments().data();
 
@@ -757,7 +757,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   // ****           oo -- oo -- oo -- oo -- oo   pT5
   //                oo -- oo -- oo               first T3 of the T5
   //                            oo -- oo -- oo   second T3 of the T5
-  unsigned int pT5 = trackCandidates->directObjectIndices[idx];
+  unsigned int pT5 = trackCandidates.directObjectIndices()[idx];
   unsigned int pLS = getPixelLSFrompT5(event, pT5);
   unsigned int T5Index = getT5FrompT5(event, pT5);
 
@@ -856,7 +856,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepT3(Event* event,
                                                                                                unsigned int idx) {
   // Get relevant information
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
+  auto const& trackCandidates = event->getTrackCandidates().const_view();
   Triplets const* triplets = event->getTriplets().data();
   Segments const* segments = event->getSegments().data();
 
@@ -867,7 +867,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   // -------------  --------------------------
   // pLS            01    23    45               (anchor hit of a minidoublet is always the first of the pair)
   // ****           oo -- oo -- oo               pT3
-  unsigned int pT3 = trackCandidates->directObjectIndices[idx];
+  unsigned int pT3 = trackCandidates.directObjectIndices()[idx];
   unsigned int pLS = getPixelLSFrompT3(event, pT3);
   unsigned int T3 = getT3FrompT3(event, pT3);
 
@@ -890,9 +890,9 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 //________________________________________________________________________________________________________________________________
 std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parseT5(Event* event,
                                                                                               unsigned int idx) {
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
+  auto const& trackCandidates = event->getTrackCandidates().const_view();
   Quintuplets const* quintuplets = event->getQuintuplets().data();
-  unsigned int T5 = trackCandidates->directObjectIndices[idx];
+  unsigned int T5 = trackCandidates.directObjectIndices()[idx];
   std::vector<unsigned int> hits = getHitsFromT5(event, T5);
 
   //
@@ -924,11 +924,11 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
 //________________________________________________________________________________________________________________________________
 std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned int>> parsepLS(Event* event,
                                                                                                unsigned int idx) {
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
+  auto const& trackCandidates = event->getTrackCandidates().const_view();
   Segments const* segments = event->getSegments().data();
 
   // Getting pLS index
-  unsigned int pLS = trackCandidates->directObjectIndices[idx];
+  unsigned int pLS = trackCandidates.directObjectIndices()[idx];
 
   // Getting pt eta and phi
   float pt = segments->ptIn[pLS];
@@ -1109,31 +1109,4 @@ void printT3s(Event* event) {
     }
   }
   std::cout << "VALIDATION nTriplets: " << nTriplets << std::endl;
-}
-
-//________________________________________________________________________________________________________________________________
-void debugPrintOutlierMultiplicities(Event* event) {
-  TrackCandidates const* trackCandidates = event->getTrackCandidates().data();
-  Triplets const* triplets = event->getTriplets().data();
-  Segments const* segments = event->getSegments().data();
-  MiniDoubletsOccupancyConst miniDoubletsOccupancy = event->getMiniDoublets<MiniDoubletsOccupancySoA>();
-  Modules const* modules = event->getModules().data();
-  ObjectRanges const* ranges = event->getRanges().data();
-  //int nTrackCandidates = 0;
-  for (unsigned int idx = 0; idx <= *(modules->nLowerModules); ++idx) {
-    if (trackCandidates->nTrackCandidates[idx] > 50000) {
-      std::cout << " modules->detIds[modules->lowerModuleIndices[idx]]: " << modules->detIds[idx] << std::endl;
-      std::cout << " idx: " << idx
-                << " trackCandidates->nTrackCandidates[idx]: " << trackCandidates->nTrackCandidates[idx] << std::endl;
-      std::cout << " idx: " << idx << " triplets->nTriplets[idx]: " << triplets->nTriplets[idx] << std::endl;
-      unsigned int i = idx;  //modules->lowerModuleIndices[idx];
-      std::cout << " idx: " << idx << " i: " << i << " segments->nSegments[i]: " << segments->nSegments[i] << std::endl;
-      int nMD = miniDoubletsOccupancy.nMDs()[2 * idx] + miniDoubletsOccupancy.nMDs()[2 * idx + 1];
-      std::cout << " idx: " << idx << " nMD: " << nMD << std::endl;
-      int nHits = 0;
-      nHits += ranges->hitRanges[4 * idx + 1] - ranges->hitRanges[4 * idx] + 1;
-      nHits += ranges->hitRanges[4 * idx + 3] - ranges->hitRanges[4 * idx + 2] + 1;
-      std::cout << " idx: " << idx << " nHits: " << nHits << std::endl;
-    }
-  }
 }
