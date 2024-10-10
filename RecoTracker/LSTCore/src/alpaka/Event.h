@@ -47,7 +47,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<ObjectRangesBuffer<Device>> rangesBuffers_;
     std::optional<Hits> hitsInGPU_;
     std::optional<HitsBuffer<Device>> hitsBuffers_;
-    std::optional<MiniDoubletsDeviceCollection> mdsDev_;
+    std::optional<MiniDoubletsDeviceCollection> miniDoubletsDC_;
     std::optional<Segments> segmentsInGPU_;
     std::optional<SegmentsBuffer<Device>> segmentsBuffers_;
     std::optional<Triplets> tripletsInGPU_;
@@ -63,7 +63,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     //CPU interface stuff
     std::optional<ObjectRangesBuffer<DevHost>> rangesInCPU_;
     std::optional<HitsBuffer<DevHost>> hitsInCPU_;
-    std::optional<MiniDoubletsHostCollection> mdsHost_;
+    std::optional<MiniDoubletsHostCollection> miniDoubletsHC_;
     std::optional<SegmentsBuffer<DevHost>> segmentsInCPU_;
     std::optional<TripletsBuffer<DevHost>> tripletsInCPU_;
     std::optional<TrackCandidatesHostCollection> trackCandidatesHC_;
