@@ -2,9 +2,9 @@
 #define RecoTracker_LSTCore_interface_MiniDoubletsSoA_h
 
 #include "DataFormats/SoATemplate/interface/SoALayout.h"
-#include "DataFormats/Portable/interface/alpaka/PortableCollection.h"
+#include "DataFormats/Portable/interface/PortableCollection.h"
 
-namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
+namespace lst {
 
   GENERATE_SOA_LAYOUT(MiniDoubletsSoALayout,
                       SOA_COLUMN(unsigned int, anchorHitIndices),
@@ -53,9 +53,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   using MiniDoubletsOccupancy = MiniDoubletsOccupancySoA::View;
   using MiniDoubletsOccupancyConst = MiniDoubletsOccupancySoA::ConstView;
 
-  using MiniDoubletsDeviceCollection = PortableCollection2<MiniDoubletsSoA, MiniDoubletsOccupancySoA>;
   using MiniDoubletsHostCollection = PortableHostMultiCollection<MiniDoubletsSoA, MiniDoubletsOccupancySoA>;
 
-}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
+}  // namespace lst
 
 #endif
