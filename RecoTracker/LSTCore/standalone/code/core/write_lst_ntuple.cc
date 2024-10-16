@@ -502,7 +502,7 @@ void setPixelTripletOutputBranches(Event* event) {
 void setGnnNtupleBranches(Event* event) {
   // Get relevant information
   Segments const* segments = event->getSegments().data();
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsOccupancyConst miniDoublets = event->getMiniDoublets<MiniDoubletsOccupancySoA>();
   Hits const* hitsEvt = event->getHits().data();
   Modules const* modules = event->getModules().data();
   ObjectRanges const* ranges = event->getRanges().data();
@@ -516,7 +516,7 @@ void setGnnNtupleBranches(Event* event) {
   unsigned int nTotalMD = 0;
   unsigned int nTotalLS = 0;
   for (unsigned int idx = 0; idx < *(modules->nLowerModules); ++idx) {
-    nTotalMD += miniDoublets->nMDs[idx];
+    nTotalMD += miniDoublets.nMDs()[idx];
     nTotalLS += segments->nSegments[idx];
   }
 
@@ -642,12 +642,12 @@ void setGnnNtupleBranches(Event* event) {
 //________________________________________________________________________________________________________________________________
 void setGnnNtupleMiniDoublet(Event* event, unsigned int MD) {
   // Get relevant information
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
   Hits const* hitsEvt = event->getHits().data();
 
   // Get the hit indices
-  unsigned int hit0 = miniDoublets->anchorHitIndices[MD];
-  unsigned int hit1 = miniDoublets->outerHitIndices[MD];
+  unsigned int hit0 = miniDoublets.anchorHitIndices()[MD];
+  unsigned int hit1 = miniDoublets.outerHitIndices()[MD];
 
   // Get the hit infos
   const float hit0_x = hitsEvt->xs[hit0];
@@ -677,7 +677,7 @@ void setGnnNtupleMiniDoublet(Event* event, unsigned int MD) {
   int detId = trk.ph2_detId()[anchitidx];
 
   // Obtaining dPhiChange
-  float dphichange = miniDoublets->dphichanges[MD];
+  float dphichange = miniDoublets.dphichanges()[MD];
 
   // Computing pt
   float pt = hit0_r * k2Rinv1GeVf / sin(dphichange);
@@ -959,7 +959,7 @@ void printHitMultiplicities(Event* event) {
 
 //________________________________________________________________________________________________________________________________
 void printMiniDoubletMultiplicities(Event* event) {
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsOccupancyConst miniDoublets = event->getMiniDoublets<MiniDoubletsOccupancySoA>();
   Modules const* modules = event->getModules().data();
 
   int nMiniDoublets = 0;
@@ -968,8 +968,8 @@ void printMiniDoubletMultiplicities(Event* event) {
        idx++)  // "<=" because cheating to include pixel track candidate lower module
   {
     if (modules->isLower[idx]) {
-      nMiniDoublets += miniDoublets->nMDs[idx];
-      totOccupancyMiniDoublets += miniDoublets->totOccupancyMDs[idx];
+      nMiniDoublets += miniDoublets.nMDs()[idx];
+      totOccupancyMiniDoublets += miniDoublets.totOccupancyMDs()[idx];
     }
   }
   std::cout << " nMiniDoublets: " << nMiniDoublets << std::endl;
@@ -986,17 +986,18 @@ void printAllObjects(Event* event) {
 
 //________________________________________________________________________________________________________________________________
 void printMDs(Event* event) {
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
+  MiniDoubletsOccupancyConst miniDoubletsOccupancy = event->getMiniDoublets<MiniDoubletsOccupancySoA>();
   Hits const* hitsEvt = event->getHits().data();
   Modules const* modules = event->getModules().data();
   ObjectRanges const* ranges = event->getRanges().data();
 
   // Then obtain the lower module index
   for (unsigned int idx = 0; idx <= *(modules->nLowerModules); ++idx) {
-    for (unsigned int iMD = 0; iMD < miniDoublets->nMDs[idx]; iMD++) {
+    for (unsigned int iMD = 0; iMD < miniDoubletsOccupancy.nMDs()[idx]; iMD++) {
       unsigned int mdIdx = ranges->miniDoubletModuleIndices[idx] + iMD;
-      unsigned int LowerHitIndex = miniDoublets->anchorHitIndices[mdIdx];
-      unsigned int UpperHitIndex = miniDoublets->outerHitIndices[mdIdx];
+      unsigned int LowerHitIndex = miniDoublets.anchorHitIndices()[mdIdx];
+      unsigned int UpperHitIndex = miniDoublets.outerHitIndices()[mdIdx];
       unsigned int hit0 = hitsEvt->idxs[LowerHitIndex];
       unsigned int hit1 = hitsEvt->idxs[UpperHitIndex];
       std::cout << "VALIDATION 'MD': "
@@ -1009,7 +1010,7 @@ void printMDs(Event* event) {
 //________________________________________________________________________________________________________________________________
 void printLSs(Event* event) {
   Segments const* segments = event->getSegments().data();
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
   Hits const* hitsEvt = event->getHits().data();
   Modules const* modules = event->getModules().data();
   ObjectRanges const* ranges = event->getRanges().data();
@@ -1022,10 +1023,10 @@ void printLSs(Event* event) {
       unsigned int sgIdx = ranges->segmentModuleIndices[idx] + jdx;
       unsigned int InnerMiniDoubletIndex = segments->mdIndices[2 * sgIdx];
       unsigned int OuterMiniDoubletIndex = segments->mdIndices[2 * sgIdx + 1];
-      unsigned int InnerMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[InnerMiniDoubletIndex];
-      unsigned int InnerMiniDoubletUpperHitIndex = miniDoublets->outerHitIndices[InnerMiniDoubletIndex];
-      unsigned int OuterMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[OuterMiniDoubletIndex];
-      unsigned int OuterMiniDoubletUpperHitIndex = miniDoublets->outerHitIndices[OuterMiniDoubletIndex];
+      unsigned int InnerMiniDoubletLowerHitIndex = miniDoublets.anchorHitIndices()[InnerMiniDoubletIndex];
+      unsigned int InnerMiniDoubletUpperHitIndex = miniDoublets.outerHitIndices()[InnerMiniDoubletIndex];
+      unsigned int OuterMiniDoubletLowerHitIndex = miniDoublets.anchorHitIndices()[OuterMiniDoubletIndex];
+      unsigned int OuterMiniDoubletUpperHitIndex = miniDoublets.outerHitIndices()[OuterMiniDoubletIndex];
       unsigned int hit0 = hitsEvt->idxs[InnerMiniDoubletLowerHitIndex];
       unsigned int hit1 = hitsEvt->idxs[InnerMiniDoubletUpperHitIndex];
       unsigned int hit2 = hitsEvt->idxs[OuterMiniDoubletLowerHitIndex];
@@ -1041,7 +1042,7 @@ void printLSs(Event* event) {
 //________________________________________________________________________________________________________________________________
 void printpLSs(Event* event) {
   Segments const* segments = event->getSegments().data();
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
   Hits const* hitsEvt = event->getHits().data();
   Modules const* modules = event->getModules().data();
   ObjectRanges const* ranges = event->getRanges().data();
@@ -1053,10 +1054,10 @@ void printpLSs(Event* event) {
     unsigned int sgIdx = ranges->segmentModuleIndices[idx] + jdx;
     unsigned int InnerMiniDoubletIndex = segments->mdIndices[2 * sgIdx];
     unsigned int OuterMiniDoubletIndex = segments->mdIndices[2 * sgIdx + 1];
-    unsigned int InnerMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[InnerMiniDoubletIndex];
-    unsigned int InnerMiniDoubletUpperHitIndex = miniDoublets->outerHitIndices[InnerMiniDoubletIndex];
-    unsigned int OuterMiniDoubletLowerHitIndex = miniDoublets->anchorHitIndices[OuterMiniDoubletIndex];
-    unsigned int OuterMiniDoubletUpperHitIndex = miniDoublets->outerHitIndices[OuterMiniDoubletIndex];
+    unsigned int InnerMiniDoubletLowerHitIndex = miniDoublets.anchorHitIndices()[InnerMiniDoubletIndex];
+    unsigned int InnerMiniDoubletUpperHitIndex = miniDoublets.outerHitIndices()[InnerMiniDoubletIndex];
+    unsigned int OuterMiniDoubletLowerHitIndex = miniDoublets.anchorHitIndices()[OuterMiniDoubletIndex];
+    unsigned int OuterMiniDoubletUpperHitIndex = miniDoublets.outerHitIndices()[OuterMiniDoubletIndex];
     unsigned int hit0 = hitsEvt->idxs[InnerMiniDoubletLowerHitIndex];
     unsigned int hit1 = hitsEvt->idxs[InnerMiniDoubletUpperHitIndex];
     unsigned int hit2 = hitsEvt->idxs[OuterMiniDoubletLowerHitIndex];
@@ -1072,7 +1073,7 @@ void printpLSs(Event* event) {
 void printT3s(Event* event) {
   Triplets const* triplets = event->getTriplets().data();
   Segments const* segments = event->getSegments().data();
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
   Hits const* hitsEvt = event->getHits().data();
   Modules const* modules = event->getModules().data();
   int nTriplets = 0;
@@ -1088,12 +1089,12 @@ void printT3s(Event* event) {
       unsigned int InnerSegmentOuterMiniDoubletIndex = segments->mdIndices[2 * InnerSegmentIndex + 1];
       unsigned int OuterSegmentOuterMiniDoubletIndex = segments->mdIndices[2 * OuterSegmentIndex + 1];
 
-      unsigned int hit_idx0 = miniDoublets->anchorHitIndices[InnerSegmentInnerMiniDoubletIndex];
-      unsigned int hit_idx1 = miniDoublets->outerHitIndices[InnerSegmentInnerMiniDoubletIndex];
-      unsigned int hit_idx2 = miniDoublets->anchorHitIndices[InnerSegmentOuterMiniDoubletIndex];
-      unsigned int hit_idx3 = miniDoublets->outerHitIndices[InnerSegmentOuterMiniDoubletIndex];
-      unsigned int hit_idx4 = miniDoublets->anchorHitIndices[OuterSegmentOuterMiniDoubletIndex];
-      unsigned int hit_idx5 = miniDoublets->outerHitIndices[OuterSegmentOuterMiniDoubletIndex];
+      unsigned int hit_idx0 = miniDoublets.anchorHitIndices()[InnerSegmentInnerMiniDoubletIndex];
+      unsigned int hit_idx1 = miniDoublets.outerHitIndices()[InnerSegmentInnerMiniDoubletIndex];
+      unsigned int hit_idx2 = miniDoublets.anchorHitIndices()[InnerSegmentOuterMiniDoubletIndex];
+      unsigned int hit_idx3 = miniDoublets.outerHitIndices()[InnerSegmentOuterMiniDoubletIndex];
+      unsigned int hit_idx4 = miniDoublets.anchorHitIndices()[OuterSegmentOuterMiniDoubletIndex];
+      unsigned int hit_idx5 = miniDoublets.outerHitIndices()[OuterSegmentOuterMiniDoubletIndex];
 
       unsigned int hit0 = hitsEvt->idxs[hit_idx0];
       unsigned int hit1 = hitsEvt->idxs[hit_idx1];

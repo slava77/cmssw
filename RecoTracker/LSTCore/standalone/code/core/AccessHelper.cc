@@ -29,16 +29,16 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> convertHitsToHi
 //____________________________________________________________________________________________
 std::vector<unsigned int> getPixelHitsFrompLS(Event* event, unsigned int pLS) {
   Segments const* segments = event->getSegments().data();
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
+  MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
   ObjectRanges const* rangesEvt = event->getRanges().data();
   Modules const* modulesEvt = event->getModules().data();
   const unsigned int pLS_offset = rangesEvt->segmentModuleIndices[*(modulesEvt->nLowerModules)];
   unsigned int MD_1 = segments->mdIndices[2 * (pLS + pLS_offset)];
   unsigned int MD_2 = segments->mdIndices[2 * (pLS + pLS_offset) + 1];
-  unsigned int hit_1 = miniDoublets->anchorHitIndices[MD_1];
-  unsigned int hit_2 = miniDoublets->outerHitIndices[MD_1];
-  unsigned int hit_3 = miniDoublets->anchorHitIndices[MD_2];
-  unsigned int hit_4 = miniDoublets->outerHitIndices[MD_2];
+  unsigned int hit_1 = miniDoublets.anchorHitIndices()[MD_1];
+  unsigned int hit_2 = miniDoublets.outerHitIndices()[MD_1];
+  unsigned int hit_3 = miniDoublets.anchorHitIndices()[MD_2];
+  unsigned int hit_4 = miniDoublets.outerHitIndices()[MD_2];
   if (hit_3 == hit_4)
     return {hit_1, hit_2, hit_3};
   else
@@ -74,9 +74,9 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 std::vector<unsigned int> getHitsFromMD(Event* event, unsigned int MD) {
-  MiniDoublets const* miniDoublets = event->getMiniDoublets().data();
-  unsigned int hit_1 = miniDoublets->anchorHitIndices[MD];
-  unsigned int hit_2 = miniDoublets->outerHitIndices[MD];
+  MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
+  unsigned int hit_1 = miniDoublets.anchorHitIndices()[MD];
+  unsigned int hit_2 = miniDoublets.outerHitIndices()[MD];
   return {hit_1, hit_2};
 }
 

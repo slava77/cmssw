@@ -53,8 +53,7 @@ void Event::resetEventSync() {
   }
   hitsInGPU_.reset();
   hitsBuffers_.reset();
-  mdsInGPU_.reset();
-  miniDoubletsBuffers_.reset();
+  miniDoubletsDC_.reset();
   rangesInGPU_.reset();
   rangesBuffers_.reset();
   segmentsInGPU_.reset();
@@ -71,7 +70,7 @@ void Event::resetEventSync() {
 
   hitsInCPU_.reset();
   rangesInCPU_.reset();
-  mdsInCPU_.reset();
+  miniDoubletsHC_.reset();
   segmentsInCPU_.reset();
   tripletsInCPU_.reset();
   quintupletsInCPU_.reset();
@@ -171,7 +170,7 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
   unsigned int mdSize = 2 * size;
   uint16_t pixelModuleIndex = pixelMapping_.pixelModuleIndex;
 
-  if (!mdsInGPU_) {
+  if (!miniDoubletsDC_) {
     // Create a view for the element nLowerModules_ inside rangesBuffers_->miniDoubletModuleOccupancy
     auto dst_view_miniDoubletModuleOccupancy =
         alpaka::createSubView(rangesBuffers_->miniDoubletModuleOccupancy_buf, (Idx)1u, (Idx)nLowerModules_);
@@ -194,11 +193,15 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
     *nTotalMDs_buf_h.data() += n_max_pixel_md_per_modules;
     unsigned int nTotalMDs = *nTotalMDs_buf_h.data();
 
-    mdsInGPU_.emplace();
-    miniDoubletsBuffers_.emplace(nTotalMDs, nLowerModules_, devAcc_, queue_);
-    mdsInGPU_->setData(*miniDoubletsBuffers_);
+    std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs), static_cast<int>(nLowerModules_ + 1)}};
+    miniDoubletsDC_.emplace(mds_sizes, queue_);
 
-    alpaka::memcpy(queue_, miniDoubletsBuffers_->nMemoryLocations_buf, nTotalMDs_buf_h);
+    auto mdsOccupancy = miniDoubletsDC_->view<MiniDoubletsOccupancySoA>();
+    auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), mdsOccupancy.metadata().size());
+    auto totOccupancyMDs_view =
+        alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), mdsOccupancy.metadata().size());
+    alpaka::memset(queue_, nMDs_view, 0u);
+    alpaka::memset(queue_, totOccupancyMDs_view, 0u);
   }
   if (!segmentsInGPU_) {
     // can be optimized here: because we didn't distinguish pixel segments and outer-tracker segments and call them both "segments", so they use the index continuously.
@@ -211,7 +214,7 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
                         CreateSegmentArrayRanges{},
                         *modulesBuffers_.data(),
                         *rangesInGPU_,
-                        *mdsInGPU_);
+                        miniDoubletsDC_->const_view<MiniDoubletsSoA>());
 
     auto nTotalSegments_view = alpaka::createView(cms::alpakatools::host(), &nTotalSegments_, (Idx)1u);
 
@@ -264,11 +267,14 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
       alpaka::createSubView(segmentsBuffers_->totOccupancySegments_buf, (Idx)1u, (Idx)pixelModuleIndex);
   alpaka::memcpy(queue_, dst_view_totOccupancySegments, src_view_size);
 
-  auto dst_view_nMDs = alpaka::createSubView(miniDoubletsBuffers_->nMDs_buf, (Idx)1u, (Idx)pixelModuleIndex);
+  auto mdsOccupancy = miniDoubletsDC_->view<MiniDoubletsOccupancySoA>();
+  auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), (Idx)mdsOccupancy.metadata().size());
+  auto dst_view_nMDs = alpaka::createSubView(nMDs_view, (Idx)1u, (Idx)pixelModuleIndex);
   alpaka::memcpy(queue_, dst_view_nMDs, src_view_mdSize);
 
-  auto dst_view_totOccupancyMDs =
-      alpaka::createSubView(miniDoubletsBuffers_->totOccupancyMDs_buf, (Idx)1u, (Idx)pixelModuleIndex);
+  auto totOccupancyMDs_view =
+      alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), (Idx)mdsOccupancy.metadata().size());
+  auto dst_view_totOccupancyMDs = alpaka::createSubView(totOccupancyMDs_view, (Idx)1u, (Idx)pixelModuleIndex);
   alpaka::memcpy(queue_, dst_view_totOccupancyMDs, src_view_mdSize);
 
   alpaka::wait(queue_);  // FIXME: remove synch after inputs refactored to be in pinned memory
@@ -283,7 +289,7 @@ void Event::addPixelSegmentToEvent(std::vector<unsigned int> const& hitIndices0,
                       *modulesBuffers_.data(),
                       *rangesInGPU_,
                       *hitsInGPU_,
-                      *mdsInGPU_,
+                      miniDoubletsDC_->view<MiniDoubletsSoA>(),
                       *segmentsInGPU_,
                       hitIndices0_dev.data(),
                       hitIndices1_dev.data(),
@@ -317,10 +323,16 @@ void Event::createMiniDoublets() {
   *nTotalMDs_buf_h.data() += n_max_pixel_md_per_modules;
   unsigned int nTotalMDs = *nTotalMDs_buf_h.data();
 
-  if (!mdsInGPU_) {
-    mdsInGPU_.emplace();
-    miniDoubletsBuffers_.emplace(nTotalMDs, nLowerModules_, devAcc_, queue_);
-    mdsInGPU_->setData(*miniDoubletsBuffers_);
+  if (!miniDoubletsDC_) {
+    std::array<int, 2> const mds_sizes{{static_cast<int>(nTotalMDs), static_cast<int>(nLowerModules_ + 1)}};
+    miniDoubletsDC_.emplace(mds_sizes, queue_);
+
+    auto mdsOccupancy = miniDoubletsDC_->view<MiniDoubletsOccupancySoA>();
+    auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), mdsOccupancy.metadata().size());
+    auto totOccupancyMDs_view =
+        alpaka::createView(devAcc_, mdsOccupancy.totOccupancyMDs(), mdsOccupancy.metadata().size());
+    alpaka::memset(queue_, nMDs_view, 0u);
+    alpaka::memset(queue_, totOccupancyMDs_view, 0u);
   }
 
   Vec3D const threadsPerBlockCreateMDInGPU{1, 16, 32};
@@ -333,7 +345,8 @@ void Event::createMiniDoublets() {
                       CreateMiniDoubletsInGPUv2{},
                       *modulesBuffers_.data(),
                       *hitsInGPU_,
-                      *mdsInGPU_,
+                      miniDoubletsDC_->view<MiniDoubletsSoA>(),
+                      miniDoubletsDC_->view<MiniDoubletsOccupancySoA>(),
                       *rangesInGPU_);
 
   WorkDiv1D const addMiniDoubletRangesToEventExplicit_workDiv = createWorkDiv<Vec1D>({1}, {1024}, {1});
@@ -342,7 +355,7 @@ void Event::createMiniDoublets() {
                       addMiniDoubletRangesToEventExplicit_workDiv,
                       AddMiniDoubletRangesToEventExplicit{},
                       *modulesBuffers_.data(),
-                      *mdsInGPU_,
+                      miniDoubletsDC_->view<MiniDoubletsOccupancySoA>(),
                       *rangesInGPU_,
                       *hitsInGPU_);
 
@@ -367,7 +380,8 @@ void Event::createSegmentsWithModuleMap() {
                       createSegmentsInGPUv2_workDiv,
                       CreateSegmentsInGPUv2{},
                       *modulesBuffers_.data(),
-                      *mdsInGPU_,
+                      miniDoubletsDC_->const_view<MiniDoubletsSoA>(),
+                      miniDoubletsDC_->const_view<MiniDoubletsOccupancySoA>(),
                       *segmentsInGPU_,
                       *rangesInGPU_);
 
@@ -453,7 +467,7 @@ void Event::createTriplets() {
                       createTripletsInGPUv2_workDiv,
                       CreateTripletsInGPUv2{},
                       *modulesBuffers_.data(),
-                      *mdsInGPU_,
+                      miniDoubletsDC_->const_view<MiniDoubletsSoA>(),
                       *segmentsInGPU_,
                       *tripletsInGPU_,
                       *rangesInGPU_,
@@ -572,7 +586,7 @@ void Event::createTrackCandidates(bool no_pls_dupclean, bool tc_pls_triplets) {
                       *pixelTripletsInGPU_,
                       trackCandidatesDC_->view(),
                       *segmentsInGPU_,
-                      *mdsInGPU_,
+                      miniDoubletsDC_->const_view<MiniDoubletsSoA>(),
                       *hitsInGPU_,
                       *quintupletsInGPU_);
 
@@ -707,7 +721,7 @@ void Event::createPixelTriplets() {
                       CreatePixelTripletsInGPUFromMapv2{},
                       *modulesBuffers_.data(),
                       *rangesInGPU_,
-                      *mdsInGPU_,
+                      miniDoubletsDC_->const_view<MiniDoubletsSoA>(),
                       *segmentsInGPU_,
                       *tripletsInGPU_,
                       *pixelTripletsInGPU_,
@@ -772,7 +786,7 @@ void Event::createQuintuplets() {
                       createQuintupletsInGPUv2_workDiv,
                       CreateQuintupletsInGPUv2{},
                       *modulesBuffers_.data(),
-                      *mdsInGPU_,
+                      miniDoubletsDC_->const_view<MiniDoubletsSoA>(),
                       *segmentsInGPU_,
                       *tripletsInGPU_,
                       *quintupletsInGPU_,
@@ -907,7 +921,7 @@ void Event::createPixelQuintuplets() {
                       createPixelQuintupletsInGPUFromMapv2_workDiv,
                       CreatePixelQuintupletsInGPUFromMapv2{},
                       *modulesBuffers_.data(),
-                      *mdsInGPU_,
+                      miniDoubletsDC_->const_view<MiniDoubletsSoA>(),
                       *segmentsInGPU_,
                       *tripletsInGPU_,
                       *quintupletsInGPU_,
@@ -950,7 +964,9 @@ void Event::createPixelQuintuplets() {
 
 void Event::addMiniDoubletsToEventExplicit() {
   auto nMDsCPU_buf = allocBufWrapper<unsigned int>(cms::alpakatools::host(), nLowerModules_, queue_);
-  alpaka::memcpy(queue_, nMDsCPU_buf, miniDoubletsBuffers_->nMDs_buf, nLowerModules_);
+  auto mdsOccupancy = miniDoubletsDC_->const_view<MiniDoubletsOccupancySoA>();
+  auto nMDs_view = alpaka::createView(devAcc_, mdsOccupancy.nMDs(), nLowerModules_);  // exclude pixel part
+  alpaka::memcpy(queue_, nMDsCPU_buf, nMDs_view, nLowerModules_);
 
   // FIXME: replace by ES host data
   auto module_subdets_buf = allocBufWrapper<short>(cms::alpakatools::host(), nLowerModules_, queue_);
@@ -1333,28 +1349,24 @@ ObjectRangesBuffer<alpaka_common::DevHost>& Event::getRanges(bool sync) {
   return rangesInCPU_.value();
 }
 
-MiniDoubletsBuffer<alpaka_common::DevHost>& Event::getMiniDoublets(bool sync) {
-  if (!mdsInCPU_) {
-    // Get nMemoryLocations parameter to initialize host based mdsInCPU_
-    auto nMemHost_buf_h = cms::alpakatools::make_host_buffer<unsigned int[]>(queue_, 1u);
-    alpaka::memcpy(queue_, nMemHost_buf_h, miniDoubletsBuffers_->nMemoryLocations_buf);
-    alpaka::wait(queue_);  // wait for the value before using
-
-    auto const nMemHost = *nMemHost_buf_h.data();
-    mdsInCPU_.emplace(nMemHost, nLowerModules_, cms::alpakatools::host(), queue_);
-    mdsInCPU_->setData(*mdsInCPU_);
-
-    alpaka::memcpy(queue_, mdsInCPU_->nMemoryLocations_buf, miniDoubletsBuffers_->nMemoryLocations_buf);
-    alpaka::memcpy(queue_, mdsInCPU_->anchorHitIndices_buf, miniDoubletsBuffers_->anchorHitIndices_buf, nMemHost);
-    alpaka::memcpy(queue_, mdsInCPU_->outerHitIndices_buf, miniDoubletsBuffers_->outerHitIndices_buf, nMemHost);
-    alpaka::memcpy(queue_, mdsInCPU_->dphichanges_buf, miniDoubletsBuffers_->dphichanges_buf, nMemHost);
-    alpaka::memcpy(queue_, mdsInCPU_->nMDs_buf, miniDoubletsBuffers_->nMDs_buf);
-    alpaka::memcpy(queue_, mdsInCPU_->totOccupancyMDs_buf, miniDoubletsBuffers_->totOccupancyMDs_buf);
-    if (sync)
-      alpaka::wait(queue_);  // host consumers expect filled data
+template <typename TSoA, typename TDev>
+typename TSoA::ConstView Event::getMiniDoublets(bool sync) {
+  if constexpr (std::is_same_v<TDev, DevHost>) {
+    return miniDoubletsDC_->const_view<TSoA>();
+  } else {
+    if (!miniDoubletsHC_) {
+      miniDoubletsHC_.emplace(
+          cms::alpakatools::CopyToHost<
+              PortableMultiCollection<TDev, MiniDoubletsSoA, MiniDoubletsOccupancySoA>>::copyAsync(queue_,
+                                                                                                   *miniDoubletsDC_));
+      if (sync)
+        alpaka::wait(queue_);  // host consumers expect filled data
+    }
+    return miniDoubletsHC_->const_view<TSoA>();
   }
-  return mdsInCPU_.value();
 }
+template MiniDoubletsConst Event::getMiniDoublets<MiniDoubletsSoA>(bool);
+template MiniDoubletsOccupancyConst Event::getMiniDoublets<MiniDoubletsOccupancySoA>(bool);
 
 SegmentsBuffer<alpaka_common::DevHost>& Event::getSegments(bool sync) {
   if (!segmentsInCPU_) {
