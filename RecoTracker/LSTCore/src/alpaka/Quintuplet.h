@@ -2582,12 +2582,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                 } else {
                   unsigned int quintupletIndex =
                       rangesInGPU.quintupletModuleIndices[lowerModule1] + quintupletModuleIndex;
-                  float phi =
-                      mds.anchorPhi()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * innerTripletIndex]]
-                                                                                               [layer2_adjustment]];
-                  float eta =
-                      mds.anchorEta()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * innerTripletIndex]]
-                                                                                               [layer2_adjustment]];
+                  float phi = mds.anchorPhi()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * innerTripletIndex]]
+                                                                  [layer2_adjustment]];
+                  float eta = mds.anchorEta()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * innerTripletIndex]]
+                                                                  [layer2_adjustment]];
                   float pt = (innerRadius + outerRadius) * k2Rinv1GeVf;
                   float scores = chiSquared + nonAnchorChiSquared;
                   addQuintupletToMemory(tripletsInGPU,

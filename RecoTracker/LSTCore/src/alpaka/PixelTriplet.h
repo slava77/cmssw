@@ -1013,12 +1013,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                       rPhiChiSquaredInwards);
 
             if (success) {
-              float phi =
-                  mds.anchorPhi()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]]
-                                                          [layer2_adjustment]];
-              float eta =
-                  mds.anchorEta()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]]
-                                                          [layer2_adjustment]];
+              float phi = mds.anchorPhi()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]]
+                                                              [layer2_adjustment]];
+              float eta = mds.anchorEta()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * outerTripletIndex]]
+                                                              [layer2_adjustment]];
               float eta_pix = segmentsPixel.eta()[i_pLS];
               float phi_pix = segmentsPixel.phi()[i_pLS];
               float pt = segmentsPixel.ptIn()[i_pLS];
