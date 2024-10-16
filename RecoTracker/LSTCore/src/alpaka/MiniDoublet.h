@@ -4,6 +4,8 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/workdivision.h"
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
+#include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
+#include "RecoTracker/LSTCore/interface/alpaka/MiniDoubletsDeviceCollection.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
 #include "RecoTracker/LSTCore/interface/EndcapGeometry.h"
 
@@ -11,185 +13,9 @@
 #include "ObjectRanges.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
-  struct MiniDoublets {
-    unsigned int* nMemoryLocations;
-
-    unsigned int* anchorHitIndices;
-    unsigned int* outerHitIndices;
-    uint16_t* moduleIndices;
-    unsigned int* nMDs;             //counter per module
-    unsigned int* totOccupancyMDs;  //counter per module
-    float* dphichanges;
-
-    float* dzs;  //will store drt if the module is endcap
-    float* dphis;
-
-    float* shiftedXs;
-    float* shiftedYs;
-    float* shiftedZs;
-    float* noShiftedDphis;        //if shifted module
-    float* noShiftedDphiChanges;  //if shifted module
-
-    float* anchorX;
-    float* anchorY;
-    float* anchorZ;
-    float* anchorRt;
-    float* anchorPhi;
-    float* anchorEta;
-    float* anchorHighEdgeX;
-    float* anchorHighEdgeY;
-    float* anchorLowEdgeX;
-    float* anchorLowEdgeY;
-    float* anchorLowEdgePhi;
-    float* anchorHighEdgePhi;
-
-    float* outerX;
-    float* outerY;
-    float* outerZ;
-    float* outerRt;
-    float* outerPhi;
-    float* outerEta;
-    float* outerHighEdgeX;
-    float* outerHighEdgeY;
-    float* outerLowEdgeX;
-    float* outerLowEdgeY;
-
-    template <typename TBuf>
-    void setData(TBuf& buf) {
-      nMemoryLocations = buf.nMemoryLocations_buf.data();
-      anchorHitIndices = buf.anchorHitIndices_buf.data();
-      outerHitIndices = buf.outerHitIndices_buf.data();
-      moduleIndices = buf.moduleIndices_buf.data();
-      nMDs = buf.nMDs_buf.data();
-      totOccupancyMDs = buf.totOccupancyMDs_buf.data();
-      dphichanges = buf.dphichanges_buf.data();
-      dzs = buf.dzs_buf.data();
-      dphis = buf.dphis_buf.data();
-      shiftedXs = buf.shiftedXs_buf.data();
-      shiftedYs = buf.shiftedYs_buf.data();
-      shiftedZs = buf.shiftedZs_buf.data();
-      noShiftedDphis = buf.noShiftedDphis_buf.data();
-      noShiftedDphiChanges = buf.noShiftedDphiChanges_buf.data();
-      anchorX = buf.anchorX_buf.data();
-      anchorY = buf.anchorY_buf.data();
-      anchorZ = buf.anchorZ_buf.data();
-      anchorRt = buf.anchorRt_buf.data();
-      anchorPhi = buf.anchorPhi_buf.data();
-      anchorEta = buf.anchorEta_buf.data();
-      anchorHighEdgeX = buf.anchorHighEdgeX_buf.data();
-      anchorHighEdgeY = buf.anchorHighEdgeY_buf.data();
-      anchorLowEdgeX = buf.anchorLowEdgeX_buf.data();
-      anchorLowEdgeY = buf.anchorLowEdgeY_buf.data();
-      outerX = buf.outerX_buf.data();
-      outerY = buf.outerY_buf.data();
-      outerZ = buf.outerZ_buf.data();
-      outerRt = buf.outerRt_buf.data();
-      outerPhi = buf.outerPhi_buf.data();
-      outerEta = buf.outerEta_buf.data();
-      outerHighEdgeX = buf.outerHighEdgeX_buf.data();
-      outerHighEdgeY = buf.outerHighEdgeY_buf.data();
-      outerLowEdgeX = buf.outerLowEdgeX_buf.data();
-      outerLowEdgeY = buf.outerLowEdgeY_buf.data();
-      anchorLowEdgePhi = buf.anchorLowEdgePhi_buf.data();
-      anchorHighEdgePhi = buf.anchorHighEdgePhi_buf.data();
-    }
-  };
-
-  template <typename TDev>
-  struct MiniDoubletsBuffer {
-    Buf<TDev, unsigned int> nMemoryLocations_buf;
-
-    Buf<TDev, unsigned int> anchorHitIndices_buf;
-    Buf<TDev, unsigned int> outerHitIndices_buf;
-    Buf<TDev, uint16_t> moduleIndices_buf;
-    Buf<TDev, unsigned int> nMDs_buf;
-    Buf<TDev, unsigned int> totOccupancyMDs_buf;
-    Buf<TDev, float> dphichanges_buf;
-
-    Buf<TDev, float> dzs_buf;
-    Buf<TDev, float> dphis_buf;
-
-    Buf<TDev, float> shiftedXs_buf;
-    Buf<TDev, float> shiftedYs_buf;
-    Buf<TDev, float> shiftedZs_buf;
-    Buf<TDev, float> noShiftedDphis_buf;
-    Buf<TDev, float> noShiftedDphiChanges_buf;
-
-    Buf<TDev, float> anchorX_buf;
-    Buf<TDev, float> anchorY_buf;
-    Buf<TDev, float> anchorZ_buf;
-    Buf<TDev, float> anchorRt_buf;
-    Buf<TDev, float> anchorPhi_buf;
-    Buf<TDev, float> anchorEta_buf;
-    Buf<TDev, float> anchorHighEdgeX_buf;
-    Buf<TDev, float> anchorHighEdgeY_buf;
-    Buf<TDev, float> anchorLowEdgeX_buf;
-    Buf<TDev, float> anchorLowEdgeY_buf;
-    Buf<TDev, float> anchorLowEdgePhi_buf;
-    Buf<TDev, float> anchorHighEdgePhi_buf;
-
-    Buf<TDev, float> outerX_buf;
-    Buf<TDev, float> outerY_buf;
-    Buf<TDev, float> outerZ_buf;
-    Buf<TDev, float> outerRt_buf;
-    Buf<TDev, float> outerPhi_buf;
-    Buf<TDev, float> outerEta_buf;
-    Buf<TDev, float> outerHighEdgeX_buf;
-    Buf<TDev, float> outerHighEdgeY_buf;
-    Buf<TDev, float> outerLowEdgeX_buf;
-    Buf<TDev, float> outerLowEdgeY_buf;
-
-    MiniDoublets data_;
-
-    template <typename TQueue, typename TDevAcc>
-    MiniDoubletsBuffer(unsigned int nMemoryLoc, uint16_t nLowerModules, TDevAcc const& devAccIn, TQueue& queue)
-        : nMemoryLocations_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          anchorHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
-          outerHitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, nMemoryLoc, queue)),
-          moduleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, nMemoryLoc, queue)),
-          nMDs_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules + 1, queue)),
-          totOccupancyMDs_buf(allocBufWrapper<unsigned int>(devAccIn, nLowerModules + 1, queue)),
-          dphichanges_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          dzs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          dphis_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          shiftedXs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          shiftedYs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          shiftedZs_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          noShiftedDphis_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          noShiftedDphiChanges_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorY_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorZ_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorRt_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorPhi_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorEta_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorHighEdgeX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorHighEdgeY_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorLowEdgeX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorLowEdgeY_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorLowEdgePhi_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          anchorHighEdgePhi_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerY_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerZ_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerRt_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerPhi_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerEta_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerHighEdgeX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerHighEdgeY_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerLowEdgeX_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)),
-          outerLowEdgeY_buf(allocBufWrapper<float>(devAccIn, nMemoryLoc, queue)) {
-      alpaka::memset(queue, nMDs_buf, 0u);
-      alpaka::memset(queue, totOccupancyMDs_buf, 0u);
-    }
-
-    inline MiniDoublets const* data() const { return &data_; }
-    inline void setData(MiniDoubletsBuffer& buf) { data_.setData(buf); }
-  };
-
   template <typename TAcc>
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addMDToMemory(TAcc const& acc,
-                                                    MiniDoublets& mdsInGPU,
+                                                    MiniDoublets mds,
                                                     Hits const& hitsInGPU,
                                                     Modules const& modulesInGPU,
                                                     unsigned int lowerHitIdx,
@@ -207,58 +33,56 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     //the index into which this MD needs to be written will be computed in the kernel
     //nMDs variable will be incremented in the kernel, no need to worry about that here
 
-    mdsInGPU.moduleIndices[idx] = lowerModuleIdx;
+    mds.moduleIndices()[idx] = lowerModuleIdx;
     unsigned int anchorHitIndex, outerHitIndex;
     if (modulesInGPU.moduleType[lowerModuleIdx] == PS and modulesInGPU.moduleLayerType[lowerModuleIdx] == Strip) {
-      mdsInGPU.anchorHitIndices[idx] = upperHitIdx;
-      mdsInGPU.outerHitIndices[idx] = lowerHitIdx;
+      mds.anchorHitIndices()[idx] = upperHitIdx;
+      mds.outerHitIndices()[idx] = lowerHitIdx;
 
       anchorHitIndex = upperHitIdx;
       outerHitIndex = lowerHitIdx;
     } else {
-      mdsInGPU.anchorHitIndices[idx] = lowerHitIdx;
-      mdsInGPU.outerHitIndices[idx] = upperHitIdx;
+      mds.anchorHitIndices()[idx] = lowerHitIdx;
+      mds.outerHitIndices()[idx] = upperHitIdx;
 
       anchorHitIndex = lowerHitIdx;
       outerHitIndex = upperHitIdx;
     }
 
-    mdsInGPU.dphichanges[idx] = dPhiChange;
+    mds.dphichanges()[idx] = dPhiChange;
 
-    mdsInGPU.dphis[idx] = dPhi;
-    mdsInGPU.dzs[idx] = dz;
-    mdsInGPU.shiftedXs[idx] = shiftedX;
-    mdsInGPU.shiftedYs[idx] = shiftedY;
-    mdsInGPU.shiftedZs[idx] = shiftedZ;
+    mds.dphis()[idx] = dPhi;
+    mds.dzs()[idx] = dz;
+    mds.shiftedXs()[idx] = shiftedX;
+    mds.shiftedYs()[idx] = shiftedY;
+    mds.shiftedZs()[idx] = shiftedZ;
 
-    mdsInGPU.noShiftedDphis[idx] = noShiftedDphi;
-    mdsInGPU.noShiftedDphiChanges[idx] = noShiftedDPhiChange;
+    mds.noShiftedDphis()[idx] = noShiftedDphi;
+    mds.noShiftedDphiChanges()[idx] = noShiftedDPhiChange;
 
-    mdsInGPU.anchorX[idx] = hitsInGPU.xs[anchorHitIndex];
-    mdsInGPU.anchorY[idx] = hitsInGPU.ys[anchorHitIndex];
-    mdsInGPU.anchorZ[idx] = hitsInGPU.zs[anchorHitIndex];
-    mdsInGPU.anchorRt[idx] = hitsInGPU.rts[anchorHitIndex];
-    mdsInGPU.anchorPhi[idx] = hitsInGPU.phis[anchorHitIndex];
-    mdsInGPU.anchorEta[idx] = hitsInGPU.etas[anchorHitIndex];
-    mdsInGPU.anchorHighEdgeX[idx] = hitsInGPU.highEdgeXs[anchorHitIndex];
-    mdsInGPU.anchorHighEdgeY[idx] = hitsInGPU.highEdgeYs[anchorHitIndex];
-    mdsInGPU.anchorLowEdgeX[idx] = hitsInGPU.lowEdgeXs[anchorHitIndex];
-    mdsInGPU.anchorLowEdgeY[idx] = hitsInGPU.lowEdgeYs[anchorHitIndex];
-    mdsInGPU.anchorHighEdgePhi[idx] =
-        alpaka::math::atan2(acc, mdsInGPU.anchorHighEdgeY[idx], mdsInGPU.anchorHighEdgeX[idx]);
-    mdsInGPU.anchorLowEdgePhi[idx] =
-        alpaka::math::atan2(acc, mdsInGPU.anchorLowEdgeY[idx], mdsInGPU.anchorLowEdgeX[idx]);
+    mds.anchorX()[idx] = hitsInGPU.xs[anchorHitIndex];
+    mds.anchorY()[idx] = hitsInGPU.ys[anchorHitIndex];
+    mds.anchorZ()[idx] = hitsInGPU.zs[anchorHitIndex];
+    mds.anchorRt()[idx] = hitsInGPU.rts[anchorHitIndex];
+    mds.anchorPhi()[idx] = hitsInGPU.phis[anchorHitIndex];
+    mds.anchorEta()[idx] = hitsInGPU.etas[anchorHitIndex];
+    mds.anchorHighEdgeX()[idx] = hitsInGPU.highEdgeXs[anchorHitIndex];
+    mds.anchorHighEdgeY()[idx] = hitsInGPU.highEdgeYs[anchorHitIndex];
+    mds.anchorLowEdgeX()[idx] = hitsInGPU.lowEdgeXs[anchorHitIndex];
+    mds.anchorLowEdgeY()[idx] = hitsInGPU.lowEdgeYs[anchorHitIndex];
+    mds.anchorHighEdgePhi()[idx] = alpaka::math::atan2(acc, mds.anchorHighEdgeY()[idx], mds.anchorHighEdgeX()[idx]);
+    mds.anchorLowEdgePhi()[idx] = alpaka::math::atan2(acc, mds.anchorLowEdgeY()[idx], mds.anchorLowEdgeX()[idx]);
 
-    mdsInGPU.outerX[idx] = hitsInGPU.xs[outerHitIndex];
-    mdsInGPU.outerY[idx] = hitsInGPU.ys[outerHitIndex];
-    mdsInGPU.outerZ[idx] = hitsInGPU.zs[outerHitIndex];
-    mdsInGPU.outerRt[idx] = hitsInGPU.rts[outerHitIndex];
-    mdsInGPU.outerPhi[idx] = hitsInGPU.phis[outerHitIndex];
-    mdsInGPU.outerEta[idx] = hitsInGPU.etas[outerHitIndex];
-    mdsInGPU.outerHighEdgeX[idx] = hitsInGPU.highEdgeXs[outerHitIndex];
-    mdsInGPU.outerHighEdgeY[idx] = hitsInGPU.highEdgeYs[outerHitIndex];
-    mdsInGPU.outerLowEdgeX[idx] = hitsInGPU.lowEdgeXs[outerHitIndex];
-    mdsInGPU.outerLowEdgeY[idx] = hitsInGPU.lowEdgeYs[outerHitIndex];
+    mds.outerX()[idx] = hitsInGPU.xs[outerHitIndex];
+    mds.outerY()[idx] = hitsInGPU.ys[outerHitIndex];
+    mds.outerZ()[idx] = hitsInGPU.zs[outerHitIndex];
+    mds.outerRt()[idx] = hitsInGPU.rts[outerHitIndex];
+    mds.outerPhi()[idx] = hitsInGPU.phis[outerHitIndex];
+    mds.outerEta()[idx] = hitsInGPU.etas[outerHitIndex];
+    mds.outerHighEdgeX()[idx] = hitsInGPU.highEdgeXs[outerHitIndex];
+    mds.outerHighEdgeY()[idx] = hitsInGPU.highEdgeYs[outerHitIndex];
+    mds.outerLowEdgeX()[idx] = hitsInGPU.lowEdgeXs[outerHitIndex];
+    mds.outerLowEdgeY()[idx] = hitsInGPU.lowEdgeYs[outerHitIndex];
   }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE float isTighterTiltedModules(Modules const& modulesInGPU, uint16_t moduleIndex) {
@@ -869,8 +693,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   struct CreateMiniDoubletsInGPUv2 {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(
-        TAcc const& acc, Modules modulesInGPU, Hits hitsInGPU, MiniDoublets mdsInGPU, ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc,
+                                  Modules modulesInGPU,
+                                  Hits hitsInGPU,
+                                  MiniDoublets mds,
+                                  MiniDoubletsOccupancy mdsOccupancy,
+                                  ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
@@ -927,19 +755,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                    zUpper,
                                                    rtUpper);
           if (success) {
-            int totOccupancyMDs =
-                alpaka::atomicAdd(acc, &mdsInGPU.totOccupancyMDs[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
+            int totOccupancyMDs = alpaka::atomicAdd(
+                acc, &mdsOccupancy.totOccupancyMDs()[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
             if (totOccupancyMDs >= (rangesInGPU.miniDoubletModuleOccupancy[lowerModuleIndex])) {
 #ifdef WARNINGS
               printf("Mini-doublet excess alert! Module index =  %d\n", lowerModuleIndex);
 #endif
             } else {
               int mdModuleIndex =
-                  alpaka::atomicAdd(acc, &mdsInGPU.nMDs[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
+                  alpaka::atomicAdd(acc, &mdsOccupancy.nMDs()[lowerModuleIndex], 1u, alpaka::hierarchy::Threads{});
               unsigned int mdIndex = rangesInGPU.miniDoubletModuleIndices[lowerModuleIndex] + mdModuleIndex;
 
               addMDToMemory(acc,
-                            mdsInGPU,
+                            mds,
                             hitsInGPU,
                             modulesInGPU,
                             lowerHitArrayIndex,
@@ -1057,8 +885,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   struct AddMiniDoubletRangesToEventExplicit {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(
-        TAcc const& acc, Modules modulesInGPU, MiniDoublets mdsInGPU, ObjectRanges rangesInGPU, Hits hitsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc,
+                                  Modules modulesInGPU,
+                                  MiniDoubletsOccupancy mdsOccupancy,
+                                  ObjectRanges rangesInGPU,
+                                  Hits hitsInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0] == 1));
@@ -1067,15 +898,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
       for (uint16_t i = globalThreadIdx[0]; i < *modulesInGPU.nLowerModules; i += gridThreadExtent[0]) {
-        if (mdsInGPU.nMDs[i] == 0 or hitsInGPU.hitRanges[i * 2] == -1) {
+        if (mdsOccupancy.nMDs()[i] == 0 or hitsInGPU.hitRanges[i * 2] == -1) {
           rangesInGPU.mdRanges[i * 2] = -1;
           rangesInGPU.mdRanges[i * 2 + 1] = -1;
         } else {
           rangesInGPU.mdRanges[i * 2] = rangesInGPU.miniDoubletModuleIndices[i];
-          rangesInGPU.mdRanges[i * 2 + 1] = rangesInGPU.miniDoubletModuleIndices[i] + mdsInGPU.nMDs[i] - 1;
+          rangesInGPU.mdRanges[i * 2 + 1] = rangesInGPU.miniDoubletModuleIndices[i] + mdsOccupancy.nMDs()[i] - 1;
         }
       }
     }
   };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
+
 #endif
