@@ -6,7 +6,7 @@
 #include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
-    using MiniDoubletsDeviceCollection = PortableCollection2<MiniDoubletsSoA, MiniDoubletsOccupancySoA>;
-} // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
+  using MiniDoubletsDeviceCollection = PortableCollection2<MiniDoubletsSoA, MiniDoubletsOccupancySoA>;
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE::lst
 
 #endif
