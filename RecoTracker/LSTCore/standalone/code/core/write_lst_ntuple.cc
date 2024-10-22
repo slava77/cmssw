@@ -857,7 +857,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
                                                                                                unsigned int idx) {
   // Get relevant information
   auto const& trackCandidates = event->getTrackCandidates();
-  Triplets const* triplets = event->getTriplets().data();
+  auto const triplets = event->getTriplets<TripletsSoA>();
   SegmentsPixelConst segmentsPixel = event->getSegments<SegmentsPixelSoA>();
 
   //
@@ -875,7 +875,7 @@ std::tuple<float, float, float, std::vector<unsigned int>, std::vector<unsigned 
   const float pt_pLS = segmentsPixel.ptIn()[pLS];
   const float eta_pLS = segmentsPixel.eta()[pLS];
   const float phi_pLS = segmentsPixel.phi()[pLS];
-  float pt_T3 = triplets->circleRadius[T3] * 2 * k2Rinv1GeVf;
+  float pt_T3 = triplets.radius()[T3] * 2 * k2Rinv1GeVf;
 
   // average pt
   const float pt = (pt_pLS + pt_T3) / 2;
@@ -1073,7 +1073,8 @@ void printpLSs(Event* event) {
 
 //________________________________________________________________________________________________________________________________
 void printT3s(Event* event) {
-  Triplets const* triplets = event->getTriplets().data();
+  auto const triplets = event->getTriplets<TripletsSoA>();
+  auto const tripletsOccupancy = event->getTriplets<TripletsOccupancySoA>();
   SegmentsConst segments = event->getSegments<SegmentsSoA>();
   MiniDoubletsConst miniDoublets = event->getMiniDoublets<MiniDoubletsSoA>();
   Hits const* hitsEvt = event->getHits().data();
@@ -1081,12 +1082,12 @@ void printT3s(Event* event) {
   int nTriplets = 0;
   for (unsigned int i = 0; i < *(modules->nLowerModules); ++i) {
     // unsigned int idx = modules->lowerModuleIndices[i];
-    nTriplets += triplets->nTriplets[i];
+    nTriplets += tripletsOccupancy.nTriplets()[i];
     unsigned int idx = i;
-    for (unsigned int jdx = 0; jdx < triplets->nTriplets[idx]; jdx++) {
+    for (unsigned int jdx = 0; jdx < tripletsOccupancy.nTriplets()[idx]; jdx++) {
       unsigned int tpIdx = idx * 5000 + jdx;
-      unsigned int InnerSegmentIndex = triplets->segmentIndices[2 * tpIdx];
-      unsigned int OuterSegmentIndex = triplets->segmentIndices[2 * tpIdx + 1];
+      unsigned int InnerSegmentIndex = triplets.segmentIndices()[tpIdx][0];
+      unsigned int OuterSegmentIndex = triplets.segmentIndices()[tpIdx][1];
       unsigned int InnerSegmentInnerMiniDoubletIndex = segments.mdIndices()[InnerSegmentIndex][0];
       unsigned int InnerSegmentOuterMiniDoubletIndex = segments.mdIndices()[InnerSegmentIndex][1];
       unsigned int OuterSegmentOuterMiniDoubletIndex = segments.mdIndices()[OuterSegmentIndex][1];

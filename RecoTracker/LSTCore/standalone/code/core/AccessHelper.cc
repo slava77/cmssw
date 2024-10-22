@@ -117,11 +117,11 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 // ==============
 
 //____________________________________________________________________________________________
-std::vector<unsigned int> getLSsFromT3(Event* event, unsigned int T3) {
-  Triplets const* triplets = event->getTriplets().data();
-  unsigned int LS_1 = triplets->segmentIndices[2 * T3];
-  unsigned int LS_2 = triplets->segmentIndices[2 * T3 + 1];
-  return {LS_1, LS_2};
+std::vector<unsigned int> getLSsFromT3(Event* event, unsigned int t3) {
+  auto const triplets = event->getTriplets<TripletsSoA>();
+  unsigned int ls_1 = triplets.segmentIndices()[t3][0];
+  unsigned int ls_2 = triplets.segmentIndices()[t3][1];
+  return {ls_1, ls_2};
 }
 
 //____________________________________________________________________________________________

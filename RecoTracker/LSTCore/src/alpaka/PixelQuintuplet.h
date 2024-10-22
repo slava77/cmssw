@@ -677,7 +677,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                     MiniDoubletsConst mds,
                                                                     SegmentsConst segments,
                                                                     SegmentsPixelConst segmentsPixel,
-                                                                    Triplets const& tripletsInGPU,
+                                                                    TripletsConst triplets,
                                                                     Quintuplets const& quintupletsInGPU,
                                                                     unsigned int pixelSegmentIndex,
                                                                     unsigned int quintupletIndex,
@@ -689,8 +689,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                     float& centerX,
                                                                     float& centerY,
                                                                     unsigned int pixelSegmentArrayIndex) {
-    unsigned int T5InnerT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex];
-    unsigned int T5OuterT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1];
+    unsigned int t5InnerT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex];
+    unsigned int t5OuterT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1];
 
     float pixelRadiusTemp, tripletRadius, rPhiChiSquaredTemp, rzChiSquaredTemp, rPhiChiSquaredInwardsTemp, centerXTemp,
         centerYTemp;
@@ -701,9 +701,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                        mds,
                                        segments,
                                        segmentsPixel,
-                                       tripletsInGPU,
+                                       triplets,
                                        pixelSegmentIndex,
-                                       T5InnerT3Index,
+                                       t5InnerT3Index,
                                        pixelRadiusTemp,
                                        tripletRadius,
                                        centerXTemp,
@@ -714,10 +714,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                        false))
       return false;
 
-    unsigned int firstSegmentIndex = tripletsInGPU.segmentIndices[2 * T5InnerT3Index];
-    unsigned int secondSegmentIndex = tripletsInGPU.segmentIndices[2 * T5InnerT3Index + 1];
-    unsigned int thirdSegmentIndex = tripletsInGPU.segmentIndices[2 * T5OuterT3Index];
-    unsigned int fourthSegmentIndex = tripletsInGPU.segmentIndices[2 * T5OuterT3Index + 1];
+    unsigned int firstSegmentIndex = triplets.segmentIndices()[t5InnerT3Index][0];
+    unsigned int secondSegmentIndex = triplets.segmentIndices()[t5InnerT3Index][1];
+    unsigned int thirdSegmentIndex = triplets.segmentIndices()[t5OuterT3Index][0];
+    unsigned int fourthSegmentIndex = triplets.segmentIndices()[t5OuterT3Index][1];
 
     unsigned int pixelInnerMDIndex = segments.mdIndices()[pixelSegmentIndex][0];
     unsigned int pixelOuterMDIndex = segments.mdIndices()[pixelSegmentIndex][1];
@@ -825,7 +825,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   MiniDoubletsConst mds,
                                   SegmentsConst segments,
                                   SegmentsPixel segmentsPixel,
-                                  Triplets tripletsInGPU,
+                                  Triplets triplets,
                                   Quintuplets quintupletsInGPU,
                                   PixelQuintuplets pixelQuintupletsInGPU,
                                   unsigned int* connectedPixelSize,
@@ -875,7 +875,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                          mds,
                                                          segments,
                                                          segmentsPixel,
-                                                         tripletsInGPU,
+                                                         triplets,
                                                          quintupletsInGPU,
                                                          pixelSegmentIndex,
                                                          quintupletIndex,
@@ -919,8 +919,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                            centerX,
                                            centerY);
 
-                tripletsInGPU.partOfPT5[quintupletsInGPU.tripletIndices[2 * quintupletIndex]] = true;
-                tripletsInGPU.partOfPT5[quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1]] = true;
+                triplets.partOfPT5()[quintupletsInGPU.tripletIndices[2 * quintupletIndex]] = true;
+                triplets.partOfPT5()[quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1]] = true;
                 segmentsPixel.partOfPT5()[i_pLS] = true;
                 quintupletsInGPU.partOfPT5[quintupletIndex] = true;
               }  // tot occupancy

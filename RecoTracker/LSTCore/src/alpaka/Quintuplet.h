@@ -149,7 +149,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     return ((firstMin <= secondMin) && (secondMin < firstMax)) || ((secondMin < firstMin) && (firstMin < secondMax));
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addQuintupletToMemory(Triplets const& tripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void addQuintupletToMemory(TripletsConst triplets,
                                                             Quintuplets& quintupletsInGPU,
                                                             unsigned int innerTripletIndex,
                                                             unsigned int outerTripletIndex,
@@ -195,36 +195,26 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     quintupletsInGPU.regressionG[quintupletIndex] = regressionG;
     quintupletsInGPU.regressionF[quintupletIndex] = regressionF;
     quintupletsInGPU.logicalLayers[Params_T5::kLayers * quintupletIndex] =
-        tripletsInGPU.logicalLayers[Params_T3::kLayers * innerTripletIndex];
+        triplets.logicalLayers()[innerTripletIndex][0];
     quintupletsInGPU.logicalLayers[Params_T5::kLayers * quintupletIndex + 1] =
-        tripletsInGPU.logicalLayers[Params_T3::kLayers * innerTripletIndex + 1];
+        triplets.logicalLayers()[innerTripletIndex][1];
     quintupletsInGPU.logicalLayers[Params_T5::kLayers * quintupletIndex + 2] =
-        tripletsInGPU.logicalLayers[Params_T3::kLayers * innerTripletIndex + 2];
+        triplets.logicalLayers()[innerTripletIndex][2];
     quintupletsInGPU.logicalLayers[Params_T5::kLayers * quintupletIndex + 3] =
-        tripletsInGPU.logicalLayers[Params_T3::kLayers * outerTripletIndex + 1];
+        triplets.logicalLayers()[outerTripletIndex][1];
     quintupletsInGPU.logicalLayers[Params_T5::kLayers * quintupletIndex + 4] =
-        tripletsInGPU.logicalLayers[Params_T3::kLayers * outerTripletIndex + 2];
+        triplets.logicalLayers()[outerTripletIndex][2];
 
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * innerTripletIndex];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 1] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * innerTripletIndex + 1];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 2] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * innerTripletIndex + 2];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 3] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * innerTripletIndex + 3];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 4] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * innerTripletIndex + 4];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 5] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * innerTripletIndex + 5];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 6] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * outerTripletIndex + 2];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 7] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * outerTripletIndex + 3];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 8] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * outerTripletIndex + 4];
-    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 9] =
-        tripletsInGPU.hitIndices[Params_T3::kHits * outerTripletIndex + 5];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex] = triplets.hitIndices()[innerTripletIndex][0];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 1] = triplets.hitIndices()[innerTripletIndex][1];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 2] = triplets.hitIndices()[innerTripletIndex][2];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 3] = triplets.hitIndices()[innerTripletIndex][3];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 4] = triplets.hitIndices()[innerTripletIndex][4];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 5] = triplets.hitIndices()[innerTripletIndex][5];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 6] = triplets.hitIndices()[outerTripletIndex][2];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 7] = triplets.hitIndices()[outerTripletIndex][3];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 8] = triplets.hitIndices()[outerTripletIndex][4];
+    quintupletsInGPU.hitIndices[Params_T5::kHits * quintupletIndex + 9] = triplets.hitIndices()[outerTripletIndex][5];
     quintupletsInGPU.bridgeRadius[quintupletIndex] = bridgeRadius;
     quintupletsInGPU.rzChiSquared[quintupletIndex] = rzChiSquared;
     quintupletsInGPU.chiSquared[quintupletIndex] = rPhiChiSquared;
@@ -750,12 +740,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   }
 
   template <typename TAcc>
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool T5HasCommonMiniDoublet(Triplets const& tripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE bool T5HasCommonMiniDoublet(TripletsConst triplets,
                                                              SegmentsConst segments,
                                                              unsigned int innerTripletIndex,
                                                              unsigned int outerTripletIndex) {
-    unsigned int innerOuterSegmentIndex = tripletsInGPU.segmentIndices[2 * innerTripletIndex + 1];
-    unsigned int outerInnerSegmentIndex = tripletsInGPU.segmentIndices[2 * outerTripletIndex];
+    unsigned int innerOuterSegmentIndex = triplets.segmentIndices()[innerTripletIndex][1];
+    unsigned int outerInnerSegmentIndex = triplets.segmentIndices()[outerTripletIndex][0];
     unsigned int innerOuterOuterMiniDoubletIndex =
         segments.mdIndices()[innerOuterSegmentIndex][1];  //inner triplet outer segment outer MD index
     unsigned int outerInnerInnerMiniDoubletIndex =
@@ -2161,7 +2151,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                Modules& modulesInGPU,
                                                                MiniDoubletsConst mds,
                                                                SegmentsConst segments,
-                                                               Triplets& tripletsInGPU,
+                                                               TripletsConst triplets,
                                                                uint16_t lowerModuleIndex1,
                                                                uint16_t lowerModuleIndex2,
                                                                uint16_t lowerModuleIndex3,
@@ -2179,10 +2169,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                float& chiSquared,
                                                                float& nonAnchorChiSquared,
                                                                bool& TightCutFlag) {
-    unsigned int firstSegmentIndex = tripletsInGPU.segmentIndices[2 * innerTripletIndex];
-    unsigned int secondSegmentIndex = tripletsInGPU.segmentIndices[2 * innerTripletIndex + 1];
-    unsigned int thirdSegmentIndex = tripletsInGPU.segmentIndices[2 * outerTripletIndex];
-    unsigned int fourthSegmentIndex = tripletsInGPU.segmentIndices[2 * outerTripletIndex + 1];
+    unsigned int firstSegmentIndex = triplets.segmentIndices()[innerTripletIndex][0];
+    unsigned int secondSegmentIndex = triplets.segmentIndices()[innerTripletIndex][1];
+    unsigned int thirdSegmentIndex = triplets.segmentIndices()[outerTripletIndex][0];
+    unsigned int fourthSegmentIndex = triplets.segmentIndices()[outerTripletIndex][1];
 
     unsigned int innerOuterOuterMiniDoubletIndex =
         segments.mdIndices()[secondSegmentIndex][1];  //inner triplet outer segment outer MD index
@@ -2307,11 +2297,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     computeErrorInRadius(acc, x3Vec, y3Vec, x1Vec, y1Vec, x2Vec, y2Vec, outerRadiusMin2S, outerRadiusMax2S);
 
     float g, f;
-    outerRadius = tripletsInGPU.circleRadius[outerTripletIndex];
+    outerRadius = triplets.radius()[outerTripletIndex];
     bridgeRadius = computeRadiusFromThreeAnchorHits(acc, x2, y2, x3, y3, x4, y4, g, f);
-    innerRadius = tripletsInGPU.circleRadius[innerTripletIndex];
-    g = tripletsInGPU.circleCenterX[innerTripletIndex];
-    f = tripletsInGPU.circleCenterY[innerTripletIndex];
+    innerRadius = triplets.radius()[innerTripletIndex];
+    g = triplets.centerX()[innerTripletIndex];
+    f = triplets.centerY()[innerTripletIndex];
 
 #ifdef USE_RZCHI2
     float inner_pt = 2 * k2Rinv1GeVf * innerRadius;
@@ -2432,7 +2422,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                           modulesInGPU,
                                           mds,
                                           segments,
-                                          tripletsInGPU,
+                                          triplets,
                                           xVec,
                                           yVec,
                                           mdIndices,
@@ -2504,7 +2494,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   Modules modulesInGPU,
                                   MiniDoubletsConst mds,
                                   SegmentsConst segments,
-                                  Triplets tripletsInGPU,
+                                  Triplets triplets,
+                                  TripletsOccupancyConst tripletsOccupancy,
                                   Quintuplets quintupletsInGPU,
                                   ObjectRanges rangesInGPU,
                                   uint16_t nEligibleT5Modules) const {
@@ -2524,18 +2515,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         else {
           continue;
         }
-        unsigned int nInnerTriplets = tripletsInGPU.nTriplets[lowerModule1];
+        unsigned int nInnerTriplets = tripletsOccupancy.nTriplets()[lowerModule1];
         for (unsigned int innerTripletArrayIndex = globalThreadIdx[1]; innerTripletArrayIndex < nInnerTriplets;
              innerTripletArrayIndex += gridThreadExtent[1]) {
           unsigned int innerTripletIndex = rangesInGPU.tripletModuleIndices[lowerModule1] + innerTripletArrayIndex;
-          uint16_t lowerModule2 = tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * innerTripletIndex + 1];
-          uint16_t lowerModule3 = tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * innerTripletIndex + 2];
-          unsigned int nOuterTriplets = tripletsInGPU.nTriplets[lowerModule3];
+          uint16_t lowerModule2 = triplets.lowerModuleIndices()[innerTripletIndex][1];
+          uint16_t lowerModule3 = triplets.lowerModuleIndices()[innerTripletIndex][2];
+          unsigned int nOuterTriplets = tripletsOccupancy.nTriplets()[lowerModule3];
           for (unsigned int outerTripletArrayIndex = globalThreadIdx[2]; outerTripletArrayIndex < nOuterTriplets;
                outerTripletArrayIndex += gridThreadExtent[2]) {
             unsigned int outerTripletIndex = rangesInGPU.tripletModuleIndices[lowerModule3] + outerTripletArrayIndex;
-            uint16_t lowerModule4 = tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * outerTripletIndex + 1];
-            uint16_t lowerModule5 = tripletsInGPU.lowerModuleIndices[Params_T3::kLayers * outerTripletIndex + 2];
+            uint16_t lowerModule4 = triplets.lowerModuleIndices()[outerTripletIndex][1];
+            uint16_t lowerModule5 = triplets.lowerModuleIndices()[outerTripletIndex][2];
 
             float innerRadius, outerRadius, bridgeRadius, regressionG, regressionF, regressionRadius, rzChiSquared,
                 chiSquared, nonAnchorChiSquared;  //required for making distributions
@@ -2545,7 +2536,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                     modulesInGPU,
                                                     mds,
                                                     segments,
-                                                    tripletsInGPU,
+                                                    triplets,
                                                     lowerModule1,
                                                     lowerModule2,
                                                     lowerModule3,
@@ -2582,13 +2573,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                 } else {
                   unsigned int quintupletIndex =
                       rangesInGPU.quintupletModuleIndices[lowerModule1] + quintupletModuleIndex;
-                  float phi = mds.anchorPhi()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * innerTripletIndex]]
+                  float phi = mds.anchorPhi()[segments.mdIndices()[triplets.segmentIndices()[innerTripletIndex][0]]
                                                                   [layer2_adjustment]];
-                  float eta = mds.anchorEta()[segments.mdIndices()[tripletsInGPU.segmentIndices[2 * innerTripletIndex]]
+                  float eta = mds.anchorEta()[segments.mdIndices()[triplets.segmentIndices()[innerTripletIndex][0]]
                                                                   [layer2_adjustment]];
                   float pt = (innerRadius + outerRadius) * k2Rinv1GeVf;
                   float scores = chiSquared + nonAnchorChiSquared;
-                  addQuintupletToMemory(tripletsInGPU,
+                  addQuintupletToMemory(triplets,
                                         quintupletsInGPU,
                                         innerTripletIndex,
                                         outerTripletIndex,
@@ -2614,8 +2605,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                         quintupletIndex,
                                         TightCutFlag);
 
-                  tripletsInGPU.partOfT5[quintupletsInGPU.tripletIndices[2 * quintupletIndex]] = true;
-                  tripletsInGPU.partOfT5[quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1]] = true;
+                  triplets.partOfT5()[quintupletsInGPU.tripletIndices[2 * quintupletIndex]] = true;
+                  triplets.partOfT5()[quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1]] = true;
                 }
               }
             }
@@ -2629,7 +2620,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   Modules modulesInGPU,
-                                  Triplets tripletsInGPU,
+                                  TripletsOccupancyConst tripletsOccupancy,
                                   ObjectRanges rangesInGPU) const {
       // implementation is 1D with a single block
       static_assert(std::is_same_v<TAcc, ALPAKA_ACCELERATOR_NAMESPACE::Acc1D>, "Should be Acc1D");
@@ -2658,7 +2649,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         short module_subdets = modulesInGPU.subdets[i];
         float module_eta = alpaka::math::abs(acc, modulesInGPU.eta[i]);
 
-        if (tripletsInGPU.nTriplets[i] == 0)
+        if (tripletsOccupancy.nTriplets()[i] == 0)
           continue;
         if (module_subdets == Barrel and module_layers >= 3)
           continue;
