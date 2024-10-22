@@ -152,11 +152,11 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 // ==============
 
 //____________________________________________________________________________________________
-std::vector<unsigned int> getT3sFromT5(Event* event, unsigned int T5) {
-  Quintuplets const* quintuplets = event->getQuintuplets().data();
-  unsigned int T3_1 = quintuplets->tripletIndices[2 * T5];
-  unsigned int T3_2 = quintuplets->tripletIndices[2 * T5 + 1];
-  return {T3_1, T3_2};
+std::vector<unsigned int> getT3sFromT5(Event* event, unsigned int t5) {
+  auto const quintuplets = event->getQuintuplets<QuintupletsSoA>();
+  unsigned int t3_1 = quintuplets.tripletIndices()[t5][0];
+  unsigned int t3_2 = quintuplets.tripletIndices()[t5][1];
+  return {t3_1, t3_2};
 }
 
 //____________________________________________________________________________________________

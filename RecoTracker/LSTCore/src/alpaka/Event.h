@@ -4,12 +4,14 @@
 #include <optional>
 
 #include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
+#include "RecoTracker/LSTCore/interface/QuintupletsHostCollection.h"
 #include "RecoTracker/LSTCore/interface/SegmentsSoA.h"
 #include "RecoTracker/LSTCore/interface/TrackCandidatesHostCollection.h"
 #include "RecoTracker/LSTCore/interface/TripletsHostCollection.h"
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/alpaka/LST.h"
 #include "RecoTracker/LSTCore/interface/alpaka/MiniDoubletsDeviceCollection.h"
+#include "RecoTracker/LSTCore/interface/alpaka/QuintupletsDeviceCollection.h"
 #include "RecoTracker/LSTCore/interface/alpaka/SegmentsDeviceCollection.h"
 #include "RecoTracker/LSTCore/interface/alpaka/TrackCandidatesDeviceCollection.h"
 #include "RecoTracker/LSTCore/interface/alpaka/TripletsDeviceCollection.h"
@@ -17,7 +19,6 @@
 
 #include "Hit.h"
 #include "Kernels.h"
-#include "Quintuplet.h"
 #include "PixelQuintuplet.h"
 #include "PixelTriplet.h"
 
@@ -53,8 +54,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<MiniDoubletsDeviceCollection> miniDoubletsDC_;
     std::optional<SegmentsDeviceCollection> segmentsDC_;
     std::optional<TripletsDeviceCollection> tripletsDC_;
-    std::optional<Quintuplets> quintupletsInGPU_;
-    std::optional<QuintupletsBuffer<Device>> quintupletsBuffers_;
+    std::optional<QuintupletsDeviceCollection> quintupletsDC_;
     std::optional<TrackCandidatesDeviceCollection> trackCandidatesDC_;
     std::optional<PixelTriplets> pixelTripletsInGPU_;
     std::optional<PixelTripletsBuffer<Device>> pixelTripletsBuffers_;
@@ -69,7 +69,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     std::optional<TripletsHostCollection> tripletsHC_;
     std::optional<TrackCandidatesHostCollection> trackCandidatesHC_;
     std::optional<ModulesBuffer<DevHost>> modulesInCPU_;
-    std::optional<QuintupletsBuffer<DevHost>> quintupletsInCPU_;
+    std::optional<QuintupletsHostCollection> quintupletsHC_;
     std::optional<PixelTripletsBuffer<DevHost>> pixelTripletsInCPU_;
     std::optional<PixelQuintupletsBuffer<DevHost>> pixelQuintupletsInCPU_;
 
@@ -189,7 +189,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     typename TSoA::ConstView getSegments(bool sync = true);
     template <typename TSoA, typename TDev = Device>
     typename TSoA::ConstView getTriplets(bool sync = true);
-    QuintupletsBuffer<DevHost>& getQuintuplets(bool sync = true);
+    template <typename TSoA, typename TDev = Device>
+    typename TSoA::ConstView getQuintuplets(bool sync = true);
     PixelTripletsBuffer<DevHost>& getPixelTriplets(bool sync = true);
     PixelQuintupletsBuffer<DevHost>& getPixelQuintuplets(bool sync = true);
     const TrackCandidatesConst& getTrackCandidatesWithSelection(bool inCMSSW, bool sync);

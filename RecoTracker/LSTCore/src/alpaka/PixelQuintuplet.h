@@ -2,13 +2,13 @@
 #define RecoTracker_LSTCore_src_alpaka_PixelQuintuplet_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
+#include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
+#include "RecoTracker/LSTCore/interface/QuintupletsSoA.h"
+#include "RecoTracker/LSTCore/interface/SegmentsSoA.h"
+#include "RecoTracker/LSTCore/interface/TripletsSoA.h"
 
-#include "Segment.h"
-#include "MiniDoublet.h"
 #include "Hit.h"
-#include "Triplet.h"
-#include "Quintuplet.h"
 #include "PixelTriplet.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
@@ -109,10 +109,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelQuintupletToMemory(Modules const& modulesInGPU,
                                                                  MiniDoubletsConst mds,
                                                                  SegmentsConst segments,
-                                                                 Quintuplets const& quintupletsInGPU,
+                                                                 QuintupletsConst quintuplets,
                                                                  PixelQuintuplets& pixelQuintupletsInGPU,
                                                                  unsigned int pixelIndex,
-                                                                 unsigned int T5Index,
+                                                                 unsigned int t5Index,
                                                                  unsigned int pixelQuintupletIndex,
                                                                  float rzChiSquared,
                                                                  float rPhiChiSquared,
@@ -125,7 +125,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                  float centerX,
                                                                  float centerY) {
     pixelQuintupletsInGPU.pixelIndices[pixelQuintupletIndex] = pixelIndex;
-    pixelQuintupletsInGPU.T5Indices[pixelQuintupletIndex] = T5Index;
+    pixelQuintupletsInGPU.T5Indices[pixelQuintupletIndex] = t5Index;
     pixelQuintupletsInGPU.isDup[pixelQuintupletIndex] = false;
     pixelQuintupletsInGPU.score[pixelQuintupletIndex] = __F2H(score);
     pixelQuintupletsInGPU.eta[pixelQuintupletIndex] = __F2H(eta);
@@ -139,30 +139,30 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex] = 0;
     pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 1] = 0;
     pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 2] =
-        quintupletsInGPU.logicalLayers[T5Index * Params_T5::kLayers];
+        quintuplets.logicalLayers()[t5Index][0];
     pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 3] =
-        quintupletsInGPU.logicalLayers[T5Index * Params_T5::kLayers + 1];
+        quintuplets.logicalLayers()[t5Index][1];
     pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 4] =
-        quintupletsInGPU.logicalLayers[T5Index * Params_T5::kLayers + 2];
+        quintuplets.logicalLayers()[t5Index][2];
     pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 5] =
-        quintupletsInGPU.logicalLayers[T5Index * Params_T5::kLayers + 3];
+        quintuplets.logicalLayers()[t5Index][3];
     pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 6] =
-        quintupletsInGPU.logicalLayers[T5Index * Params_T5::kLayers + 4];
+        quintuplets.logicalLayers()[t5Index][4];
 
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex] =
         segments.innerLowerModuleIndices()[pixelIndex];
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 1] =
         segments.outerLowerModuleIndices()[pixelIndex];
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 2] =
-        quintupletsInGPU.lowerModuleIndices[T5Index * Params_T5::kLayers];
+        quintuplets.lowerModuleIndices()[t5Index][0];
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 3] =
-        quintupletsInGPU.lowerModuleIndices[T5Index * Params_T5::kLayers + 1];
+        quintuplets.lowerModuleIndices()[t5Index][1];
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 4] =
-        quintupletsInGPU.lowerModuleIndices[T5Index * Params_T5::kLayers + 2];
+        quintuplets.lowerModuleIndices()[t5Index][2];
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 5] =
-        quintupletsInGPU.lowerModuleIndices[T5Index * Params_T5::kLayers + 3];
+        quintuplets.lowerModuleIndices()[t5Index][3];
     pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 6] =
-        quintupletsInGPU.lowerModuleIndices[T5Index * Params_T5::kLayers + 4];
+        quintuplets.lowerModuleIndices()[t5Index][4];
 
     unsigned int pixelInnerMD = segments.mdIndices()[pixelIndex][0];
     unsigned int pixelOuterMD = segments.mdIndices()[pixelIndex][1];
@@ -176,25 +176,25 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         mds.outerHitIndices()[pixelOuterMD];
 
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 4] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index];
+        quintuplets.hitIndices()[t5Index][0];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 5] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 1];
+        quintuplets.hitIndices()[t5Index][1];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 6] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 2];
+        quintuplets.hitIndices()[t5Index][2];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 7] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 3];
+        quintuplets.hitIndices()[t5Index][3];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 8] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 4];
+        quintuplets.hitIndices()[t5Index][4];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 9] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 5];
+        quintuplets.hitIndices()[t5Index][5];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 10] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 6];
+        quintuplets.hitIndices()[t5Index][6];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 11] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 7];
+        quintuplets.hitIndices()[t5Index][7];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 12] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 8];
+        quintuplets.hitIndices()[t5Index][8];
     pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 13] =
-        quintupletsInGPU.hitIndices[Params_T5::kHits * T5Index + 9];
+        quintuplets.hitIndices()[t5Index][9];
 
     pixelQuintupletsInGPU.rzChiSquared[pixelQuintupletIndex] = rzChiSquared;
     pixelQuintupletsInGPU.rPhiChiSquared[pixelQuintupletIndex] = rPhiChiSquared;
@@ -678,7 +678,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                     SegmentsConst segments,
                                                                     SegmentsPixelConst segmentsPixel,
                                                                     TripletsConst triplets,
-                                                                    Quintuplets const& quintupletsInGPU,
+                                                                    QuintupletsConst quintuplets,
                                                                     unsigned int pixelSegmentIndex,
                                                                     unsigned int quintupletIndex,
                                                                     float& rzChiSquared,
@@ -689,8 +689,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                     float& centerX,
                                                                     float& centerY,
                                                                     unsigned int pixelSegmentArrayIndex) {
-    unsigned int t5InnerT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex];
-    unsigned int t5OuterT3Index = quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1];
+    unsigned int t5InnerT3Index = quintuplets.tripletIndices()[quintupletIndex][0];
+    unsigned int t5OuterT3Index = quintuplets.tripletIndices()[quintupletIndex][1];
 
     float pixelRadiusTemp, tripletRadius, rPhiChiSquaredTemp, rzChiSquaredTemp, rPhiChiSquaredInwardsTemp, centerXTemp,
         centerYTemp;
@@ -727,11 +727,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     unsigned int fourthMDIndex = segments.mdIndices()[thirdSegmentIndex][1];
     unsigned int fifthMDIndex = segments.mdIndices()[fourthSegmentIndex][1];
 
-    uint16_t lowerModuleIndex1 = quintupletsInGPU.lowerModuleIndices[Params_T5::kLayers * quintupletIndex];
-    uint16_t lowerModuleIndex2 = quintupletsInGPU.lowerModuleIndices[Params_T5::kLayers * quintupletIndex + 1];
-    uint16_t lowerModuleIndex3 = quintupletsInGPU.lowerModuleIndices[Params_T5::kLayers * quintupletIndex + 2];
-    uint16_t lowerModuleIndex4 = quintupletsInGPU.lowerModuleIndices[Params_T5::kLayers * quintupletIndex + 3];
-    uint16_t lowerModuleIndex5 = quintupletsInGPU.lowerModuleIndices[Params_T5::kLayers * quintupletIndex + 4];
+    uint16_t lowerModuleIndex1 = quintuplets.lowerModuleIndices()[quintupletIndex][0];
+    uint16_t lowerModuleIndex2 = quintuplets.lowerModuleIndices()[quintupletIndex][1];
+    uint16_t lowerModuleIndex3 = quintuplets.lowerModuleIndices()[quintupletIndex][2];
+    uint16_t lowerModuleIndex4 = quintuplets.lowerModuleIndices()[quintupletIndex][3];
+    uint16_t lowerModuleIndex5 = quintuplets.lowerModuleIndices()[quintupletIndex][4];
 
     uint16_t lowerModuleIndices[Params_T5::kLayers] = {
         lowerModuleIndex1, lowerModuleIndex2, lowerModuleIndex3, lowerModuleIndex4, lowerModuleIndex5};
@@ -779,9 +779,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     centerY = segmentsPixel.circleCenterY()[pixelSegmentArrayIndex];
     pixelRadius = segmentsPixel.circleRadius()[pixelSegmentArrayIndex];
 
-    float T5CenterX = quintupletsInGPU.regressionG[quintupletIndex];
-    float T5CenterY = quintupletsInGPU.regressionF[quintupletIndex];
-    quintupletRadius = quintupletsInGPU.regressionRadius[quintupletIndex];
+    float T5CenterX = quintuplets.regressionG()[quintupletIndex];
+    float T5CenterY = quintuplets.regressionF()[quintupletIndex];
+    quintupletRadius = quintuplets.regressionRadius()[quintupletIndex];
 
     rPhiChiSquared =
         computePT5RPhiChiSquared(acc, modulesInGPU, lowerModuleIndices, centerX, centerY, pixelRadius, xs, ys);
@@ -801,7 +801,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float yPix[] = {mds.anchorY()[pixelInnerMDIndex], mds.anchorY()[pixelOuterMDIndex]};
     rPhiChiSquaredInwards = computePT5RPhiChiSquaredInwards(T5CenterX, T5CenterY, quintupletRadius, xPix, yPix);
 
-    if (quintupletsInGPU.regressionRadius[quintupletIndex] < 5.0f * kR1GeVf) {
+    if (quintuplets.regressionRadius()[quintupletIndex] < 5.0f * kR1GeVf) {
       if (not passPT5RPhiChiSquaredInwardsCuts(modulesInGPU,
                                                lowerModuleIndex1,
                                                lowerModuleIndex2,
@@ -818,7 +818,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     return true;
   }
 
-  struct CreatePixelQuintupletsInGPUFromMapv2 {
+  struct CreatePixelQuintupletsFromMap {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   Modules modulesInGPU,
@@ -826,7 +826,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   SegmentsConst segments,
                                   SegmentsPixel segmentsPixel,
                                   Triplets triplets,
-                                  Quintuplets quintupletsInGPU,
+                                  Quintuplets quintuplets,
+                                  QuintupletsOccupancyConst quintupletsOccupancy,
                                   PixelQuintuplets pixelQuintupletsInGPU,
                                   unsigned int* connectedPixelSize,
                                   unsigned int* connectedPixelIndex,
@@ -850,7 +851,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
           uint16_t pixelModuleIndex = *modulesInGPU.nLowerModules;
           if (segmentsPixel.isDup()[i_pLS])
             continue;
-          unsigned int nOuterQuintuplets = quintupletsInGPU.nQuintuplets[quintupletLowerModuleIndex];
+          unsigned int nOuterQuintuplets = quintupletsOccupancy.nQuintuplets()[quintupletLowerModuleIndex];
 
           if (nOuterQuintuplets == 0)
             continue;
@@ -864,7 +865,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             unsigned int quintupletIndex =
                 rangesInGPU.quintupletModuleIndices[quintupletLowerModuleIndex] + outerQuintupletArrayIndex;
 
-            if (quintupletsInGPU.isDup[quintupletIndex])
+            if (quintuplets.isDup()[quintupletIndex])
               continue;
 
             float rzChiSquared, rPhiChiSquared, rPhiChiSquaredInwards, pixelRadius, quintupletRadius, centerX, centerY;
@@ -876,7 +877,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                          segments,
                                                          segmentsPixel,
                                                          triplets,
-                                                         quintupletsInGPU,
+                                                         quintuplets,
                                                          pixelSegmentIndex,
                                                          quintupletIndex,
                                                          rzChiSquared,
@@ -897,13 +898,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
               } else {
                 unsigned int pixelQuintupletIndex =
                     alpaka::atomicAdd(acc, pixelQuintupletsInGPU.nPixelQuintuplets, 1u, alpaka::hierarchy::Threads{});
-                float eta = __H2F(quintupletsInGPU.eta[quintupletIndex]);
-                float phi = __H2F(quintupletsInGPU.phi[quintupletIndex]);
+                float eta = __H2F(quintuplets.eta()[quintupletIndex]);
+                float phi = __H2F(quintuplets.phi()[quintupletIndex]);
 
                 addPixelQuintupletToMemory(modulesInGPU,
                                            mds,
                                            segments,
-                                           quintupletsInGPU,
+                                           quintuplets,
                                            pixelQuintupletsInGPU,
                                            pixelSegmentIndex,
                                            quintupletIndex,
@@ -919,10 +920,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                            centerX,
                                            centerY);
 
-                triplets.partOfPT5()[quintupletsInGPU.tripletIndices[2 * quintupletIndex]] = true;
-                triplets.partOfPT5()[quintupletsInGPU.tripletIndices[2 * quintupletIndex + 1]] = true;
+                triplets.partOfPT5()[quintuplets.tripletIndices()[quintupletIndex][0]] = true;
+                triplets.partOfPT5()[quintuplets.tripletIndices()[quintupletIndex][1]] = true;
                 segmentsPixel.partOfPT5()[i_pLS] = true;
-                quintupletsInGPU.partOfPT5[quintupletIndex] = true;
+                quintuplets.partOfPT5()[quintupletIndex] = true;
               }  // tot occupancy
             }  // end success
           }  // end T5

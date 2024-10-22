@@ -2,22 +2,22 @@
 #define RecoTracker_LSTCore_src_alpaka_Kernels_h
 
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
+#include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
+#include "RecoTracker/LSTCore/interface/QuintupletsSoA.h"
+#include "RecoTracker/LSTCore/interface/SegmentsSoA.h"
+#include "RecoTracker/LSTCore/interface/TripletsSoA.h"
 
 #include "Hit.h"
-#include "MiniDoublet.h"
 #include "ObjectRanges.h"
-#include "Segment.h"
-#include "Triplet.h"
-#include "Quintuplet.h"
 #include "PixelQuintuplet.h"
 #include "PixelTriplet.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(Quintuplets& quintupletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(Quintuplets quintuplets,
                                                              unsigned int quintupletIndex,
                                                              bool secondpass = false) {
-    quintupletsInGPU.isDup[quintupletIndex] |= 1 + secondpass;
+    quintuplets.isDup()[quintupletIndex] |= 1 + secondpass;
   }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(PixelTriplets& pixelTripletsInGPU,
@@ -36,15 +36,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     segmentsPixel.isDup()[pixelSegmentArrayIndex] |= 1 + secondpass;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitsT5(unsigned int ix,
-                                                 unsigned int jx,
-                                                 Quintuplets const& quintupletsInGPU) {
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitsT5(unsigned int ix, unsigned int jx, QuintupletsConst quintuplets) {
     unsigned int hits1[Params_T5::kHits];
     unsigned int hits2[Params_T5::kHits];
 
     for (int i = 0; i < Params_T5::kHits; i++) {
-      hits1[i] = quintupletsInGPU.hitIndices[Params_T5::kHits * ix + i];
-      hits2[i] = quintupletsInGPU.hitIndices[Params_T5::kHits * jx + i];
+      hits1[i] = quintuplets.hitIndices()[ix][i];
+      hits2[i] = quintuplets.hitIndices()[jx][i];
     }
 
     int nMatched = 0;
@@ -142,34 +140,35 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     matched[1] = nMatched;
   }
 
-  struct RemoveDupQuintupletsInGPUAfterBuild {
+  struct RemoveDupQuintupletsAfterBuild {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
                                   Modules modulesInGPU,
-                                  Quintuplets quintupletsInGPU,
+                                  Quintuplets quintuplets,
+                                  QuintupletsOccupancyConst quintupletsOccupancy,
                                   ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
       for (unsigned int lowmod = globalThreadIdx[0]; lowmod < *modulesInGPU.nLowerModules;
            lowmod += gridThreadExtent[0]) {
-        unsigned int nQuintuplets_lowmod = quintupletsInGPU.nQuintuplets[lowmod];
+        unsigned int nQuintuplets_lowmod = quintupletsOccupancy.nQuintuplets()[lowmod];
         int quintupletModuleIndices_lowmod = rangesInGPU.quintupletModuleIndices[lowmod];
 
         for (unsigned int ix1 = globalThreadIdx[1]; ix1 < nQuintuplets_lowmod; ix1 += gridThreadExtent[1]) {
           unsigned int ix = quintupletModuleIndices_lowmod + ix1;
-          float eta1 = __H2F(quintupletsInGPU.eta[ix]);
-          float phi1 = __H2F(quintupletsInGPU.phi[ix]);
-          float score_rphisum1 = __H2F(quintupletsInGPU.score_rphisum[ix]);
+          float eta1 = __H2F(quintuplets.eta()[ix]);
+          float phi1 = __H2F(quintuplets.phi()[ix]);
+          float score_rphisum1 = __H2F(quintuplets.score_rphisum()[ix]);
 
           for (unsigned int jx1 = globalThreadIdx[2] + ix1 + 1; jx1 < nQuintuplets_lowmod; jx1 += gridThreadExtent[2]) {
             unsigned int jx = quintupletModuleIndices_lowmod + jx1;
 
-            float eta2 = __H2F(quintupletsInGPU.eta[jx]);
-            float phi2 = __H2F(quintupletsInGPU.phi[jx]);
+            float eta2 = __H2F(quintuplets.eta()[jx]);
+            float phi2 = __H2F(quintuplets.phi()[jx]);
             float dEta = alpaka::math::abs(acc, eta1 - eta2);
             float dPhi = calculate_dPhi(phi1, phi2);
-            float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
+            float score_rphisum2 = __H2F(quintuplets.score_rphisum()[jx]);
 
             if (dEta > 0.1f)
               continue;
@@ -177,13 +176,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             if (alpaka::math::abs(acc, dPhi) > 0.1f)
               continue;
 
-            int nMatched = checkHitsT5(ix, jx, quintupletsInGPU);
+            int nMatched = checkHitsT5(ix, jx, quintuplets);
             const int minNHitsForDup_T5 = 7;
             if (nMatched >= minNHitsForDup_T5) {
               if (score_rphisum1 >= score_rphisum2) {
-                rmQuintupletFromMemory(quintupletsInGPU, ix);
+                rmQuintupletFromMemory(quintuplets, ix);
               } else {
-                rmQuintupletFromMemory(quintupletsInGPU, jx);
+                rmQuintupletFromMemory(quintuplets, jx);
               }
             }
           }
@@ -192,16 +191,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
   };
 
-  struct RemoveDupQuintupletsInGPUBeforeTC {
+  struct RemoveDupQuintupletsBeforeTC {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, Quintuplets quintupletsInGPU, ObjectRanges rangesInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc,
+                                  Quintuplets quintuplets,
+                                  QuintupletsOccupancyConst quintupletsOccupancy,
+                                  ObjectRanges rangesInGPU) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
       for (unsigned int lowmodIdx1 = globalThreadIdx[1]; lowmodIdx1 < *(rangesInGPU.nEligibleT5Modules);
            lowmodIdx1 += gridThreadExtent[1]) {
         uint16_t lowmod1 = rangesInGPU.indicesOfEligibleT5Modules[lowmodIdx1];
-        unsigned int nQuintuplets_lowmod1 = quintupletsInGPU.nQuintuplets[lowmod1];
+        unsigned int nQuintuplets_lowmod1 = quintupletsOccupancy.nQuintuplets()[lowmod1];
         if (nQuintuplets_lowmod1 == 0)
           continue;
 
@@ -210,7 +212,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         for (unsigned int lowmodIdx2 = globalThreadIdx[2] + lowmodIdx1; lowmodIdx2 < *(rangesInGPU.nEligibleT5Modules);
              lowmodIdx2 += gridThreadExtent[2]) {
           uint16_t lowmod2 = rangesInGPU.indicesOfEligibleT5Modules[lowmodIdx2];
-          unsigned int nQuintuplets_lowmod2 = quintupletsInGPU.nQuintuplets[lowmod2];
+          unsigned int nQuintuplets_lowmod2 = quintupletsOccupancy.nQuintuplets()[lowmod2];
           if (nQuintuplets_lowmod2 == 0)
             continue;
 
@@ -218,7 +220,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
           for (unsigned int ix1 = 0; ix1 < nQuintuplets_lowmod1; ix1 += 1) {
             unsigned int ix = quintupletModuleIndices_lowmod1 + ix1;
-            if (quintupletsInGPU.partOfPT5[ix] || (quintupletsInGPU.isDup[ix] & 1))
+            if (quintuplets.partOfPT5()[ix] || (quintuplets.isDup()[ix] & 1))
               continue;
 
             for (unsigned int jx1 = 0; jx1 < nQuintuplets_lowmod2; jx1++) {
@@ -226,16 +228,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
               if (ix == jx)
                 continue;
 
-              if (quintupletsInGPU.partOfPT5[jx] || (quintupletsInGPU.isDup[jx] & 1))
+              if (quintuplets.partOfPT5()[jx] || (quintuplets.isDup()[jx] & 1))
                 continue;
 
-              float eta1 = __H2F(quintupletsInGPU.eta[ix]);
-              float phi1 = __H2F(quintupletsInGPU.phi[ix]);
-              float score_rphisum1 = __H2F(quintupletsInGPU.score_rphisum[ix]);
+              float eta1 = __H2F(quintuplets.eta()[ix]);
+              float phi1 = __H2F(quintuplets.phi()[ix]);
+              float score_rphisum1 = __H2F(quintuplets.score_rphisum()[ix]);
 
-              float eta2 = __H2F(quintupletsInGPU.eta[jx]);
-              float phi2 = __H2F(quintupletsInGPU.phi[jx]);
-              float score_rphisum2 = __H2F(quintupletsInGPU.score_rphisum[jx]);
+              float eta2 = __H2F(quintuplets.eta()[jx]);
+              float phi2 = __H2F(quintuplets.phi()[jx]);
+              float score_rphisum2 = __H2F(quintuplets.score_rphisum()[jx]);
 
               float dEta = alpaka::math::abs(acc, eta1 - eta2);
               float dPhi = calculate_dPhi(phi1, phi2);
@@ -247,15 +249,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                 continue;
 
               float dR2 = dEta * dEta + dPhi * dPhi;
-              int nMatched = checkHitsT5(ix, jx, quintupletsInGPU);
+              int nMatched = checkHitsT5(ix, jx, quintuplets);
               const int minNHitsForDup_T5 = 5;
               if (dR2 < 0.001f || nMatched >= minNHitsForDup_T5) {
                 if (score_rphisum1 > score_rphisum2) {
-                  rmQuintupletFromMemory(quintupletsInGPU, ix, true);
+                  rmQuintupletFromMemory(quintuplets, ix, true);
                 } else if (score_rphisum1 < score_rphisum2) {
-                  rmQuintupletFromMemory(quintupletsInGPU, jx, true);
+                  rmQuintupletFromMemory(quintuplets, jx, true);
                 } else {
-                  rmQuintupletFromMemory(quintupletsInGPU, (ix < jx ? ix : jx), true);
+                  rmQuintupletFromMemory(quintuplets, (ix < jx ? ix : jx), true);
                 }
               }
             }
