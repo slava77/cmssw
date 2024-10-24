@@ -4,14 +4,14 @@
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
+#include "RecoTracker/LSTCore/interface/PixelQuintupletsSoA.h"
+#include "RecoTracker/LSTCore/interface/PixelTripletsSoA.h"
 #include "RecoTracker/LSTCore/interface/QuintupletsSoA.h"
 #include "RecoTracker/LSTCore/interface/SegmentsSoA.h"
 #include "RecoTracker/LSTCore/interface/TripletsSoA.h"
 
 #include "Hit.h"
 #include "ObjectRanges.h"
-#include "PixelQuintuplet.h"
-#include "PixelTriplet.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmQuintupletFromMemory(Quintuplets quintuplets,
@@ -20,14 +20,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     quintuplets.isDup()[quintupletIndex] |= 1 + secondpass;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(PixelTriplets& pixelTripletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelTripletFromMemory(PixelTriplets pixelTriplets,
                                                                unsigned int pixelTripletIndex) {
-    pixelTripletsInGPU.isDup[pixelTripletIndex] = true;
+    pixelTriplets.isDup()[pixelTripletIndex] = true;
   }
 
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelQuintupletFromMemory(PixelQuintuplets& pixelQuintupletsInGPU,
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelQuintupletFromMemory(PixelQuintuplets pixelQuintuplets,
                                                                   unsigned int pixelQuintupletIndex) {
-    pixelQuintupletsInGPU.isDup[pixelQuintupletIndex] = true;
+    pixelQuintuplets.isDup()[pixelQuintupletIndex] = true;
   }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void rmPixelSegmentFromMemory(SegmentsPixel segmentsPixel,
@@ -63,13 +63,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE int checkHitspT5(unsigned int ix,
                                                   unsigned int jx,
-                                                  PixelQuintuplets const& pixelQuintupletsInGPU) {
+                                                  PixelQuintupletsConst pixelQuintuplets) {
     unsigned int hits1[Params_pT5::kHits];
     unsigned int hits2[Params_pT5::kHits];
 
     for (int i = 0; i < Params_pT5::kHits; i++) {
-      hits1[i] = pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * ix + i];
-      hits2[i] = pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * jx + i];
+      hits1[i] = pixelQuintuplets.hitIndices()[ix][i];
+      hits2[i] = pixelQuintuplets.hitIndices()[jx][i];
     }
 
     int nMatched = 0;
@@ -90,14 +90,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void checkHitspT3(unsigned int ix,
                                                    unsigned int jx,
-                                                   PixelTriplets const& pixelTripletsInGPU,
+                                                   PixelTripletsConst pixelTriplets,
                                                    int* matched) {
     int phits1[Params_pLS::kHits];
     int phits2[Params_pLS::kHits];
 
     for (int i = 0; i < Params_pLS::kHits; i++) {
-      phits1[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * ix + i];
-      phits2[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * jx + i];
+      phits1[i] = pixelTriplets.hitIndices()[ix][i];
+      phits2[i] = pixelTriplets.hitIndices()[jx][i];
     }
 
     int npMatched = 0;
@@ -118,8 +118,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     int hits2[Params_T3::kHits];
 
     for (int i = 0; i < Params_T3::kHits; i++) {
-      hits1[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * ix + i + 4];  // Omitting the pLS hits
-      hits2[i] = pixelTripletsInGPU.hitIndices[Params_pT3::kHits * jx + i + 4];  // Omitting the pLS hits
+      hits1[i] = pixelTriplets.hitIndices()[ix][i + 4];  // Omitting the pLS hits
+      hits2[i] = pixelTriplets.hitIndices()[jx][i + 4];  // Omitting the pLS hits
     }
 
     int nMatched = 0;
@@ -267,35 +267,32 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
   };
 
-  struct RemoveDupPixelTripletsInGPUFromMap {
+  struct RemoveDupPixelTripletsFromMap {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, PixelTriplets pixelTripletsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, PixelTriplets pixelTriplets) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      for (unsigned int ix = globalThreadIdx[1]; ix < *pixelTripletsInGPU.nPixelTriplets; ix += gridThreadExtent[1]) {
-        for (unsigned int jx = globalThreadIdx[2]; jx < *pixelTripletsInGPU.nPixelTriplets; jx += gridThreadExtent[2]) {
+      for (unsigned int ix = globalThreadIdx[1]; ix < pixelTriplets.nPixelTriplets(); ix += gridThreadExtent[1]) {
+        for (unsigned int jx = globalThreadIdx[2]; jx < pixelTriplets.nPixelTriplets(); jx += gridThreadExtent[2]) {
           if (ix == jx)
             continue;
 
           int nMatched[2];
-          checkHitspT3(ix, jx, pixelTripletsInGPU, nMatched);
+          checkHitspT3(ix, jx, pixelTriplets, nMatched);
           const int minNHitsForDup_pT3 = 5;
           if ((nMatched[0] + nMatched[1]) >= minNHitsForDup_pT3) {
             // Check the layers
-            if (pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * jx + 2] <
-                pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * ix + 2]) {
-              rmPixelTripletFromMemory(pixelTripletsInGPU, ix);
+            if (pixelTriplets.logicalLayers()[jx][2] < pixelTriplets.logicalLayers()[ix][2]) {
+              rmPixelTripletFromMemory(pixelTriplets, ix);
               break;
-            } else if (pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * ix + 2] ==
-                           pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * jx + 2] &&
-                       __H2F(pixelTripletsInGPU.score[ix]) > __H2F(pixelTripletsInGPU.score[jx])) {
-              rmPixelTripletFromMemory(pixelTripletsInGPU, ix);
+            } else if (pixelTriplets.logicalLayers()[ix][2] == pixelTriplets.logicalLayers()[jx][2] &&
+                       __H2F(pixelTriplets.score()[ix]) > __H2F(pixelTriplets.score()[jx])) {
+              rmPixelTripletFromMemory(pixelTriplets, ix);
               break;
-            } else if (pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * ix + 2] ==
-                           pixelTripletsInGPU.logicalLayers[Params_pT3::kLayers * jx + 2] &&
-                       (__H2F(pixelTripletsInGPU.score[ix]) == __H2F(pixelTripletsInGPU.score[jx])) && (ix < jx)) {
-              rmPixelTripletFromMemory(pixelTripletsInGPU, ix);
+            } else if (pixelTriplets.logicalLayers()[ix][2] == pixelTriplets.logicalLayers()[jx][2] &&
+                       (__H2F(pixelTriplets.score()[ix]) == __H2F(pixelTriplets.score()[jx])) && (ix < jx)) {
+              rmPixelTripletFromMemory(pixelTriplets, ix);
               break;
             }
           }
@@ -304,25 +301,25 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
   };
 
-  struct RemoveDupPixelQuintupletsInGPUFromMap {
+  struct RemoveDupPixelQuintupletsFromMap {
     template <typename TAcc>
-    ALPAKA_FN_ACC void operator()(TAcc const& acc, PixelQuintuplets pixelQuintupletsInGPU) const {
+    ALPAKA_FN_ACC void operator()(TAcc const& acc, PixelQuintuplets pixelQuintuplets) const {
       auto const globalThreadIdx = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc);
       auto const gridThreadExtent = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc);
 
-      unsigned int nPixelQuintuplets = *pixelQuintupletsInGPU.nPixelQuintuplets;
+      unsigned int nPixelQuintuplets = pixelQuintuplets.nPixelQuintuplets();
       for (unsigned int ix = globalThreadIdx[1]; ix < nPixelQuintuplets; ix += gridThreadExtent[1]) {
-        float score1 = __H2F(pixelQuintupletsInGPU.score[ix]);
+        float score1 = __H2F(pixelQuintuplets.score()[ix]);
         for (unsigned int jx = globalThreadIdx[2]; jx < nPixelQuintuplets; jx += gridThreadExtent[2]) {
           if (ix == jx)
             continue;
 
-          int nMatched = checkHitspT5(ix, jx, pixelQuintupletsInGPU);
-          float score2 = __H2F(pixelQuintupletsInGPU.score[jx]);
+          int nMatched = checkHitspT5(ix, jx, pixelQuintuplets);
+          float score2 = __H2F(pixelQuintuplets.score()[jx]);
           const int minNHitsForDup_pT5 = 7;
           if (nMatched >= minNHitsForDup_pT5) {
             if (score1 > score2 or ((score1 == score2) and (ix > jx))) {
-              rmPixelQuintupletFromMemory(pixelQuintupletsInGPU, ix);
+              rmPixelQuintupletFromMemory(pixelQuintuplets, ix);
               break;
             }
           }

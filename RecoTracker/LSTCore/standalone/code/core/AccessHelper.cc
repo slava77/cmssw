@@ -225,17 +225,17 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 unsigned int getPixelLSFrompT3(Event* event, unsigned int pT3) {
-  PixelTriplets const* pixelTriplets = event->getPixelTriplets().data();
+  auto const pixelTriplets = event->getPixelTriplets();
   ObjectRanges const* rangesEvt = event->getRanges().data();
   Modules const* modulesEvt = event->getModules().data();
   const unsigned int pLS_offset = rangesEvt->segmentModuleIndices[*(modulesEvt->nLowerModules)];
-  return pixelTriplets->pixelSegmentIndices[pT3] - pLS_offset;
+  return pixelTriplets.pixelSegmentIndices()[pT3] - pLS_offset;
 }
 
 //____________________________________________________________________________________________
 unsigned int getT3FrompT3(Event* event, unsigned int pT3) {
-  PixelTriplets const* pixelTriplets = event->getPixelTriplets().data();
-  return pixelTriplets->tripletIndices[pT3];
+  auto const pixelTriplets = event->getPixelTriplets();
+  return pixelTriplets.tripletIndices()[pT3];
 }
 
 //____________________________________________________________________________________________
@@ -314,17 +314,17 @@ std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> getHitIdxsAndHi
 
 //____________________________________________________________________________________________
 unsigned int getPixelLSFrompT5(Event* event, unsigned int pT5) {
-  PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets().data();
+  auto const pixelQuintuplets = event->getPixelQuintuplets();
   ObjectRanges const* rangesEvt = event->getRanges().data();
   Modules const* modulesEvt = event->getModules().data();
   const unsigned int pLS_offset = rangesEvt->segmentModuleIndices[*(modulesEvt->nLowerModules)];
-  return pixelQuintuplets->pixelIndices[pT5] - pLS_offset;
+  return pixelQuintuplets.pixelSegmentIndices()[pT5] - pLS_offset;
 }
 
 //____________________________________________________________________________________________
 unsigned int getT5FrompT5(Event* event, unsigned int pT5) {
-  PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets().data();
-  return pixelQuintuplets->T5Indices[pT5];
+  auto const pixelQuintuplets = event->getPixelQuintuplets();
+  return pixelQuintuplets.quintupletIndices()[pT5];
 }
 
 //____________________________________________________________________________________________

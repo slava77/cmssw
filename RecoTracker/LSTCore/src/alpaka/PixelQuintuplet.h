@@ -4,113 +4,19 @@
 #include "RecoTracker/LSTCore/interface/alpaka/Constants.h"
 #include "RecoTracker/LSTCore/interface/MiniDoubletsSoA.h"
 #include "RecoTracker/LSTCore/interface/Module.h"
+#include "RecoTracker/LSTCore/interface/PixelTripletsSoA.h"
 #include "RecoTracker/LSTCore/interface/QuintupletsSoA.h"
 #include "RecoTracker/LSTCore/interface/SegmentsSoA.h"
 #include "RecoTracker/LSTCore/interface/TripletsSoA.h"
 
 #include "Hit.h"
-#include "PixelTriplet.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
-  struct PixelQuintuplets {
-    unsigned int* pixelIndices;
-    unsigned int* T5Indices;
-    unsigned int* nPixelQuintuplets;
-    unsigned int* totOccupancyPixelQuintuplets;
-    bool* isDup;
-    FPX* score;
-    FPX* eta;
-    FPX* phi;
-    uint8_t* logicalLayers;
-    unsigned int* hitIndices;
-    uint16_t* lowerModuleIndices;
-    FPX* pixelRadius;
-    FPX* quintupletRadius;
-    FPX* centerX;
-    FPX* centerY;
-    float* rzChiSquared;
-    float* rPhiChiSquared;
-    float* rPhiChiSquaredInwards;
-
-    template <typename TBuff>
-    void setData(TBuff& buf) {
-      pixelIndices = buf.pixelIndices_buf.data();
-      T5Indices = buf.T5Indices_buf.data();
-      nPixelQuintuplets = buf.nPixelQuintuplets_buf.data();
-      totOccupancyPixelQuintuplets = buf.totOccupancyPixelQuintuplets_buf.data();
-      isDup = buf.isDup_buf.data();
-      score = buf.score_buf.data();
-      eta = buf.eta_buf.data();
-      phi = buf.phi_buf.data();
-      logicalLayers = buf.logicalLayers_buf.data();
-      hitIndices = buf.hitIndices_buf.data();
-      lowerModuleIndices = buf.lowerModuleIndices_buf.data();
-      pixelRadius = buf.pixelRadius_buf.data();
-      quintupletRadius = buf.quintupletRadius_buf.data();
-      centerX = buf.centerX_buf.data();
-      centerY = buf.centerY_buf.data();
-      rzChiSquared = buf.rzChiSquared_buf.data();
-      rPhiChiSquared = buf.rPhiChiSquared_buf.data();
-      rPhiChiSquaredInwards = buf.rPhiChiSquaredInwards_buf.data();
-    }
-  };
-
-  template <typename TDev>
-  struct PixelQuintupletsBuffer {
-    Buf<TDev, unsigned int> pixelIndices_buf;
-    Buf<TDev, unsigned int> T5Indices_buf;
-    Buf<TDev, unsigned int> nPixelQuintuplets_buf;
-    Buf<TDev, unsigned int> totOccupancyPixelQuintuplets_buf;
-    Buf<TDev, bool> isDup_buf;
-    Buf<TDev, FPX> score_buf;
-    Buf<TDev, FPX> eta_buf;
-    Buf<TDev, FPX> phi_buf;
-    Buf<TDev, uint8_t> logicalLayers_buf;
-    Buf<TDev, unsigned int> hitIndices_buf;
-    Buf<TDev, uint16_t> lowerModuleIndices_buf;
-    Buf<TDev, FPX> pixelRadius_buf;
-    Buf<TDev, FPX> quintupletRadius_buf;
-    Buf<TDev, FPX> centerX_buf;
-    Buf<TDev, FPX> centerY_buf;
-    Buf<TDev, float> rzChiSquared_buf;
-    Buf<TDev, float> rPhiChiSquared_buf;
-    Buf<TDev, float> rPhiChiSquaredInwards_buf;
-
-    PixelQuintuplets data_;
-
-    template <typename TQueue, typename TDevAcc>
-    PixelQuintupletsBuffer(unsigned int maxPixelQuintuplets, TDevAcc const& devAccIn, TQueue& queue)
-        : pixelIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelQuintuplets, queue)),
-          T5Indices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelQuintuplets, queue)),
-          nPixelQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          totOccupancyPixelQuintuplets_buf(allocBufWrapper<unsigned int>(devAccIn, 1, queue)),
-          isDup_buf(allocBufWrapper<bool>(devAccIn, maxPixelQuintuplets, queue)),
-          score_buf(allocBufWrapper<FPX>(devAccIn, maxPixelQuintuplets, queue)),
-          eta_buf(allocBufWrapper<FPX>(devAccIn, maxPixelQuintuplets, queue)),
-          phi_buf(allocBufWrapper<FPX>(devAccIn, maxPixelQuintuplets, queue)),
-          logicalLayers_buf(allocBufWrapper<uint8_t>(devAccIn, maxPixelQuintuplets * Params_pT5::kLayers, queue)),
-          hitIndices_buf(allocBufWrapper<unsigned int>(devAccIn, maxPixelQuintuplets * Params_pT5::kHits, queue)),
-          lowerModuleIndices_buf(allocBufWrapper<uint16_t>(devAccIn, maxPixelQuintuplets * Params_pT5::kLayers, queue)),
-          pixelRadius_buf(allocBufWrapper<FPX>(devAccIn, maxPixelQuintuplets, queue)),
-          quintupletRadius_buf(allocBufWrapper<FPX>(devAccIn, maxPixelQuintuplets, queue)),
-          centerX_buf(allocBufWrapper<FPX>(devAccIn, maxPixelQuintuplets, queue)),
-          centerY_buf(allocBufWrapper<FPX>(devAccIn, maxPixelQuintuplets, queue)),
-          rzChiSquared_buf(allocBufWrapper<float>(devAccIn, maxPixelQuintuplets, queue)),
-          rPhiChiSquared_buf(allocBufWrapper<float>(devAccIn, maxPixelQuintuplets, queue)),
-          rPhiChiSquaredInwards_buf(allocBufWrapper<float>(devAccIn, maxPixelQuintuplets, queue)) {
-      alpaka::memset(queue, nPixelQuintuplets_buf, 0u);
-      alpaka::memset(queue, totOccupancyPixelQuintuplets_buf, 0u);
-    }
-
-    inline PixelQuintuplets const* data() const { return &data_; }
-    inline void setData(PixelQuintupletsBuffer& buf) { data_.setData(buf); }
-  };
-
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void addPixelQuintupletToMemory(Modules const& modulesInGPU,
                                                                  MiniDoubletsConst mds,
                                                                  SegmentsConst segments,
                                                                  QuintupletsConst quintuplets,
-                                                                 PixelQuintuplets& pixelQuintupletsInGPU,
+                                                                 PixelQuintuplets pixelQuintuplets,
                                                                  unsigned int pixelIndex,
                                                                  unsigned int t5Index,
                                                                  unsigned int pixelQuintupletIndex,
@@ -124,81 +30,56 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                  float quintupletRadius,
                                                                  float centerX,
                                                                  float centerY) {
-    pixelQuintupletsInGPU.pixelIndices[pixelQuintupletIndex] = pixelIndex;
-    pixelQuintupletsInGPU.T5Indices[pixelQuintupletIndex] = t5Index;
-    pixelQuintupletsInGPU.isDup[pixelQuintupletIndex] = false;
-    pixelQuintupletsInGPU.score[pixelQuintupletIndex] = __F2H(score);
-    pixelQuintupletsInGPU.eta[pixelQuintupletIndex] = __F2H(eta);
-    pixelQuintupletsInGPU.phi[pixelQuintupletIndex] = __F2H(phi);
+    pixelQuintuplets.pixelSegmentIndices()[pixelQuintupletIndex] = pixelIndex;
+    pixelQuintuplets.quintupletIndices()[pixelQuintupletIndex] = t5Index;
+    pixelQuintuplets.isDup()[pixelQuintupletIndex] = false;
+    pixelQuintuplets.score()[pixelQuintupletIndex] = __F2H(score);
+    pixelQuintuplets.eta()[pixelQuintupletIndex] = __F2H(eta);
+    pixelQuintuplets.phi()[pixelQuintupletIndex] = __F2H(phi);
 
-    pixelQuintupletsInGPU.pixelRadius[pixelQuintupletIndex] = __F2H(pixelRadius);
-    pixelQuintupletsInGPU.quintupletRadius[pixelQuintupletIndex] = __F2H(quintupletRadius);
-    pixelQuintupletsInGPU.centerX[pixelQuintupletIndex] = __F2H(centerX);
-    pixelQuintupletsInGPU.centerY[pixelQuintupletIndex] = __F2H(centerY);
+    pixelQuintuplets.pixelRadius()[pixelQuintupletIndex] = __F2H(pixelRadius);
+    pixelQuintuplets.quintupletRadius()[pixelQuintupletIndex] = __F2H(quintupletRadius);
+    pixelQuintuplets.centerX()[pixelQuintupletIndex] = __F2H(centerX);
+    pixelQuintuplets.centerY()[pixelQuintupletIndex] = __F2H(centerY);
 
-    pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex] = 0;
-    pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 1] = 0;
-    pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 2] =
-        quintuplets.logicalLayers()[t5Index][0];
-    pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 3] =
-        quintuplets.logicalLayers()[t5Index][1];
-    pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 4] =
-        quintuplets.logicalLayers()[t5Index][2];
-    pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 5] =
-        quintuplets.logicalLayers()[t5Index][3];
-    pixelQuintupletsInGPU.logicalLayers[Params_pT5::kLayers * pixelQuintupletIndex + 6] =
-        quintuplets.logicalLayers()[t5Index][4];
+    pixelQuintuplets.logicalLayers()[pixelQuintupletIndex][0] = 0;
+    pixelQuintuplets.logicalLayers()[pixelQuintupletIndex][1] = 0;
+    pixelQuintuplets.logicalLayers()[pixelQuintupletIndex][2] = quintuplets.logicalLayers()[t5Index][0];
+    pixelQuintuplets.logicalLayers()[pixelQuintupletIndex][3] = quintuplets.logicalLayers()[t5Index][1];
+    pixelQuintuplets.logicalLayers()[pixelQuintupletIndex][4] = quintuplets.logicalLayers()[t5Index][2];
+    pixelQuintuplets.logicalLayers()[pixelQuintupletIndex][5] = quintuplets.logicalLayers()[t5Index][3];
+    pixelQuintuplets.logicalLayers()[pixelQuintupletIndex][6] = quintuplets.logicalLayers()[t5Index][4];
 
-    pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex] =
-        segments.innerLowerModuleIndices()[pixelIndex];
-    pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 1] =
-        segments.outerLowerModuleIndices()[pixelIndex];
-    pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 2] =
-        quintuplets.lowerModuleIndices()[t5Index][0];
-    pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 3] =
-        quintuplets.lowerModuleIndices()[t5Index][1];
-    pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 4] =
-        quintuplets.lowerModuleIndices()[t5Index][2];
-    pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 5] =
-        quintuplets.lowerModuleIndices()[t5Index][3];
-    pixelQuintupletsInGPU.lowerModuleIndices[Params_pT5::kLayers * pixelQuintupletIndex + 6] =
-        quintuplets.lowerModuleIndices()[t5Index][4];
+    pixelQuintuplets.lowerModuleIndices()[pixelQuintupletIndex][0] = segments.innerLowerModuleIndices()[pixelIndex];
+    pixelQuintuplets.lowerModuleIndices()[pixelQuintupletIndex][1] = segments.outerLowerModuleIndices()[pixelIndex];
+    pixelQuintuplets.lowerModuleIndices()[pixelQuintupletIndex][2] = quintuplets.lowerModuleIndices()[t5Index][0];
+    pixelQuintuplets.lowerModuleIndices()[pixelQuintupletIndex][3] = quintuplets.lowerModuleIndices()[t5Index][1];
+    pixelQuintuplets.lowerModuleIndices()[pixelQuintupletIndex][4] = quintuplets.lowerModuleIndices()[t5Index][2];
+    pixelQuintuplets.lowerModuleIndices()[pixelQuintupletIndex][5] = quintuplets.lowerModuleIndices()[t5Index][3];
+    pixelQuintuplets.lowerModuleIndices()[pixelQuintupletIndex][6] = quintuplets.lowerModuleIndices()[t5Index][4];
 
     unsigned int pixelInnerMD = segments.mdIndices()[pixelIndex][0];
     unsigned int pixelOuterMD = segments.mdIndices()[pixelIndex][1];
 
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex] = mds.anchorHitIndices()[pixelInnerMD];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 1] =
-        mds.outerHitIndices()[pixelInnerMD];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 2] =
-        mds.anchorHitIndices()[pixelOuterMD];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 3] =
-        mds.outerHitIndices()[pixelOuterMD];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][0] = mds.anchorHitIndices()[pixelInnerMD];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][1] = mds.outerHitIndices()[pixelInnerMD];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][2] = mds.anchorHitIndices()[pixelOuterMD];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][3] = mds.outerHitIndices()[pixelOuterMD];
 
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 4] =
-        quintuplets.hitIndices()[t5Index][0];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 5] =
-        quintuplets.hitIndices()[t5Index][1];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 6] =
-        quintuplets.hitIndices()[t5Index][2];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 7] =
-        quintuplets.hitIndices()[t5Index][3];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 8] =
-        quintuplets.hitIndices()[t5Index][4];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 9] =
-        quintuplets.hitIndices()[t5Index][5];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 10] =
-        quintuplets.hitIndices()[t5Index][6];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 11] =
-        quintuplets.hitIndices()[t5Index][7];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 12] =
-        quintuplets.hitIndices()[t5Index][8];
-    pixelQuintupletsInGPU.hitIndices[Params_pT5::kHits * pixelQuintupletIndex + 13] =
-        quintuplets.hitIndices()[t5Index][9];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][4] = quintuplets.hitIndices()[t5Index][0];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][5] = quintuplets.hitIndices()[t5Index][1];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][6] = quintuplets.hitIndices()[t5Index][2];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][7] = quintuplets.hitIndices()[t5Index][3];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][8] = quintuplets.hitIndices()[t5Index][4];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][9] = quintuplets.hitIndices()[t5Index][5];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][10] = quintuplets.hitIndices()[t5Index][6];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][11] = quintuplets.hitIndices()[t5Index][7];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][12] = quintuplets.hitIndices()[t5Index][8];
+    pixelQuintuplets.hitIndices()[pixelQuintupletIndex][13] = quintuplets.hitIndices()[t5Index][9];
 
-    pixelQuintupletsInGPU.rzChiSquared[pixelQuintupletIndex] = rzChiSquared;
-    pixelQuintupletsInGPU.rPhiChiSquared[pixelQuintupletIndex] = rPhiChiSquared;
-    pixelQuintupletsInGPU.rPhiChiSquaredInwards[pixelQuintupletIndex] = rPhiChiSquaredInwards;
+    pixelQuintuplets.rzChiSquared()[pixelQuintupletIndex] = rzChiSquared;
+    pixelQuintuplets.rPhiChiSquared()[pixelQuintupletIndex] = rPhiChiSquared;
+    pixelQuintuplets.rPhiChiSquaredInwards()[pixelQuintupletIndex] = rPhiChiSquaredInwards;
   }
 
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool passPT5RZChiSquaredCuts(Modules const& modulesInGPU,
@@ -828,7 +709,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                   Triplets triplets,
                                   Quintuplets quintuplets,
                                   QuintupletsOccupancyConst quintupletsOccupancy,
-                                  PixelQuintuplets pixelQuintupletsInGPU,
+                                  PixelQuintuplets pixelQuintuplets,
                                   unsigned int* connectedPixelSize,
                                   unsigned int* connectedPixelIndex,
                                   unsigned int nPixelSegments,
@@ -890,14 +771,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                          static_cast<unsigned int>(i_pLS));
             if (success) {
               unsigned int totOccupancyPixelQuintuplets = alpaka::atomicAdd(
-                  acc, pixelQuintupletsInGPU.totOccupancyPixelQuintuplets, 1u, alpaka::hierarchy::Threads{});
+                  acc, &pixelQuintuplets.totOccupancyPixelQuintuplets(), 1u, alpaka::hierarchy::Threads{});
               if (totOccupancyPixelQuintuplets >= n_max_pixel_quintuplets) {
 #ifdef WARNINGS
                 printf("Pixel Quintuplet excess alert!\n");
 #endif
               } else {
                 unsigned int pixelQuintupletIndex =
-                    alpaka::atomicAdd(acc, pixelQuintupletsInGPU.nPixelQuintuplets, 1u, alpaka::hierarchy::Threads{});
+                    alpaka::atomicAdd(acc, &pixelQuintuplets.nPixelQuintuplets(), 1u, alpaka::hierarchy::Threads{});
                 float eta = __H2F(quintuplets.eta()[quintupletIndex]);
                 float phi = __H2F(quintuplets.phi()[quintupletIndex]);
 
@@ -905,7 +786,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                            mds,
                                            segments,
                                            quintuplets,
-                                           pixelQuintupletsInGPU,
+                                           pixelQuintuplets,
                                            pixelSegmentIndex,
                                            quintupletIndex,
                                            pixelQuintupletIndex,

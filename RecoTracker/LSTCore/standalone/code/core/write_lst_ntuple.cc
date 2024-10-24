@@ -291,14 +291,13 @@ void setOptionalOutputBranches(Event* event) {
 //________________________________________________________________________________________________________________________________
 void setPixelQuintupletOutputBranches(Event* event) {
   // ============ pT5 =============
-  PixelQuintuplets const* pixelQuintuplets = event->getPixelQuintuplets().data();
+  auto const pixelQuintuplets = event->getPixelQuintuplets();
   auto const quintuplets = event->getQuintuplets<QuintupletsSoA>();
   auto const segmentsPixel = event->getSegments<SegmentsPixelSoA>();
   Modules const* modules = event->getModules().data();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
-  unsigned int nPixelQuintuplets =
-      *pixelQuintuplets->nPixelQuintuplets;  // size of this nPixelTriplets array is 1 (NOTE: parallelism lost here.)
+  unsigned int nPixelQuintuplets = pixelQuintuplets.nPixelQuintuplets();
   std::vector<int> sim_pT5_matched(n_accepted_simtrk);
   std::vector<std::vector<int>> pT5_matched_simIdx;
 
@@ -438,12 +437,12 @@ void setQuintupletOutputBranches(Event* event) {
 
 //________________________________________________________________________________________________________________________________
 void setPixelTripletOutputBranches(Event* event) {
-  PixelTriplets const* pixelTriplets = event->getPixelTriplets().data();
+  auto const pixelTriplets = event->getPixelTriplets();
   Modules const* modules = event->getModules().data();
   SegmentsPixelConst segmentsPixel = event->getSegments<SegmentsPixelSoA>();
   int n_accepted_simtrk = ana.tx->getBranch<std::vector<int>>("sim_TC_matched").size();
 
-  unsigned int nPixelTriplets = *pixelTriplets->nPixelTriplets;
+  unsigned int nPixelTriplets = pixelTriplets.nPixelTriplets();
   std::vector<int> sim_pT3_matched(n_accepted_simtrk);
   std::vector<std::vector<int>> pT3_matched_simIdx;
 

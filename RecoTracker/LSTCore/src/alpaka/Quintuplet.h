@@ -14,6 +14,7 @@
 #include "NeuralNetwork.h"
 #include "Hit.h"
 #include "ObjectRanges.h"
+#include "Triplet.h"  // FIXME: need to refactor common functions to a common place
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE bool checkIntervalOverlap(float firstMin,
