@@ -195,9 +195,19 @@ void Phase2TrackerDigitizerAlgorithm::accumulateSimHits(std::vector<PSimHit>::co
     // fill collection_points for this SimHit, indpendent of topology
     if (select_hit(hit, (pixdet->surface().toGlobal(hit.localPosition()).mag() * c_inv), signalScale)) {
       const auto& ionization_points = primary_ionization(hit);  // fills ionization_points
-
+      if (detId == 443326498){
+        for (auto const& ip: ionization_points) {
+          std::cout<<"443326498 ionization_points "<<ip.energy()<<" "<<ip.x()<<" "<<ip.y()<<" "<<ip.z()<<std::endl;
+        }
+      }
+      
       // transforms ionization_points -> collection_points
       const auto& collection_points = drift(hit, pixdet, bfield, ionization_points);
+      if (detId == 443326498){
+        for (auto const& cp: collection_points) {
+          std::cout<<"443326498 collection_points "<<cp.amplitude()<<" "<<cp.x()<<" "<<cp.sigma_x()<<" "<<cp.y()<<" "<<cp.sigma_y()<<std::endl;
+        }
+      }
 
       // compute induced signal on readout elements and add to _signal
       // hit needed only for SimHit<-->Digi link
@@ -610,6 +620,12 @@ void Phase2TrackerDigitizerAlgorithm::induce_signal(
                                             : digitizerUtility::Ph2Amplitude(hit_s.second, nullptr, hit_s.second));
     }
   }
+  if (detID == 443326498){
+    for (auto const& sp: theSignal) {
+      std::cout<<"443326498 theSignal "<<sp.first<<" "<<sp.second.ampl()<<std::endl;
+    }
+  }
+
 }  // end of induce_signal function
 
 // ======================================================================
@@ -626,6 +642,11 @@ void Phase2TrackerDigitizerAlgorithm::add_noise(const Phase2TrackerGeomDetUnit* 
       s.second.set(0);
     else
       s.second += noise;
+  }
+  if (detID == 443326498){
+    for (auto const& sp: theSignal) {
+      std::cout<<"443326498 theSignal_add_noise "<<sp.first<<" "<<sp.second.ampl()<<std::endl;
+    }
   }
 }
 
@@ -676,6 +697,11 @@ void Phase2TrackerDigitizerAlgorithm::add_cross_talk(const Phase2TrackerGeomDetU
       theSignal.emplace(chan, digitizerUtility::Ph2Amplitude(l.second.ampl(), nullptr, -1.0));
     }
   }
+  if (detID == 443326498){
+    for (auto const& sp: theSignal) {
+      std::cout<<"443326498 theSignal_add_cross_talk "<<sp.first<<" "<<sp.second.ampl()<<std::endl;
+    }
+  }
 }
 
 // ======================================================================
@@ -722,6 +748,11 @@ void Phase2TrackerDigitizerAlgorithm::add_noisy_cells(const Phase2TrackerGeomDet
 
     if (theSignal[chan] == 0)
       theSignal[chan] = digitizerUtility::Ph2Amplitude(el.second, nullptr, -1.);
+  }
+  if (detID == 443326498){
+    for (auto const& sp: theSignal) {
+      std::cout<<"443326498 theSignal_add_noisy_cells "<<sp.first<<" "<<sp.second.ampl()<<std::endl;
+    }
   }
 }
 // ============================================================================
@@ -959,6 +990,11 @@ void Phase2TrackerDigitizerAlgorithm::digitize(const Phase2TrackerGeomDetUnit* p
       module_killing_DB(pixdet);
     else  // remove dead modules using the list in cfg file
       module_killing_conf(detID);
+  }
+  if (detID == 443326498){
+    for (auto const& sp: theSignal) {
+      std::cout<<"443326498 theSignal_after_eff "<<sp.first<<" "<<sp.second.ampl()<<std::endl;
+    }
   }
 
   // Digitize if the signal is greater than threshold
