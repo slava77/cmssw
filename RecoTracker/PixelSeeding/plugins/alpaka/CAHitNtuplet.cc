@@ -178,7 +178,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
             if (layer != oldLayer) {
               std::cout << "Pixel LayerStart: " << layerCount << " at layer " << layer << " has " << n_modules << " modules." << std::endl;
               layerStarts[layerCount++] = n_modules;
-              if (layerCount > n_layers + 1)
+              if (layerCount >= layerStarts.size())
                 break;
               oldLayer = layer;
             }
@@ -193,7 +193,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                 if (layer != oldLayer) {
                   std::cout << "OT LayerStart: " << layerCount << " at layer " << layer << " has " << n_modules << " modules." << std::endl;
                   layerStarts[layerCount++] = n_modules;
-                  if (layerCount > n_layers + 1)
+                  if (layerCount >= layerStarts.size())
                     break;
                   oldLayer = layer;
                 }
