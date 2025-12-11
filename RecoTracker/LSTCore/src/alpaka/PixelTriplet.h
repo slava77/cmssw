@@ -892,6 +892,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // Outer segment beginning rt divided by inner segment beginning rt;
     const float rtRelDiff = rt_OutLo / rt_InOut - 1.f;
 
+    bool debug = pixelSegmentArrayIndex == 857 && (segmentIndex == 46921 || segmentIndex == 58117 || segmentIndex == 58118 || segmentIndex == 68327 || segmentIndex == 68328 || segmentIndex == 147389 || segmentIndex == 147398 || segmentIndex == 236919 || segmentIndex == 237082);
     // The track can bend in r-z plane slightly
     float dzDrtScale = alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;
     const float zpitch_InLo = 0.05f;
@@ -902,37 +903,40 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // dzDrtScale correction is only on outer end
     zHi = z_InUp + (z_InUp + dLum) * rtRelDiff * (z_InUp < 0.f ? 1.f : dzDrtScale) + (zpitch_InOut + zpitch_OutLo);
     zLo = z_InUp + (z_InUp - dLum) * rtRelDiff * (z_InUp > 0.f ? 1.f : dzDrtScale) - (zpitch_InOut + zpitch_OutLo);
+    if (debug) printf("pLS %d LS %d: z_OutLo %4.4f zLo %4.4f zHi %4.4f\n", pixelSegmentArrayIndex, segmentIndex, z_OutLo, zLo, zHi);
     if ((z_OutLo < zLo) || (z_OutLo > zHi))
       return false;
 
     const float cosh2Eta = 1.f + (pz * pz) / (ptIn * ptIn);
 
     const float drt_OutLo_InUp = (rt_OutLo - rt_InUp);
+    const float drt_OutLo_InUp_abs = alpaka::math::abs(acc, drt_OutLo_InUp);
+    const float drt_OutLo_InUp_2 = drt_OutLo_InUp * drt_OutLo_InUp;
 
     const float r3_InUp = alpaka::math::sqrt(acc, z_InUp * z_InUp + rt_InUp * rt_InUp);
 
     float drt_InSeg = rt_InOut - rt_InLo;
 
     const float thetaMuls2 =
-        (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InUp) / 50.f) * (r3_InUp / rt_InUp);
+        (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * drt_OutLo_InUp_abs / 50.f) * (r3_InUp / rt_InUp);
     const float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
 
-    float dzErr = (drt_OutLo_InUp * drt_OutLo_InUp) * (etaErr * etaErr) * cosh2Eta;
+    float dzErr = drt_OutLo_InUp_2 * (etaErr * etaErr) * cosh2Eta;
     dzErr += 0.03f * 0.03f;  // Approximately account for IT module size
     dzErr *= 9.f;            // 3 sigma
-    dzErr += muls2 * (drt_OutLo_InUp * drt_OutLo_InUp) / 3.f * cosh2Eta;
+    dzErr += muls2 * drt_OutLo_InUp_2 / 3.f * cosh2Eta;
     dzErr += zGeom * zGeom;
     dzErr = alpaka::math::sqrt(acc, dzErr);
 
     const float dzDrIn = pz / ptIn;
-    const float zWindow = dzErr / drt_InSeg * drt_OutLo_InUp + zGeom;
+    const float zWindow = dzErr / drt_InSeg * drt_OutLo_InUp_abs + zGeom;
     const float dzMean = dzDrIn * drt_OutLo_InUp *
-                         (1.f + drt_OutLo_InUp * drt_OutLo_InUp * 4 * k2Rinv1GeVf * k2Rinv1GeVf / ptIn / ptIn /
+                         (1.f + drt_OutLo_InUp_2 * 4 * k2Rinv1GeVf * k2Rinv1GeVf / ptIn / ptIn /
                                     24.f);  // with curved path correction
     // Constructing upper and lower bound
     zLoPointed = z_InUp + dzMean - zWindow;
     zHiPointed = z_InUp + dzMean + zWindow;
-
+    if (debug) printf("  z_OutLo %4.4f zPointed %4.4f %4.4f\n", z_OutLo, zLoPointed, zHiPointed);
     if ((z_OutLo < zLoPointed) || (z_OutLo > zHiPointed))
       return false;
 
@@ -947,7 +951,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float diffY = y_OutLo - y_InLo;
 
     dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
-
+    if (debug) printf("  dPhi %4.4f vs %4.4f\n", dPhi, dPhiCut);
     if (alpaka::math::abs(acc, dPhi) > dPhiCut)
       return false;
 
@@ -967,6 +971,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float tl_axis_x = x_OutUp - x_InUp;
     float tl_axis_y = y_OutUp - y_InUp;
+    float drt_tl_axis = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
+    if (debug) printf("  bypass dBeta drt_tl_axis %4.2f < 0.2\n", drt_tl_axis);
+    if (drt_tl_axis < 0.2f) // avoid very uncertain math. Sub-optimal: could change a ref point
+      return true;
 
     float tl_axis_highEdge_x = tl_axis_x;
     float tl_axis_highEdge_y = tl_axis_y;
@@ -975,11 +983,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float tl_axis_lowEdge_y = tl_axis_y;
 
     betaIn = -cms::alpakatools::deltaPhi(acc, px, py, tl_axis_x, tl_axis_y);
-    float betaInRHmin = betaIn;
-    float betaInRHmax = betaIn;
-
     betaOut = -alpha_OutUp + cms::alpakatools::deltaPhi(acc, x_OutUp, y_OutUp, tl_axis_x, tl_axis_y);
-
+    if (debug) printf("  orig betaIn %4.4f betaOut %4.4f\n", betaIn, betaOut);
+    const float drt_tli = alpaka::math::sqrt(acc, (x_OutLo - x_InUp) * (x_OutLo - x_InUp) + (y_OutLo - y_InUp) * (y_OutLo - y_InUp));
+    if (debug) printf("  check 3-point dr %4.4f vs 0.1 betaOut %4.8f vs 1e-5\n", drt_tli, betaOut);
+    if (drt_tli < 0.1f
+        && alpaka::math::abs(acc, betaOut) < 1e-3f) {
+      // 3-point degeneracy: fix the sign of betaOut
+      betaOut = alpaka::math::copysign(acc, betaOut, betaIn);
+      if (debug) printf("  degeneracy fix betaIn %4.4f betaOut %4.4f\n", betaIn, betaOut);
+    }
     float betaOutRHmin = betaOut;
     float betaOutRHmax = betaOut;
 
@@ -1013,32 +1026,34 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
 
     //beta computation
-    float drt_tl_axis = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
-
     //innerOuterAnchor - innerInnerAnchor
     const float rt_InSeg =
         alpaka::math::sqrt(acc, (x_InUp - x_InLo) * (x_InUp - x_InLo) + (y_InUp - y_InLo) * (y_InUp - y_InLo));
 
     //no betaIn cut for the pixels
-    float betaAv = 0.5f * (betaIn + betaOut);
     pt_beta = ptIn;
 
     int lIn = 0;
     int lOut = isEC_lastLayer ? 11 : 5;
     float sdOut_dr =
-        alpaka::math::sqrt(acc, (x_OutUp - x_OutLo) * (x_OutUp - x_OutLo) + (y_OutUp - y_OutLo) * (y_OutUp - y_OutLo));
+                  alpaka::math::sqrt(acc, (x_OutUp - x_OutLo) * (x_OutUp - x_OutLo) + (y_OutUp - y_OutLo) * (y_OutUp - y_OutLo));
     float sdOut_d = rt_OutUp - rt_OutLo;
+    bool useBetaInSign = drt_tl_axis < sdOut_dr && drt_tli < sdOut_dr; // pLS ends inside the LS
 
-    runDeltaBetaIterations(acc, betaIn, betaOut, betaAv, pt_beta, rt_InSeg, sdOut_dr, drt_tl_axis, lIn);
+    runDeltaBetaIterations(acc, betaIn, betaOut, pt_beta, rt_InSeg, sdOut_dr, drt_tl_axis, lIn, useBetaInSign);
+    if (debug) printf("  beta iter betaIn %4.4f betaOut %4.4f pt_beta %4.2f sdOut_dr %4.2f\n", betaIn, betaOut, pt_beta, sdOut_dr);
+    // wrap around pi (do for all)
+    if (alpaka::math::abs(acc, betaIn) > kPi / 2.f || alpaka::math::abs(acc, betaOut) > kPi / 2.f) {
+      betaIn = cms::alpakatools::reducePhiRange(acc, kPi - betaIn);
+      betaOut = cms::alpakatools::reducePhiRange(acc, kPi - betaOut);
+      betaOutRHmin = cms::alpakatools::reducePhiRange(acc, kPi - betaOutRHmin);
+      betaOutRHmax = cms::alpakatools::reducePhiRange(acc, kPi - betaOutRHmax);
+    }
+    if (debug) printf("  pi wrap betaIn %4.4f betaOut %4.4f RHmin %4.4f RHmax %4.4f\n", betaIn, betaOut, betaOutRHmin, betaOutRHmax);
 
-    const float betaInMMSF = (alpaka::math::abs(acc, betaInRHmin + betaInRHmax) > 0)
-                                 ? (2.f * betaIn / alpaka::math::abs(acc, betaInRHmin + betaInRHmax))
-                                 : 0.;  //mean value of min,max is the old betaIn
     const float betaOutMMSF = (alpaka::math::abs(acc, betaOutRHmin + betaOutRHmax) > 0)
                                   ? (2.f * betaOut / alpaka::math::abs(acc, betaOutRHmin + betaOutRHmax))
                                   : 0.;
-    betaInRHmin *= betaInMMSF;
-    betaInRHmax *= betaInMMSF;
     betaOutRHmin *= betaOutMMSF;
     betaOutRHmax *= betaOutMMSF;
 
@@ -1079,15 +1094,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                  (0.02f / sdOut_d) + alpaka::math::sqrt(acc, dBetaLum2 + dBetaMuls2);
 
     //Cut #6: The real beta cut
+    if (debug) printf("  betaOut %4.4f vs %4.4f\n", betaOut, betaOutCut);
     if (alpaka::math::abs(acc, betaOut) >= betaOutCut)
       return false;
     const float dBetaRes = 0.02f / alpaka::math::min(acc, sdOut_d, drt_InSeg);
     const float dBetaCut2 =
         (dBetaRes * dBetaRes * 2.0f + dBetaMuls2 + dBetaLum2 + dBetaRIn2 + dBetaROut2 +
-         0.25f *
-             (alpaka::math::abs(acc, betaInRHmin - betaInRHmax) + alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax)) *
-             (alpaka::math::abs(acc, betaInRHmin - betaInRHmax) + alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax)));
+         0.25f * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax) * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax));
     float dBeta = betaIn - betaOut;
+    if (debug) printf("  dBetaCut2 %4.6f : dBetaRes(*sqrt2) %4.6f dBetaMuls %4.6f dBetaLum %4.6f dBetaRIn %4.6f dBetaROut %4.6f OutRHminmax %4.6f\n",
+                      alpaka::math::sqrt(acc, dBetaCut2), dBetaRes*1.414214,
+                      alpaka::math::sqrt(acc, dBetaMuls2), alpaka::math::sqrt(acc, dBetaLum2), alpaka::math::sqrt(acc, dBetaRIn2), alpaka::math::sqrt(acc, dBetaROut2),
+                      alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax));
+    if (debug) printf("  dBeta %4.8f vs %4.8f\n", dBeta , alpaka::math::sqrt(acc, dBetaCut2));
     return dBeta * dBeta <= dBetaCut2;
   }
 
@@ -1176,8 +1195,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float cosh2Eta = 1.f + (pz * pz) / (ptIn * ptIn);
     const float multDzDr2 = (dzOutInAbs * dzOutInAbs) * cosh2Eta / ((cosh2Eta - 1.f) * (cosh2Eta - 1.f));
     const float r3_InUp = alpaka::math::sqrt(acc, z_InUp * z_InUp + rt_InUp * rt_InUp);
+    const float drt_OutLo_InUp = (rt_OutLo - rt_InUp);  // drOutIn
     const float thetaMuls2 =
-        (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * (rt_OutLo - rt_InUp) / 50.f) * (r3_InUp / rt_InUp);
+      (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * alpaka::math::abs(acc, drt_OutLo_InUp) / 50.f) * (r3_InUp / rt_InUp);
     const float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
 
     float drtErr = (etaErr * etaErr) * multDzDr2;
@@ -1186,8 +1206,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     drtErr += muls2 * multDzDr2 / 3.f * cosh2Eta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
     const float drtDzIn = alpaka::math::abs(acc, ptIn / pz);
-
-    const float drt_OutLo_InUp = (rt_OutLo - rt_InUp);  // drOutIn
 
     const float rtWindow = drtErr + rtGeom1;
     const float drtMean = drtDzIn * dzOutInAbs *
@@ -1231,6 +1249,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float tl_axis_x = x_OutUp - x_InUp;
     float tl_axis_y = y_OutUp - y_InUp;
+    float drt_tl_axis = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
+    if (drt_tl_axis < 0.2f) // avoid very uncertain math. Sub-optimal: could change a ref point
+      return true;
 
     float tl_axis_highEdge_x = tl_axis_x;
     float tl_axis_highEdge_y = tl_axis_y;
@@ -1239,10 +1260,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float tl_axis_lowEdge_y = tl_axis_y;
 
     betaIn = -cms::alpakatools::deltaPhi(acc, px, py, tl_axis_x, tl_axis_y);
-    float betaInRHmin = betaIn;
-    float betaInRHmax = betaIn;
-
     betaOut = -alpha_OutUp + cms::alpakatools::deltaPhi(acc, x_OutUp, y_OutUp, tl_axis_x, tl_axis_y);
+    const float drt_tli = alpaka::math::sqrt(acc, (x_OutLo - x_InUp) * (x_OutLo - x_InUp) + (y_OutLo - y_InUp) * (y_OutLo - y_InUp));
+    if (drt_tli < 0.1f
+        && alpaka::math::abs(acc, betaOut) < 1e-3f) {
+      // 3-point degeneracy: fix the sign of betaOut
+      betaOut = alpaka::math::copysign(acc, betaOut, betaIn);
+    }
     float betaOutRHmin = betaOut;
     float betaOutRHmax = betaOut;
 
@@ -1276,12 +1300,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     }
 
     //beta computation
-    float drt_tl_axis = alpaka::math::sqrt(acc, tl_axis_x * tl_axis_x + tl_axis_y * tl_axis_y);
     //no betaIn cut for the pixels
     const float rt_InSeg =
         alpaka::math::sqrt(acc, (x_InUp - x_InLo) * (x_InUp - x_InLo) + (y_InUp - y_InLo) * (y_InUp - y_InLo));
 
-    float betaAv = 0.5f * (betaIn + betaOut);
     pt_beta = ptIn;
 
     int lIn = 0;
@@ -1289,17 +1311,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float sdOut_dr =
         alpaka::math::sqrt(acc, (x_OutUp - x_OutLo) * (x_OutUp - x_OutLo) + (y_OutUp - y_OutLo) * (y_OutUp - y_OutLo));
     float sdOut_d = rt_OutUp - rt_OutLo;
+    bool useBetaInSign = drt_tl_axis < sdOut_dr && drt_tli < sdOut_dr; // pLS ends inside the LS
 
-    runDeltaBetaIterations(acc, betaIn, betaOut, betaAv, pt_beta, rt_InSeg, sdOut_dr, drt_tl_axis, lIn);
+    runDeltaBetaIterations(acc, betaIn, betaOut, pt_beta, rt_InSeg, sdOut_dr, drt_tl_axis, lIn, useBetaInSign);
+    // wrap around pi (do for all)
+    if (alpaka::math::abs(acc, betaIn) > kPi / 2.f || alpaka::math::abs(acc, betaOut) > kPi / 2.f) {
+      betaIn = cms::alpakatools::reducePhiRange(acc, kPi - betaIn);
+      betaOut = cms::alpakatools::reducePhiRange(acc, kPi - betaOut);
+      betaOutRHmin = cms::alpakatools::reducePhiRange(acc, kPi - betaOutRHmin);
+      betaOutRHmax = cms::alpakatools::reducePhiRange(acc, kPi - betaOutRHmax);
+    }
 
-    const float betaInMMSF = (alpaka::math::abs(acc, betaInRHmin + betaInRHmax) > 0)
-                                 ? (2.f * betaIn / alpaka::math::abs(acc, betaInRHmin + betaInRHmax))
-                                 : 0.;  //mean value of min,max is the old betaIn
     const float betaOutMMSF = (alpaka::math::abs(acc, betaOutRHmin + betaOutRHmax) > 0)
                                   ? (2.f * betaOut / alpaka::math::abs(acc, betaOutRHmin + betaOutRHmax))
                                   : 0.;
-    betaInRHmin *= betaInMMSF;
-    betaInRHmax *= betaInMMSF;
     betaOutRHmin *= betaOutMMSF;
     betaOutRHmax *= betaOutMMSF;
 
@@ -1350,9 +1375,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float dBetaRes = 0.02f / alpaka::math::min(acc, sdOut_d, drt_InSeg);
     const float dBetaCut2 =
         (dBetaRes * dBetaRes * 2.0f + dBetaMuls2 + dBetaLum2 + dBetaRIn2 + dBetaROut2 +
-         0.25f *
-             (alpaka::math::abs(acc, betaInRHmin - betaInRHmax) + alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax)) *
-             (alpaka::math::abs(acc, betaInRHmin - betaInRHmax) + alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax)));
+         0.25f * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax) * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax));
     float dBeta = betaIn - betaOut;
     return dBeta * dBeta <= dBetaCut2;
   }

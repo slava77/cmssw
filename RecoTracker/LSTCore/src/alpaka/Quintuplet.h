@@ -780,18 +780,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
   ALPAKA_FN_ACC ALPAKA_FN_INLINE void runDeltaBetaIterations(TAcc const& acc,
                                                              float& betaIn,
                                                              float& betaOut,
-                                                             float betaAv,
                                                              float& pt_beta,
                                                              float sdIn_dr,
                                                              float sdOut_dr,
                                                              float dr,
-                                                             float lIn) {
+                                                             float lIn,
+                                                             bool useBetaInSign = false) {
     if (lIn == 0) {
       betaOut += alpaka::math::copysign(
           acc,
           alpaka::math::asin(
               acc, alpaka::math::min(acc, sdOut_dr * k2Rinv1GeVf / alpaka::math::abs(acc, pt_beta), kSinAlphaMax)),
-          betaOut);
+          useBetaInSign ? betaIn : betaOut);
       return;
     }
 
@@ -814,7 +814,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
               alpaka::math::asin(
                   acc, alpaka::math::min(acc, sdOut_dr * k2Rinv1GeVf / alpaka::math::abs(acc, pt_beta), kSinAlphaMax)),
               betaOut);  //FIXME: need a faster version
-      betaAv = 0.5f * (betaInUpd + betaOutUpd);
+      float betaAv = 0.5f * (betaInUpd + betaOutUpd);
 
       //1st update
       const float pt_beta_inv =
@@ -852,7 +852,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                   acc,
                   alpaka::math::min(acc, sdOut_dr * k2Rinv1GeVf / alpaka::math::abs(acc, pt_betaIn), kSinAlphaMax)),
               betaIn);  //FIXME: need a faster version
-      betaAv = (alpaka::math::abs(acc, betaOut) > 0.2f * alpaka::math::abs(acc, betaIn))
+      float betaAv = (alpaka::math::abs(acc, betaOut) > 0.2f * alpaka::math::abs(acc, betaIn))
                    ? (0.5f * (betaInUpd + betaOutUpd))
                    : betaInUpd;
 
@@ -1000,7 +1000,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                 (mds.anchorY()[fourthMDIndex] - mds.anchorY()[thirdMDIndex]));
     float sdOut_d = mds.anchorRt()[fourthMDIndex] - mds.anchorRt()[thirdMDIndex];
 
-    runDeltaBetaIterations(acc, betaIn, betaOut, betaAv, pt_beta, rt_InSeg, sdOut_dr, drt_tl_axis, lIn);
+    runDeltaBetaIterations(acc, betaIn, betaOut, pt_beta, rt_InSeg, sdOut_dr, drt_tl_axis, lIn);
 
     const float betaInMMSF = (alpaka::math::abs(acc, betaInRHmin + betaInRHmax) > 0)
                                  ? (2.f * betaIn / alpaka::math::abs(acc, betaInRHmin + betaInRHmax))
@@ -1166,7 +1166,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                 (mds.anchorY()[fourthMDIndex] - mds.anchorY()[thirdMDIndex]));
     float sdOut_d = mds.anchorRt()[fourthMDIndex] - mds.anchorRt()[thirdMDIndex];
 
-    runDeltaBetaIterations(acc, betaIn, betaOut, betaAv, pt_beta, sdIn_dr, sdOut_dr, dr, lIn);
+    runDeltaBetaIterations(acc, betaIn, betaOut, pt_beta, sdIn_dr, sdOut_dr, dr, lIn);
 
     const float betaInMMSF = (alpaka::math::abs(acc, betaInRHmin + betaInRHmax) > 0)
                                  ? (2.f * betaIn / alpaka::math::abs(acc, betaInRHmin + betaInRHmax))
@@ -1311,7 +1311,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                 (mds.anchorY()[fourthMDIndex] - mds.anchorY()[thirdMDIndex]));
     float sdOut_d = mds.anchorRt()[fourthMDIndex] - mds.anchorRt()[thirdMDIndex];
 
-    runDeltaBetaIterations(acc, betaIn, betaOut, betaAv, pt_beta, sdIn_dr, sdOut_dr, dr, lIn);
+    runDeltaBetaIterations(acc, betaIn, betaOut, pt_beta, sdIn_dr, sdOut_dr, dr, lIn);
 
     const float betaInMMSF = (alpaka::math::abs(acc, betaInRHmin + betaInRHmax) > 0)
                                  ? (2.f * betaIn / alpaka::math::abs(acc, betaInRHmin + betaInRHmax))
