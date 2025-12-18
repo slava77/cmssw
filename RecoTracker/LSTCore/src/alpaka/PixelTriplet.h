@@ -855,8 +855,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                 const float ptCut) {
     float dPhi, betaIn, betaOut, pt_beta, zLo, zHi, zLoPointed, zHiPointed, dPhiCut, betaOutCut;
 
-    bool isPS_OutLo = (modules.moduleType()[segmentInnerModuleIndex] == PS);
-
     float rt_InLo = mds.anchorRt()[pLSMD0Index];
     float rt_InUp = mds.anchorRt()[pLSMD1Index];
     float rt_OutLo = mds.anchorRt()[segmentMD0Index];
@@ -896,14 +894,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // The track can bend in r-z plane slightly
     float dzDrtScale = alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;
     const float zpitch_InLo = 0.05f;
-    const float zpitch_InOut = 0.05f;
-    float zpitch_OutLo = (isPS_OutLo ? kPixelPSZpitch : kStrip2SZpitch);
-    float zGeom = zpitch_InLo + zpitch_OutLo;
+    bool sameLayerOutLo = alpaka::math::abs(acc, rt_OutLo - rt_InOut) < 1.f && alpaka::math::abs(acc, z_InUp - z_OutLo) < 1.f;
+    bool isPS_OutLo = (modules.moduleType()[segmentInnerModuleIndex] == PS);
+    bool isTilted_OutLo = (modules.sides()[segmentInnerModuleIndex] != Center);
+    // same layer pLS is P-size, 50 um otherwise
+    const float zpitch_InOut = sameLayerOutLo ? kPixelPSZpitch : 0.05f;
+    const float zpitch_OutLo = (isPS_OutLo ? kPixelPSZpitch : kStrip2SZpitch); // could reduce using dzdrt for tilted
+    const float zGeom = zpitch_InLo + zpitch_OutLo;
+    const float rGeom = zpitch_InOut + zpitch_OutLo; // could reduce using dzdrt for tilted
     const float dLum = alpaka::math::copysign(acc, kDeltaZLum, rtRelDiff);
+    // could reduce dR uncertrainty using dzdrt
+    const float dRtRelZ = isTilted_OutLo ? alpaka::math::abs(acc, rGeom / rt_InOut * z_InUp) : 0.f;
     // dzDrtScale correction is only on outer end
-    zHi = z_InUp + (z_InUp + dLum) * rtRelDiff * (z_InUp < 0.f ? 1.f : dzDrtScale) + (zpitch_InOut + zpitch_OutLo);
-    zLo = z_InUp + (z_InUp - dLum) * rtRelDiff * (z_InUp > 0.f ? 1.f : dzDrtScale) - (zpitch_InOut + zpitch_OutLo);
-    if (debug) printf("pLS %d LS %d: z_OutLo %4.4f zLo %4.4f zHi %4.4f\n", pixelSegmentArrayIndex, segmentIndex, z_OutLo, zLo, zHi);
+    zHi = z_InUp + dRtRelZ + (z_InUp + dLum) * rtRelDiff * (z_InUp < 0.f ? 1.f : dzDrtScale) + (zpitch_InOut + zpitch_OutLo);
+    zLo = z_InUp - dRtRelZ + (z_InUp - dLum) * rtRelDiff * (z_InUp > 0.f ? 1.f : dzDrtScale) - (zpitch_InOut + zpitch_OutLo);
+    if (debug) printf("pLS %d LS %d: z_OutLo %4.4f zLo %4.4f zHi %4.4f rtRelDiff %4.4f dRtRelZ %4.4f rt_OutLo %4.4f\n", pixelSegmentArrayIndex, segmentIndex, z_OutLo, zLo, zHi, rtRelDiff, dRtRelZ, rt_OutLo);
     if ((z_OutLo < zLo) || (z_OutLo > zHi))
       return false;
 
@@ -921,22 +926,24 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         (kMulsInGeV * kMulsInGeV) * (0.1f + 0.2f * drt_OutLo_InUp_abs / 50.f) * (r3_InUp / rt_InUp);
     const float muls2 = thetaMuls2 * 9.f / (ptCut * ptCut) * 16.f;
 
-    float dzErr = drt_OutLo_InUp_2 * (etaErr * etaErr) * cosh2Eta;
-    dzErr += 0.03f * 0.03f;  // Approximately account for IT module size
-    dzErr *= 9.f;            // 3 sigma
-    dzErr += muls2 * drt_OutLo_InUp_2 / 3.f * cosh2Eta;
-    dzErr += zGeom * zGeom;
+    const float dzDrIn = pz / ptIn;
+    float dzErr = 9.f * drt_OutLo_InUp_2 * (etaErr * etaErr) * cosh2Eta; // 3 sigma
+    dzErr += isTilted_OutLo ? rGeom * rGeom * dzDrIn * dzDrIn : 0.f; // radius err 
+    dzErr += muls2 * drt_OutLo_InUp_2 / 3.f * cosh2Eta; // multiple scattering
+    dzErr += zGeom * zGeom; // z err
     dzErr = alpaka::math::sqrt(acc, dzErr);
 
-    const float dzDrIn = pz / ptIn;
-    const float zWindow = dzErr / drt_InSeg * drt_OutLo_InUp_abs + zGeom;
     const float dzMean = dzDrIn * drt_OutLo_InUp *
-                         (1.f + drt_OutLo_InUp_2 * 4 * k2Rinv1GeVf * k2Rinv1GeVf / ptIn / ptIn /
-                                    24.f);  // with curved path correction
+                         (1.f + drt_OutLo_InUp_2 * k2Rinv1GeVf * k2Rinv1GeVf / ptIn / ptIn /
+                                    6.f);  // with curved path correction
     // Constructing upper and lower bound
-    zLoPointed = z_InUp + dzMean - zWindow;
-    zHiPointed = z_InUp + dzMean + zWindow;
-    if (debug) printf("  z_OutLo %4.4f zPointed %4.4f %4.4f\n", z_OutLo, zLoPointed, zHiPointed);
+    zLoPointed = z_InUp + dzMean - dzErr;
+    zHiPointed = z_InUp + dzMean + dzErr;
+    if (debug) printf("  z_OutLo %4.4f zPointed %4.4f %4.4f dzErr = dir %4.4f r %4.4f mul %4.4f zGeom %4.4f\n", z_OutLo, zLoPointed, zHiPointed,
+                      alpaka::math::sqrt(acc, 9.*drt_OutLo_InUp_2 * (etaErr * etaErr) * cosh2Eta),
+                      alpaka::math::sqrt(acc, isTilted_OutLo ? rGeom * rGeom * dzDrIn * dzDrIn : 0.f),
+                      alpaka::math::sqrt(acc, muls2 * drt_OutLo_InUp_2 / 3.f * cosh2Eta),
+                      zGeom);
     if ((z_OutLo < zLoPointed) || (z_OutLo > zHiPointed))
       return false;
 
@@ -1166,8 +1173,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     ptSLo = alpaka::math::min(acc, 10.0f, ptSLo);
 
     const float zpitch_InLo = 0.05f;
-    float zpitch_OutLo = (isPS_OutLo ? kPixelPSZpitch : kStrip2SZpitch);
-    float zGeom = zpitch_InLo + zpitch_OutLo;
+    const float zpitch_OutLo = (isPS_OutLo ? kPixelPSZpitch : kStrip2SZpitch);
+    const float zGeom = zpitch_InLo + zpitch_OutLo;
 
     const float slope = alpaka::math::asin(acc, alpaka::math::min(acc, rt_OutLo * k2Rinv1GeVf / ptCut, kSinAlphaMax));
     const float dzDrtScale = alpaka::math::tan(acc, slope) / slope;  //FIXME: need approximate value
