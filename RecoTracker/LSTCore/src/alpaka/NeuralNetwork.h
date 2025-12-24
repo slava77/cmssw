@@ -149,11 +149,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                      const float rzChiSquared,
                                                      const float pixelEta,
                                                      const float pixelPt,
-                                                     const int moduleType3) {
+                                                     const int moduleType3,
+                                                     const bool debug = false) {
       constexpr unsigned int kInputFeatures = 7;
       constexpr unsigned int kHiddenFeatures = 32;
       constexpr unsigned int kOutputFeatures = 1;
-
+      if (debug) printf("  pt3dnn::runInference: rpChi %4.4f tR %4.4f pR %4.4f pRE %4.4f pPt %4.4f rzChi %4.4f pE %4.4f mT %d\n", rPhiChiSquared, tripletRadius, pixelRadius, pixRadiusError, pixelPt, rzChiSquared, pixelEta, moduleType3);
       float x[kInputFeatures] = {
           alpaka::math::log10(acc, rPhiChiSquared),
           alpaka::math::log10(acc, tripletRadius),
@@ -182,6 +183,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                               ? (dnn::kEtaBins - 1)
                               : static_cast<unsigned int>(alpaka::math::abs(acc, pixelEta) / dnn::kEtaSize);
 
+      if (debug) printf("  pt3dnn::runInference: out %4.4f bin %d pt %4.4f wp %4.4f\n", output, bin_index, pixelPt, pixelPt > 5.f ? WP::wpHigh() : WP::wp(bin_index));
       if (pixelPt > 5.0f)
         return output > WP::wpHigh();
 

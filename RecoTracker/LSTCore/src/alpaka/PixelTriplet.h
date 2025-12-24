@@ -610,6 +610,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     pixelRadiusError = pixelSegmentPtError * kR1GeVf;
     unsigned int tripletInnerSegmentIndex = triplets.segmentIndices()[tripletIndex][0];
     unsigned int tripletOuterSegmentIndex = triplets.segmentIndices()[tripletIndex][1];
+    auto debugPL = [](int ipLS, int iLS) { return (ipLS == 1072 && (iLS == 139032 || iLS == 139033 || iLS == 230941 || iLS == 306999 || iLS == 307022 || iLS == 51049 || iLS == 443851))
+      || (ipLS == 89 && (iLS == 70979 || iLS == 155405 || iLS == 204327 || iLS == 3864 || iLS == 12728 || iLS == 12731))
+      || (ipLS == 1 && (iLS == 119046 || iLS == 177098 || iLS == 180005 || iLS == 253093 || iLS == 119050 || iLS == 177123 || iLS == 180036 || iLS == 253171 || iLS == 324455 || iLS == 397448 || iLS == 540059))
+        || (ipLS == 1074 && (iLS == 202824 || iLS == 202825 || iLS == 294354 || iLS == 390947));};
+    bool debug = debugPL(pixelSegmentArrayIndex, tripletInnerSegmentIndex) || debugPL(pixelSegmentArrayIndex, tripletOuterSegmentIndex);
 
     unsigned int firstMDIndex = segments.mdIndices()[tripletInnerSegmentIndex][0];
     unsigned int secondMDIndex = segments.mdIndices()[tripletInnerSegmentIndex][1];
@@ -624,6 +629,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     tripletRadius = triplets.radius()[tripletIndex];
     g = triplets.centerX()[tripletIndex];
     f = triplets.centerY()[tripletIndex];
+    if (debug) printf("pLS %d LSin %d LSout %d: pR %4.4f %4.4f tR %4.4f\n", pixelSegmentArrayIndex, tripletInnerSegmentIndex, tripletOuterSegmentIndex, pixelRadius, pixelRadiusError, tripletRadius);
 
     if (not passRadiusCriterion(acc,
                                 modules,
@@ -634,7 +640,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                 middleModuleIndex,
                                 upperModuleIndex))
       return false;
-
+    if (debug) printf("  passed passRadiusCriterion\n");
     uint16_t lowerModuleIndices[Params_T3::kLayers] = {lowerModuleIndex, middleModuleIndex, upperModuleIndex};
 
     if (runDNN || runChiSquaredCuts) {
@@ -667,6 +673,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         if (!passPT3RZChiSquaredCuts(modules, lowerModuleIndex, middleModuleIndex, upperModuleIndex, rzChiSquared))
           return false;
       }
+      if (debug) printf("  passed passPT3RZChiSquaredCuts\n");
 
       rPhiChiSquared =
           computePT3RPhiChiSquared(acc, modules, lowerModuleIndices, pixelG, pixelF, pixelRadiusPCA, xs, ys);
@@ -688,10 +695,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                   rzChiSquared,
                                                   pixelSeeds.eta()[pixelSegmentArrayIndex],
                                                   pixelSegmentPt,
-                                                  module_type_3)) {
+                                                  module_type_3,
+                                                  debug)) {
       return false;
     }
-
+    if (debug) printf("  passed runInference\n");
     return true;
   }
 
@@ -890,7 +898,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // Outer segment beginning rt divided by inner segment beginning rt;
     const float rtRelDiff = rt_OutLo / rt_InOut - 1.f;
 
-    bool debug = pixelSegmentArrayIndex == 857 && (segmentIndex == 46921 || segmentIndex == 58117 || segmentIndex == 58118 || segmentIndex == 68327 || segmentIndex == 68328 || segmentIndex == 147389 || segmentIndex == 147398 || segmentIndex == 236919 || segmentIndex == 237082);
+    bool debug = (pixelSegmentArrayIndex == 1072 && (segmentIndex == 139032 || segmentIndex == 139033 || segmentIndex == 230941 || segmentIndex == 306999 || segmentIndex == 307022 || segmentIndex == 51049 || segmentIndex == 443851))
+      || (pixelSegmentArrayIndex == 89 && (segmentIndex == 70979 || segmentIndex == 155405 || segmentIndex == 204327 || segmentIndex == 3864 || segmentIndex == 12728 || segmentIndex == 12731))
+      || (pixelSegmentArrayIndex == 1 && (segmentIndex == 119046 || segmentIndex == 177098 || segmentIndex == 180005 || segmentIndex == 253093 || segmentIndex == 119050 || segmentIndex == 177123 || segmentIndex == 180036 || segmentIndex == 253171 || segmentIndex == 324455 || segmentIndex == 397448 || segmentIndex == 540059))
+      || (pixelSegmentArrayIndex == 1074 && (segmentIndex == 202824 || segmentIndex == 202825 || segmentIndex == 294354 || segmentIndex == 390947));
     // The track can bend in r-z plane slightly
     float dzDrtScale = alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;
     const float zpitch_InLo = 0.05f;
@@ -993,7 +1004,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     betaOut = -alpha_OutUp + cms::alpakatools::deltaPhi(acc, x_OutUp, y_OutUp, tl_axis_x, tl_axis_y);
     if (debug) printf("  orig betaIn %4.4f betaOut %4.4f\n", betaIn, betaOut);
     const float drt_tli = alpaka::math::sqrt(acc, (x_OutLo - x_InUp) * (x_OutLo - x_InUp) + (y_OutLo - y_InUp) * (y_OutLo - y_InUp));
-    if (debug) printf("  check 3-point dr %4.4f vs 0.1 betaOut %4.8f vs 1e-5\n", drt_tli, betaOut);
+    if (debug) printf("  check 3-point dr %4.4f vs 0.1 betaOut %4.8f vs 1e-3\n", drt_tli, betaOut);
     if (drt_tli < 0.1f
         && alpaka::math::abs(acc, betaOut) < 1e-3f) {
       // 3-point degeneracy: fix the sign of betaOut
@@ -1064,9 +1075,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     betaOutRHmin *= betaOutMMSF;
     betaOutRHmax *= betaOutMMSF;
 
-    float min_ptBeta_ptBetaMax = alpaka::math::min(
-        acc, alpaka::math::abs(acc, pt_beta), kPt_betaMax);  //need to confirm the range-out value of 7 GeV
-    const float dBetaMuls2 = thetaMuls2 * 16.f / (min_ptBeta_ptBetaMax * min_ptBeta_ptBetaMax);
+    float pt_beta_trunc = alpaka::math::min(
+        acc, alpaka::math::abs(acc, pt_beta), kPt_betaMax);  // truncated to kPt_betaMax
+    const float dBetaMuls2 = thetaMuls2 * 16.f / (pt_beta_trunc * pt_beta_trunc);
     const float alphaInAbsReg =
         alpaka::math::max(acc,
                           alpaka::math::abs(acc, alpha_InLo),
@@ -1104,10 +1115,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     if (debug) printf("  betaOut %4.4f vs %4.4f\n", betaOut, betaOutCut);
     if (alpaka::math::abs(acc, betaOut) >= betaOutCut)
       return false;
-    const float dBetaRes = 0.02f / alpaka::math::min(acc, sdOut_d, drt_InSeg);
+    const float dBetaRes = 0.02f / alpaka::math::min(acc, alpaka::math::min(acc, sdOut_d, drt_InSeg), drt_tl_axis);
     const float dBetaCut2 =
         (dBetaRes * dBetaRes * 2.0f + dBetaMuls2 + dBetaLum2 + dBetaRIn2 + dBetaROut2 +
-         0.25f * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax) * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax));
+         0.25f * (betaOutRHmin - betaOutRHmax) * (betaOutRHmin - betaOutRHmax));
     float dBeta = betaIn - betaOut;
     if (debug) printf("  dBetaCut2 %4.6f : dBetaRes(*sqrt2) %4.6f dBetaMuls %4.6f dBetaLum %4.6f dBetaRIn %4.6f dBetaROut %4.6f OutRHminmax %4.6f\n",
                       alpaka::math::sqrt(acc, dBetaCut2), dBetaRes*1.414214,
@@ -1180,11 +1191,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float dzDrtScale = alpaka::math::tan(acc, slope) / slope;  //FIXME: need approximate value
 
     const float dLum = alpaka::math::copysign(acc, kDeltaZLum, z_InUp);
-    bool isOutSgInnerMDPS = modules.moduleType()[segmentInnerModuleIndex] == PS;
+    bool isInnerMDPS = modules.moduleType()[segmentInnerModuleIndex] == PS;
 
-    const float rtGeom1 = isOutSgInnerMDPS
-                              ? kPixelPSZpitch
-                              : kStrip2SZpitch;  //FIXME: make this chosen by configuration for lay11,12 full PS
+    //FIXME: make this chosen by configuration for lay11,12 full PS
+    const float rtGeom1 = isInnerMDPS ? kPixelPSZpitch : kStrip2SZpitch;
     const float zGeom1 = alpaka::math::copysign(acc, zGeom, z_InUp);  //used in B-E region
     rtLo = rt_InUp * (1.f + (z_OutLo - z_InUp - zGeom1) / (z_InUp + zGeom1 + dLum) / dzDrtScale) -
            rtGeom1;  //slope correction only on the lower end
@@ -1335,9 +1345,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     betaOutRHmin *= betaOutMMSF;
     betaOutRHmax *= betaOutMMSF;
 
-    float min_ptBeta_ptBetaMax = alpaka::math::min(
+    float pt_beta_trunc = alpaka::math::min(
         acc, alpaka::math::abs(acc, pt_beta), kPt_betaMax);  //need to confirm the range-out value of 7 GeV
-    const float dBetaMuls2 = thetaMuls2 * 16.f / (min_ptBeta_ptBetaMax * min_ptBeta_ptBetaMax);
+    const float dBetaMuls2 = thetaMuls2 * 16.f / (pt_beta_trunc * pt_beta_trunc);
 
     const float alphaInAbsReg =
         alpaka::math::max(acc,
@@ -1379,10 +1389,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float drt_InSeg = rt_InUp - rt_InLo;
 
-    const float dBetaRes = 0.02f / alpaka::math::min(acc, sdOut_d, drt_InSeg);
+    const float dBetaRes = 0.02f / alpaka::math::min(acc, alpaka::math::min(acc, sdOut_d, drt_InSeg), drt_tl_axis);
     const float dBetaCut2 =
         (dBetaRes * dBetaRes * 2.0f + dBetaMuls2 + dBetaLum2 + dBetaRIn2 + dBetaROut2 +
-         0.25f * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax) * alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax));
+         0.25f * (betaOutRHmin - betaOutRHmax) * (betaOutRHmin - betaOutRHmax));
     float dBeta = betaIn - betaOut;
     return dBeta * dBeta <= dBetaCut2;
   }
