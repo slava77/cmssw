@@ -611,9 +611,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     unsigned int tripletInnerSegmentIndex = triplets.segmentIndices()[tripletIndex][0];
     unsigned int tripletOuterSegmentIndex = triplets.segmentIndices()[tripletIndex][1];
     auto debugPL = [](int ipLS, int iLS) { return (ipLS == 1072 && (iLS == 139032 || iLS == 139033 || iLS == 230941 || iLS == 306999 || iLS == 307022 || iLS == 51049 || iLS == 443851))
-      || (ipLS == 89 && (iLS == 70979 || iLS == 155405 || iLS == 204327 || iLS == 3864 || iLS == 12728 || iLS == 12731))
-      || (ipLS == 1 && (iLS == 119046 || iLS == 177098 || iLS == 180005 || iLS == 253093 || iLS == 119050 || iLS == 177123 || iLS == 180036 || iLS == 253171 || iLS == 324455 || iLS == 397448 || iLS == 540059))
-        || (ipLS == 1074 && (iLS == 202824 || iLS == 202825 || iLS == 294354 || iLS == 390947));};
+        || (ipLS == 4 && (iLS == 82432 || iLS == 82438 || iLS == 1342 || iLS == 1343 || iLS == 1989 || iLS == 1990 || iLS == 13515 || iLS == 82426 || iLS == 2030 || iLS == 13514 || iLS == 25018 || iLS == 35951 || iLS == 35952 || iLS == 2031))
+        || (ipLS == 89 && (iLS == 70979 || iLS == 155405 || iLS == 204327 || iLS == 3864 || iLS == 12728 || iLS == 12731))
+        || (ipLS == 1 && (iLS == 119046 || iLS == 177098 || iLS == 180005 || iLS == 253093 || iLS == 119050 || iLS == 177123 || iLS == 180036 || iLS == 253171 || iLS == 324455 || iLS == 397448 || iLS == 540059))
+        || (ipLS == 1074 && (iLS == 202824 || iLS == 202825 || iLS == 294354 || iLS == 390947))
+        || (ipLS == 1352 && (iLS == 154116 || iLS == 236088 || iLS == 311201))
+        || (ipLS == 714 && (iLS == 121476 || iLS == 121704 || iLS == 2916 || iLS == 16906 || iLS == 16907 || iLS == 31665 || iLS == 31667 || iLS == 46812))
+        || (ipLS == 215 && (iLS == 214830 || iLS == 299578 || iLS == 380559  || iLS == 450303  || iLS == 561145));
+                   };
     bool debug = debugPL(pixelSegmentArrayIndex, tripletInnerSegmentIndex) || debugPL(pixelSegmentArrayIndex, tripletOuterSegmentIndex);
 
     unsigned int firstMDIndex = segments.mdIndices()[tripletInnerSegmentIndex][0];
@@ -899,9 +904,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float rtRelDiff = rt_OutLo / rt_InOut - 1.f;
 
     bool debug = (pixelSegmentArrayIndex == 1072 && (segmentIndex == 139032 || segmentIndex == 139033 || segmentIndex == 230941 || segmentIndex == 306999 || segmentIndex == 307022 || segmentIndex == 51049 || segmentIndex == 443851))
+      || (pixelSegmentArrayIndex == 4 && (segmentIndex == 82432 || segmentIndex == 82438 || segmentIndex == 1342 || segmentIndex == 1343 || segmentIndex == 1989 || segmentIndex == 1990 || segmentIndex == 13515 || segmentIndex == 82426 || segmentIndex == 2030 || segmentIndex == 13514 || segmentIndex == 25018 || segmentIndex == 35951 || segmentIndex == 35952 || segmentIndex == 2031))
       || (pixelSegmentArrayIndex == 89 && (segmentIndex == 70979 || segmentIndex == 155405 || segmentIndex == 204327 || segmentIndex == 3864 || segmentIndex == 12728 || segmentIndex == 12731))
       || (pixelSegmentArrayIndex == 1 && (segmentIndex == 119046 || segmentIndex == 177098 || segmentIndex == 180005 || segmentIndex == 253093 || segmentIndex == 119050 || segmentIndex == 177123 || segmentIndex == 180036 || segmentIndex == 253171 || segmentIndex == 324455 || segmentIndex == 397448 || segmentIndex == 540059))
-      || (pixelSegmentArrayIndex == 1074 && (segmentIndex == 202824 || segmentIndex == 202825 || segmentIndex == 294354 || segmentIndex == 390947));
+      || (pixelSegmentArrayIndex == 1074 && (segmentIndex == 202824 || segmentIndex == 202825 || segmentIndex == 294354 || segmentIndex == 390947))
+      || (pixelSegmentArrayIndex == 1352 && (segmentIndex == 154116 || segmentIndex == 236088 || segmentIndex == 311201))
+      || (pixelSegmentArrayIndex == 714 && (segmentIndex == 121476 || segmentIndex == 121704 || segmentIndex == 2916 || segmentIndex == 16906 || segmentIndex == 16907 || segmentIndex == 31665 || segmentIndex == 31667 || segmentIndex == 46812))
+      || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145));
     // The track can bend in r-z plane slightly
     float dzDrtScale = alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;
     const float zpitch_InLo = 0.05f;
@@ -1204,6 +1213,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       zInForHi = alpaka::math::copysign(acc, 0.1f, z_InUp);
     rtHi = rt_InUp * (1.f + (z_OutLo - z_InUp + zGeom1) / zInForHi) + rtGeom1;
 
+    bool debug = (pixelSegmentArrayIndex == 1072 && (segmentIndex == 139032 || segmentIndex == 139033 || segmentIndex == 230941 || segmentIndex == 306999 || segmentIndex == 307022 || segmentIndex == 51049 || segmentIndex == 443851))
+      || (pixelSegmentArrayIndex == 4 && (segmentIndex == 82432 || segmentIndex == 82438 || segmentIndex == 1342 || segmentIndex == 1343 || segmentIndex == 1989 || segmentIndex == 1990 || segmentIndex == 13515 || segmentIndex == 82426 || segmentIndex == 2030 || segmentIndex == 13514 || segmentIndex == 25018 || segmentIndex == 35951 || segmentIndex == 35952 || segmentIndex == 2031))
+      || (pixelSegmentArrayIndex == 89 && (segmentIndex == 70979 || segmentIndex == 155405 || segmentIndex == 204327 || segmentIndex == 3864 || segmentIndex == 12728 || segmentIndex == 12731))
+      || (pixelSegmentArrayIndex == 1 && (segmentIndex == 119046 || segmentIndex == 177098 || segmentIndex == 180005 || segmentIndex == 253093 || segmentIndex == 119050 || segmentIndex == 177123 || segmentIndex == 180036 || segmentIndex == 253171 || segmentIndex == 324455 || segmentIndex == 397448 || segmentIndex == 540059))
+      || (pixelSegmentArrayIndex == 1074 && (segmentIndex == 202824 || segmentIndex == 202825 || segmentIndex == 294354 || segmentIndex == 390947))
+      || (pixelSegmentArrayIndex == 1352 && (segmentIndex == 154116 || segmentIndex == 236088 || segmentIndex == 311201))
+      || (pixelSegmentArrayIndex == 714 && (segmentIndex == 121476 || segmentIndex == 121704 || segmentIndex == 2916 || segmentIndex == 16906 || segmentIndex == 16907 || segmentIndex == 31665 || segmentIndex == 31667 || segmentIndex == 46812))
+      || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145));
+    if (debug) printf("pLS %d LS %d PPEE: rt_OutLo %4.4f rtLoHi %4.4f %4.4f rt_InUp %4.4f z_OutLo %4.4f z_InUp %4.4f\n", pixelSegmentArrayIndex, segmentIndex, rt_OutLo, rtLo, rtHi, rt_InUp, z_OutLo, z_InUp);
     // Cut #2: rt condition
     if ((rt_OutLo < rtLo) || (rt_OutLo > rtHi))
       return false;
@@ -1231,6 +1249,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float rtLo_point = rt_InUp + drtMean - rtWindow;
     const float rtHi_point = rt_InUp + drtMean + rtWindow;
 
+    if (debug) printf("  point rtLoHi %4.4f %4.4f drt %4.4f window %4.4f\n", rtLo_point, rtHi_point, drtMean, rtWindow);
     // Cut #3: rt-z pointed
     if ((rt_OutLo < rtLo_point) || (rt_OutLo > rtHi_point))
       return false;
@@ -1248,6 +1267,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     dPhi = cms::alpakatools::deltaPhi(acc, midPointX, midPointY, diffX, diffY);
 
+    if (debug) printf("  dPhi %4.4f vs %4.4f\n", dPhi, dPhiCut);
     // Cut #5: deltaPhiChange
     if (alpaka::math::abs(acc, dPhi) > dPhiCut)
       return false;
@@ -1383,6 +1403,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             acc, alpaka::math::min(acc, drt_tl_axis * k2Rinv1GeVf / ptCut, kSinAlphaMax))  //FIXME: need faster version
         + (0.02f / sdOut_d) + alpaka::math::sqrt(acc, dBetaLum2 + dBetaMuls2);
 
+    if (debug) printf("  betaOut %4.4f vs %4.4f\n", betaOut, betaOutCut);
     //Cut #6: The real beta cut
     if (alpaka::math::abs(acc, betaOut) >= betaOutCut)
       return false;
@@ -1394,6 +1415,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         (dBetaRes * dBetaRes * 2.0f + dBetaMuls2 + dBetaLum2 + dBetaRIn2 + dBetaROut2 +
          0.25f * (betaOutRHmin - betaOutRHmax) * (betaOutRHmin - betaOutRHmax));
     float dBeta = betaIn - betaOut;
+    if (debug) printf("  dBeta %4.4f vs %4.4f : res %4.4f muls %4.4f lum %4.4f rInOut %4.4f %4.4f RHminmax %4.4f\n", dBeta, alpaka::math::sqrt(acc, dBetaCut2), dBetaRes, alpaka::math::sqrt(acc, dBetaMuls2), alpaka::math::sqrt(acc, dBetaLum2), alpaka::math::sqrt(acc, dBetaRIn2), alpaka::math::sqrt(acc, dBetaROut2), 0.5*alpaka::math::abs(acc, betaOutRHmin - betaOutRHmax));
     return dBeta * dBeta <= dBetaCut2;
   }
 
