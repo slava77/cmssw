@@ -124,14 +124,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                                      MiniDoubletsConst mds,
                                                                      SegmentsConst segments,
                                                                      PixelSeedsConst pixelSeeds,
-                                                                     uint16_t pixelLowerModuleIndex,
-                                                                     uint16_t outerInnerLowerModuleIndex,
-                                                                     uint16_t outerOuterLowerModuleIndex,
+                                                                     uint16_t pixelModuleIndex,
+                                                                     uint16_t lowerModuleIndex,
+                                                                     uint16_t outerModuleIndex,
                                                                      unsigned int innerSegmentIndex,
                                                                      unsigned int outerSegmentIndex,
                                                                      const float ptCut) {
-    short outerInnerLowerModuleSubdet = modules.subdets()[outerInnerLowerModuleIndex];
-    short outerOuterLowerModuleSubdet = modules.subdets()[outerOuterLowerModuleIndex];
+    short lowerModuleSubdet = modules.subdets()[lowerModuleIndex];
+    short outerModuleSubdet = modules.subdets()[outerModuleIndex];
 
     unsigned int firstMDIndex = segments.mdIndices()[innerSegmentIndex][0];
     unsigned int secondMDIndex = segments.mdIndices()[innerSegmentIndex][1];
@@ -139,17 +139,17 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     unsigned int thirdMDIndex = segments.mdIndices()[outerSegmentIndex][0];
     unsigned int fourthMDIndex = segments.mdIndices()[outerSegmentIndex][1];
 
-    if (outerInnerLowerModuleSubdet == Barrel and
-        (outerOuterLowerModuleSubdet == Barrel or outerOuterLowerModuleSubdet == Endcap)) {
+    if (lowerModuleSubdet == Barrel and
+        (outerModuleSubdet == Barrel or outerModuleSubdet == Endcap)) {
       return runTripletDefaultAlgoPPBB(acc,
                                        modules,
                                        ranges,
                                        mds,
                                        segments,
                                        pixelSeeds,
-                                       pixelLowerModuleIndex,
-                                       outerInnerLowerModuleIndex,
-                                       outerOuterLowerModuleIndex,
+                                       pixelModuleIndex,
+                                       lowerModuleIndex,
+                                       outerModuleIndex,
                                        innerSegmentIndex,
                                        outerSegmentIndex,
                                        firstMDIndex,
@@ -157,16 +157,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                        thirdMDIndex,
                                        fourthMDIndex,
                                        ptCut);
-    } else if (outerInnerLowerModuleSubdet == Endcap and outerOuterLowerModuleSubdet == Endcap) {
+    } else if (lowerModuleSubdet == Endcap and outerModuleSubdet == Endcap) {
       return runTripletDefaultAlgoPPEE(acc,
                                        modules,
                                        ranges,
                                        mds,
                                        segments,
                                        pixelSeeds,
-                                       pixelLowerModuleIndex,
-                                       outerInnerLowerModuleIndex,
-                                       outerOuterLowerModuleIndex,
+                                       pixelModuleIndex,
+                                       lowerModuleIndex,
+                                       outerModuleIndex,
                                        innerSegmentIndex,
                                        outerSegmentIndex,
                                        firstMDIndex,
@@ -617,7 +617,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         || (ipLS == 1074 && (iLS == 202824 || iLS == 202825 || iLS == 294354 || iLS == 390947))
         || (ipLS == 1352 && (iLS == 154116 || iLS == 236088 || iLS == 311201))
         || (ipLS == 714 && (iLS == 121476 || iLS == 121704 || iLS == 2916 || iLS == 16906 || iLS == 16907 || iLS == 31665 || iLS == 31667 || iLS == 46812))
-        || (ipLS == 215 && (iLS == 214830 || iLS == 299578 || iLS == 380559  || iLS == 450303  || iLS == 561145));
+        || (ipLS == 215 && (iLS == 214830 || iLS == 299578 || iLS == 380559  || iLS == 450303  || iLS == 561145))
+        || (ipLS == 372 && (iLS == 61370 || iLS == 196 || iLS == 8006 || iLS == 16373 || iLS == 23463 || iLS == 23468))
+        || (ipLS == 1167 && (iLS == 81121 || iLS == 1059 || iLS == 12879 || iLS == 24341 || iLS == 34898))
+        ;
                    };
     bool debug = debugPL(pixelSegmentArrayIndex, tripletInnerSegmentIndex) || debugPL(pixelSegmentArrayIndex, tripletOuterSegmentIndex);
 
@@ -910,9 +913,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       || (pixelSegmentArrayIndex == 1074 && (segmentIndex == 202824 || segmentIndex == 202825 || segmentIndex == 294354 || segmentIndex == 390947))
       || (pixelSegmentArrayIndex == 1352 && (segmentIndex == 154116 || segmentIndex == 236088 || segmentIndex == 311201))
       || (pixelSegmentArrayIndex == 714 && (segmentIndex == 121476 || segmentIndex == 121704 || segmentIndex == 2916 || segmentIndex == 16906 || segmentIndex == 16907 || segmentIndex == 31665 || segmentIndex == 31667 || segmentIndex == 46812))
-      || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145));
+      || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145))
+      || (pixelSegmentArrayIndex == 372 && (segmentIndex == 61370 || segmentIndex == 196 || segmentIndex == 8006 || segmentIndex == 16373 || segmentIndex == 23463 || segmentIndex == 23468))
+      || (pixelSegmentArrayIndex == 1167 && (segmentIndex == 81121 || segmentIndex == 1059 || segmentIndex == 12879 || segmentIndex == 24341 || segmentIndex == 34898))
+      ;
     // The track can bend in r-z plane slightly
-    float dzDrtScale = alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;
+    const float dzDrtScale = alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;
+    // adjust for fwd and bwd to keep zHi > zLo
+    const float dzDrtScaleHi = z_InUp * rtRelDiff < 0.f ? 1.f : dzDrtScale;
+    const float dzDrtScaleLo = z_InUp * rtRelDiff > 0.f ? 1.f : dzDrtScale;
     const float zpitch_InLo = 0.05f;
     bool sameLayerOutLo = alpaka::math::abs(acc, rt_OutLo - rt_InOut) < 1.f && alpaka::math::abs(acc, z_InUp - z_OutLo) < 1.f;
     bool isPS_OutLo = (modules.moduleType()[segmentInnerModuleIndex] == PS);
@@ -926,8 +935,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     // could reduce dR uncertrainty using dzdrt
     const float dRtRelZ = isTilted_OutLo ? alpaka::math::abs(acc, rGeom / rt_InOut * z_InUp) : 0.f;
     // dzDrtScale correction is only on outer end
-    zHi = z_InUp + dRtRelZ + (z_InUp + dLum) * rtRelDiff * (z_InUp < 0.f ? 1.f : dzDrtScale) + (zpitch_InOut + zpitch_OutLo);
-    zLo = z_InUp - dRtRelZ + (z_InUp - dLum) * rtRelDiff * (z_InUp > 0.f ? 1.f : dzDrtScale) - (zpitch_InOut + zpitch_OutLo);
+    zHi = z_InUp + dRtRelZ + (z_InUp + dLum) * rtRelDiff * dzDrtScaleHi + (zpitch_InOut + zpitch_OutLo);
+    zLo = z_InUp - dRtRelZ + (z_InUp - dLum) * rtRelDiff * dzDrtScaleLo - (zpitch_InOut + zpitch_OutLo);
     if (debug) printf("pLS %d LS %d: z_OutLo %4.4f zLo %4.4f zHi %4.4f rtRelDiff %4.4f dRtRelZ %4.4f rt_OutLo %4.4f\n", pixelSegmentArrayIndex, segmentIndex, z_OutLo, zLo, zHi, rtRelDiff, dRtRelZ, rt_OutLo);
     if ((z_OutLo < zLo) || (z_OutLo > zHi))
       return false;
@@ -1197,21 +1206,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float zGeom = zpitch_InLo + zpitch_OutLo;
 
     const float slope = alpaka::math::asin(acc, alpaka::math::min(acc, rt_OutLo * k2Rinv1GeVf / ptCut, kSinAlphaMax));
-    const float dzDrtScale = alpaka::math::tan(acc, slope) / slope;  //FIXME: need approximate value
+    const float dzDrtScale = slope / alpaka::math::tan(acc, slope);  // account for a bend in r-z
+    const bool signZProd = (z_InUp < 0) ^ (z_OutLo < z_InUp);
+    const float dzDrtScaleLo = signZProd ? dzDrtScale : 1.f;
+    const float dzDrtScaleHi = signZProd ? 1.f : dzDrtScale;
 
-    const float dLum = alpaka::math::copysign(acc, kDeltaZLum, z_InUp);
+    const float dLum = alpaka::math::copysign(acc, kDeltaZLum + zGeom, z_OutLo - z_InUp);
     bool isInnerMDPS = modules.moduleType()[segmentInnerModuleIndex] == PS;
 
     //FIXME: make this chosen by configuration for lay11,12 full PS
     const float rtGeom1 = isInnerMDPS ? kPixelPSZpitch : kStrip2SZpitch;
     const float zGeom1 = alpaka::math::copysign(acc, zGeom, z_InUp);  //used in B-E region
-    rtLo = rt_InUp * (1.f + (z_OutLo - z_InUp - zGeom1) / (z_InUp + zGeom1 + dLum) / dzDrtScale) -
-           rtGeom1;  //slope correction only on the lower end
-
-    float zInForHi = z_InUp - zGeom1 - dLum;
-    if (zInForHi * z_InUp < 0)
-      zInForHi = alpaka::math::copysign(acc, 0.1f, z_InUp);
-    rtHi = rt_InUp * (1.f + (z_OutLo - z_InUp + zGeom1) / zInForHi) + rtGeom1;
+    //slope correction only on the lower end
+    rtLo = rt_InUp * (1.f + (z_OutLo - z_InUp - zGeom1) / (z_InUp + dLum) * dzDrtScaleLo) - rtGeom1;
+    rtHi = rt_InUp * (1.f + (z_OutLo - z_InUp + zGeom1) / (z_InUp - dLum) * dzDrtScaleHi) + rtGeom1;
 
     bool debug = (pixelSegmentArrayIndex == 1072 && (segmentIndex == 139032 || segmentIndex == 139033 || segmentIndex == 230941 || segmentIndex == 306999 || segmentIndex == 307022 || segmentIndex == 51049 || segmentIndex == 443851))
       || (pixelSegmentArrayIndex == 4 && (segmentIndex == 82432 || segmentIndex == 82438 || segmentIndex == 1342 || segmentIndex == 1343 || segmentIndex == 1989 || segmentIndex == 1990 || segmentIndex == 13515 || segmentIndex == 82426 || segmentIndex == 2030 || segmentIndex == 13514 || segmentIndex == 25018 || segmentIndex == 35951 || segmentIndex == 35952 || segmentIndex == 2031))
@@ -1220,15 +1228,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       || (pixelSegmentArrayIndex == 1074 && (segmentIndex == 202824 || segmentIndex == 202825 || segmentIndex == 294354 || segmentIndex == 390947))
       || (pixelSegmentArrayIndex == 1352 && (segmentIndex == 154116 || segmentIndex == 236088 || segmentIndex == 311201))
       || (pixelSegmentArrayIndex == 714 && (segmentIndex == 121476 || segmentIndex == 121704 || segmentIndex == 2916 || segmentIndex == 16906 || segmentIndex == 16907 || segmentIndex == 31665 || segmentIndex == 31667 || segmentIndex == 46812))
-      || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145));
+      || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145))
+      || (pixelSegmentArrayIndex == 372 && (segmentIndex == 61370 || segmentIndex == 196 || segmentIndex == 8006 || segmentIndex == 16373 || segmentIndex == 23463 || segmentIndex == 23468))
+      || (pixelSegmentArrayIndex == 1167 && (segmentIndex == 81121 || segmentIndex == 1059 || segmentIndex == 12879 || segmentIndex == 24341 || segmentIndex == 34898))
+      ;
     if (debug) printf("pLS %d LS %d PPEE: rt_OutLo %4.4f rtLoHi %4.4f %4.4f rt_InUp %4.4f z_OutLo %4.4f z_InUp %4.4f\n", pixelSegmentArrayIndex, segmentIndex, rt_OutLo, rtLo, rtHi, rt_InUp, z_OutLo, z_InUp);
     // Cut #2: rt condition
     if ((rt_OutLo < rtLo) || (rt_OutLo > rtHi))
       return false;
 
-    const float dzOutInAbs = alpaka::math::abs(acc, z_OutLo - z_InUp);
+    const float dzOutIn = z_OutLo - z_InUp;
     const float cosh2Eta = 1.f + (pz * pz) / (ptIn * ptIn);
-    const float multDzDr2 = (dzOutInAbs * dzOutInAbs) * cosh2Eta / ((cosh2Eta - 1.f) * (cosh2Eta - 1.f));
+    const float multDzDr2 = (dzOutIn * dzOutIn) * cosh2Eta / ((cosh2Eta - 1.f) * (cosh2Eta - 1.f));
     const float r3_InUp = alpaka::math::sqrt(acc, z_InUp * z_InUp + rt_InUp * rt_InUp);
     const float drt_OutLo_InUp = (rt_OutLo - rt_InUp);  // drOutIn
     const float thetaMuls2 =
@@ -1240,16 +1251,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     drtErr *= 9.f;            // 3 sigma
     drtErr += muls2 * multDzDr2 / 3.f * cosh2Eta;
     drtErr = alpaka::math::sqrt(acc, drtErr);
-    const float drtDzIn = alpaka::math::abs(acc, ptIn / pz);
+    const float drtDzIn = ptIn / pz;
 
     const float rtWindow = drtErr + rtGeom1;
-    const float drtMean = drtDzIn * dzOutInAbs *
+    const float drtMean = drtDzIn * dzOutIn *
                           (1.f - drt_OutLo_InUp * drt_OutLo_InUp * 4 * k2Rinv1GeVf * k2Rinv1GeVf / ptIn / ptIn /
                                      24.f);  // with curved path correction
     const float rtLo_point = rt_InUp + drtMean - rtWindow;
     const float rtHi_point = rt_InUp + drtMean + rtWindow;
 
-    if (debug) printf("  point rtLoHi %4.4f %4.4f drt %4.4f window %4.4f\n", rtLo_point, rtHi_point, drtMean, rtWindow);
+    if (debug) printf("  point rt_OutLo %4.4f vs rtLoHi %4.4f %4.4f drt %4.4f = %4.4f * %4.4f * cor window %4.4f = dr %4.4f muls %4.4f rtG %4.4f\n",
+                      rt_OutLo, rtLo_point, rtHi_point, drtMean, drtDzIn, dzOutIn,
+                      rtWindow,
+                      alpaka::math::sqrt(acc, 9.f* ((etaErr * etaErr) * multDzDr2 + 0.03f * 0.03f)),
+                      alpaka::math::sqrt(acc, muls2 * multDzDr2 / 3.f * cosh2Eta),
+                      rtGeom1);
     // Cut #3: rt-z pointed
     if ((rt_OutLo < rtLo_point) || (rt_OutLo > rtHi_point))
       return false;
