@@ -620,6 +620,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
         || (ipLS == 215 && (iLS == 214830 || iLS == 299578 || iLS == 380559  || iLS == 450303  || iLS == 561145))
         || (ipLS == 372 && (iLS == 61370 || iLS == 196 || iLS == 8006 || iLS == 16373 || iLS == 23463 || iLS == 23468))
         || (ipLS == 1167 && (iLS == 81121 || iLS == 1059 || iLS == 12879 || iLS == 24341 || iLS == 34898))
+        || (ipLS == 3 && (iLS == 129803 || iLS == 34729 || iLS == 44761 || iLS == 54268 || iLS == 63669 || iLS == 63680 || iLS == 63681))
         ;
                    };
     bool debug = debugPL(pixelSegmentArrayIndex, tripletInnerSegmentIndex) || debugPL(pixelSegmentArrayIndex, tripletOuterSegmentIndex);
@@ -916,6 +917,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145))
       || (pixelSegmentArrayIndex == 372 && (segmentIndex == 61370 || segmentIndex == 196 || segmentIndex == 8006 || segmentIndex == 16373 || segmentIndex == 23463 || segmentIndex == 23468))
       || (pixelSegmentArrayIndex == 1167 && (segmentIndex == 81121 || segmentIndex == 1059 || segmentIndex == 12879 || segmentIndex == 24341 || segmentIndex == 34898))
+      || (pixelSegmentArrayIndex == 3 && (segmentIndex == 129803 || segmentIndex == 34729 || segmentIndex == 44761 || segmentIndex == 54268 || segmentIndex == 63669 || segmentIndex == 63680 || segmentIndex == 63681))
       ;
     // The track can bend in r-z plane slightly
     const float dzDrtScale = alpaka::math::tan(acc, alpha1GeV_OutLo) / alpha1GeV_OutLo;
@@ -1231,6 +1233,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       || (pixelSegmentArrayIndex == 215 && (segmentIndex == 214830 || segmentIndex == 299578 || segmentIndex == 380559  || segmentIndex == 450303  || segmentIndex == 561145))
       || (pixelSegmentArrayIndex == 372 && (segmentIndex == 61370 || segmentIndex == 196 || segmentIndex == 8006 || segmentIndex == 16373 || segmentIndex == 23463 || segmentIndex == 23468))
       || (pixelSegmentArrayIndex == 1167 && (segmentIndex == 81121 || segmentIndex == 1059 || segmentIndex == 12879 || segmentIndex == 24341 || segmentIndex == 34898))
+      || (pixelSegmentArrayIndex == 3 && (segmentIndex == 129803 || segmentIndex == 34729 || segmentIndex == 44761 || segmentIndex == 54268 || segmentIndex == 63669 || segmentIndex == 63680 || segmentIndex == 63681))
       ;
     if (debug) printf("pLS %d LS %d PPEE: rt_OutLo %4.4f rtLoHi %4.4f %4.4f rt_InUp %4.4f z_OutLo %4.4f z_InUp %4.4f\n", pixelSegmentArrayIndex, segmentIndex, rt_OutLo, rtLo, rtHi, rt_InUp, z_OutLo, z_InUp);
     // Cut #2: rt condition
