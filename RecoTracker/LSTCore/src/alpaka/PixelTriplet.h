@@ -879,14 +879,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
 
     float rt_InOut = rt_InUp;
 
-    unsigned int pixelSegmentArrayIndex = pLSIndex - ranges.segmentModuleIndices()[pixelModuleIndex];
-    float ptIn = pixelSeeds.ptIn()[pixelSegmentArrayIndex];
+    unsigned int iPS = pLSIndex - ranges.segmentModuleIndices()[pixelModuleIndex];
+    float ptIn = pixelSeeds.ptIn()[iPS];
     float ptSLo = ptIn;
-    float px = pixelSeeds.px()[pixelSegmentArrayIndex];
-    float py = pixelSeeds.py()[pixelSegmentArrayIndex];
-    float pz = pixelSeeds.pz()[pixelSegmentArrayIndex];
-    float ptErr = pixelSeeds.ptErr()[pixelSegmentArrayIndex];
-    float etaErr = pixelSeeds.etaErr()[pixelSegmentArrayIndex];
+    float px = pixelSeeds.px()[iPS];
+    float py = pixelSeeds.py()[iPS];
+    float pz = pixelSeeds.pz()[iPS];
+    float ptErr = pixelSeeds.ptErr()[iPS];
+    float etaErr = pixelSeeds.etaErr()[iPS];
     ptSLo = alpaka::math::max(acc, ptCut, ptSLo - 10.0f * alpaka::math::max(acc, ptErr, 0.005f * ptSLo));
     ptSLo = alpaka::math::min(acc, 10.0f, ptSLo);
     float alpha1GeV_OutLo =
@@ -900,7 +900,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     const float dzDrtScaleHi = z_InUp * rtRelDiff < 0.f ? 1.f : dzDrtScale;
     const float dzDrtScaleLo = z_InUp * rtRelDiff > 0.f ? 1.f : dzDrtScale;
     const float zpitch_InLo = 0.05f;
-    bool isPLSinOT = pixelSeeds.pLSHitsIdxs()[pixelSegmentArrayIndex][3] & (1 << 31);
+    bool isPLSinOT =
+        pixelSeeds.hitDetBits()[iPS] &
+        (1 << (alpaka::math::min(acc, static_cast<unsigned int>(pixelSeeds.nHits()[iPS]), kMaxPLSHitBitsInHitsSoA) -
+               1));
     bool isPS_OutLo = (modules.moduleType()[segmentInnerModuleIndex] == PS);
     bool isTilted_OutLo = (modules.sides()[segmentInnerModuleIndex] != Center);
     // same layer pLS is P-size, 50 um otherwise
@@ -1145,15 +1148,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
     float y_OutLo = mds.anchorY()[segmentMD0Index];
     float y_OutUp = mds.anchorY()[segmentMD1Index];
 
-    unsigned int pixelSegmentArrayIndex = pLSIndex - ranges.segmentModuleIndices()[pixelModuleIndex];
+    unsigned int iPS = pLSIndex - ranges.segmentModuleIndices()[pixelModuleIndex];
 
-    float ptIn = pixelSeeds.ptIn()[pixelSegmentArrayIndex];
+    float ptIn = pixelSeeds.ptIn()[iPS];
     float ptSLo = ptIn;
-    float px = pixelSeeds.px()[pixelSegmentArrayIndex];
-    float py = pixelSeeds.py()[pixelSegmentArrayIndex];
-    float pz = pixelSeeds.pz()[pixelSegmentArrayIndex];
-    float ptErr = pixelSeeds.ptErr()[pixelSegmentArrayIndex];
-    float etaErr = pixelSeeds.etaErr()[pixelSegmentArrayIndex];
+    float px = pixelSeeds.px()[iPS];
+    float py = pixelSeeds.py()[iPS];
+    float pz = pixelSeeds.pz()[iPS];
+    float ptErr = pixelSeeds.ptErr()[iPS];
+    float etaErr = pixelSeeds.etaErr()[iPS];
 
     ptSLo = alpaka::math::max(acc, ptCut, ptSLo - 10.0f * alpaka::math::max(acc, ptErr, 0.005f * ptSLo));
     ptSLo = alpaka::math::min(acc, 10.0f, ptSLo);
