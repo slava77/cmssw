@@ -25,6 +25,8 @@
 #include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 
+#include <ranges>
+
 class LSTOutputConverter : public edm::stream::EDProducer<> {
 public:
   explicit LSTOutputConverter(edm::ParameterSet const& iConfig);
@@ -40,6 +42,8 @@ private:
   const edm::EDGetTokenT<TrajectorySeedCollection> lstPixelSeedToken_;
   const bool includeT5s_;
   const bool includeNonpLSTSs_;
+  const bool dropOTHitsPurePLS_;
+  const int maxITHitsToDropOTHitsPurePLS_;
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> mfToken_;
   const edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorAlongToken_;
   const edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorOppositeToken_;
@@ -66,6 +70,8 @@ LSTOutputConverter::LSTOutputConverter(edm::ParameterSet const& iConfig)
       lstPixelSeedToken_{consumes(iConfig.getParameter<edm::InputTag>("lstPixelSeeds"))},
       includeT5s_(iConfig.getParameter<bool>("includeT5s")),
       includeNonpLSTSs_(iConfig.getParameter<bool>("includeNonpLSTSs")),
+      dropOTHitsPurePLS_(iConfig.getParameter<bool>("dropOTHitsPurePLS")),
+      maxITHitsToDropOTHitsPurePLS_(iConfig.getParameter<int>("maxITHitsToDropOTHitsPurePLS")),
       mfToken_(esConsumes()),
       propagatorAlongToken_{esConsumes(iConfig.getParameter<edm::ESInputTag>("propagatorAlong"))},
       propagatorOppositeToken_{esConsumes(iConfig.getParameter<edm::ESInputTag>("propagatorOpposite"))},
@@ -101,6 +107,8 @@ void LSTOutputConverter::fillDescriptions(edm::ConfigurationDescriptions& descri
   desc.add<edm::InputTag>("lstPixelSeeds", edm::InputTag("lstInputProducer"));
   desc.add<bool>("includeT5s", true);
   desc.add<bool>("includeNonpLSTSs", false);
+  desc.add<bool>("dropOTHitsPurePLS", false);
+  desc.add<int>("maxITHitsToDropOTHitsPurePLS", 3);
   desc.add("propagatorAlong", edm::ESInputTag{"", "PropagatorWithMaterial"});
   desc.add("propagatorOpposite", edm::ESInputTag{"", "PropagatorWithMaterialOpposite"});
 
@@ -154,14 +162,21 @@ void LSTOutputConverter::produce(edm::Event& iEvent, const edm::EventSetup& iSet
     LogDebug("LSTOutputConverter") << " cand " << i << " " << iType << " " << lstOutput_view.pixelSeedIndex()[i];
     TrajectorySeed seed;
     edm::RefToBase<TrajectorySeed> seedRef;
-    if (iType != lst::LSTObjType::T5 && iType != lst::LSTObjType::T4) {
-      seed = pixelSeeds[lstOutput_view.pixelSeedIndex()[i]];
-      seedRef = {pixelSeedsRBP, lstOutput_view.pixelSeedIndex()[i]};
+    const auto iSeed = lstOutput_view.pixelSeedIndex()[i];
+    const bool dropHitsOTpL =
+        iType == lst::LSTObjType::pLS && dropOTHitsPurePLS_ &&
+        std::prev(pixelSeeds[iSeed].recHits().end())->geographicalId().subdetId() > PixelSubdetector::PixelEndcap &&
+        std::ranges::count_if(pixelSeeds[iSeed].recHits(), [](const auto& h) {
+          return h.geographicalId().subdetId() <= PixelSubdetector::PixelEndcap;
+        }) <= maxITHitsToDropOTHitsPurePLS_;
+    if (iType != lst::LSTObjType::T5 && iType != lst::LSTObjType::T4 && !dropHitsOTpL) {
+      seed = pixelSeeds[iSeed];
+      seedRef = {pixelSeedsRBP, iSeed};
     }
 
     edm::OwnVector<TrackingRecHit> recHits;
-    if (iType != lst::LSTObjType::T5 && iType != lst::LSTObjType::T4) {
-      for (auto const& hit : seed.recHits())
+    if (iType != lst::LSTObjType::T5 && iType != lst::LSTObjType::T4 && !dropHitsOTpL) {
+      for (auto const& hit : pixelSeeds[iSeed].recHits())
         recHits.push_back(hit.clone());
     }
 
@@ -251,7 +266,25 @@ void LSTOutputConverter::produce(edm::Event& iEvent, const edm::EventSetup& iSet
         LogDebug("LSTOutputConverter") << "Created a seed with " << trajectorySeed.nHits() << " " << ss.detId() << " "
                                        << ss.pt() << " " << ss.parameters().vector() << " " << ss.error(0);
       }
-    } else {
+    } else {               // iType == lst::LSTObjType::pLS
+      if (dropHitsOTpL) {  // true if need to drop OT hits
+        using Hit = SeedingHitSet::ConstRecHitPointer;
+        std::vector<Hit> hitsForSeed;
+        hitsForSeed.reserve(std::ranges::size(pixelSeeds[iSeed].recHits()));
+        for (auto const& hit : pixelSeeds[iSeed].recHits()) {
+          if (hit.geographicalId().subdetId() > PixelSubdetector::PixelEndcap)
+            continue;
+          hitsForSeed.emplace_back(dynamic_cast<Hit>(&hit));
+          recHits.push_back(hit.clone());
+        }
+        GlobalTrackingRegion region;
+        seedCreator_->init(region, iSetup, nullptr);
+        seedCreator_->makeSeed(seeds, hitsForSeed);
+        if (seeds.empty())
+          edm::LogInfo("LSTOutputConverter") << "failed to convert a pLS object to a seed" << i << iSeed;
+        seed = seeds[0];
+        seedRef = edm::RefToBase<TrajectorySeed>(edm::Ref(outputTSRP, outputTS.size()));
+      }
       outputTS.emplace_back(seed);
       outputpLSTS.emplace_back(seed);
     }
