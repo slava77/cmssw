@@ -893,7 +893,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             if (partOfPT3[outerTripletIndex])
               continue;  //don't create T4s for T3s accounted in pT3s
 
-
             // Will only perform runQuadrupletDefaultAlgorithm() checks if densely connected
             if (!ReduceMem && nInnerTriplets < kNTripletThreshold && nOuterTriplets < kNTripletThreshold) {
               alpaka::atomicAdd(acc, &triplets.connectedLSMax()[innerTripletIndex], 1u, alpaka::hierarchy::Threads{});
