@@ -2042,12 +2042,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
       // The atomicAdd below with hierarchy::Threads{} requires one block in x, y dimensions.
       ALPAKA_ASSERT_ACC((alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[1] == 1) &&
                         (alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[2] == 1));
+      unsigned int& denseMatchCount = alpaka::declareSharedVar<unsigned int, __COUNTER__>(acc);
+
       const auto& mdIndices = segments.mdIndices();
       const auto& segIdx = triplets.segmentIndices();
       const auto& lmIdx = triplets.lowerModuleIndices();
       const auto& tripIdx = ranges.tripletModuleIndices();
 
       for (uint16_t lowerModule1 : cms::alpakatools::uniform_groups_z(acc, modules.nLowerModules())) {
+        if (cms::alpakatools::once_per_block(acc)) {
+          denseMatchCount = 0;
+        }
+        alpaka::syncBlockThreads(acc);
+
         if (!isValidQuintRegion(modules, lowerModule1))
           continue;
 
@@ -2077,6 +2084,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
             if (!ReduceMem && nInnerTriplets < kNTripletThreshold && nOuterTriplets < kNTripletThreshold) {
               alpaka::atomicAdd(acc, &triplets.connectedMax()[innerTripletIndex], 1u, alpaka::hierarchy::Threads{});
             } else {
+              //asynchronous stop; exact truncation here is not important
+              if (denseMatchCount > kNQuintupletThreshold)
+                break;
+
               const uint16_t lowerModule2 = lmIdx[innerTripletIndex][1];
               const uint16_t lowerModule4 = lmIdx[outerTripletIndex][1];
               const uint16_t lowerModule5 = lmIdx[outerTripletIndex][2];
@@ -2116,6 +2127,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::lst {
                                                        ptCut);
               if (ok) {
                 alpaka::atomicAdd(acc, &triplets.connectedMax()[innerTripletIndex], 1u, alpaka::hierarchy::Threads{});
+                alpaka::atomicAdd(acc, &denseMatchCount, 1u, alpaka::hierarchy::Threads{});
               }
             }
           }
