@@ -122,11 +122,9 @@ trackingMkFitFit.toReplaceWith(HLTInitialStepSequence, _HLTInitialStepSequenceMk
 
 from ..modules.hltMkFitSeederSeedsMkFit_cfi import *
 from ..modules.hltMkFitSeederSeeds_cfi import *
+# the mkFit hit conversion and the seeder run in HLTPhase2PixelTracksAndVerticesSequence (their seeds feed the vertices)
 _HLTInitialStepSequenceMkSeeder = cms.Sequence(
-    HLTMkFitInputSequence
-    +hltMkFitSeederSeedsMkFit
-    +hltMkFitSeederSeeds
-    +hltInputLST
+    hltInputLST
     +hltLST
     +hltInitialStepTrajectorySeedsLST
     +hltInitialStepMkFitSeeds
