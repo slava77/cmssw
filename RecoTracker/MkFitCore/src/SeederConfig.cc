@@ -60,6 +60,12 @@ namespace mkfit {
                                      ot2_win,
                                      ot2_phimin,
                                      dedup,
+                                     triplet_seeds,
+                                     trip_cot_lo,
+                                     trip_cot_hi,
+                                     trip_max_score,
+                                     dedup_inner,
+                                     dedup_helix,
                                      fit)
 
   void SeederConfig::load(const std::string &json_file) {

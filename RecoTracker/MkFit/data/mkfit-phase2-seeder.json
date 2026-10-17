@@ -1418,6 +1418,12 @@
  ],
  "ot2_phimin": 0.00131,
  "dedup": 3,
+ "triplet_seeds": 0,
+ "trip_cot_lo": 0.0,
+ "trip_cot_hi": 0.0,
+ "trip_max_score": 0.0,
+ "dedup_inner": 0,
+ "dedup_helix": 0,
  "fit": {
   "mode": 1,
   "prior_sigma": [

@@ -94,6 +94,12 @@ namespace mkfit {
     // out: (layer ids, original hit indices) per quad, +z side first; scores, if given: the cleaning
     // score of each quad, parallel to out; fake_scores, if given: the fake score (the sum the fake cut
     // is applied to), parallel to out
+    // SeederConfig::dedup_helix: drop seeds whose helix matches a kept seed earlier in the cleaning order
+    void dedup_helix(const SeedHitSource &src,
+                     const std::vector<std::array<int, 4>> &ll,
+                     const std::vector<SeedQuad> &qq,
+                     const std::vector<float> &ss,
+                     std::vector<char> &keep) const;
     void find(std::vector<std::pair<std::array<int, 4>, SeedQuad>> &out,
               SeedCounters &cnt,
               std::vector<float> *scores = nullptr,

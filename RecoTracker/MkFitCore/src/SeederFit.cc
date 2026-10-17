@@ -15,17 +15,18 @@ namespace mkfit {
 
   namespace {
     // The circle through three points in the transverse plane and the line in (arc length, z) through
-    // all four hits. k: signed curvature, > 0 counter-clockwise from a to d.
+    // all nh hits (4 for a quad, 3 for a triplet seed). k: signed curvature, > 0 counter-clockwise from a to d.
     struct SeedHelix {
       float cx = 0, cy = 0, R = 0;  // centre and radius; R = 0 for a straight line
       int turn = 0;                 // +1 counter-clockwise, -1 clockwise, 0 straight
       float cot = 0;
 
-      bool make(const Hit *H[4]) {
-        const float ax = H[0]->x(), ay = H[0]->y(), dx = H[3]->x(), dy = H[3]->y();
-        // the middle point: whichever of hits 1, 2 lies nearer the middle of a-d in r
-        const float rm = 0.5f * (H[0]->r() + H[3]->r());
-        const Hit &M = std::abs(H[1]->r() - rm) < std::abs(H[2]->r() - rm) ? *H[1] : *H[2];
+      bool make(const Hit *H[4], int nh) {
+        const int il = nh - 1;
+        const float ax = H[0]->x(), ay = H[0]->y(), dx = H[il]->x(), dy = H[il]->y();
+        // the middle point: whichever of hits 1, 2 lies nearer the middle of a-d in r (hit 1 for a triplet)
+        const float rm = 0.5f * (H[0]->r() + H[il]->r());
+        const Hit &M = nh == 3 || std::abs(H[1]->r() - rm) < std::abs(H[2]->r() - rm) ? *H[1] : *H[2];
         const float bx = M.x() - ax, by = M.y() - ay, ex = dx - ax, ey = dy - ay;
         const float dd = 2.f * (bx * ey - by * ex);
         const float b2 = bx * bx + by * by, e2 = ex * ex + ey * ey;
@@ -34,17 +35,17 @@ namespace mkfit {
         const float ux = (ey * b2 - by * e2) / dd, uy = (bx * e2 - ex * b2) / dd;
         cx = ax + ux, cy = ay + uy, R = std::hypot(ux, uy);
         turn = dd > 0 ? 1 : -1;
-        // z = z0 + cot * s, least squares over the four hits, s the arc length from hit 0
+        // z = z0 + cot * s, least squares over the hits, s the arc length from hit 0
         float S = 0, Z = 0, SS = 0, SZ = 0;
-        for (int k = 0; k < 4; ++k) {
+        for (int k = 0; k < nh; ++k) {
           const float chord = std::hypot(H[k]->x() - ax, H[k]->y() - ay);
           const float s = 2.f * R * std::asin(std::min(1.f, chord / (2.f * R)));
           S += s, Z += H[k]->z(), SS += s * s, SZ += s * H[k]->z();
         }
-        const float den = 4.f * SS - S * S;
+        const float den = float(nh) * SS - S * S;
         if (den <= 0)
           return false;
-        cot = (4.f * SZ - S * Z) / den;
+        cot = (float(nh) * SZ - S * Z) / den;
         return std::isfinite(cot) && std::isfinite(R);
       }
 
@@ -86,23 +87,30 @@ namespace mkfit {
     const PropagationFlags &pf = ti.prop_config().backward_fit_pflags;
     auto hit_of = [&](const SeederQuad &q, int k) -> const Hit & { return (*src[q.layers[k]].hits)[q.hits[k]]; };
 
-    for (int b0 = 0; b0 < (int)Q.size(); b0 += NN) {
-      const int N = std::min(NN, (int)Q.size() - b0);
+    // quads and triplet seeds (layers[3] < 0) in separate passes, so that every lane of a batch has the same
+    // number of hits; the label stays the index in Q
+    std::vector<int> idx4, idx3;
+    for (int i = 0; i < (int)Q.size(); ++i)
+      (Q[i].layers[3] < 0 ? idx3 : idx4).push_back(i);
+    for (const int nh : {4, 3}) {
+    const std::vector<int> &ix = nh == 4 ? idx4 : idx3;
+    for (int b0 = 0; b0 < (int)ix.size(); b0 += NN) {
+      const int N = std::min(NN, (int)ix.size() - b0);
       TrackState ts[NN];
       bool ok[NN];
       for (int i = 0; i < N; ++i) {
-        const SeederQuad &q = Q[b0 + i];
-        const Hit *H[4];
-        for (int k = 0; k < 4; ++k)
+        const SeederQuad &q = Q[ix[b0 + i]];
+        const Hit *H[4] = {nullptr, nullptr, nullptr, nullptr};
+        for (int k = 0; k < nh; ++k)
           H[k] = &hit_of(q, k);
         SeedHelix hx;
-        ok[i] = hx.make(H);
+        ok[i] = hx.make(H, nh);
         if (!ok[i]) {
           ++cnt.n_bad_helix;
           continue;
         }
         if (fit.mode == 0) {
-          hx.state(*H[3], ts[i]);
+          hx.state(*H[nh - 1], ts[i]);
           diag_errors(ts[i].errors, fit.fake_sigma.data(), 1.f);
         } else {
           hx.state(*H[0], ts[i]);
@@ -139,10 +147,10 @@ namespace mkfit {
           chg(i, 0, 0) = ts[j].charge;
         }
         int failed[NN] = {0};
-        for (int k = fit.pos_from_hit0 ? 1 : 0; k < 4; ++k) {
+        for (int k = fit.pos_from_hit0 ? 1 : 0; k < nh; ++k) {
           for (int i = 0; i < NN; ++i) {
             const int j = (i < N && ok[i]) ? i : i_good;
-            const SeederQuad &q = Q[b0 + j];
+            const SeederQuad &q = Q[ix[b0 + j]];
             const LayerInfo &li = ti[q.layers[k]];
             const Hit &h = hit_of(q, k);
             const ModuleInfo &mi = li.module_info(h.detIDinLayer());
@@ -168,7 +176,7 @@ namespace mkfit {
             // the state lies on the module plane, so the position covariance has a zero direction along
             // its normal; float rounding leaves that diagonal at about -1e-9 cm^2, which is not a failure
             for (int d = 0; d < 3; ++d)
-              cnt.n_neg_pos += k == 3 && err_out(i, d, d) <= 0.f && err_out(i, d, d) >= -1e-6f;
+              cnt.n_neg_pos += k == nh - 1 && err_out(i, d, d) <= 0.f && err_out(i, d, d) >= -1e-6f;
             failed[i] |= why != 0;
             chi2[i] += chi2_k(i, 0, 0);
           }
@@ -191,13 +199,14 @@ namespace mkfit {
       for (int i = 0; i < N; ++i) {
         if (!ok[i])
           continue;
-        const SeederQuad &q = Q[b0 + i];
-        Track seed(ts[i], chi2[i], b0 + i, 0, nullptr);
-        for (int k = 0; k < 4; ++k)
+        const SeederQuad &q = Q[ix[b0 + i]];
+        Track seed(ts[i], chi2[i], ix[b0 + i], 0, nullptr);
+        for (int k = 0; k < nh; ++k)
           seed.addHitIdx(q.hits[k], q.layers[k], 0.f);
         seed.setAlgorithm(TrackBase::TrackAlgorithm(track_algo));
         out.push_back(seed);
       }
+    }
     }
     if (counters)
       *counters = cnt;

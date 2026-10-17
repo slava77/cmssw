@@ -383,6 +383,10 @@ namespace mkfit {
     // and the q97 of true quads above 3 GeV is 1.31 mrad (events 0-39)
     float ot2_phimin = 1.31e-3f;
     long n_fk_shape = 0, n_fk_ot2 = 0, n_ot2_tested = 0;
+    // triplet seeds (SeederConfig::triplet_seeds): a triplet dropped without a fourth hit, within the |cot| window
+    int trip_on = 0;
+    float trip_lo = 0, trip_hi = 0;
+    long n_trip = 0;
     long n_gap_tested = 0, n_gap_veto = 0;  // gap-start lanes tested on the gap map in flush_start(), and dropped
     long n_gap_pre = 0;                     // gap-start pairs dropped by the gap map in the doublet loop
     // The gap map in the doublet loop: per start, the one skipped layer with a map (else -1), and per such layer

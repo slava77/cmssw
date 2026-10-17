@@ -477,6 +477,23 @@ namespace mkfit {
       }
     };
 
+    // a triplet dropped without a fourth hit becomes a 3-hit seed (layers[3] = -1) inside the |cot| window
+    auto emit3 = [&](const Cand &c) {
+      if (!trip_on)
+        return;
+      const float ac = std::abs(c.cot);
+      if (ac < trip_lo || ac >= trip_hi)
+        return;
+      ++n_trip;
+      const std::array<int, 4> ids{Ch.order[c.pos[0]], Ch.order[c.pos[1]], Ch.order[c.pos[2]], -1};
+      out.push_back(
+          {ids, {lay[c.pos[0]]->m_orig[c.k[0]], lay[c.pos[1]]->m_orig[c.k[1]], lay[c.pos[2]]->m_orig[c.k[2]], 0u}});
+      if (score_out_)
+        score_out_->push_back(c.sc);
+      if (fake_out_)
+        fake_out_->push_back(c.sc);
+    };
+
     // ---- the forward pass
     std::vector<unsigned int> t_j, t_k;  // stage c survivors: (candidate in block, hit)
     std::vector<float> t_s;              // ... and their stage c score
@@ -833,8 +850,11 @@ namespace mkfit {
             if (c.holes + (c.st == 2) <= max_holes) {
               ++n_forwarded;
               f_j.push_back(j);
-            } else
+            } else {
               ++n_dropped;
+              if (!found)
+                emit3(c);
+            }
           }
         }
         {
@@ -846,6 +866,10 @@ namespace mkfit {
             w_z0[i] = c.z0, w_cot[i] = c.cot, w_holes[i] = h, w_allow[i] = h <= max_holes_ot;
           }
           route(p, m);
+          // a triplet with no crossed layer left is dropped by push(): a triplet seed instead
+          for (int i = 0; i < m; ++i)
+            if (w_nq[i] < 0 || !lay[w_nq[i]])
+              emit3(Qt[f_j[i]]);
           push(Q3_, m, [&](int i) {
             Cand c = Qt[f_j[i]];
             c.inner += w_holes[i] > c.holes;

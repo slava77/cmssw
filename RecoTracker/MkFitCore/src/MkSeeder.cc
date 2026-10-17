@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include <unordered_map>
 #include <stdexcept>
 
 namespace mkfit {
@@ -128,6 +129,7 @@ namespace mkfit {
       B.d_mode = cfg.d_mode;
       B.fk_score = cfg.fk_score, B.fk_shape = cfg.fk_shape, B.fk_ot2 = cfg.fk_ot2;
       B.fk_score_fwd = cfg.fk_score_fwd, B.fk_cot_fwd = std::sinh(cfg.fk_eta_fwd);
+      B.trip_on = cfg.triplet_seeds, B.trip_lo = cfg.trip_cot_lo, B.trip_hi = cfg.trip_cot_hi;
       B.ot2_aphi = cfg.ot2_win[0], B.ot2_bphi = cfg.ot2_win[1], B.ot2_aq = cfg.ot2_win[2], B.ot2_bq = cfg.ot2_win[3];
       B.ot2_phimin = cfg.ot2_phimin;
       for (const SeederConfig::ShapeWin &w : cfg.shape_win) {
@@ -169,8 +171,54 @@ namespace mkfit {
       ll[i] = cq[order[i]].first, qq[i] = cq[order[i]].second, ss[i] = sc[order[i]];
     std::vector<char> keep(cq.size(), 1);
     std::vector<int> amb(cq.size(), 0);
-    if (m_cfg.dedup > 0)
-      clean(src, ll, qq, ss, m_cfg.dedup, keep, &amb);
+    // triplet seeds (layers[3] < 0) are cleaned after the quads: clean() works on quads only
+    std::vector<int> iq, it;
+    for (size_t i = 0; i < cq.size(); ++i)
+      if (ll[i][3] >= 0)
+        iq.push_back(i);
+      else if (m_cfg.trip_max_score <= 0.f || ss[i] <= m_cfg.trip_max_score)
+        it.push_back(i);
+      else
+        keep[i] = 0;
+    if (m_cfg.dedup > 0) {
+      if (iq.size() == cq.size())
+        clean(src, ll, qq, ss, m_cfg.dedup, keep, &amb);
+      else {
+        std::vector<std::array<int, 4>> lq(iq.size());
+        std::vector<SeedQuad> hq(iq.size());
+        std::vector<float> sq(iq.size());
+        for (size_t j = 0; j < iq.size(); ++j)
+          lq[j] = ll[iq[j]], hq[j] = qq[iq[j]], sq[j] = ss[iq[j]];
+        std::vector<char> kq;
+        std::vector<int> aq;
+        clean(src, lq, hq, sq, m_cfg.dedup, kq, &aq);
+        for (size_t j = 0; j < iq.size(); ++j)
+          keep[iq[j]] = kq[j], amb[iq[j]] = aq[j];
+      }
+    }
+    if (!it.empty()) {
+      // a triplet seed is dropped if >= 2 of its hits are used by a kept quad or a better kept triplet
+      std::unordered_map<uint64_t, int> used;
+      auto hkey = [](int l, unsigned int h) { return (uint64_t(uint32_t(l)) << 32) | h; };
+      for (int i : iq)
+        if (keep[i])
+          for (int k = 0; k < 4; ++k)
+            used[hkey(ll[i][k], qq[i][k])] = 1;
+      std::stable_sort(it.begin(), it.end(), [&](int a, int b) { return ss[a] < ss[b]; });
+      for (int i : it) {
+        int ns = 0;
+        for (int k = 0; k < 3; ++k)
+          ns += used.count(hkey(ll[i][k], qq[i][k]));
+        if (ns >= 2) {
+          keep[i] = 0;
+          continue;
+        }
+        for (int k = 0; k < 3; ++k)
+          used[hkey(ll[i][k], qq[i][k])] = 1;
+      }
+    }
+    if (m_cfg.dedup_helix)
+      dedup_helix(src, ll, qq, ss, keep);
     for (size_t i = 0; i < cq.size(); ++i)
       if (keep[i])
         out.push_back({ll[i], qq[i], ss[i], fk[order[i]], amb[i]});
@@ -221,7 +269,13 @@ namespace mkfit {
       const float sf = scores[i];
       unsigned int sb;
       __builtin_memcpy(&sb, &sf, 4);
-      key[i] = (unsigned int)t << 29 | sb >> 3;
+      if (m_cfg.dedup_inner) {
+        // the first layer's rank along the chain: barrel 0-3, +z discs 16-27, -z discs 38-49 (mirrored)
+        const int l0 = layers[i][0];
+        const unsigned int rk = (unsigned int)std::min(31, l0 < 16 ? l0 : (l0 < 38 ? l0 - 12 : l0 - 34));
+        key[i] = (unsigned int)t << 29 | rk << 24 | sb >> 8;
+      } else
+        key[i] = (unsigned int)t << 29 | sb >> 3;
     }
     m_cl_sort.sort(key, rank);
     // each quad's hits as sorted global indices: the layer's offset + the hit's position within the layer.
@@ -323,6 +377,85 @@ namespace mkfit {
     for (const auto &e : link)
       for (unsigned int gk : gh[e.first])
         hl[gk] = CleanHL();
+  }
+
+
+  void MkSeeder::dedup_helix(const SeedHitSource &src,
+                             const std::vector<std::array<int, 4>> &ll,
+                             const std::vector<SeedQuad> &qq,
+                             const std::vector<float> &ss,
+                             std::vector<char> &keep) const {
+    // the helix of a seed from its first, second and last hit: phi0 (direction at the beam line), cot(theta),
+    // signed curvature, z0
+    struct HP {
+      float phi0, cot, eta, kappa, z0;
+    };
+    const int nc = ll.size();
+    std::vector<HP> hp(nc);
+    std::vector<char> ok(nc, 0);
+    std::vector<int> ord;
+    for (int i = 0; i < nc; ++i) {
+      if (!keep[i])
+        continue;
+      const int nh = ll[i][3] < 0 ? 3 : 4;
+      const Hit &a = (*src[ll[i][0]].hits)[qq[i][0]], &b = (*src[ll[i][1]].hits)[qq[i][1]],
+                &d = (*src[ll[i][nh - 1]].hits)[qq[i][nh - 1]];
+      const float abx = b.x() - a.x(), aby = b.y() - a.y(), bdx = d.x() - b.x(), bdy = d.y() - b.y();
+      const float adx = d.x() - a.x(), ady = d.y() - a.y();
+      const float lab = std::hypot(abx, aby), lbd = std::hypot(bdx, bdy), lad = std::hypot(adx, ady);
+      if (!(lab * lbd * lad > 0.f))
+        continue;
+      const float k = 2.f * (abx * bdy - aby * bdx) / (lab * lbd * lad);
+      // tangent at hit a: the a-b chord turned back by half its turning angle
+      const float ta = std::atan2(aby, abx) - 0.5f * k * lab;
+      const float ra = std::hypot(a.x(), a.y());
+      const float cot = (d.z() - a.z()) / lad;
+      hp[i] = {ta - k * ra, cot, std::asinh(cot), k, a.z() - cot * ra};
+      ok[i] = 1;
+      ord.push_back(i);
+    }
+    // the cleaning order: the outer-tracker tier, the first layer's rank, then the score
+    auto rank = [&](int i) {
+      int t = 0;
+      for (int l : ll[i])
+        t += l >= 0 && !SeedLayerEnvelopes::is_pix(l);
+      const int l0 = ll[i][0];
+      const int rk = l0 < 16 ? l0 : (l0 < 38 ? l0 - 12 : l0 - 34);
+      return t * 64 + rk;
+    };
+    std::stable_sort(ord.begin(), ord.end(), [&](int x, int y) {
+      const int rx = rank(x), ry = rank(y);
+      return rx != ry ? rx < ry : ss[x] < ss[y];
+    });
+    constexpr float kEtaBin = 0.02f, kPhiBin = 0.01f, kPi = 3.14159265f;
+    const int nPhi = int(2.f * kPi / kPhiBin) + 1;
+    auto key = [&](int ie, int ip) { return (long long)ie * 100000 + ((ip % nPhi) + nPhi) % nPhi; };
+    std::unordered_map<long long, std::vector<int>> grid;
+    for (int i : ord) {
+      const HP &h = hp[i];
+      const int ie = int(std::floor(h.eta / kEtaBin)), ip = int(std::floor((h.phi0 + kPi) / kPhiBin));
+      bool dup = false;
+      for (int de = -1; de <= 1 && !dup; ++de)
+        for (int dp = -1; dp <= 1 && !dup; ++dp) {
+          auto it = grid.find(key(ie + de, ip + dp));
+          if (it == grid.end())
+            continue;
+          for (int j : it->second) {
+            const HP &g = hp[j];
+            float dphi = std::abs(h.phi0 - g.phi0);
+            dphi = std::min(dphi, 2.f * kPi - dphi);
+            if (dphi < 0.01f && std::abs(h.cot - g.cot) < 0.02f * std::abs(g.cot) + 0.01f &&
+                std::abs(h.kappa - g.kappa) < 0.1f * std::abs(g.kappa) + 2e-4f && std::abs(h.z0 - g.z0) < 0.3f) {
+              dup = true;
+              break;
+            }
+          }
+        }
+      if (dup)
+        keep[i] = 0;
+      else
+        grid[key(ie, ip)].push_back(i);
+    }
   }
 
 }  // namespace mkfit

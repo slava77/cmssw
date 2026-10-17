@@ -72,6 +72,21 @@ namespace mkfit {
     // the cleaning: drop a quad sharing >= dedup hits with a better kept one; 0: off
     int dedup = 0;
 
+    // triplet seeds: a triplet that reaches no fourth hit (no crossed layer left, or too many holes) with
+    // trip_cot_lo <= |cot(theta)| < trip_cot_hi becomes a 3-hit seed (layers[3] = -1); 0: off. Cleaned after the
+    // quads: dropped if >= 2 of its hits are used by a kept quad or a better triplet.
+    int triplet_seeds = 0;
+    float trip_cot_lo = 0.f, trip_cot_hi = 0.f;
+    // triplet seeds with a stage-c score above this are not kept (<= 0: no cut)
+    float trip_max_score = 0.f;
+    // the cleaning order: 1 = the quad starting on the innermost layer first (then the score), so that with
+    // dedup = 1 the seeds of one particle crossing many layers collapse to the one from its first layers; 0 = score
+    int dedup_inner = 0;
+    // 1: after the cleaning, drop a seed whose helix (phi0, cot(theta), curvature, z0 from its first, second and
+    // last hit) matches a kept seed earlier in the cleaning order, even without a shared hit (one particle crossing
+    // many discs gives seeds on disjoint layer sets); 0 = off
+    int dedup_helix = 0;
+
     // The seed fit (seeder_make_seeds(), MkSeeder.h): the state and covariance of a seed from its quad.
     // mode 1: the helix through the first, a middle and the last hit, at the first hit, with the prior
     //   prior_sigma (times prior_scale; sigma(1/pT) relative to the helix's own 1/pT), then the Kalman update
