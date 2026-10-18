@@ -6,6 +6,10 @@
 #include "MkSeederDevice.h"
 #include "MkSeederKernels.h"
 
+#ifndef MKSEEDER_QUEUE_BLOCKS
+#define MKSEEDER_QUEUE_BLOCKS 256
+#endif
+
 namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
 
   using namespace cms::alpakatools;
@@ -13,7 +17,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
   void runSide(Queue &queue, mkseederdev::View const &view, mkseederdev::Queues const &queues, std::vector<int> const &layOf) {
     constexpr uint32_t kThreads = 128;
     // the queue kernels stride over a count only the device knows: a fixed grid
-    constexpr uint32_t kQueueBlocks = std::is_same_v<Device, alpaka::DevCpu> ? 1 : 1024;
+    constexpr uint32_t kQueueBlocks = std::is_same_v<Device, alpaka::DevCpu> ? 1 : MKSEEDER_QUEUE_BLOCKS;
     if (view.C.nwork > 0) {
       const auto wd = make_workdiv<Acc1D>(divide_up_by((uint32_t)view.C.nwork, kThreads), kThreads);
       alpaka::exec<Acc1D>(queue, wd, KernelStart{}, view, queues);
