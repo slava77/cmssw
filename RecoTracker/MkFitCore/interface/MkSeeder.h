@@ -79,6 +79,13 @@ namespace mkfit {
     // pattern followed by its mirror; within a pattern as found), the cleaning with cfg.dedup, and the kept
     // quads in that order.
     void seed(const SeedHitSource &src, const BeamSpot &bs, std::vector<SeederQuad> &out, SeedCounters &cnt);
+    // the second half of seed(): the found quads and triplets (with their cleaning and fake scores) ordered by
+    // pattern, cleaned and deduplicated into out; for a finder run elsewhere (the alpaka port)
+    void finish(const SeedHitSource &src,
+                const std::vector<std::pair<std::array<int, 4>, SeedQuad>> &cq,
+                const std::vector<float> &sc,
+                const std::vector<float> &fk,
+                std::vector<SeederQuad> &out);
 
     SeedEventOfHits &hits() { return m_hits; }
     const SeedEventOfHits &hits() const { return m_hits; }

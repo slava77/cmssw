@@ -2,7 +2,7 @@
 #include "RecoTracker/MkFitCore/interface/SeedChain.h"
 #include "RecoTracker/MkFitCore/interface/SensorGapMap.h"
 #include "RecoTracker/MkFitCore/interface/TrackerInfo.h"
-#include "RecoTracker/MkFitCore/src/SeedChainFinder.h"
+#include "RecoTracker/MkFitCore/interface/SeedChainFinder.h"
 
 #include <algorithm>
 #include <cmath>
@@ -148,6 +148,15 @@ namespace mkfit {
     std::vector<std::pair<std::array<int, 4>, SeedQuad>> cq;
     std::vector<float> sc, fk;
     find(cq, cnt, &sc, &fk);
+    finish(src, cq, sc, fk, out);
+  }
+
+  void MkSeeder::finish(const SeedHitSource &src,
+                        const std::vector<std::pair<std::array<int, 4>, SeedQuad>> &cq,
+                        const std::vector<float> &sc,
+                        const std::vector<float> &fk,
+                        std::vector<SeederQuad> &out) {
+    out.clear();
     // by pattern, in the configured order; a combination no pattern lists (only with any_combination) after
     // them, in the order first found in this event; within a pattern as found
     const int np = m_patterns.size();

@@ -1,4 +1,4 @@
-#include "RecoTracker/MkFitCore/src/SeedChainFinder.h"
+#include "RecoTracker/MkFitCore/interface/SeedChainFinder.h"
 
 #include <algorithm>
 

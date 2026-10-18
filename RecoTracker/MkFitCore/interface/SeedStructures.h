@@ -157,6 +157,10 @@ namespace mkfit {
     unsigned int n() const { return m_n; }
 
     const binnor_t &binnor_ref() const { return m_binnor; }
+    // the binning, for a copy of the layer elsewhere (the alpaka port)
+    const AxPhi &ax_phi() const { return m_ax_phi; }
+    const AxQ &ax_q() const { return m_ax_q; }
+    const std::vector<unsigned int> &bin_starts() const { return m_start; }
 
     // the layer
     int m_id = -1;

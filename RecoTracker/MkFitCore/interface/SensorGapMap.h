@@ -64,6 +64,27 @@ namespace mkfit {
     // Number of ladders of a layer (0 without a map), for the printout.
     int n_ladders(int layer) const { return has_map(layer) ? (int)m_layers[layer].ladders.size() : 0; }
 
+    // The map of one layer as flat arrays, for a copy elsewhere (the alpaka port): per ladder 7 floats
+    // (nx, ny, d, ux, uy, u0, du), its covered bitmap's z0 and size (nz) and the offset of its words in bits;
+    // the ladders by phi bin (start: c_nphi + 1 entries into lidx).
+    void export_layer(int layer,
+                      std::vector<float> &lad,
+                      std::vector<float> &z0,
+                      std::vector<int> &nz,
+                      std::vector<int> &bits_off,
+                      std::vector<unsigned long long> &bits,
+                      std::vector<int> &start,
+                      std::vector<int> &lidx) const {
+      const Layer &Y = m_layers[layer];
+      for (const Ladder &q : Y.ladders) {
+        lad.insert(lad.end(), {q.nx, q.ny, q.d, q.ux, q.uy, q.u0, q.du});
+        z0.push_back(q.z0), nz.push_back(q.nz), bits_off.push_back(bits.size());
+        bits.insert(bits.end(), q.zbits.begin(), q.zbits.end());
+      }
+      start = Y.start, lidx = Y.lidx;
+    }
+    static constexpr int n_phi_bins() { return c_nphi; }
+
   private:
     struct Ladder {
       float nx, ny;          // plane normal, transverse, unit
