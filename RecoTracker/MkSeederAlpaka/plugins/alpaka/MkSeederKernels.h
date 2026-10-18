@@ -244,6 +244,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
     }
   };
 
+  // a candidate's r-z line, as the stage that queued it computed it
+  ALPAKA_FN_HOST_ACC inline void line(const View &v, const Cand &c, float &z0, float &cot) {
+    const uint32_t ia = v.layers[v.lay_of[c.pos[0]]].hit0 + c.k[0];
+    const float za = v.z[ia], ra = v.r[ia];
+    if (c.pos[2] == 0) {
+      const uint32_t ib = v.layers[v.lay_of[c.pos[1]]].hit0 + c.k[1];
+      const float dr = v.r[ib] - ra, dz = v.z[ib] - za;
+      cot = dz / (dr > 0.1f ? dr : 1.0f);
+    } else {
+      const uint32_t ic = v.layers[v.lay_of[c.pos[2]]].hit0 + c.k[2];
+      cot = (v.z[ic] - za) / (v.r[ic] - ra);
+    }
+    z0 = za - cot * ra;
+  }
+
   // ---- the queues
   template <typename TAcc>
   ALPAKA_FN_ACC inline void push(const TAcc &acc, const Queues &Q, int queue, const Cand &c) {
@@ -256,8 +271,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
     int *t = &Q.chunkTab[queue * Q.maxChunksPerQueue + ci];
     int cid;
     if (slot == 0) {
-      const uint32_t nc = alpaka::atomicAdd(acc, Q.poolNext, 1u, alpaka::hierarchy::Blocks{});
-      cid = nc < Q.poolChunks ? (int)nc : -2;
+      // a freed chunk if there is one (the free list only grows between the kernels that push), else a fresh one
+      cid = -2;
+      uint32_t fc = alpaka::atomicAdd(acc, Q.freeCount, 0u, alpaka::hierarchy::Blocks{});
+      while (fc > 0) {
+        const uint32_t prev = alpaka::atomicCas(acc, Q.freeCount, fc, fc - 1, alpaka::hierarchy::Blocks{});
+        if (prev == fc) {
+          cid = Q.freeList[fc - 1];
+          break;
+        }
+        fc = prev;
+      }
+      if (cid < 0) {
+        const uint32_t nc = alpaka::atomicAdd(acc, Q.poolNext, 1u, alpaka::hierarchy::Blocks{});
+        cid = nc < Q.poolChunks ? (int)nc : -2;
+      }
       alpaka::atomicExch(acc, t, cid, alpaka::hierarchy::Blocks{});
     } else {
       // the chunk is being handed out by the push that took its slot 0
@@ -450,7 +478,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
             c.k[0] = ka, c.k[1] = kb, c.k[2] = 0;
             c.pos[0] = S.pa, c.pos[1] = S.pb, c.pos[2] = 0;
             c.holes = holes, c.inner = inner, c.st = st;
-            c.z0 = z0, c.cot = cot, c.sc = 0;
+            c.sc = 0;
             push(acc, Q, q2(v, nq), c);
           }
         });
@@ -474,9 +502,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
         Cand c;
         if (!fetch(Q, q2(v, p), j, c))
           continue;
+        float cz0, ccot;
+        line(v, c, cz0, ccot);
         const int ix = v.idx_c[(c.pos[0] * n + c.pos[1]) * n + p];
         bool found = false;
-        const float fks_c = C.fk_score_fwd > 0 && std::abs(c.cot) >= C.fk_cot_fwd ? C.fk_score_fwd : C.fks;
+        const float fks_c = C.fk_score_fwd > 0 && std::abs(ccot) >= C.fk_cot_fwd ? C.fk_score_fwd : C.fks;
         if (!C.known_only || ix >= 0) {
           const Par &w = v.par[ix >= 0 ? ix : 0];
           const Layer &La = v.layers[v.lay_of[c.pos[0]]], &Lb = v.layers[v.lay_of[c.pos[1]]];
@@ -529,7 +559,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
                 if (nq < 0 || v.lay_of[nq] < 0)
                   continue;
                 Cand t3 = c;
-                t3.k[2] = i, t3.pos[2] = p, t3.z0 = z0, t3.cot = cot, t3.sc = sc, t3.st = st;
+                t3.k[2] = i, t3.pos[2] = p, t3.sc = sc, t3.st = st;
                 push(acc, Q, q3(v, nq), t3);
               }
             });
@@ -539,7 +569,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
           const int h = c.holes + (c.st == 2);
           if (h <= C.max_holes) {
             int st;
-            const int nq = route(v, p, c.z0, c.cot, 0, st);
+            const int nq = route(v, p, cz0, ccot, 0, st);
             if (nq >= 0 && v.lay_of[nq] >= 0) {
               Cand m = c;
               m.inner += h > c.holes;
@@ -569,6 +599,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
         Cand c;
         if (!fetch(Q, q3(v, p), j, c))
           continue;
+        float cz0, ccot;
+        line(v, c, cz0, ccot);
         const Layer &La = v.layers[v.lay_of[c.pos[0]]], &Lb = v.layers[v.lay_of[c.pos[1]]],
                     &Lc = v.layers[v.lay_of[c.pos[2]]];
         const uint32_t ia = La.hit0 + c.k[0], ib = Lb.hit0 + c.k[1], ic = Lc.hit0 + c.k[2];
@@ -580,7 +612,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
         auto emit3 = [&]() {
           if (!C.trip_on)
             return;
-          const float ac = std::abs(c.cot);
+          const float ac = std::abs(ccot);
           if (ac < C.trip_lo || ac >= C.trip_hi)
             return;
           Quad o;
@@ -619,10 +651,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
             const float dpp = wrapc(p1 - p0), dmid = p0 + 0.5f * dpp, dhalf = 0.5f * std::abs(dpp);
             const float bqi = bq * ipt, bpi = bphi * ipt;
             const float sw = std::sin(wpd), sw2 = sw * sw;
-            const float fkd = (C.fk_score_fwd > 0 && std::abs(c.cot) >= C.fk_cot_fwd ? C.fk_score_fwd : fks) - c.sc;
+            const float fkd = (C.fk_score_fwd > 0 && std::abs(ccot) >= C.fk_cot_fwd ? C.fk_score_fwd : fks) - c.sc;
             int slo = 0, shi = 1 << 30;
             if (shT) {
-              const int sb = shape_bin(*shT, std::abs(c.cot));
+              const int sb = shape_bin(*shT, std::abs(ccot));
               slo = v.shape_lo[shT->off + sb], shi = v.shape_hi[shT->off + sb];
             }
             auto take = [&](uint32_t ih, float dq, float wq, float c2, float sn, float s2) {
@@ -683,7 +715,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
           const int h = c.holes + (c.st == 2);
           if (h <= C.max_holes) {
             int st;
-            const int nq = route(v, p, c.z0, c.cot, h <= C.max_holes_ot, st);
+            const int nq = route(v, p, cz0, ccot, h <= C.max_holes_ot, st);
             if (nq < 0 || v.lay_of[nq] < 0) {
               emit3();
             } else {
@@ -694,6 +726,23 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
             }
           } else if (!found)
             emit3();
+        }
+      }
+    }
+  };
+
+  // ---- the chunks of the queues of position p (consumed) back to the free list
+  class KernelRelease {
+  public:
+    template <typename TAcc>
+    ALPAKA_FN_ACC void operator()(const TAcc &acc, View v, Queues Q, int p) const {
+      for (int k = 0; k < 2; ++k) {
+        const int queue = k ? q3(v, p) : q2(v, p);
+        const uint32_t nch = std::min((Q.count[queue] + Queues::kChunk - 1) / Queues::kChunk, Q.maxChunksPerQueue);
+        for (uint32_t i : cms::alpakatools::uniform_elements(acc, nch)) {
+          const int cid = Q.chunkTab[queue * Q.maxChunksPerQueue + i];
+          if (cid >= 0)
+            Q.freeList[alpaka::atomicAdd(acc, Q.freeCount, 1u, alpaka::hierarchy::Blocks{})] = cid;
         }
       }
     }

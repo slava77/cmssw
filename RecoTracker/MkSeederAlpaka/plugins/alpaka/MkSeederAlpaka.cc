@@ -83,10 +83,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
           putToken_{produces()},
           algo_{reco::TrackBase::algoByName(iConfig.getParameter<std::string>("algorithm"))},
           maxNSeeds_{iConfig.getParameter<unsigned int>("maxNSeeds")},
-          maxCandidates_{iConfig.getParameter<unsigned int>("maxCandidates")},
-          maxCandidatesPerQueue_{iConfig.getParameter<unsigned int>("maxCandidatesPerQueue")},
-          maxQuads_{iConfig.getParameter<unsigned int>("maxQuads")},
-          validate_{iConfig.getParameter<bool>("validateWithCPU")} {}
+          minCandidates_{iConfig.getParameter<unsigned int>("minCandidates")},
+          minQuads_{iConfig.getParameter<unsigned int>("minQuads")},
+          validate_{iConfig.getParameter<bool>("validateWithCPU")},
+          printStats_{iConfig.getParameter<bool>("printStats")} {}
 
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
       edm::ParameterSetDescription desc;
@@ -96,10 +96,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       desc.add<edm::ESInputTag>("config", edm::ESInputTag{"", "mkFitSeederConfig"});
       desc.add<std::string>("algorithm", "initialStep");
       desc.add("maxNSeeds", 500000U);
-      desc.add("maxCandidates", 2000000U)->setComment("Queue pool per z side (doublets and triplets), candidates");
-      desc.add("maxCandidatesPerQueue", 1048576U)->setComment("Candidates one chain position's queue can hold");
-      desc.add("maxQuads", 1000000U)->setComment("Quads and triplet seeds found, both sides, before the cleaning");
+      desc.add("minCandidates", 262144U)
+          ->setComment("The smallest queue pool (live doublets and triplets of one z side); it is sized to 1.25 x the "
+                       "largest use seen in the stream, and an event that overflows it is rerun with twice the size");
+      desc.add("minQuads", 131072U)->setComment("The same for the quads and triplet seeds before the cleaning");
       desc.add("validateWithCPU", false)->setComment("Also run the CPU chain finder and compare the quads");
+      desc.add("printStats", false)->setComment("Print the device buffer sizes and uses per event");
       descriptions.addWithDefaultLabel(desc);
     }
 
@@ -120,8 +122,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const edm::ESGetToken<mkfit::SeederConfig, TrackerRecoGeometryRecord> seederConfigToken_;
     const edm::EDPutTokenT<MkFitSeedWrapper> putToken_;
     const int algo_;
-    const unsigned int maxNSeeds_, maxCandidates_, maxCandidatesPerQueue_, maxQuads_;
-    const bool validate_;
+    const unsigned int maxNSeeds_, minCandidates_, minQuads_;
+    const bool validate_, printStats_;
 
     // per stream
     std::unique_ptr<mkfit::MkSeeder> seeder_;
@@ -139,6 +141,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     std::optional<cms::alpakatools::device_buffer<Device, Quad[]>> dOut_;
     std::optional<cms::alpakatools::host_buffer<uint32_t[]>> hStats_;
     uint32_t nQueuesMax_ = 0;
+    // the event's views and chain positions with a layer, for a rerun
+    View view_[2];
+    std::vector<int> layOf_[2];
+    size_t blobBytes_ = 0;
+    // the buffer sizes: the largest uses seen in this stream
+    uint32_t peakChunks_ = 0, peakQuads_ = 0, poolChunks_ = 0, outCap_ = 0;
+    void launch(Queue &queue, uint32_t poolChunks, uint32_t outCap);
     // the CPU finder's quads, with validateWithCPU
     std::vector<std::pair<std::array<int, 4>, mkfit::SeedQuad>> cpuQuads_;
   };
@@ -408,46 +417,74 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       v.bin_start = reinterpret_cast<const uint32_t *>(at("start"));
     }
 
-    // the queues, reused by the two sides in turn
-    const uint32_t nq = 2 * std::max(cc[0].n, cc[1].n);
-    const uint32_t mcpq = (maxCandidatesPerQueue_ + Queues::kChunk - 1) / Queues::kChunk;
-    const uint32_t poolChunks = (maxCandidates_ + Queues::kChunk - 1) / Queues::kChunk;
+    for (int sd = 0; sd < 2; ++sd)
+      view_[sd] = view[sd], layOf_[sd] = layOf[sd];
+    nQueuesMax_ = 2 * std::max(cc[0].n, cc[1].n);
+    blobBytes_ = blob.data.size();
+    const uint32_t poolChunks =
+        std::max((minCandidates_ + Queues::kChunk - 1) / Queues::kChunk, peakChunks_ + peakChunks_ / 4);
+    launch(queue, poolChunks, std::max(minQuads_, peakQuads_ + peakQuads_ / 4));
+  }
+
+  void MkSeederAlpaka::launch(Queue &queue, uint32_t poolChunks, uint32_t outCap) {
+    // the queues, reused by the two sides in turn; a queue can hold the whole pool
+    const uint32_t nq = nQueuesMax_, mcpq = poolChunks;
+    poolChunks_ = poolChunks, outCap_ = outCap;
     dPool_.emplace(cms::alpakatools::make_device_buffer<Cand[]>(queue, poolChunks * Queues::kChunk));
-    dChunkTab_.emplace(cms::alpakatools::make_device_buffer<int[]>(queue, nq * mcpq));
-    // counters: [0, nq) count per queue, nq poolNext, nq + 1 overflow, nq + 2 outCount, nq + 3/4 pool use per side
-    dCounters_.emplace(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, nq + 5));
-    dOut_.emplace(cms::alpakatools::make_device_buffer<Quad[]>(queue, maxQuads_));
-    nQueuesMax_ = nq;
+    dChunkTab_.emplace(cms::alpakatools::make_device_buffer<int[]>(queue, nq * mcpq + poolChunks));
+    // counters: [0, nq) count per queue, nq poolNext, nq + 1 freeCount, nq + 2 overflow, nq + 3 outCount,
+    // nq + 4/5 pool chunks used per side
+    dCounters_.emplace(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, nq + 6));
+    dOut_.emplace(cms::alpakatools::make_device_buffer<Quad[]>(queue, outCap));
     alpaka::memset(queue, *dCounters_, 0);
     uint32_t *cnt = dCounters_->data();
     Queues Q;
     Q.pool = dPool_->data(), Q.poolChunks = poolChunks, Q.maxChunksPerQueue = mcpq;
-    Q.poolNext = cnt + nq, Q.count = cnt, Q.chunkTab = dChunkTab_->data(), Q.overflow = cnt + nq + 1;
-    Q.out = dOut_->data(), Q.outCap = maxQuads_, Q.outCount = cnt + nq + 2;
+    Q.poolNext = cnt + nq, Q.freeCount = cnt + nq + 1, Q.count = cnt, Q.overflow = cnt + nq + 2;
+    Q.chunkTab = dChunkTab_->data(), Q.freeList = dChunkTab_->data() + nq * mcpq;
+    Q.out = dOut_->data(), Q.outCap = outCap, Q.outCount = cnt + nq + 3;
     for (int sd = 0; sd < 2; ++sd) {
       if (sd) {
-        // the second side starts with empty queues
-        auto counts = cms::alpakatools::make_device_view<uint32_t>(alpaka::getDev(queue), cnt, nq + 1);
+        // the second side starts with empty queues and the whole pool
+        auto counts = cms::alpakatools::make_device_view<uint32_t>(alpaka::getDev(queue), cnt, nq + 2);
         alpaka::memset(queue, counts, 0);
       }
-      alpaka::memset(queue, *dChunkTab_, 0xff);
-      mkseeder::runSide(queue, view[sd], Q, layOf[sd]);
-      auto use = cms::alpakatools::make_device_view<uint32_t>(alpaka::getDev(queue), cnt + nq + 3 + sd, 1);
+      auto tab = cms::alpakatools::make_device_view<int>(alpaka::getDev(queue), dChunkTab_->data(), nq * mcpq);
+      alpaka::memset(queue, tab, 0xff);
+      mkseeder::runSide(queue, view_[sd], Q, layOf_[sd]);
+      auto use = cms::alpakatools::make_device_view<uint32_t>(alpaka::getDev(queue), cnt + nq + 4 + sd, 1);
       auto next = cms::alpakatools::make_device_view<uint32_t>(alpaka::getDev(queue), cnt + nq, 1);
       alpaka::memcpy(queue, use, next);
     }
-    hStats_.emplace(cms::alpakatools::make_host_buffer<uint32_t[]>(queue, nq + 5));
+    hStats_.emplace(cms::alpakatools::make_host_buffer<uint32_t[]>(queue, nq + 6));
     alpaka::memcpy(queue, *hStats_, *dCounters_);
   }
 
   void MkSeederAlpaka::produce(device::Event &iEvent, device::EventSetup const &iSetup) {
     auto &queue = iEvent.queue();
-    const uint32_t *st = hStats_->data();
     const uint32_t nq = nQueuesMax_;
-    const uint32_t nOut = std::min(st[nq + 2], maxQuads_), overflow = st[nq + 1];
-    if (overflow)
-      edm::LogWarning("MkSeederAlpaka") << overflow << " candidates or quads lost to full buffers (pool chunks used "
-                                        << st[nq + 3] << ", " << st[nq + 4] << ")";
+    // an event that overflowed a buffer runs again with twice its size (and the size the quads needed)
+    for (int retry = 0; hStats_->data()[nq + 2] > 0; ++retry) {
+      const uint32_t *st = hStats_->data();
+      if (retry == 4)
+        throw cms::Exception("MkSeederAlpaka") << "buffers still too small after 4 reruns";
+      edm::LogInfo("MkSeederAlpaka") << st[nq + 2] << " candidates or quads lost to full buffers (pool " << poolChunks_
+                                     << " chunks, quads " << outCap_ << "): rerun";
+      const bool poolFull = std::max(st[nq + 4], st[nq + 5]) >= poolChunks_;
+      launch(queue, poolFull ? 2 * poolChunks_ : poolChunks_, std::max(outCap_, st[nq + 3] + st[nq + 3] / 8 + 1024));
+      alpaka::wait(queue);
+    }
+    const uint32_t *st = hStats_->data();
+    peakChunks_ = std::max({peakChunks_, st[nq + 4], st[nq + 5]});
+    peakQuads_ = std::max(peakQuads_, st[nq + 3]);
+    const uint32_t nOut = st[nq + 3];
+    if (printStats_)
+      edm::LogPrint("MkSeederAlpaka") << "MkSeederAlpaka buffers: blob " << blobBytes_ / 1024 << " kB, pool "
+                                      << poolChunks_ * Queues::kChunk * sizeof(Cand) / 1024 << " kB ("
+                                      << poolChunks_ << " chunks, used " << st[nq + 4] << " / " << st[nq + 5]
+                                      << "), chunk table + free list "
+                                      << (nq * poolChunks_ + poolChunks_) * sizeof(int) / 1024 << " kB, quads "
+                                      << outCap_ * sizeof(Quad) / 1024 << " kB (" << nOut << " used)";
     auto hOut = cms::alpakatools::make_host_buffer<Quad[]>(queue, std::max(nOut, 1u));
     if (nOut) {
       auto dv = cms::alpakatools::make_device_view<Quad>(alpaka::getDev(queue), dOut_->data(), nOut);
@@ -483,7 +520,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       edm::LogPrint("MkSeederAlpaka") << "MkSeederAlpaka validation: device " << dev.size() << " (" << cqs.size()
                                       << " with repeats), CPU " << cpu.size() << " (" << cpuQuads_.size()
                                       << "), only device " << onlyDev << ", only CPU " << onlyCpu
-                                      << "; pool chunks used " << st[nq + 3] << " / " << st[nq + 4];
+                                      << "; pool chunks used " << st[nq + 4] << " / " << st[nq + 5];
     }
 
     std::vector<mkfit::SeederQuad> quads;

@@ -36,11 +36,12 @@ namespace mkseederdev {
     float lo, hi, aphi, bphi, aq, bq;
   };
 
-  // a candidate on a queue (mkfit::SeedCand): hits in the layers' bin order, chain positions
+  // a candidate on a queue (mkfit::SeedCand): hits in the layers' bin order, chain positions (pos[2] = 0: a
+  // doublet), the stage c score; its r-z line (a-b for a doublet, a-c for a triplet) is recomputed from the hits
   struct Cand {
     uint32_t k[3];
     uint8_t pos[3], holes, st, inner;
-    float z0, cot, sc;
+    float sc;
   };
 
   // a found quad (layers[3] = -1: a triplet seed), hits as the layers' external (orig) indices
@@ -125,7 +126,9 @@ namespace mkseederdev {
     static constexpr uint32_t kChunk = 256;
     Cand *pool;
     uint32_t poolChunks, maxChunksPerQueue;
-    uint32_t *poolNext;   // chunks handed out
+    uint32_t *poolNext;   // chunks handed out fresh (= the peak of live chunks: a freed chunk is taken first)
+    int *freeList;        // chunks of consumed queues (KernelRelease), taken by push() first
+    uint32_t *freeCount;
     uint32_t *count;      // per queue (2 * n): candidates pushed
     int *chunkTab;        // per queue: maxChunksPerQueue chunk ids, -1: not yet
     uint32_t *overflow;   // candidates lost to a full pool or table

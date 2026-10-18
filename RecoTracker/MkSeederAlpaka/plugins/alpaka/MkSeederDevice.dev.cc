@@ -24,6 +24,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
         continue;
       alpaka::exec<Acc1D>(queue, wq, KernelStageC{}, view, queues, p);
       alpaka::exec<Acc1D>(queue, wq, KernelStageD{}, view, queues, p);
+      alpaka::exec<Acc1D>(queue, make_workdiv<Acc1D>(4, kThreads), KernelRelease{}, view, queues, p);
     }
   }
 
