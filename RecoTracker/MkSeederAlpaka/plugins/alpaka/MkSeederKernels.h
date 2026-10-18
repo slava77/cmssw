@@ -487,8 +487,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
   };
 
   // ---- stage c at position p
+  // One work item per (candidate, q-bin row): items r < kRows - 1 take row r of the candidate's window, the last one
+  // the rest, so a wide window (barrel doublets on the first discs) is spread over kRows threads. A candidate with a
+  // triplet sets its found flag; KernelStageCMiss forwards the others.
   class KernelStageC {
   public:
+    static constexpr uint32_t kRows = 4;
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(const TAcc &acc, View v, Queues Q, int p) const {
       const ChainConst &C = v.C;
@@ -498,14 +502,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
       const float u0 = T.qbar_lo, u1 = T.qbar_hi;
       const Shape *shT = shape_of(v, p);
       const uint32_t nc = std::min(Q.count[q2(v, p)], Q.maxChunksPerQueue * Queues::kChunk);
-      for (uint32_t j : cms::alpakatools::uniform_elements(acc, nc)) {
+      for (uint32_t wj : cms::alpakatools::uniform_elements(acc, nc * kRows)) {
+        const uint32_t j = wj / kRows, row = wj % kRows;
         Cand c;
         if (!fetch(Q, q2(v, p), j, c))
           continue;
         float cz0, ccot;
         line(v, c, cz0, ccot);
         const int ix = v.idx_c[(c.pos[0] * n + c.pos[1]) * n + p];
-        bool found = false;
         const float fks_c = C.fk_score_fwd > 0 && std::abs(ccot) >= C.fk_cot_fwd ? C.fk_score_fwd : C.fks;
         if (!C.known_only || ix >= 0) {
           const Par &w = v.par[ix >= 0 ? ix : 0];
@@ -523,7 +527,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
             const float ufar = far0 ? u0 : u1, tfar = far0 ? t0_ : t1_;
             const float rfar = std::max(0.5f, disc ? qa + (qb - qa) * tfar : ufar);
             const float wcphi = C.d0_max * std::abs(1 / rfar - (iA + (iB - iA) * tfar)) + w.phi_c;
-            const IPair qc = q_bins(T, std::min(cq0, cq1) - w.q_c, std::max(cq0, cq1) + w.q_c);
+            IPair qc = q_bins(T, std::min(cq0, cq1) - w.q_c, std::max(cq0, cq1) + w.q_c);
+            // this item's rows
+            qc.b += row;
+            if (row + 1 < kRows)
+              qc.e = std::min(qc.e, qc.b + 1);
+            if (qc.b >= qc.e)
+              continue;
             const float dcp = wrapc(cp1 - cp0), cmid = cp0 + 0.5f * dcp, chalf = 0.5f * std::abs(dcp);
             const float qcw = w.q_c, pcw = w.phi_c, dqab = qb - qa, dib = iB - iA, iqcw = 1.0f / qcw;
             int slo = 0, shi = 1 << 30;
@@ -550,7 +560,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
                   if (sc >= fks_c || v.span[ih] < slo || v.span[ih] > shi)
                     continue;
                 }
-                found = true;
+                Q.found[j] = 1;
                 // the triplet: its a-c line, routed from p
                 const float za = v.z[ia], ra = v.r[ia], zc = v.z[ih], rc = v.r[ih];
                 const float cot = (zc - za) / (rc - ra), z0 = za - cot * ra;
@@ -565,19 +575,94 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
             });
           }
         }
-        if (!found || C.hole_always) {
-          const int h = c.holes + (c.st == 2);
-          if (h <= C.max_holes) {
-            int st;
-            const int nq = route(v, p, cz0, ccot, 0, st);
-            if (nq >= 0 && v.lay_of[nq] >= 0) {
-              Cand m = c;
-              m.inner += h > c.holes;
-              m.holes = h, m.st = st;
-              push(acc, Q, q2(v, nq), m);
-            }
-          }
+      }
+    }
+  };
+
+  // a chunk for the pool (a freed one first), outside the concurrent pushes: one thread only
+  ALPAKA_FN_HOST_ACC inline int take_chunk_serial(const Queues &Q) {
+    if (*Q.freeCount > 0)
+      return Q.freeList[--*Q.freeCount];
+    const uint32_t nc = (*Q.poolNext)++;
+    return nc < Q.poolChunks ? (int)nc : -2;
+  }
+
+  // stage c's misses at position p, forwarded on their own line, in three steps so that no push waits for a chunk:
+  // count per target queue, reserve the chunks (one thread), write.
+  class KernelStageCMissCount {
+  public:
+    template <typename TAcc>
+    ALPAKA_FN_ACC void operator()(const TAcc &acc, View v, Queues Q, int p) const {
+      const ChainConst &C = v.C;
+      const uint32_t nc = std::min(Q.count[q2(v, p)], Q.maxChunksPerQueue * Queues::kChunk);
+      for (uint32_t j : cms::alpakatools::uniform_elements(acc, nc)) {
+        const bool found = Q.found[j];
+        Q.found[j] = 0;  // for the next position
+        Q.missTgt[j] = 0xffff;
+        Cand c;
+        if (!fetch(Q, q2(v, p), j, c))
+          continue;
+        if (found && !C.hole_always)
+          continue;
+        const int h = c.holes + (c.st == 2);
+        if (h > C.max_holes)
+          continue;
+        float cz0, ccot;
+        line(v, c, cz0, ccot);
+        int st;
+        const int nq = route(v, p, cz0, ccot, 0, st);
+        if (nq < 0 || v.lay_of[nq] < 0)
+          continue;
+        Q.missTgt[j] = uint16_t(nq | (st << 8));
+        alpaka::atomicAdd(acc, &Q.reserve[q2(v, nq)], 1u, alpaka::hierarchy::Blocks{});
+      }
+    }
+  };
+  class KernelReserve {
+  public:
+    template <typename TAcc>
+    ALPAKA_FN_ACC void operator()(const TAcc &acc, View v, Queues Q) const {
+      if (!cms::alpakatools::once_per_grid(acc))
+        return;
+      for (int q = 0; q < 2 * v.C.n; ++q) {
+        const uint32_t add = Q.reserve[q];
+        if (add == 0)
+          continue;
+        Q.reserve[q] = 0;
+        const uint32_t s0 = Q.count[q], s1 = s0 + add;
+        for (uint32_t ci = s0 / Queues::kChunk; ci <= (s1 - 1) / Queues::kChunk && ci < Q.maxChunksPerQueue; ++ci) {
+          int &t = Q.chunkTab[q * Q.maxChunksPerQueue + ci];
+          if (t == -1)
+            t = take_chunk_serial(Q);
         }
+      }
+    }
+  };
+  class KernelStageCMissFill {
+  public:
+    template <typename TAcc>
+    ALPAKA_FN_ACC void operator()(const TAcc &acc, View v, Queues Q, int p) const {
+      const uint32_t nc = std::min(Q.count[q2(v, p)], Q.maxChunksPerQueue * Queues::kChunk);
+      for (uint32_t j : cms::alpakatools::uniform_elements(acc, nc)) {
+        const uint16_t tg = Q.missTgt[j];
+        if (tg == 0xffff)
+          continue;
+        Cand c;
+        fetch(Q, q2(v, p), j, c);
+        const int nq = tg & 0xff, st = tg >> 8;
+        const int h = c.holes + (c.st == 2);
+        Cand m = c;
+        m.inner += h > c.holes;
+        m.holes = h, m.st = st;
+        const int queue = q2(v, nq);
+        const uint32_t s = alpaka::atomicAdd(acc, &Q.count[queue], 1u, alpaka::hierarchy::Blocks{});
+        const uint32_t ci = s / Queues::kChunk;
+        const int cid = ci < Q.maxChunksPerQueue ? Q.chunkTab[queue * Q.maxChunksPerQueue + ci] : -2;
+        if (cid < 0) {
+          alpaka::atomicAdd(acc, Q.overflow, 1u, alpaka::hierarchy::Blocks{});
+          continue;
+        }
+        Q.pool[(uint32_t)cid * Queues::kChunk + s % Queues::kChunk] = m;
       }
     }
   };

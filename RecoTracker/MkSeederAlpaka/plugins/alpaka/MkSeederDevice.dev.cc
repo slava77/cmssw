@@ -27,6 +27,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::mkseeder {
       if (layOf[p] < 0)
         continue;
       alpaka::exec<Acc1D>(queue, wq, KernelStageC{}, view, queues, p);
+      alpaka::exec<Acc1D>(queue, wq, KernelStageCMissCount{}, view, queues, p);
+      alpaka::exec<Acc1D>(queue, make_workdiv<Acc1D>(1, 1), KernelReserve{}, view, queues);
+      alpaka::exec<Acc1D>(queue, wq, KernelStageCMissFill{}, view, queues, p);
       alpaka::exec<Acc1D>(queue, wq, KernelStageD{}, view, queues, p);
       alpaka::exec<Acc1D>(queue, make_workdiv<Acc1D>(4, kThreads), KernelRelease{}, view, queues, p);
     }

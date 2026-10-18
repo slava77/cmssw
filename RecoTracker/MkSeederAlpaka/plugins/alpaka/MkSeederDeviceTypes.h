@@ -132,6 +132,9 @@ namespace mkseederdev {
     uint32_t *count;      // per queue (2 * n): candidates pushed
     int *chunkTab;        // per queue: maxChunksPerQueue chunk ids, -1: not yet
     uint32_t *overflow;   // candidates lost to a full pool or table
+    uint8_t *found;       // per candidate of the stage c queue being processed: a triplet was found (cleared after)
+    uint16_t *missTgt;    // per candidate of that queue: the miss's target position | state << 8, 0xffff: none
+    uint32_t *reserve;    // per queue: slots the stage c misses will take (KernelReserve hands out their chunks)
     Quad *out;
     uint32_t outCap;
     uint32_t *outCount;

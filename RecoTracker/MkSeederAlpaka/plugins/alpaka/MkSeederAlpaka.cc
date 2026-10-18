@@ -139,6 +139,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     std::optional<cms::alpakatools::device_buffer<Device, uint32_t[]>> dCounters_;  // count per queue, poolNext,
                                                                                      // overflow, outCount, pool use
     std::optional<cms::alpakatools::device_buffer<Device, int[]>> dChunkTab_;
+    std::optional<cms::alpakatools::device_buffer<Device, uint8_t[]>> dFound_;
+    std::optional<cms::alpakatools::device_buffer<Device, uint16_t[]>> dMissTgt_;
     std::optional<cms::alpakatools::device_buffer<Device, Quad[]>> dOut_;
     std::optional<cms::alpakatools::host_buffer<uint32_t[]>> hStats_;
     uint32_t nQueuesMax_ = 0;
@@ -443,16 +445,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     poolChunks_ = poolChunks, outCap_ = outCap;
     dPool_.emplace(cms::alpakatools::make_device_buffer<Cand[]>(queue, poolChunks * Queues::kChunk));
     dChunkTab_.emplace(cms::alpakatools::make_device_buffer<int[]>(queue, nq * mcpq + poolChunks));
+    // stage c's found flags, one per candidate a queue can hold (cleared by KernelStageCMiss as it reads them)
+    dFound_.emplace(cms::alpakatools::make_device_buffer<uint8_t[]>(queue, poolChunks * Queues::kChunk));
+    alpaka::memset(queue, *dFound_, 0);
+    dMissTgt_.emplace(cms::alpakatools::make_device_buffer<uint16_t[]>(queue, poolChunks * Queues::kChunk));
     // counters: [0, nq) count per queue, nq poolNext, nq + 1 freeCount, nq + 2 overflow, nq + 3 outCount,
     // nq + 4/5 pool chunks used per side
-    dCounters_.emplace(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, nq + 6));
+    dCounters_.emplace(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, 2 * nq + 6));
     dOut_.emplace(cms::alpakatools::make_device_buffer<Quad[]>(queue, outCap));
     alpaka::memset(queue, *dCounters_, 0);
     uint32_t *cnt = dCounters_->data();
     Queues Q;
     Q.pool = dPool_->data(), Q.poolChunks = poolChunks, Q.maxChunksPerQueue = mcpq;
     Q.poolNext = cnt + nq, Q.freeCount = cnt + nq + 1, Q.count = cnt, Q.overflow = cnt + nq + 2;
-    Q.chunkTab = dChunkTab_->data(), Q.freeList = dChunkTab_->data() + nq * mcpq;
+    Q.chunkTab = dChunkTab_->data(), Q.freeList = dChunkTab_->data() + nq * mcpq, Q.found = dFound_->data();
+    Q.missTgt = dMissTgt_->data(), Q.reserve = cnt + nq + 6;
     Q.out = dOut_->data(), Q.outCap = outCap, Q.outCount = cnt + nq + 3;
     for (int sd = 0; sd < 2; ++sd) {
       if (sd) {
@@ -467,7 +474,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       auto next = cms::alpakatools::make_device_view<uint32_t>(alpaka::getDev(queue), cnt + nq, 1);
       alpaka::memcpy(queue, use, next);
     }
-    hStats_.emplace(cms::alpakatools::make_host_buffer<uint32_t[]>(queue, nq + 6));
+    hStats_.emplace(cms::alpakatools::make_host_buffer<uint32_t[]>(queue, 2 * nq + 6));
     alpaka::memcpy(queue, *hStats_, *dCounters_);
   }
 
@@ -552,7 +559,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                         << tPart_[2] / nEvents_ << ", wait + copy back " << tPart_[3] / nEvents_
                                         << ", cleaning " << tPart_[4] / nEvents_ << ", fit " << tPart_[5] / nEvents_;
     }
-    dBlob_.reset(), dPool_.reset(), dChunkTab_.reset(), dCounters_.reset(), dOut_.reset();
+    dBlob_.reset(), dPool_.reset(), dChunkTab_.reset(), dCounters_.reset(), dOut_.reset(), dFound_.reset(), dMissTgt_.reset();
     if (seeds.size() > maxNSeeds_) {
       edm::LogError("TooManySeeds") << "Exceeded maximum number of seeds! maxNSeeds=" << maxNSeeds_
                                     << " nSeed=" << seeds.size();
