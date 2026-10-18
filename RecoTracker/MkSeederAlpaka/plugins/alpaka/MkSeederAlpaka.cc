@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <map>
 #include <memory>
@@ -148,6 +149,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     // the buffer sizes: the largest uses seen in this stream
     uint32_t peakChunks_ = 0, peakQuads_ = 0, poolChunks_ = 0, outCap_ = 0;
     void launch(Queue &queue, uint32_t poolChunks, uint32_t outCap);
+    // host time per part (printStats): fill, blob, enqueue, copy back, finish, fit
+    using Clock = std::chrono::steady_clock;
+    double tPart_[6] = {0, 0, 0, 0, 0, 0};
+    long nEvents_ = 0;
     // the CPU finder's quads, with validateWithCPU
     std::vector<std::pair<std::array<int, 4>, mkfit::SeedQuad>> cpuQuads_;
   };
@@ -268,7 +273,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                  (unsigned int)layerHits_[l].size()};
     const auto &bs = iEvent.get(beamSpotToken_);
     const mkfit::BeamSpot mbs(bs.x0(), bs.y0(), bs.z0(), bs.sigmaZ(), bs.BeamWidthX(), bs.BeamWidthY(), bs.dxdz(), bs.dydz());
+    const auto t0 = Clock::now();
     seeder_->fill(src_, mbs);
+    const auto t1 = Clock::now();
     if (validate_) {
       mkfit::SeedCounters cnt;
       cpuQuads_.clear();
@@ -370,6 +377,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       flatten(sd, blob, offs, cc[sd], layOf[sd]);
 
     // to the device
+    const auto t2 = Clock::now();
     auto &queue = iEvent.queue();
     auto hBlob = cms::alpakatools::make_host_buffer<std::byte[]>(queue, blob.data.size());
     std::memcpy(hBlob.data(), blob.data.data(), blob.data.size());
@@ -424,6 +432,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const uint32_t poolChunks =
         std::max((minCandidates_ + Queues::kChunk - 1) / Queues::kChunk, peakChunks_ + peakChunks_ / 4);
     launch(queue, poolChunks, std::max(minQuads_, peakQuads_ + peakQuads_ / 4));
+    const auto t3 = Clock::now();
+    auto ms = [](auto a, auto b) { return std::chrono::duration<double, std::milli>(b - a).count(); };
+    tPart_[0] += ms(t0, t1), tPart_[1] += ms(t1, t2), tPart_[2] += ms(t2, t3);
   }
 
   void MkSeederAlpaka::launch(Queue &queue, uint32_t poolChunks, uint32_t outCap) {
@@ -463,6 +474,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   void MkSeederAlpaka::produce(device::Event &iEvent, device::EventSetup const &iSetup) {
     auto &queue = iEvent.queue();
     const uint32_t nq = nQueuesMax_;
+    const auto p0 = Clock::now();
     // an event that overflowed a buffer runs again with twice its size (and the size the quads needed)
     for (int retry = 0; hStats_->data()[nq + 2] > 0; ++retry) {
       const uint32_t *st = hStats_->data();
@@ -523,12 +535,23 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                       << "; pool chunks used " << st[nq + 4] << " / " << st[nq + 5];
     }
 
+    const auto p1 = Clock::now();
     std::vector<mkfit::SeederQuad> quads;
     seeder_->finish(src_, cqs, sc, fk, quads);
+    const auto p2 = Clock::now();
     mkfit::TrackVec seeds;
     std::vector<mkfit::SeedQuality> qualityByQuad;
     mkfit::SeedFitCounters fitCounters;
     mkfit::seeder_make_seeds(seederConfig_->fit, quads, src_, *trackerInfo_, algo_, seeds, &qualityByQuad, &fitCounters);
+    {
+      auto ms = [](auto a, auto b) { return std::chrono::duration<double, std::milli>(b - a).count(); };
+      tPart_[3] += ms(p0, p1), tPart_[4] += ms(p1, p2), tPart_[5] += ms(p2, Clock::now());
+      if (printStats_ && ++nEvents_ % 10 == 0)
+        edm::LogPrint("MkSeederAlpaka") << "MkSeederAlpaka host ms/event over " << nEvents_ << " events: fill "
+                                        << tPart_[0] / nEvents_ << ", blob " << tPart_[1] / nEvents_ << ", enqueue "
+                                        << tPart_[2] / nEvents_ << ", wait + copy back " << tPart_[3] / nEvents_
+                                        << ", cleaning " << tPart_[4] / nEvents_ << ", fit " << tPart_[5] / nEvents_;
+    }
     dBlob_.reset(), dPool_.reset(), dChunkTab_.reset(), dCounters_.reset(), dOut_.reset();
     if (seeds.size() > maxNSeeds_) {
       edm::LogError("TooManySeeds") << "Exceeded maximum number of seeds! maxNSeeds=" << maxNSeeds_
